@@ -1,6 +1,6 @@
 Manifest-Version: 1.0
 OpenIDE-Module: net.neilcsmith.praxis.live.pxs
-OpenIDE-Module-Layer: net/neilcsmith/praxis/live/pxs/layer.xml
-OpenIDE-Module-Localizing-Bundle: net/neilcsmith/praxis/live/pxs/Bundle.properties
+OpenIDE-Module-Layer: net/neilcsmith/praxis/live/pxs/resources/layer.xml
+OpenIDE-Module-Localizing-Bundle: net/neilcsmith/praxis/live/pxs/resources/Bundle.properties
 OpenIDE-Module-Specification-Version: 1.0
 
