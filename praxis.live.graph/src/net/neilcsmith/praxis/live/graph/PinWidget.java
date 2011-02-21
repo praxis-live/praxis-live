@@ -76,7 +76,6 @@
  */
 package net.neilcsmith.praxis.live.graph;
 
-import org.netbeans.api.visual.anchor.Anchor;
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.model.ObjectState;
 import org.netbeans.api.visual.widget.LabelWidget;
@@ -84,6 +83,7 @@ import org.netbeans.api.visual.widget.Widget;
 
 import java.awt.*;
 import java.util.List;
+import org.netbeans.api.visual.anchor.Anchor;
 
 /**
  * This class represents a pin widget in the VMD visualization style.
@@ -93,31 +93,31 @@ import java.util.List;
  */
 public class PinWidget extends Widget {
 
-    private ColorScheme scheme;
-
+    public final static String DEFAULT_CATEGORY = "";
+    private LAFScheme scheme;
     private LabelWidget nameWidget;
     private GlyphSetWidget glyphsWidget;
-    private NodeAnchor anchor;
-    private PinDirection direction;
-
+    private Alignment alignment;
+    private String category;
 
     /**
      * Creates a pin widget with a specific color scheme.
      * @param scene the scene
      * @param scheme the color scheme
      */
-    public PinWidget (PraxisGraphScene scene, String name, PinDirection direction) {
-        super (scene);
+    public PinWidget(PraxisGraphScene scene, String name) {
+        super(scene);
         this.scheme = scene.getColorScheme();
-        this.direction = direction;
 //        setLayout (LayoutFactory.createHorizontalFlowLayout (LayoutFactory.SerialAlignment.CENTER, 8));
+        this.alignment = Alignment.Center;
+        this.category = DEFAULT_CATEGORY;
         setLayout(LayoutFactory.createOverlayLayout());
-        addChild (nameWidget = new LabelWidget (scene));
+        addChild(nameWidget = new LabelWidget(scene));
         nameWidget.setLabel(name);
-        addChild (glyphsWidget = new GlyphSetWidget (scene));
+        addChild(glyphsWidget = new GlyphSetWidget(scene));
         nameWidget.setAlignment(LabelWidget.Alignment.CENTER);
-        scheme.installUI (this);
-        notifyStateChanged (ObjectState.createNormal (), ObjectState.createNormal ());
+        scheme.installUI(this);
+        notifyStateChanged(ObjectState.createNormal(), ObjectState.createNormal());
     }
 
     /**
@@ -125,8 +125,8 @@ public class PinWidget extends Widget {
      * @param previousState the previous state
      * @param state the new state
      */
-    protected void notifyStateChanged (ObjectState previousState, ObjectState state) {
-        scheme.updateUI (this, previousState, state);
+    protected void notifyStateChanged(ObjectState previousState, ObjectState state) {
+        scheme.updateUI(this, previousState, state);
     }
 //
 //    /**
@@ -144,12 +144,11 @@ public class PinWidget extends Widget {
 //    public void setPinName (String name) {
 //        nameWidget.setLabel (name);
 //    }
-
     /**
      * Returns a pin name.
      * @return the pin name
      */
-    public String getPinName () {
+    public String getName() {
         return nameWidget.getLabel();
     }
 
@@ -157,32 +156,87 @@ public class PinWidget extends Widget {
      * Sets pin glyphs.
      * @param glyphs the list of images
      */
-    public void setGlyphs (List<Image> glyphs) {
-        glyphsWidget.setGlyphs (glyphs);
+    public void setGlyphs(List<Image> glyphs) {
+        glyphsWidget.setGlyphs(glyphs);
     }
 
-    public PinDirection getDirection() {
-        return direction;
+    public void setAlignment(Alignment alignment) {
+        if (alignment == null) {
+            throw new NullPointerException();
+        }
+        nameWidget.setAlignment(getLabelAlignment(alignment));
+        this.alignment = alignment;
+        scheme.revalidateUI(this);
     }
 
-//    /**
-//     * Sets all pin properties at once.
-//     * @param name the pin name
-//     * @param glyphs the pin glyphs
-//     */
-//    public void setProperties (String name, List<Image> glyphs) {
-//        setPinName (name);
-//        glyphsWidget.setGlyphs (glyphs);
-//    }
-
-    /**
-     * Creates a horizontally oriented anchor similar to VMDNodeWidget.createAnchorPin
-     * @return the anchor
-     */
-    public Anchor createAnchor () {
-        if (anchor == null)
-            anchor = new NodeAnchor (this, false);
-        return anchor;
+    public Alignment getAlignment() {
+        return this.alignment;
     }
 
+    private LabelWidget.Alignment getLabelAlignment(Alignment alignment) {
+        switch (alignment) {
+            case Left:
+                return LabelWidget.Alignment.LEFT;
+            case Right:
+                return LabelWidget.Alignment.RIGHT;
+            default:
+                return LabelWidget.Alignment.CENTER;
+        }
+    }
+
+    public void setCategory(String category) {
+        if (category == null) {
+            throw new NullPointerException();
+        }
+        this.category = category;
+        scheme.revalidateUI(this);
+    }
+
+    public String getCategory() {
+        return this.category;
+    }
+
+    public Anchor createAnchor() {
+        return new AlignedAnchor();
+    }
+
+    private class AlignedAnchor extends Anchor {
+
+        private AlignedAnchor() {
+            super(PinWidget.this);
+        }
+
+        @Override
+        public Result compute(Entry entry) {
+            Rectangle bounds = convertLocalToScene(getBounds());
+            int centerY = bounds.y + bounds.height / 2;
+            int gap = scheme.getAnchorGap();
+            boolean right;
+            switch (alignment) {
+                case Left:
+                    right = false;
+                    break;
+                case Right:
+                    right = true;
+                    break;
+                default:
+                    Point opposite = getOppositeSceneLocation(entry);
+                    if (opposite.x > bounds.x) {
+                        right = true;
+                    } else {
+                        right = false;
+                    }
+
+            }
+            if (right) {
+                return new Anchor.Result(
+                        new Point(bounds.x + bounds.width + gap, centerY),
+                        Direction.RIGHT);
+            } else {
+                return new Anchor.Result(
+                        new Point(bounds.x - gap, centerY),
+                        Direction.LEFT);
+            }
+        }
+    }
 }

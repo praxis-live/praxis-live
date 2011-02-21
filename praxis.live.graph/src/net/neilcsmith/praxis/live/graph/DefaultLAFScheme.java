@@ -80,8 +80,6 @@ import org.netbeans.api.visual.border.Border;
 import org.netbeans.api.visual.border.BorderFactory;
 import org.netbeans.api.visual.model.ObjectState;
 import org.netbeans.api.visual.widget.Widget;
-import org.netbeans.api.visual.widget.LabelWidget;
-import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.anchor.AnchorShape;
 import org.netbeans.api.visual.anchor.PointShape;
 import org.netbeans.api.visual.anchor.PointShapeFactory;
@@ -89,7 +87,7 @@ import org.openide.util.ImageUtilities;
 
 import java.awt.*;
 
-class DefaultColorScheme extends ColorScheme {
+public class DefaultLAFScheme extends LAFScheme {
 
     static final Color COLOR_NORMAL = new Color (0xBACDF0);
     private static final Color COLOR_HOVERED = Color.WHITE;
@@ -113,7 +111,7 @@ class DefaultColorScheme extends ColorScheme {
     static final PointShape POINT_SHAPE_IMAGE = PointShapeFactory.createImagePointShape(
             ImageUtilities.loadImage ("net/neilcsmith/praxis/live/graph/resources/vmd-pin.png")); // NOI18N
 
-    public DefaultColorScheme () {
+    public DefaultLAFScheme () {
     }
 
     public void installUI (NodeWidget widget) {
@@ -160,10 +158,10 @@ class DefaultColorScheme extends ColorScheme {
                 : ImageUtilities.loadImage ("net/neilcsmith/praxis/live/graph/resources/vmd-collapse.png"); // NOI18N
     }
 
-    @Override
-    public Widget createPinCategoryWidget (NodeWidget widget, String categoryDisplayName) {
-        return createPinCategoryWidgetCore (widget, categoryDisplayName, true);
-    }
+//    @Override
+//    public Widget createPinCategoryWidget (NodeWidget widget, String categoryDisplayName) {
+//        return createPinCategoryWidgetCore (widget, categoryDisplayName, true);
+//    }
 
     @Override
     public void installUI (EdgeWidget widget) {
@@ -211,23 +209,27 @@ class DefaultColorScheme extends ColorScheme {
     }
 
     @Override
-    public int getNodeAnchorGap (NodeAnchor anchor) {
+    public int getAnchorGap () {
         return 8;
     }
 
-    static Widget createPinCategoryWidgetCore (NodeWidget widget, String categoryDisplayName, boolean changeFont) {
-        Scene scene = widget.getScene ();
-        LabelWidget label = new LabelWidget (scene, categoryDisplayName);
-        label.setOpaque (true);
-        label.setBackground (BORDER_CATEGORY_BACKGROUND);
-        label.setForeground (Color.GRAY);
-        if (changeFont) {
-            Font fontPinCategory = scene.getDefaultFont ().deriveFont (10.0f);
-            label.setFont (fontPinCategory);
-        }
-        label.setAlignment (LabelWidget.Alignment.CENTER);
-        label.setCheckClipping (true);
-        return label;
-    }
+    
+
+//    static Widget createPinCategoryWidgetCore (NodeWidget widget, String categoryDisplayName, boolean changeFont) {
+//        Scene scene = widget.getScene ();
+//        LabelWidget label = new LabelWidget (scene, categoryDisplayName);
+//        label.setOpaque (true);
+//        label.setBackground (BORDER_CATEGORY_BACKGROUND);
+//        label.setForeground (Color.GRAY);
+//        if (changeFont) {
+//            Font fontPinCategory = scene.getDefaultFont ().deriveFont (10.0f);
+//            label.setFont (fontPinCategory);
+//        }
+//        label.setAlignment (LabelWidget.Alignment.CENTER);
+//        label.setCheckClipping (true);
+//        return label;
+//    }
+
+
 
 }

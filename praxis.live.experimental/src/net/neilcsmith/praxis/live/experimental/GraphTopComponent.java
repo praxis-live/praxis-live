@@ -12,6 +12,7 @@ import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
+import net.neilcsmith.praxis.live.graph.Alignment;
 import net.neilcsmith.praxis.live.graph.PraxisGraphScene;
 import net.neilcsmith.praxis.live.graph.NodeWidget;
 import net.neilcsmith.praxis.live.graph.PinWidget;
@@ -75,15 +76,21 @@ public final class GraphTopComponent extends TopComponent {
         setLayout(new BorderLayout());
         scene = new PraxisGraphScene<String>();
         
-        scene.addNode("Node 1", "This is Node 1");
-        scene.addNode("Node 2", "This is Node 2");
-        scene.addNode("Node 3", "This is Node 3");
-        scene.addPin("Node 1", "Pin 1");
-        scene.addPin("Node 2", "Pin 1");
-        scene.addPin("Node 2", "Pin 2");
-        scene.addPin("Node 3", "Pin 1");
+        NodeWidget n = scene.addNode("Node 1", "Timer");
+        n.setNodeType("core:timing:timer");
+        n = scene.addNode("Node 2", "Delay");
+        n.setNodeType("audio:timing:delay");
+        n = scene.addNode("Node 3", "Output");
+        n.setNodeType("audio:output");
+        scene.addPin("Node 1", "Pin 1", "control", Alignment.Right);
+        scene.addPin("Node 2", "Pin 1", "control", Alignment.Left);
+        scene.addPin("Node 2", "Pin 2", "audio", Alignment.Right);
+        scene.addPin("Node 3", "Pin 1", "audio", Alignment.Center);
+        scene.connect("Node 1", "Pin 1", "Node 2", "Pin 1");
         scene.connect("Node 1", "Pin 1", "Node 2", "Pin 2");
+        scene.connect("Node 2", "Pin 1", "Node 3", "Pin 1");
         scene.connect("Node 2", "Pin 2", "Node 3", "Pin 1");
+        scene.connect("Node 1", "Pin 1", "Node 3", "Pin 1");
 
 
         JScrollPane pane = new JScrollPane(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,

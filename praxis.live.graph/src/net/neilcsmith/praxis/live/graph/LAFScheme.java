@@ -76,16 +76,33 @@
  */
 package net.neilcsmith.praxis.live.graph;
 
+import java.awt.Color;
+import java.awt.Image;
 import org.netbeans.api.visual.model.ObjectState;
-import org.netbeans.api.visual.widget.Widget;
-
-import java.awt.*;
 import org.netbeans.api.visual.border.Border;
+import org.netbeans.api.visual.border.BorderFactory;
 
 
-public abstract class ColorScheme {
+public abstract class LAFScheme {
 
-    protected ColorScheme() {
+     private static final Color COLOR_SELECTED = new Color (0x447BCD);
+    private static final Color COLOR_HIGHLIGHTED = COLOR_SELECTED.darker ();
+    private static final Color COLOR_HOVERED = COLOR_SELECTED.brighter ();
+    private static final int MARGIN = 3;
+    private static final int ARC = 10;
+    private static final int MINI_THICKNESS = 1;
+
+    private static final Border BORDER_NORMAL = BorderFactory.createEmptyBorder (MARGIN, MARGIN);
+    private static final Border BORDER_HOVERED = BorderFactory.createRoundedBorder (ARC, ARC, MARGIN, MARGIN, COLOR_HOVERED, COLOR_HOVERED.darker ());
+    private static final Border BORDER_SELECTED = BorderFactory.createRoundedBorder (ARC, ARC, MARGIN, MARGIN, COLOR_SELECTED, COLOR_SELECTED.darker ());
+
+    private static final Border MINI_BORDER_NORMAL = BorderFactory.createEmptyBorder (MINI_THICKNESS);
+    private static final Border MINI_BORDER_HOVERED = BorderFactory.createRoundedBorder (MINI_THICKNESS, MINI_THICKNESS, MINI_THICKNESS, MINI_THICKNESS, COLOR_HOVERED, COLOR_HOVERED.darker ());
+    private static final Border MINI_BORDER_SELECTED = BorderFactory.createRoundedBorder (MINI_THICKNESS, MINI_THICKNESS, MINI_THICKNESS, MINI_THICKNESS, COLOR_SELECTED, COLOR_SELECTED.darker ());
+
+
+
+    protected LAFScheme() {
     }
 
     /**
@@ -93,6 +110,8 @@ public abstract class ColorScheme {
      * @param widget the node widget
      */
     public abstract void installUI(NodeWidget widget);
+
+    public void revalidateUI(NodeWidget widget) {}
 
     /**
      * Called to update UI of a node widget. Called from NodeWidget.notifyStateChanged method.
@@ -116,19 +135,21 @@ public abstract class ColorScheme {
      */
     public abstract Image getMinimizeWidgetImage(NodeWidget widget);
 
-    /**
-     * Called to create a pin-category widget.
-     * @param widget the node widget
-     * @param categoryDisplayName the category display name
-     * @return the pin-category widget
-     */
-    public abstract Widget createPinCategoryWidget(NodeWidget widget, String categoryDisplayName);
+//    /**
+//     * Called to create a pin-category widget.
+//     * @param widget the node widget
+//     * @param categoryDisplayName the category display name
+//     * @return the pin-category widget
+//     */
+//    public abstract Widget createPinCategoryWidget(NodeWidget widget, String categoryDisplayName);
 
     /**
      * Called to install UI to a connection widget.
      * @param widget the connection widget
      */
     public abstract void installUI(EdgeWidget widget);
+
+    public void revalidateUI(EdgeWidget widget) {}
 
     /**
      * Called to update UI of a connection widget. Called from EdgeWidget.notifyStateChanged method.
@@ -144,6 +165,8 @@ public abstract class ColorScheme {
      */
     public abstract void installUI(PinWidget widget);
 
+    public void revalidateUI(PinWidget widget) {}
+
     /**
      * Called to update UI of a pin widget. Called from PinWidget.notifyStateChanged method.
      * @param widget the pin widget
@@ -157,14 +180,14 @@ public abstract class ColorScheme {
      * @param anchor the node anchor
      * @return the gap size
      */
-    public abstract int getNodeAnchorGap(NodeAnchor anchor);
+    public abstract int getAnchorGap();
 
     public Color getBackgroundColor() {
         return Color.BLACK;
     }
-    private static ColorScheme SCHEME_DEFAULT = new DefaultColorScheme();
+    private static LAFScheme SCHEME_DEFAULT = new DefaultLAFScheme();
 
-    public static ColorScheme getDefault() {
+    public static LAFScheme getDefault() {
         return SCHEME_DEFAULT;
     }
 

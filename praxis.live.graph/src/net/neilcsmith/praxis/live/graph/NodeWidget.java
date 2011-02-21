@@ -78,7 +78,6 @@ package net.neilcsmith.praxis.live.graph;
 
 import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.anchor.Anchor;
-import org.netbeans.api.visual.anchor.AnchorFactory;
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.model.ObjectState;
 import org.netbeans.api.visual.model.StateModel;
@@ -113,10 +112,9 @@ public class NodeWidget extends Widget implements StateModel.Listener, MinimizeA
     private HashMap<String, Widget> pinCategoryWidgets = new HashMap<String, Widget> ();
 
     private StateModel stateModel = new StateModel (2);
-    private Anchor nodeAnchor;
-    private ColorScheme scheme;
+//    private Anchor nodeAnchor;
+    private LAFScheme scheme;
 
-    private WeakHashMap<Anchor,Anchor> proxyAnchorCache = new WeakHashMap<Anchor, Anchor> ();
 
 
     /**
@@ -127,8 +125,6 @@ public class NodeWidget extends Widget implements StateModel.Listener, MinimizeA
     public NodeWidget (PraxisGraphScene scene) {
         super (scene);
         this.scheme = scene.getColorScheme();
-
-        nodeAnchor = new NodeAnchor (this, true, scheme);
         
         setLayout (LayoutFactory.createVerticalFlowLayout ());
         setMinimumSize (new Dimension (128, 8));
@@ -312,27 +308,6 @@ public class NodeWidget extends Widget implements StateModel.Listener, MinimizeA
         return nameWidget;
     }
 
-    /**
-     * Returns a node anchor.
-     * @return the node anchor
-     */
-    public Anchor getNodeAnchor () {
-        return nodeAnchor;
-    }
-
-    /**
-     * Creates an extended pin anchor with an ability of reconnecting to the node anchor when the node is minimized.
-     * @param anchor the original pin anchor from which the extended anchor is created
-     * @return the extended pin anchor, the returned anchor is cached and returns a single extended pin anchor instance of each original pin anchor
-     */
-    public Anchor createAnchorPin (Anchor anchor) {
-        Anchor proxyAnchor = proxyAnchorCache.get (anchor);
-        if (proxyAnchor == null) {
-            proxyAnchor = AnchorFactory.createProxyAnchor (stateModel, anchor, nodeAnchor);
-            proxyAnchorCache.put (anchor, proxyAnchor);
-        }
-        return proxyAnchor;
-    }
 
     /**
      * Returns a list of pin widgets attached to the node.
@@ -345,57 +320,57 @@ public class NodeWidget extends Widget implements StateModel.Listener, MinimizeA
         return pins;
     }
 
-    /**
-     * Sorts and assigns pins into categories.
-     * @param pinsCategories the map of category name as key and a list of pin widgets as value
-     */
-    public void sortPins (HashMap<String, List<Widget>> pinsCategories) {
-        List<Widget> previousPins = getPinWidgets ();
-        ArrayList<Widget> unresolvedPins = new ArrayList<Widget> (previousPins);
+//    /**
+//     * Sorts and assigns pins into categories.
+//     * @param pinsCategories the map of category name as key and a list of pin widgets as value
+//     */
+//    public void sortPins (HashMap<String, List<Widget>> pinsCategories) {
+//        List<Widget> previousPins = getPinWidgets ();
+//        ArrayList<Widget> unresolvedPins = new ArrayList<Widget> (previousPins);
+//
+//        for (Iterator<Widget> iterator = unresolvedPins.iterator (); iterator.hasNext ();) {
+//            Widget widget = iterator.next ();
+//            if (pinCategoryWidgets.containsValue (widget))
+//                iterator.remove ();
+//        }
+//
+//        ArrayList<String> unusedCategories = new ArrayList<String> (pinCategoryWidgets.keySet ());
+//
+//        ArrayList<String> categoryNames = new ArrayList<String> (pinsCategories.keySet ());
+//        Collections.sort (categoryNames);
+//
+//        ArrayList<Widget> newWidgets = new ArrayList<Widget> ();
+//        for (String categoryName : categoryNames) {
+//            if (categoryName == null)
+//                continue;
+//            unusedCategories.remove (categoryName);
+//            newWidgets.add (createPinCategoryWidget (categoryName));
+//            List<Widget> widgets = pinsCategories.get (categoryName);
+//            for (Widget widget : widgets)
+//                if (unresolvedPins.remove (widget))
+//                    newWidgets.add (widget);
+//        }
+//
+//        if (! unresolvedPins.isEmpty ())
+//            newWidgets.addAll (0, unresolvedPins);
+//
+//        for (String category : unusedCategories)
+//            pinCategoryWidgets.remove (category);
+//
+//        removeChildren (previousPins);
+//        addChildren (newWidgets);
+//    }
 
-        for (Iterator<Widget> iterator = unresolvedPins.iterator (); iterator.hasNext ();) {
-            Widget widget = iterator.next ();
-            if (pinCategoryWidgets.containsValue (widget))
-                iterator.remove ();
-        }
-
-        ArrayList<String> unusedCategories = new ArrayList<String> (pinCategoryWidgets.keySet ());
-
-        ArrayList<String> categoryNames = new ArrayList<String> (pinsCategories.keySet ());
-        Collections.sort (categoryNames);
-
-        ArrayList<Widget> newWidgets = new ArrayList<Widget> ();
-        for (String categoryName : categoryNames) {
-            if (categoryName == null)
-                continue;
-            unusedCategories.remove (categoryName);
-            newWidgets.add (createPinCategoryWidget (categoryName));
-            List<Widget> widgets = pinsCategories.get (categoryName);
-            for (Widget widget : widgets)
-                if (unresolvedPins.remove (widget))
-                    newWidgets.add (widget);
-        }
-
-        if (! unresolvedPins.isEmpty ())
-            newWidgets.addAll (0, unresolvedPins);
-
-        for (String category : unusedCategories)
-            pinCategoryWidgets.remove (category);
-
-        removeChildren (previousPins);
-        addChildren (newWidgets);
-    }
-
-    private Widget createPinCategoryWidget (String categoryDisplayName) {
-        Widget w = pinCategoryWidgets.get (categoryDisplayName);
-        if (w != null)
-            return w;
-        Widget label = scheme.createPinCategoryWidget (this, categoryDisplayName);
-        if (stateModel.getBooleanState ())
-            label.setPreferredBounds (new Rectangle ());
-        pinCategoryWidgets.put (categoryDisplayName, label); 
-        return label;
-    }
+//    private Widget createPinCategoryWidget (String categoryDisplayName) {
+//        Widget w = pinCategoryWidgets.get (categoryDisplayName);
+//        if (w != null)
+//            return w;
+//        Widget label = scheme.createPinCategoryWidget (this, categoryDisplayName);
+//        if (stateModel.getBooleanState ())
+//            label.setPreferredBounds (new Rectangle ());
+//        pinCategoryWidgets.put (categoryDisplayName, label);
+//        return label;
+//    }
 
     /**
      * Collapses the widget.

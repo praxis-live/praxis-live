@@ -76,17 +76,20 @@
  */
 package net.neilcsmith.praxis.live.graph;
 
+import java.awt.Point;
+import java.awt.Rectangle;
 import org.netbeans.api.visual.model.ObjectState;
 import org.netbeans.api.visual.router.Router;
+import org.netbeans.api.visual.widget.ConnectionWidget;
 
 /**
  * This class represents a connection widget in the VMD visualization style. Can be combined with any other widget.
  *
  * @author David Kaspar
  */
-public class EdgeWidget extends org.netbeans.api.visual.widget.ConnectionWidget {
+public class EdgeWidget extends ConnectionWidget {
 
-    private ColorScheme scheme;
+    private LAFScheme scheme;
 
 //    /**
 //     * Creates a connection widget with a specific router.
@@ -94,7 +97,7 @@ public class EdgeWidget extends org.netbeans.api.visual.widget.ConnectionWidget 
 //     * @param router the router
 //     */
 //    public EdgeWidget (PraxisGraphScene scene, Router router) {
-//        this (scene, ColorScheme.getDefault());
+//        this (scene, LAFScheme.getDefault());
 //        if (router != null)
 //            setRouter (router);
 //    }

@@ -76,51 +76,43 @@
  */
 package net.neilcsmith.praxis.live.graph;
 
-import java.awt.Color;
-import java.awt.Point;
 import java.awt.event.KeyEvent;
 import org.netbeans.api.visual.action.ActionFactory;
-import org.netbeans.api.visual.action.ConnectDecorator;
-import org.netbeans.api.visual.action.ConnectProvider;
-import org.netbeans.api.visual.action.ConnectorState;
 import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.anchor.Anchor;
-import org.netbeans.api.visual.anchor.AnchorFactory;
 import org.netbeans.api.visual.graph.GraphPinScene;
 import org.netbeans.api.visual.layout.SceneLayout;
 import org.netbeans.api.visual.router.Router;
 import org.netbeans.api.visual.router.RouterFactory;
-import org.netbeans.api.visual.widget.ConnectionWidget;
 import org.netbeans.api.visual.widget.EventProcessingType;
 import org.netbeans.api.visual.widget.LayerWidget;
-import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 
-public class PraxisGraphScene<N> extends GraphPinScene<N, EdgeDescriptor<N>, PinDescriptor<N>> {
+public class PraxisGraphScene<N> extends GraphPinScene<N, EdgeID<N>, PinID<N>> {
 
     private LayerWidget backgroundLayer = new LayerWidget(this);
     private LayerWidget mainLayer = new LayerWidget(this);
     private LayerWidget connectionLayer = new LayerWidget(this);
     private LayerWidget upperLayer = new LayerWidget(this);
     private Router router;
-    private WidgetAction moveControlPointAction = ActionFactory.createOrthogonalMoveControlPointAction();
+//    private WidgetAction moveControlPointAction = ActionFactory.
     private WidgetAction moveAction = ActionFactory.createMoveAction();
     private SceneLayout sceneLayout;
-    private ColorScheme scheme;
+    private LAFScheme scheme;
 
 //    private int edgeCount = 10;
     /**
      * Creates a VMD graph scene.
      */
     public PraxisGraphScene() {
-        this(ColorScheme.getDefault());
+        this(LAFScheme.getDefault());
     }
 
     /**
      * Creates a VMD graph scene with a specific color scheme.
      * @param scheme the color scheme
      */
-    public PraxisGraphScene(ColorScheme scheme) {
+    public PraxisGraphScene(LAFScheme scheme) {
         this.scheme = scheme;
         setKeyEventProcessingType(EventProcessingType.FOCUSED_WIDGET_AND_ITS_PARENTS);
 
@@ -146,24 +138,31 @@ public class PraxisGraphScene<N> extends GraphPinScene<N, EdgeDescriptor<N>, Pin
     }
 
     public PinWidget addPin(N node, String name) {
-        return addPin(new PinDescriptor(node, name));
+        return addPin(new PinID(node, name), PinWidget.DEFAULT_CATEGORY,
+                Alignment.Center);
     }
 
-    public PinWidget addPin(N node, String name, PinDirection direction) {
-        return addPin(new PinDescriptor(node, name, direction));
+    public PinWidget addPin(N node, String name, String category, Alignment alignment) {
+        return addPin(new PinID(node, name), category, alignment);
     }
 
-    public PinWidget addPin(PinDescriptor<N> pin) {
-        return (PinWidget) super.addPin(pin.getParent(), pin);
+    public PinWidget addPin(PinID<N> pin, String category, Alignment alignment) {
+        if (pin == null || category == null || alignment == null) {
+            throw new NullPointerException();
+        }
+        PinWidget p = (PinWidget) super.addPin(pin.getParent(), pin);
+        p.setCategory(category);
+        p.setAlignment(alignment);
+        return p;
     }
 
     public EdgeWidget connect(N node1, String pin1, N node2, String pin2) {
-        return connect(new PinDescriptor<N>(node1, pin1),
-                new PinDescriptor<N>(node2, pin2));
+        return connect(new PinID<N>(node1, pin1),
+                new PinID<N>(node2, pin2));
     }
-    
-    public EdgeWidget connect(PinDescriptor<N> p1, PinDescriptor<N> p2) {
-        EdgeDescriptor d = new EdgeDescriptor(p1, p2);
+
+    public EdgeWidget connect(PinID<N> p1, PinID<N> p2) {
+        EdgeID d = new EdgeID(p1, p2);
         EdgeWidget e = (EdgeWidget) addEdge(d);
         setEdgeSource(d, p1);
         setEdgeTarget(d, p2);
@@ -171,13 +170,13 @@ public class PraxisGraphScene<N> extends GraphPinScene<N, EdgeDescriptor<N>, Pin
     }
 
     public void disconnect(N node1, String pin1, N node2, String pin2) {
-        PinDescriptor<N> p1 = new PinDescriptor<N>(node1, pin1);
-        PinDescriptor<N> p2 = new PinDescriptor<N>(node2, pin2);
-        EdgeDescriptor d = new EdgeDescriptor(p1, p2);
+        PinID<N> p1 = new PinID<N>(node1, pin1);
+        PinID<N> p2 = new PinID<N>(node2, pin2);
+        EdgeID d = new EdgeID(p1, p2);
         removeEdge(d);
     }
 
-    public ColorScheme getColorScheme() {
+    public LAFScheme getColorScheme() {
         return scheme;
     }
 
@@ -206,14 +205,14 @@ public class PraxisGraphScene<N> extends GraphPinScene<N, EdgeDescriptor<N>, Pin
      * @return the widget attached to the pin, null, if it is a default pin
      */
     @Override
-    protected Widget attachPinWidget(N node, PinDescriptor<N> pin) {
-        PinWidget widget = new PinWidget(this, pin.getName(), pin.getDirection());
+    protected Widget attachPinWidget(N node, PinID<N> pin) {
+        PinWidget widget = new PinWidget(this, pin.getName());
         ((NodeWidget) findWidget(node)).attachPinWidget(widget);
-        widget.getActions().addAction(createObjectHoverAction());
-        widget.getActions().addAction(ActionFactory.createConnectAction(
-                new ConnectDecoratorImpl(),
-                connectionLayer,
-                new ConnectProviderImpl()));
+//        widget.getActions().addAction(createObjectHoverAction());
+//        widget.getActions().addAction(ActionFactory.createConnectAction(
+//                new ConnectDecoratorImpl(),
+//                connectionLayer,
+//                new ConnectProviderImpl()));
         return widget;
     }
 
@@ -223,13 +222,13 @@ public class PraxisGraphScene<N> extends GraphPinScene<N, EdgeDescriptor<N>, Pin
      * @return the widget attached to the edge
      */
     @Override
-    protected Widget attachEdgeWidget(final EdgeDescriptor<N> edge) {
+    protected Widget attachEdgeWidget(final EdgeID<N> edge) {
         EdgeWidget edgeWidget = new EdgeWidget(this);
         edgeWidget.setRouter(router);
         connectionLayer.addChild(edgeWidget);
         edgeWidget.getActions().addAction(createObjectHoverAction());
         edgeWidget.getActions().addAction(createSelectAction());
-        edgeWidget.getActions().addAction(moveControlPointAction);
+//        edgeWidget.getActions().addAction(moveControlPointAction);
         edgeWidget.getActions().addAction(new WidgetAction.Adapter() {
 
             @Override
@@ -254,7 +253,7 @@ public class PraxisGraphScene<N> extends GraphPinScene<N, EdgeDescriptor<N>, Pin
      * @param sourcePin the new source pin
      */
     @Override
-    protected void attachEdgeSourceAnchor(EdgeDescriptor<N> edge, PinDescriptor<N> oldSourcePin, PinDescriptor<N> sourcePin) {
+    protected void attachEdgeSourceAnchor(EdgeID<N> edge, PinID<N> oldSourcePin, PinID<N> sourcePin) {
         ((EdgeWidget) findWidget(edge)).setSourceAnchor(getPinAnchor(sourcePin));
     }
 
@@ -267,24 +266,16 @@ public class PraxisGraphScene<N> extends GraphPinScene<N, EdgeDescriptor<N>, Pin
      * @param targetPin the new target pin
      */
     @Override
-    protected void attachEdgeTargetAnchor(EdgeDescriptor<N> edge, PinDescriptor<N> oldTargetPin, PinDescriptor<N> targetPin) {
+    protected void attachEdgeTargetAnchor(EdgeID<N> edge, PinID<N> oldTargetPin, PinID<N> targetPin) {
         ((EdgeWidget) findWidget(edge)).setTargetAnchor(getPinAnchor(targetPin));
     }
 
-    private Anchor getPinAnchor(PinDescriptor<N> pin) {
+    private Anchor getPinAnchor(PinID<N> pin) {
         if (pin == null) {
             return null;
         }
-        NodeWidget nodeWidget = (NodeWidget) findWidget(getPinNode(pin));
-        Widget pinMainWidget = findWidget(pin);
-        Anchor anchor;
-        if (pinMainWidget != null) {
-            anchor = AnchorFactory.createDirectionalAnchor(pinMainWidget, AnchorFactory.DirectionalAnchorKind.HORIZONTAL, 8);
-            anchor = nodeWidget.createAnchorPin(anchor);
-        } else {
-            anchor = nodeWidget.getNodeAnchor();
-        }
-        return anchor;
+        PinWidget p = (PinWidget) findWidget(pin);
+        return p.createAnchor();
     }
 
     /**
@@ -294,58 +285,58 @@ public class PraxisGraphScene<N> extends GraphPinScene<N, EdgeDescriptor<N>, Pin
         sceneLayout.invokeLayout();
     }
 
-    private class ConnectDecoratorImpl implements ConnectDecorator {
-
-        public ConnectionWidget createConnectionWidget(Scene scene) {
-            ConnectionWidget widget = new ConnectionWidget(scene);
-            widget.setForeground(Color.WHITE);
-            return widget;
-        }
-
-        public Anchor createSourceAnchor(Widget sourceWidget) {
-            return AnchorFactory.createCenterAnchor(sourceWidget);
-        }
-
-        public Anchor createTargetAnchor(Widget targetWidget) {
-            return AnchorFactory.createCenterAnchor(targetWidget);
-        }
-
-        public Anchor createFloatAnchor(Point location) {
-            return AnchorFactory.createFixedAnchor(location);
-        }
-    }
-
-    private class ConnectProviderImpl implements ConnectProvider {
-
-        @Override
-        public boolean isSourceWidget(Widget sourceWidget) {
-            return sourceWidget instanceof PinWidget;
-        }
-
-        @Override
-        public ConnectorState isTargetWidget(Widget sourceWidget, Widget targetWidget) {
-            if (sourceWidget instanceof PinWidget && targetWidget instanceof PinWidget) {
-                return ConnectorState.ACCEPT;
-            } else {
-                return ConnectorState.REJECT;
-            }
-        }
-
-        @Override
-        public boolean hasCustomTargetWidgetResolver(Scene scene) {
-            return false;
-        }
-
-        @Override
-        public Widget resolveTargetWidget(Scene scene, Point sceneLocation) {
-            return null;
-        }
-
-        @Override
-        public void createConnection(Widget sourceWidget, Widget targetWidget) {
-            PinDescriptor p1 = (PinDescriptor) findObject(sourceWidget);
-            PinDescriptor p2 = (PinDescriptor) findObject(targetWidget);
-            connect(p1, p2);
-        }
-    }
+//    private class ConnectDecoratorImpl implements ConnectDecorator {
+//
+//        public ConnectionWidget createConnectionWidget(Scene scene) {
+//            ConnectionWidget widget = new ConnectionWidget(scene);
+//            widget.setForeground(Color.WHITE);
+//            return widget;
+//        }
+//
+//        public Anchor createSourceAnchor(Widget sourceWidget) {
+//            return AnchorFactory.createCenterAnchor(sourceWidget);
+//        }
+//
+//        public Anchor createTargetAnchor(Widget targetWidget) {
+//            return AnchorFactory.createCenterAnchor(targetWidget);
+//        }
+//
+//        public Anchor createFloatAnchor(Point location) {
+//            return AnchorFactory.createFixedAnchor(location);
+//        }
+//    }
+//
+//    private class ConnectProviderImpl implements ConnectProvider {
+//
+//        @Override
+//        public boolean isSourceWidget(Widget sourceWidget) {
+//            return sourceWidget instanceof PinWidget;
+//        }
+//
+//        @Override
+//        public ConnectorState isTargetWidget(Widget sourceWidget, Widget targetWidget) {
+//            if (sourceWidget instanceof PinWidget && targetWidget instanceof PinWidget) {
+//                return ConnectorState.ACCEPT;
+//            } else {
+//                return ConnectorState.REJECT;
+//            }
+//        }
+//
+//        @Override
+//        public boolean hasCustomTargetWidgetResolver(Scene scene) {
+//            return false;
+//        }
+//
+//        @Override
+//        public Widget resolveTargetWidget(Scene scene, Point sceneLocation) {
+//            return null;
+//        }
+//
+//        @Override
+//        public void createConnection(Widget sourceWidget, Widget targetWidget) {
+//            PinID p1 = (PinID) findObject(sourceWidget);
+//            PinID p2 = (PinID) findObject(targetWidget);
+//            connect(p1, p2);
+//        }
+//    }
 }

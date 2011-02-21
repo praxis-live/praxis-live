@@ -9,23 +9,17 @@ package net.neilcsmith.praxis.live.graph;
  *
  * @author Neil C Smith (http://neilcsmith.net)
  */
-public class PinDescriptor<N> {
+public class PinID<N> {
     
     private N parent;
     private String name;
-    private PinDirection direction;
 
-    public PinDescriptor(N parent, String name) {
-        this(parent, name, PinDirection.BiDirectional);
-    }
-
-    public PinDescriptor(N parent, String name, PinDirection direction) {
-        if (parent == null || name == null || direction == null) {
+    public PinID(N parent, String name) {
+        if (parent == null || name == null) {
             throw new NullPointerException();
         }
         this.parent = parent;
         this.name = name;
-        this.direction = direction;
     }
 
 
@@ -37,18 +31,14 @@ public class PinDescriptor<N> {
         return name;
     }
 
-    public PinDirection getDirection() {
-        return direction;
-    }
-
 
     @Override
     public boolean equals(Object obj) {
         if (obj == this) {
             return true;
         }
-        if (obj instanceof PinDescriptor) {
-            PinDescriptor o = (PinDescriptor) obj;
+        if (obj instanceof PinID) {
+            PinID o = (PinID) obj;
             if (parent.equals(o.parent) && name.equals(o.name)) {
                 return true;
             }

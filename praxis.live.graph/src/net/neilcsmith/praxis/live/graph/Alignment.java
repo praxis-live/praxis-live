@@ -9,8 +9,8 @@ package net.neilcsmith.praxis.live.graph;
  *
  * @author Neil C Smith (http://neilcsmith.net)
  */
-public enum PinDirection {
+public enum Alignment {
 
-    Input, Output, BiDirectional;
+    Left, Right, Center;
 
 }

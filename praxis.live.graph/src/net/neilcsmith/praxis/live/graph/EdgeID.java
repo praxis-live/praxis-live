@@ -9,12 +9,12 @@ package net.neilcsmith.praxis.live.graph;
  *
  * @author Neil C Smith (http://neilcsmith.net)
  */
-public final class EdgeDescriptor<N> {
+public final class EdgeID<N> {
 
-    private PinDescriptor<N> pin1;
-    private PinDescriptor<N> pin2;
+    private PinID<N> pin1;
+    private PinID<N> pin2;
 
-    public EdgeDescriptor(PinDescriptor<N> pin1, PinDescriptor<N> pin2) {
+    public EdgeID(PinID<N> pin1, PinID<N> pin2) {
         if (pin1 == null || pin2 == null) {
             throw new NullPointerException();
         }
@@ -27,8 +27,8 @@ public final class EdgeDescriptor<N> {
         if (obj == this) {
             return true;
         }
-        if (obj instanceof EdgeDescriptor) {
-            EdgeDescriptor o = (EdgeDescriptor) obj;
+        if (obj instanceof EdgeID) {
+            EdgeID o = (EdgeID) obj;
             return (pin1.equals(o.pin1) && pin2.equals(o.pin2)) ||
                     (pin2.equals(o.pin1) && pin1.equals(o.pin2));
         }
