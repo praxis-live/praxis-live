@@ -22,6 +22,7 @@
 package net.neilcsmith.praxis.live.pxs;
 
 import java.io.IOException;
+import net.neilcsmith.praxis.live.core.api.RunScriptCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataNode;
 import org.openide.loaders.DataObjectExistsException;
@@ -32,6 +33,7 @@ import org.openide.nodes.Node;
 import org.openide.nodes.Children;
 import org.openide.util.Lookup;
 import org.openide.text.DataEditorSupport;
+import org.openide.util.Exceptions;
 
 public class PXSDataObject extends MultiDataObject {
 
@@ -39,6 +41,7 @@ public class PXSDataObject extends MultiDataObject {
         super(pf, loader);
         CookieSet cookies = getCookieSet();
         cookies.add((Node.Cookie) DataEditorSupport.create(this, getPrimaryEntry(), cookies));
+        cookies.add(new RunScriptImpl());
     }
 
     @Override
@@ -50,4 +53,21 @@ public class PXSDataObject extends MultiDataObject {
     public Lookup getLookup() {
         return getCookieSet().getLookup();
     }
+
+    private class RunScriptImpl implements RunScriptCookie, Node.Cookie {
+
+        @Override
+        public void runScript() {
+            try {
+            FileObject file = getPrimaryFile();
+            String script = file.asText();
+            script = "set _PWD " + file.getURL().toURI() + "\n" + script;
+            PXSExtension.executeScript(script);
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        }
+
+    }
+
 }
