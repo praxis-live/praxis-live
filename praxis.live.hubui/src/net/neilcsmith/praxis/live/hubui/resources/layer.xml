@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
+<filesystem>
+   
+    
+
+   
+    <folder name="Actions">
+        <folder name="Window">
+            <file name="net-neilcsmith-praxis-live-hubui-HubUIAction.instance">
+                <attr name="component" methodvalue="net.neilcsmith.praxis.live.hubui.HubUITopComponent.findInstance"/>
+                <attr name="displayName" bundlevalue="net.neilcsmith.praxis.live.hubui.Bundle#CTL_HubUIAction"/>
+                <attr name="instanceCreate" methodvalue="org.openide.windows.TopComponent.openAction"/>
+            </file>
+        </folder>
+    </folder>
+    <folder name="Menu">
+        <folder name="Window">
+            <file name="HubUIAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/net-neilcsmith-praxis-live-hubui-HubUIAction.instance"/>
+            </file>
+        </folder>
+    </folder>
+    <folder name="Windows2">
+        <folder name="Components">
+            <file name="HubUITopComponent.settings" url="HubUITopComponentSettings.xml"/>
+        </folder>
+        <folder name="Modes">
+            <folder name="explorer">
+                <file name="HubUITopComponent.wstcref" url="HubUITopComponentWstcref.xml"/>
+            </folder>
+        </folder>
+    </folder>
+</filesystem>
