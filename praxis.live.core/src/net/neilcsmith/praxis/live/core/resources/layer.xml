@@ -2,6 +2,25 @@
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
 <filesystem>
 
+    <folder name="Actions">
+        <folder name="Praxis">
+            <file name="net-neilcsmith-praxis-live-core-api-RestartHubAction.instance">
+                <attr name="delegate" newvalue="net.neilcsmith.praxis.live.core.api.RestartHubAction"/>
+                <attr name="displayName" bundlevalue="net.neilcsmith.praxis.live.core.api.Bundle#CTL_RestartHubAction"/>
+                <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
+                <attr name="noIconInMenu" boolvalue="false"/>
+            </file>
+            <file name="net-neilcsmith-praxis-live-core-api-RunScriptAction.instance">
+                <attr name="delegate" methodvalue="org.openide.awt.Actions.inject"/>
+                <attr name="displayName" bundlevalue="net.neilcsmith.praxis.live.core.api.Bundle#CTL_RunScriptAction"/>
+                <attr name="injectable" stringvalue="net.neilcsmith.praxis.live.core.api.RunScriptAction"/>
+                <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.context"/>
+                <attr name="noIconInMenu" boolvalue="false"/>
+                <attr name="selectionType" stringvalue="EXACTLY_ONE"/>
+                <attr name="type" stringvalue="net.neilcsmith.praxis.live.core.api.RunScriptCookie"/>
+            </file>
+        </folder>
+    </folder>
     <folder name="Editors">
         <folder name="FontsColors">
             <folder name="NetBeans">
@@ -21,10 +40,26 @@
     </folder>
     <folder name="Menu">
         <file name="BuildProject_hidden"/>
+        <folder name="File">
+            <file name="net-neilcsmith-praxis-live-core-api-RunScriptAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Praxis/net-neilcsmith-praxis-live-core-api-RunScriptAction.instance"/>
+                <attr name="position" intvalue="0"/>
+            </file>
+        </folder>
         <file name="GoTo_hidden"/>
         <file name="Refactoring_hidden"/>
         <file name="RunProject_hidden"/>
         <file name="Source_hidden"/>
+        <folder name="Tools">
+            <file name="net-neilcsmith-praxis-live-core-RestartHubAction-separatorAfter.instance">
+                <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                <attr name="position" intvalue="50"/>
+            </file>
+            <file name="net-neilcsmith-praxis-live-core-RestartHubAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Praxis/net-neilcsmith-praxis-live-core-RestartHubAction.instance"/>
+                <attr name="position" intvalue="0"/>
+            </file>
+        </folder>
         <file name="Versioning_hidden"/>
     </folder>
 </filesystem>

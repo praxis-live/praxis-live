@@ -19,22 +19,79 @@
  * Please visit http://neilcsmith.net if you need additional information or
  * have any questions.
  */
-
 package net.neilcsmith.praxis.live.core;
 
+import java.awt.EventQueue;
+import java.lang.reflect.InvocationTargetException;
 import java.util.EnumSet;
+import net.neilcsmith.praxis.core.Component;
+import net.neilcsmith.praxis.core.VetoException;
 import net.neilcsmith.praxis.impl.AbstractRoot.Caps;
 import net.neilcsmith.praxis.impl.AbstractSwingRoot;
+import org.openide.util.Exceptions;
 
 /**
  *
  * @author Neil C Smith (http://neilcsmith.net)
  */
-public class ExtensionContainer extends AbstractSwingRoot {
+class ExtensionContainer extends AbstractSwingRoot {
 
-     ExtensionContainer() {
-         super(EnumSet.of(Caps.Component, Caps.Container));
-     }
+    private static final String EXT_PREFIX = "_ext_";
+    private Component[] extensions;
 
+    ExtensionContainer(Component[] extensions) {
+        super(EnumSet.noneOf(Caps.class));
+        this.extensions = extensions.clone();
+    }
 
+    @Override
+    protected void setup() {
+        super.setup();
+        installExtensionsImpl();
+    }
+
+    @Override
+    protected void dispose() {
+        super.dispose();
+        uninstallExtensionsImpl();
+    }
+
+    void uninstallExtensions() {
+        if (EventQueue.isDispatchThread()) {
+            uninstallExtensionsImpl();
+        } else {
+            try {
+                EventQueue.invokeAndWait(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        uninstallExtensionsImpl();
+                    }
+                });
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (InvocationTargetException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+    }
+
+    private void installExtensionsImpl() {
+        for (Component ext : extensions) {
+            String id = EXT_PREFIX + Integer.toHexString(System.identityHashCode(ext));
+            try {
+                addChild(id, ext);
+            } catch (VetoException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+
+        }
+    }
+
+    private void uninstallExtensionsImpl() {
+        String[] ids = getChildIDs();
+        for (String id : ids) {
+            removeChild(id);
+        }
+    }
 }

@@ -21,18 +21,13 @@
  */
 package net.neilcsmith.praxis.live.core;
 
-import java.awt.EventQueue;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.EnumSet;
 import java.util.List;
 import net.neilcsmith.praxis.core.Component;
 import net.neilcsmith.praxis.core.IllegalRootStateException;
-import net.neilcsmith.praxis.core.VetoException;
 import net.neilcsmith.praxis.hub.DefaultHub;
 import net.neilcsmith.praxis.hub.TaskServiceImpl;
-import net.neilcsmith.praxis.impl.AbstractSwingRoot;
 import net.neilcsmith.praxis.live.core.api.ExtensionProvider;
 import net.neilcsmith.praxis.live.core.api.HubManager;
 import net.neilcsmith.praxis.script.impl.ScriptServiceImpl;
@@ -45,8 +40,6 @@ import org.openide.util.Lookup;
  */
 public class DefaultHubManager extends HubManager {
 
-    private static final String EXT_PREFIX = "_ext_";
-
     private DefaultHub hub;
     private ExtensionContainer container;
 
@@ -56,15 +49,7 @@ public class DefaultHubManager extends HubManager {
             throw new StateException();
         }
         Component[] extensions = findExtensions();
-        container = new ExtensionContainer();
-        for (Component ext : extensions) {
-            String extID = EXT_PREFIX + Integer.toHexString(ext.hashCode());
-            try {
-                container.addChild(extID, ext);
-            } catch (VetoException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
+        container = new ExtensionContainer(extensions);
         hub = new DefaultHub(container,
                 new ScriptServiceImpl(),
                 new TaskServiceImpl());
@@ -72,7 +57,7 @@ public class DefaultHubManager extends HubManager {
             hub.activate();
         } catch (IllegalRootStateException ex) {
             Exceptions.printStackTrace(ex);
-            hub.shutdown();
+            stop();
         }
     }
 
@@ -81,23 +66,7 @@ public class DefaultHubManager extends HubManager {
         if (hub == null) {
             throw new StateException();
         }
-        if (!EventQueue.isDispatchThread()) {
-            try {
-                EventQueue.invokeAndWait(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        container.removeAll();
-                    }
-                });
-            } catch (InterruptedException ex) {
-                Exceptions.printStackTrace(ex);
-            } catch (InvocationTargetException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        } else {
-            container.removeAll();
-        }
+        container.uninstallExtensions();
         hub.shutdown();
         hub = null;
 
@@ -113,9 +82,9 @@ public class DefaultHubManager extends HubManager {
     public synchronized boolean isRunning() {
         return hub != null;
     }
-    
+
     private Component[] findExtensions() {
-        Collection<? extends ExtensionProvider> providers = 
+        Collection<? extends ExtensionProvider> providers =
                 Lookup.getDefault().lookupAll(ExtensionProvider.class);
         List<Component> list = new ArrayList<Component>(providers.size());
         for (ExtensionProvider provider : providers) {
@@ -123,18 +92,5 @@ public class DefaultHubManager extends HubManager {
         }
         return list.toArray(new Component[list.size()]);
         // @TODO add own monitor component???
-    }
-
-    private class ExtensionContainer extends AbstractSwingRoot {
-
-        ExtensionContainer() {
-            super(EnumSet.of(Caps.Component, Caps.Container));
-        }
-
-        private void removeAll() {
-            for (String id : getChildIDs()) {
-                removeChild(id);
-            }
-        }
     }
 }
