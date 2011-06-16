@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE tc-ref PUBLIC
+          "-//NetBeans//DTD Top Component in Mode Properties 2.0//EN"
+          "http://www.netbeans.org/dtds/tc-ref2_2.dtd">
+
+<tc-ref version="2.0" >
+    <module name="org.netbeans.spi.palette/0" spec="1.0" />
+    <tc-id id="CommonPalette" />
+    <state opened="true" />
+    <docking-status maximized-mode="docked" />
+</tc-ref>

@@ -30,6 +30,7 @@ import net.neilcsmith.praxis.hub.DefaultHub;
 import net.neilcsmith.praxis.hub.TaskServiceImpl;
 import net.neilcsmith.praxis.live.core.api.ExtensionProvider;
 import net.neilcsmith.praxis.live.core.api.HubManager;
+import net.neilcsmith.praxis.live.core.api.HubStateException;
 import net.neilcsmith.praxis.script.impl.ScriptServiceImpl;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
@@ -44,13 +45,15 @@ public class DefaultHubManager extends HubManager {
     private ExtensionContainer container;
 
     @Override
-    public synchronized void start() throws StateException {
+    public synchronized void start() throws HubStateException {
         if (hub != null) {
-            throw new StateException();
+            throw new HubStateException();
         }
         Component[] extensions = findExtensions();
         container = new ExtensionContainer(extensions);
-        hub = new DefaultHub(container,
+        hub = new DefaultHub(LookupBridge.getInstance(),
+                NbLookupComponentFactory.getInstance(),
+                container,
                 new ScriptServiceImpl(),
                 new TaskServiceImpl());
         try {
@@ -62,9 +65,9 @@ public class DefaultHubManager extends HubManager {
     }
 
     @Override
-    public synchronized void stop() throws StateException {
+    public synchronized void stop() throws HubStateException {
         if (hub == null) {
-            throw new StateException();
+            throw new HubStateException();
         }
         container.uninstallExtensions();
         hub.shutdown();
@@ -73,7 +76,7 @@ public class DefaultHubManager extends HubManager {
     }
 
     @Override
-    public synchronized void restart() throws StateException {
+    public synchronized void restart() throws HubStateException {
         stop();
         start();
     }

@@ -58,24 +58,16 @@ public class Installer extends ModuleInstall {
 
                 @Override
                 public void run() {
+                    UIManager.getDefaults().clear();
                     ClassLoader cl = Lookup.getDefault().lookup(ClassLoader.class);
                     UIManager.put("ClassLoader", cl);
 
-                    try {
-                        try {
-                            UIManager.put("Nb.PraxisLFCustoms", Class.forName("org.netbeans.swing.plaf.metal.MetalLFCustoms", true, cl).newInstance());
-                        } catch (ClassNotFoundException ex) {
-                            Exceptions.printStackTrace(ex);
-                        }
-                    } catch (InstantiationException ex) {
-                        Exceptions.printStackTrace(ex);
-                    } catch (IllegalAccessException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
+                    UIManager.put("Nb.PraxisLFCustoms", new PraxisLFCustoms());                 
 
                     try {
                         LookAndFeel laf = new PraxisLookAndFeel();
                         UIManager.setLookAndFeel(laf);
+                        
                     } catch (UnsupportedLookAndFeelException ex) {
                         Exceptions.printStackTrace(ex);
                     }

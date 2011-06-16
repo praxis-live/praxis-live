@@ -85,10 +85,11 @@
         </folder>
     </folder>
     <folder name="Templates">
-        <folder name="Other">
+        <folder name="Praxis">
             <file name="PXSTemplate.pxs" url="PXSTemplate.pxs">
                 <attr name="displayName" bundlevalue="net.neilcsmith.praxis.live.pxs.resources.Bundle#Templates/Other/PXSTemplate.pxs"/>
                 <attr name="template" boolvalue="true"/>
+                <attr name="templateCategory" stringvalue="praxis"/>
             </file>
         </folder>
     </folder>

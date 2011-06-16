@@ -62,7 +62,8 @@ public class PXSDataObject extends MultiDataObject {
             FileObject file = getPrimaryFile();
             String script = file.asText();
             script = "set _PWD " + file.getURL().toURI() + "\n" + script;
-            PXSExtension.executeScript(script);
+            //PXSExtension.executeScript(script);
+            PXSHelper.executeScript(script);
         } catch (Exception ex) {
             Exceptions.printStackTrace(ex);
         }

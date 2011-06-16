@@ -5,7 +5,7 @@
 package net.neilcsmith.praxis.live.core;
 
 import net.neilcsmith.praxis.live.core.api.HubManager;
-import net.neilcsmith.praxis.live.core.api.HubManager.StateException;
+import net.neilcsmith.praxis.live.core.api.HubStateException;
 import org.openide.modules.ModuleInstall;
 import org.openide.util.Exceptions;
 
@@ -19,7 +19,7 @@ public class Installer extends ModuleInstall {
     public void restored() {
         try {
             HubManager.getDefault().start();
-        } catch (StateException ex) {
+        } catch (HubStateException ex) {
             Exceptions.printStackTrace(ex);
         }
     }

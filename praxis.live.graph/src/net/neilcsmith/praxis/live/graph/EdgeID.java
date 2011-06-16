@@ -22,6 +22,16 @@ public final class EdgeID<N> {
         this.pin2 = pin2;
     }
 
+    public PinID<N> getPin1() {
+        return pin1;
+    }
+
+    public PinID<N> getPin2() {
+        return pin2;
+    }
+
+    
+
     @Override
     public boolean equals(Object obj) {
         if (obj == this) {

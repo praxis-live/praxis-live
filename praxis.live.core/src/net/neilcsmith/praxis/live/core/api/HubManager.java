@@ -32,20 +32,16 @@ public abstract class HubManager {
 
     private final static HubManager DEFAULT = new DefaultHubManager();
 
-    public abstract void start() throws StateException;
+    public abstract void start() throws HubStateException;
 
-    public abstract void stop() throws StateException;
+    public abstract void stop() throws HubStateException;
 
-    public abstract void restart() throws StateException;
+    public abstract void restart() throws HubStateException;
 
     public abstract boolean isRunning();
 
     public static HubManager getDefault() {
         return DEFAULT;
-    }
-
-    public static class StateException extends Exception {
-
     }
 
 }

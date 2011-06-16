@@ -115,8 +115,8 @@ public class DefaultLAFScheme extends LAFScheme {
     }
 
     public void installUI (NodeWidget widget) {
-        widget.setBorder (BORDER_NODE);
-        widget.setOpaque (false);
+//        widget.setBorder (BORDER_NODE);
+        widget.setOpaque (true);
 
         Widget header = widget.getHeader ();
         header.setBorder (BORDER_PIN);
@@ -184,12 +184,20 @@ public class DefaultLAFScheme extends LAFScheme {
             widget.setForeground (COLOR_NORMAL);
 
         if (state.isSelected ()) {
-            widget.setControlPointShape (PointShape.SQUARE_FILLED_SMALL);
+//            widget.setControlPointShape (PointShape.SQUARE_FILLED_SMALL);
             widget.setEndPointShape (PointShape.SQUARE_FILLED_BIG);
         } else {
             widget.setControlPointShape (PointShape.NONE);
             widget.setEndPointShape (POINT_SHAPE_IMAGE);
         }
+
+        if (state.isHovered() || state.isSelected()) {
+            widget.bringToFront();
+            widget.setStroke(new BasicStroke(3));
+        } else {
+            widget.setStroke(new BasicStroke());
+        }
+
     }
 
     @Override
@@ -201,7 +209,7 @@ public class DefaultLAFScheme extends LAFScheme {
 
     @Override
     public void updateUI (PinWidget widget, ObjectState previousState, ObjectState state) {
-        widget.setOpaque (state.isSelected ());
+//        widget.setOpaque (state.isSelected ());
         widget.setBorder (state.isFocused () || state.isHovered () ? BORDER_PIN_HOVERED : BORDER_PIN);
 //        LookFeel lookFeel = getScene ().getLookFeel ();
 //        setBorder (BorderFactory.createCompositeBorder (BorderFactory.createEmptyBorder (8, 2), lookFeel.getMiniBorder (state)));

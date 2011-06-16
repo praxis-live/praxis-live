@@ -7,11 +7,11 @@
         <font style="bold"/>
     </fontcolor>
     <fontcolor name="whitespace"/>
-    <fontcolor name="number"/>
+    <fontcolor name="number" foreColor="ff00eeee"/>
     <fontcolor default="keyword" name="markup-element"/>
     <fontcolor name="operator"/>
     <fontcolor default="identifier" foreColor="ff73d216" name="field"/>
-    <fontcolor bgColor="ff2e3436" foreColor="ffd3d7cf" name="default">
+    <fontcolor bgColor="ff000000" foreColor="ffd3d7cf" name="default">
         <font size="14" style="plain"/>
     </fontcolor>
     <fontcolor foreColor="ffff6ff2" name="string"/>

@@ -1,15 +1,36 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright 2011 Neil C Smith.
+ *
+ * This code is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License version 3 only, as
+ * published by the Free Software Foundation.
+ *
+ * This code is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ * version 3 for more details.
+ *
+ * You should have received a copy of the GNU General Public License version 3
+ * along with this work; if not, see http://www.gnu.org/licenses/
+ *
+ *
+ * Please visit http://neilcsmith.net if you need additional information or
+ * have any questions.
  */
 
 package net.neilcsmith.praxis.live.project;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import net.neilcsmith.praxis.live.project.api.PraxisProjectProperties;
 import org.netbeans.api.project.Project;
 import org.netbeans.spi.project.ProjectFactory;
 import org.netbeans.spi.project.ProjectState;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -32,12 +53,33 @@ public class PraxisProjectFactory implements ProjectFactory {
 
     @Override
     public Project loadProject(FileObject projectDirectory, ProjectState state) throws IOException {
-        return new PraxisProject(projectDirectory, state);
+        // find project configuration file
+        List<FileObject> possibles = new ArrayList<FileObject>(1);
+        FileObject[] files = projectDirectory.getChildren();
+        for (FileObject file : files) {
+            if (file.hasExt("pxp")) {
+                possibles.add(file);
+            }
+        }
+        if (possibles.isEmpty()) {
+            return null;
+        }
+        FileObject projectFile;
+        if (possibles.size() == 1) {
+            projectFile = possibles.get(0);
+        } else {
+            return null; //show dialog? better searching?
+        }
+
+        return new DefaultPraxisProject(projectDirectory, projectFile, state);
     }
 
     @Override
     public void saveProject(Project project) throws IOException, ClassCastException {
-        // no op
+        DefaultPraxisProject p = project.getLookup().lookup(DefaultPraxisProject.class);
+        if (p != null) {
+            p.save();
+        }
     }
 
 }

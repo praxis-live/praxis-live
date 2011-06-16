@@ -1,3 +1,30 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
-<filesystem/>
+<filesystem>
+    <folder name="Actions">
+        <folder name="Window">
+            <file name="net-neilcsmith-praxis-live-terminal-TerminalAction.instance">
+                <attr name="component" methodvalue="net.neilcsmith.praxis.live.terminal.TerminalTopComponent.findInstance"/>
+                <attr name="displayName" bundlevalue="net.neilcsmith.praxis.live.terminal.Bundle#CTL_TerminalAction"/>
+                <attr name="instanceCreate" methodvalue="org.openide.windows.TopComponent.openAction"/>
+            </file>
+        </folder>
+    </folder>
+    <folder name="Menu">
+        <folder name="Window">
+            <file name="TerminalAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/net-neilcsmith-praxis-live-terminal-TerminalAction.instance"/>
+            </file>
+        </folder>
+    </folder>
+    <folder name="Windows2">
+        <folder name="Components">
+            <file name="TerminalTopComponent.settings" url="TerminalTopComponentSettings.xml"/>
+        </folder>
+        <folder name="Modes">
+            <folder name="output">
+                <file name="TerminalTopComponent.wstcref" url="TerminalTopComponentWstcref.xml"/>
+            </folder>
+        </folder>
+    </folder>
+</filesystem>

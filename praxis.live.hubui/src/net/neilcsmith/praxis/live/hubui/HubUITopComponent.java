@@ -1,33 +1,64 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright 2011 Neil C Smith.
+ *
+ * This code is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License version 3 only, as
+ * published by the Free Software Foundation.
+ *
+ * This code is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ * version 3 for more details.
+ *
+ * You should have received a copy of the GNU General Public License version 3
+ * along with this work; if not, see http://www.gnu.org/licenses/
+ *
+ *
+ * Please visit http://neilcsmith.net if you need additional information or
+ * have any questions.
  */
 package net.neilcsmith.praxis.live.hubui;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.logging.Logger;
+import javax.swing.JToggleButton;
+import javax.swing.ListSelectionModel;
 import net.neilcsmith.praxis.live.core.api.HubManager;
-import net.neilcsmith.praxis.live.core.api.HubManager.StateException;
+import net.neilcsmith.praxis.live.core.api.HubStateException;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 //import org.openide.util.ImageUtilities;
 import org.netbeans.api.settings.ConvertAsProperties;
+import org.openide.explorer.ExplorerManager;
+import org.openide.explorer.view.ListView;
+import org.openide.nodes.Node;
 
 /**
  * Top component which displays something.
  */
 @ConvertAsProperties(dtd = "-//net.neilcsmith.praxis.live.hubui//HubUI//EN",
 autostore = false)
-public final class HubUITopComponent extends TopComponent {
+public final class HubUITopComponent extends TopComponent implements ExplorerManager.Provider {
 
     private static HubUITopComponent instance;
     /** path to the icon used by the component and its open action */
 //    static final String ICON_PATH = "SET/PATH/TO/ICON/HERE";
     private static final String PREFERRED_ID = "HubUITopComponent";
 
+    private HubProxy hub;
+    private ExplorerManager manager;
+
     public HubUITopComponent() {
+        manager = new ExplorerManager();
+        hub = new HubProxy();
+        manager.setRootContext(hub.getNodeDelegate());
         initComponents();
+        ((ListView) rootList).setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         setName(NbBundle.getMessage(HubUITopComponent.class, "CTL_HubUITopComponent"));
         setToolTipText(NbBundle.getMessage(HubUITopComponent.class, "HINT_HubUITopComponent"));
 //        setIcon(ImageUtilities.loadImage(ICON_PATH, true));
@@ -42,9 +73,25 @@ public final class HubUITopComponent extends TopComponent {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        rootList = new ListView();
+        systemRootToggle = new javax.swing.JToggleButton();
         restartButton = new javax.swing.JButton();
 
+        systemRootToggle.setIcon(new javax.swing.ImageIcon(getClass().getResource("/net/neilcsmith/praxis/live/hubui/resources/show-system.png"))); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(systemRootToggle, org.openide.util.NbBundle.getMessage(HubUITopComponent.class, "HubUITopComponent.systemRootToggle.text")); // NOI18N
+        systemRootToggle.setToolTipText(org.openide.util.NbBundle.getMessage(HubUITopComponent.class, "LBL_ShowSystemRoots")); // NOI18N
+        systemRootToggle.setFocusable(false);
+        systemRootToggle.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        systemRootToggle.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        systemRootToggle.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                systemRootToggleActionPerformed(evt);
+            }
+        });
+
+        restartButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/net/neilcsmith/praxis/live/hubui/resources/restart.png"))); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(restartButton, org.openide.util.NbBundle.getMessage(HubUITopComponent.class, "HubUITopComponent.restartButton.text")); // NOI18N
+        restartButton.setToolTipText(org.openide.util.NbBundle.getMessage(HubUITopComponent.class, "LBL_RestartHub")); // NOI18N
         restartButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 restartButtonActionPerformed(evt);
@@ -55,30 +102,42 @@ public final class HubUITopComponent extends TopComponent {
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addContainerGap(310, Short.MAX_VALUE)
+                .addComponent(systemRootToggle)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(restartButton)
-                .addContainerGap(300, Short.MAX_VALUE))
+                .addContainerGap())
+            .addComponent(rootList, javax.swing.GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(restartButton)
-                .addContainerGap(259, Short.MAX_VALUE))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addComponent(rootList, javax.swing.GroupLayout.DEFAULT_SIZE, 250, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(systemRootToggle, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(restartButton, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
 
     private void restartButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_restartButtonActionPerformed
         try {
             HubManager.getDefault().restart();
-        } catch (StateException ex) {
+        } catch (HubStateException ex) {
             Exceptions.printStackTrace(ex);
         }
     }//GEN-LAST:event_restartButtonActionPerformed
 
+    private void systemRootToggleActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_systemRootToggleActionPerformed
+        hub.setShowSystemRoots(systemRootToggle.isSelected());
+    }//GEN-LAST:event_systemRootToggleActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton restartButton;
+    private javax.swing.JScrollPane rootList;
+    private javax.swing.JToggleButton systemRootToggle;
     // End of variables declaration//GEN-END:variables
     /**
      * Gets default instance. Do not use directly: reserved for *.settings files only,
@@ -150,4 +209,11 @@ public final class HubUITopComponent extends TopComponent {
     protected String preferredID() {
         return PREFERRED_ID;
     }
+
+    @Override
+    public ExplorerManager getExplorerManager() {
+        return manager;
+    }
+
+
 }

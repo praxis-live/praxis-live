@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Neil C Smith.
+ * Copyright 2011 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -22,6 +22,11 @@
 
 package net.neilcsmith.praxis.live.project.api;
 
+import java.util.Collections;
+import java.util.List;
+import net.neilcsmith.praxis.live.core.api.Callback;
+import org.openide.filesystems.FileObject;
+
 /**
  *
  * @author Neil C Smith (http://neilcsmith.net)
@@ -29,7 +34,24 @@ package net.neilcsmith.praxis.live.project.api;
 public abstract class FileHandler {
 
 
-    public static interface Callback {
-        
+    public abstract void process(Callback callback) throws Exception;
+
+    public List<Throwable> getErrors() {
+        List<Throwable> list = Collections.emptyList();
+        return list;
+    }
+
+//    public static interface Callback {
+//
+//        public void onSuccess();
+//
+//        public void onFailure();
+//
+//    }
+
+    public static interface Provider {
+
+        public FileHandler getHandler(PraxisProject project, ExecutionLevel level, FileObject file);
+
     }
 }

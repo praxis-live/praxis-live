@@ -76,8 +76,9 @@
  */
 package net.neilcsmith.praxis.live.graph;
 
-import java.awt.event.KeyEvent;
 import org.netbeans.api.visual.action.ActionFactory;
+import org.netbeans.api.visual.action.ConnectProvider;
+import org.netbeans.api.visual.action.PopupMenuProvider;
 import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.anchor.Anchor;
 import org.netbeans.api.visual.graph.GraphPinScene;
@@ -99,13 +100,15 @@ public class PraxisGraphScene<N> extends GraphPinScene<N, EdgeID<N>, PinID<N>> {
     private WidgetAction moveAction = ActionFactory.createMoveAction();
     private SceneLayout sceneLayout;
     private LAFScheme scheme;
+    private WidgetAction menuAction;
+    private WidgetAction connectAction;
 
 //    private int edgeCount = 10;
     /**
      * Creates a VMD graph scene.
      */
     public PraxisGraphScene() {
-        this(LAFScheme.getDefault());
+        this(null, null, null);
     }
 
     /**
@@ -113,7 +116,20 @@ public class PraxisGraphScene<N> extends GraphPinScene<N, EdgeID<N>, PinID<N>> {
      * @param scheme the color scheme
      */
     public PraxisGraphScene(LAFScheme scheme) {
+        this(scheme, null, null);
+    }
+
+    public PraxisGraphScene(ConnectProvider connectProvider, PopupMenuProvider popupProvider) {
+        this(null, connectProvider, popupProvider);
+    }
+
+    public PraxisGraphScene(LAFScheme scheme, ConnectProvider connectProvider, PopupMenuProvider popupProvider) {
+        if (scheme == null) {
+            scheme = LAFScheme.getDefault();
+        }
         this.scheme = scheme;
+
+
         setKeyEventProcessingType(EventProcessingType.FOCUSED_WIDGET_AND_ITS_PARENTS);
 
         addChild(backgroundLayer);
@@ -123,10 +139,22 @@ public class PraxisGraphScene<N> extends GraphPinScene<N, EdgeID<N>, PinID<N>> {
 
         setBackground(scheme.getBackgroundColor());
 
-        router = RouterFactory.createDirectRouter();
+//        router = RouterFactory.createDirectRouter();
+        router = RouterFactory.createOrthogonalSearchRouter(mainLayer);
 
         getActions().addAction(ActionFactory.createZoomAction());
         getActions().addAction(ActionFactory.createPanAction());
+        
+
+        if (connectProvider != null) {
+            connectAction = ActionFactory.createExtendedConnectAction(
+                    new PraxisConnectDecorator(), upperLayer, connectProvider);
+        }
+        if (popupProvider != null) {
+            menuAction = ActionFactory.createPopupMenuAction(popupProvider);
+            getActions().addAction(menuAction);
+        }
+        // @TODO pins should be non-selectable
         getActions().addAction(ActionFactory.createRectangularSelectAction(this, backgroundLayer));
 
     }
@@ -193,6 +221,9 @@ public class PraxisGraphScene<N> extends GraphPinScene<N, EdgeID<N>, PinID<N>> {
         widget.getHeader().getActions().addAction(createObjectHoverAction());
         widget.getActions().addAction(createSelectAction());
         widget.getActions().addAction(moveAction);
+        if (menuAction != null) {
+            widget.getActions().addAction(menuAction);
+        }
 
         return widget;
     }
@@ -208,11 +239,13 @@ public class PraxisGraphScene<N> extends GraphPinScene<N, EdgeID<N>, PinID<N>> {
     protected Widget attachPinWidget(N node, PinID<N> pin) {
         PinWidget widget = new PinWidget(this, pin.getName());
         ((NodeWidget) findWidget(node)).attachPinWidget(widget);
-//        widget.getActions().addAction(createObjectHoverAction());
-//        widget.getActions().addAction(ActionFactory.createConnectAction(
-//                new ConnectDecoratorImpl(),
-//                connectionLayer,
-//                new ConnectProviderImpl()));
+        widget.getActions().addAction(createObjectHoverAction());
+        if (connectAction != null) {
+            widget.getActions().addAction(connectAction);
+        }
+        if (menuAction != null) {
+            widget.getActions().addAction(menuAction);
+        }
         return widget;
     }
 
@@ -228,19 +261,9 @@ public class PraxisGraphScene<N> extends GraphPinScene<N, EdgeID<N>, PinID<N>> {
         connectionLayer.addChild(edgeWidget);
         edgeWidget.getActions().addAction(createObjectHoverAction());
         edgeWidget.getActions().addAction(createSelectAction());
-//        edgeWidget.getActions().addAction(moveControlPointAction);
-        edgeWidget.getActions().addAction(new WidgetAction.Adapter() {
-
-            @Override
-            public State keyPressed(Widget widget, WidgetKeyEvent event) {
-                if (event.getKeyCode() == KeyEvent.VK_DELETE) {
-                    removeEdge(edge);
-                    return State.CONSUMED;
-                } else {
-                    return State.REJECTED;
-                }
-            }
-        });
+        if (menuAction != null) {
+            edgeWidget.getActions().addAction(menuAction);
+        }
         return edgeWidget;
     }
 
@@ -284,7 +307,6 @@ public class PraxisGraphScene<N> extends GraphPinScene<N, EdgeID<N>, PinID<N>> {
     public void layoutScene() {
         sceneLayout.invokeLayout();
     }
-
 //    private class ConnectDecoratorImpl implements ConnectDecorator {
 //
 //        public ConnectionWidget createConnectionWidget(Scene scene) {

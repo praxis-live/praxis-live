@@ -1,0 +1,6 @@
+Manifest-Version: 1.0
+OpenIDE-Module: net.neilcsmith.praxis.live.pxr.gui
+OpenIDE-Module-Layer: net/neilcsmith/praxis/live/pxr/gui/resources/layer.xml
+OpenIDE-Module-Localizing-Bundle: net/neilcsmith/praxis/live/pxr/gui/resources/Bundle.properties
+OpenIDE-Module-Specification-Version: 1.0
+

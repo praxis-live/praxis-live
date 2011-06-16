@@ -23,17 +23,10 @@
         </folder>
     </folder>
     <folder name="Projects">
-        <folder name="FileHandlers">
-            <folder name="Default"></folder>
-            <folder name="text">
-                <folder name="x-praxis-script"></folder>
+        <folder name="net-neilcsmith-praxis-live-project">
+            <folder name = "Lookup">
             </folder>
-            
-
         </folder>
-
-
-
     </folder>
 
     <folder name="Services">
@@ -41,6 +34,20 @@
             <file name="PXPResolver.xml" url="PXPResolver.xml">
                 <attr name="displayName" bundlevalue="net.neilcsmith.praxis.live.project.resources.Bundle#Services/MIMEResolver/PXPResolver.xml"/>
             </file>
+        </folder>
+    </folder>
+
+    <folder name="Templates">
+        <folder name="Project">
+            <folder name="Praxis">
+                <file name="PraxisProject">
+                    <attr name="displayName" bundlevalue="net.neilcsmith.praxis.live.project.resources.Bundle#Templates/Project/PraxisProject"/>
+                    <attr name="instantiatingIterator" newvalue="net.neilcsmith.praxis.live.project.wizard.PraxisProjectWizardIterator"/>
+                    <attr name="template" boolvalue="true"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/net/neilcsmith/praxis/live/project/resources/pxp16.png"/>
+                    <attr name="templateWizardURL" urlvalue="nbresloc:/net/neilcsmith/praxis/live/project/wizard/praxisProject.html"/>
+                </file>
+            </folder>
         </folder>
     </folder>
 </filesystem>

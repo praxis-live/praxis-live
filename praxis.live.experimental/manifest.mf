@@ -1,7 +1,0 @@
-Manifest-Version: 1.0
-OpenIDE-Module: net.neilcsmith.praxis.live.experimental
-OpenIDE-Module-Install: net/neilcsmith/praxis/live/experimental/Installer.class
-OpenIDE-Module-Layer: net/neilcsmith/praxis/live/experimental/layer.xml
-OpenIDE-Module-Localizing-Bundle: net/neilcsmith/praxis/live/experimental/Bundle.properties
-OpenIDE-Module-Specification-Version: 1.0
-

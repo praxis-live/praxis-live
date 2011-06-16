@@ -39,12 +39,7 @@
         </folder>
     </folder>
     <folder name="Menu">
-        <file name="BuildProject_hidden"/>
         <folder name="File">
-            <file name="net-neilcsmith-praxis-live-core-api-RunScriptAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Praxis/net-neilcsmith-praxis-live-core-api-RunScriptAction.instance"/>
-                <attr name="position" intvalue="0"/>
-            </file>
         </folder>
         <file name="GoTo_hidden"/>
         <file name="Refactoring_hidden"/>
@@ -61,5 +56,89 @@
             </file>
         </folder>
         <file name="Versioning_hidden"/>
+        <folder name="View">
+            <file name="org-netbeans-core-actions-HTMLViewAction.shadow_hidden"/>
+        </folder>
+        <folder name="Window">
+            <file name="Debug_hidden">
+                <attr name="position" intvalue="100"/>
+            </file>
+            <file name="KenaiAction.shadow_hidden">
+                <attr name="position" intvalue="300"/>
+            </file>
+            <file name="Navigator_hidden">
+                <attr name="position" intvalue="400"/>
+            </file>
+            <file name="Other_hidden">
+                <attr name="position" intvalue="500"/>
+            </file>
+            <file name="Versioning_hidden">
+                <attr name="position" intvalue="700"/>
+            </file>
+            <file name="org-netbeans-core-ide-ServicesTabAction.shadow_hidden">
+                <attr name="position" intvalue="800"/>
+            </file>
+            <file name="org-netbeans-modules-kenai-collab-chat-ChatAction.shadow_hidden">
+                <attr name="position" intvalue="900"/>
+            </file>
+            <file name="org-netbeans-modules-navigator-ShowNavigatorAction.shadow" url="org-netbeans-modules-navigator-ShowNavigatorAction_1.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-navigator-ShowNavigatorAction.instance"/>
+                <attr name="position" intvalue="1600"/>
+            </file>
+            <file name="org-netbeans-modules-project-ui-physical-tab-action.shadow_hidden">
+                <attr name="position" intvalue="1200"/>
+            </file>
+            <file name="org-netbeans-modules-tasklist-ui-TaskListAction.shadow_hidden"/>
+        </folder>
+    </folder>
+    <folder name="Toolbars">
+        <folder name="Build">
+            <file name="org-netbeans-modules-debugger-ui-actions-DebugMainProjectAction.shadow_hidden"/>
+        </folder>
+    </folder>
+    <folder name="Windows2">
+        <folder name="Groups">
+            <folder name="InitialLayout">
+                <file name="projectTabLogical_tc.wstcgrp_hidden"/>
+                <file name="projectTab_tc.wstcgrp_hidden"/>
+                <file name="services.wstcgrp_hidden"/>
+            </folder>
+            <folder name="OpenedProjects">
+                <file name="projectTab_tc.wstcgrp_hidden"/>
+                <file name="services.wstcgrp_hidden"/>
+            </folder>
+            <file name="InitialLayout.wsgrp" url="InitialLayout.wsgrp"/>
+            <file name="OpenedProjects.wsgrp" url="OpenedProjects.wsgrp"/>
+            <file name="TaskList.wsgrp_hidden"/>
+            <file name="TaskList_hidden"/>
+        </folder>
+        <folder name="Modes">
+            <folder name="commonpalette">
+                <file name="CommonPalette.wstcref_hidden"/>
+            </folder>
+            <folder name="explorer">
+                <file name="KenaiTopComponent.wstcref_hidden"/>
+                <file name="M2RepositoryBrowserTopComponent.wstcref_hidden"/>
+                <file name="TokensBrowserTopComponent.wstcref_hidden"/>
+                <file name="debugging.wstcref_hidden"/>
+                <file name="projectTab_tc.wstcref_hidden"/>
+                <file name="services.wstcref_hidden"/>
+                <file name="projectTabLogical_tc.wstcref" url="projectTabLogical_tc.wstcref"/>
+                <file name="favorites.wstcref" url="favorites.wstcref"/>
+            </folder>
+            <file name="explorer.wsmode" url="explorer.wsmode"/>
+            <folder name="navigator">
+                <file name="ComponentInspector.wstcref_hidden"/>
+                <file name="navigatorTC.wscref" url="navigatorTC.wstcref"/>
+            </folder>
+            <file name="navigator.wsmode" url="navigator.wsmode"/>
+            <folder name="properties">
+                <file name="AnalyzeStackTopComponent.wstcref_hidden"/>
+                <file name="ChatTopComponent.wstcref_hidden"/>
+                <file name="properties.wstcref" url="properties.wstcref"/>
+                <file name="CommonPalette.wstcref" url="CommonPalette.wstcref"/>
+            </folder>
+            <file name="properties.wsmode" url="properties.wsmode"/>
+        </folder>
     </folder>
 </filesystem>
