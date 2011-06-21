@@ -22,9 +22,16 @@
             </folder>
         </folder>
     </folder>
+    <folder name="Menu">
+        <folder name="BuildProject">
+            <file name="org-netbeans-modules-project-ui-JavadocProject.shadow_hidden"/>
+            <file name="org-netbeans-modules-project-ui-TestProject.shadow_hidden"/>
+            <file name="org-netbeans-modules-project-ui-TestSingle.shadow_hidden"/>
+        </folder>
+    </folder>
     <folder name="Projects">
         <folder name="net-neilcsmith-praxis-live-project">
-            <folder name = "Lookup">
+            <folder name="Lookup">
             </folder>
         </folder>
     </folder>
