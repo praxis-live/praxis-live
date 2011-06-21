@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mode version="2.3">
+  <name unique="praxisTerminal" />
+  <kind type="view" />
+  <state type="separated" />
+  <frame state="0"/>
+  <empty-behavior permanent="true"/>
+  <bounds x="40" y="40" width="275" height="440" />
+</mode>

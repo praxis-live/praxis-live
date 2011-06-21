@@ -8,4 +8,5 @@ and open the template in the editor.
     <module name="net.neilcsmith.praxis.live.terminal" spec="1.0"/>
     <tc-id id="TerminalTopComponent"/>
     <state opened="false"/>
+    <previousMode name="output" index="0"/>
 </tc-ref>

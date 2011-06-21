@@ -11,9 +11,10 @@
         </folder>
     </folder>
     <folder name="Menu">
-        <folder name="Window">
+        <folder name="Tools">
             <file name="TerminalAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/net-neilcsmith-praxis-live-terminal-TerminalAction.instance"/>
+                <attr name="position" intvalue="0"/>
             </file>
         </folder>
     </folder>
@@ -22,9 +23,10 @@
             <file name="TerminalTopComponent.settings" url="TerminalTopComponentSettings.xml"/>
         </folder>
         <folder name="Modes">
-            <folder name="output">
+            <folder name="praxisTerminal">
                 <file name="TerminalTopComponent.wstcref" url="TerminalTopComponentWstcref.xml"/>
             </folder>
+            <file name="praxisTerminal.wsmode" url="TerminalModeWSMode.xml"/>
         </folder>
     </folder>
 </filesystem>
