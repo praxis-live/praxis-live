@@ -37,12 +37,12 @@ final class PraxisProjectVisualPanel1 extends JPanel implements DocumentListener
     PraxisProjectVisualPanel1(PraxisProjectWizardPanel1 wizardPanel) {
         this.wizardPanel = wizardPanel;
         initComponents();
-        File defLocation;
 
         fileChooser = new FileChooserBuilder(PraxisProjectWizardIterator.class)
                 .setDirectoriesOnly(true)
                 .setApproveText("Select")
-                .setDefaultWorkingDirectory(ProjectChooser.getProjectsFolder());
+                .setDefaultWorkingDirectory(ProjectChooser.getProjectsFolder())
+                .forceUseOfDefaultWorkingDirectory(true);
         location = fileChooser.createFileChooser().getCurrentDirectory();
         locationField.setText(location.toString());
         projectField.setText(location.toString());

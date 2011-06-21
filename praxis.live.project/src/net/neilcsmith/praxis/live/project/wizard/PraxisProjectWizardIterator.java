@@ -21,11 +21,13 @@
  */
 package net.neilcsmith.praxis.live.project.wizard;
 
+import java.awt.Component;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
@@ -46,6 +48,31 @@ public final class PraxisProjectWizardIterator implements WizardDescriptor.Insta
             panels = new WizardDescriptor.Panel[] {
                 new PraxisProjectWizardPanel1()
             };
+//            String[] steps = createSteps();
+            String[] steps = new String[panels.length];
+            for (int i = 0; i < panels.length; i++) {
+                Component c = panels[i].getComponent();
+                if (steps[i] == null) {
+                    // Default step name to component name of panel. Mainly
+                    // useful for getting the name of the target chooser to
+                    // appear in the list of steps.
+                    steps[i] = c.getName();
+                }
+                if (c instanceof JComponent) { // assume Swing components
+                    JComponent jc = (JComponent) c;
+                    // Sets step number of a component
+                    // TODO if using org.openide.dialogs >= 7.8, can use WizardDescriptor.PROP_*:
+                    jc.putClientProperty("WizardPanel_contentSelectedIndex", new Integer(i));
+                    // Sets steps names for a panel
+                    jc.putClientProperty("WizardPanel_contentData", steps);
+                    // Turn on subtitle creation on each step
+                    jc.putClientProperty("WizardPanel_autoWizardStyle", Boolean.TRUE);
+                    // Show steps on the left side with the image on the background
+                    jc.putClientProperty("WizardPanel_contentDisplayed", Boolean.TRUE);
+                    // Turn on numbering of all steps
+                    jc.putClientProperty("WizardPanel_contentNumbered", Boolean.TRUE);
+                }
+            }
         }
         return panels;
     }
