@@ -21,6 +21,7 @@
  */
 package net.neilcsmith.praxis.live.pxr.wizard;
 
+import java.awt.Component;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
@@ -31,6 +32,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import net.neilcsmith.praxis.core.CallArguments;
 import net.neilcsmith.praxis.core.ComponentType;
@@ -46,7 +48,6 @@ import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
 
 public final class PXRWizardIterator implements WizardDescriptor.InstantiatingIterator {
@@ -66,9 +67,36 @@ public final class PXRWizardIterator implements WizardDescriptor.InstantiatingIt
      */
     private WizardDescriptor.Panel[] getPanels() {
         if (panels == null) {
-            panels = new WizardDescriptor.Panel[]{
-                        new PXRWizardPanel1()
-                    };
+            panels = new WizardDescriptor.Panel[] {
+                new PXRWizardPanel1()
+            };
+
+            // @TODO - this seems to break Templates.getTargetFolder() ???
+
+//            String[] steps = createSteps();
+//            for (int i = 0; i < panels.length; i++) {
+//                Component c = panels[i].getComponent();
+//                if (steps[i] == null) {
+//                    // Default step name to component name of panel. Mainly
+//                    // useful for getting the name of the target chooser to
+//                    // appear in the list of steps.
+//                    steps[i] = c.getName();
+//                }
+//                if (c instanceof JComponent) { // assume Swing components
+//                    JComponent jc = (JComponent) c;
+//                    // Sets step number of a component
+//                    // TODO if using org.openide.dialogs >= 7.8, can use WizardDescriptor.PROP_*:
+//                    jc.putClientProperty("WizardPanel_contentSelectedIndex", new Integer(i));
+//                    // Sets steps names for a panel
+//                    jc.putClientProperty("WizardPanel_contentData", steps);
+//                    // Turn on subtitle creation on each step
+//                    jc.putClientProperty("WizardPanel_autoWizardStyle", Boolean.TRUE);
+//                    // Show steps on the left side with the image on the background
+//                    jc.putClientProperty("WizardPanel_contentDisplayed", Boolean.TRUE);
+//                    // Turn on numbering of all steps
+//                    jc.putClientProperty("WizardPanel_contentNumbered", Boolean.TRUE);
+//                }
+//            }
         }
         return panels;
     }

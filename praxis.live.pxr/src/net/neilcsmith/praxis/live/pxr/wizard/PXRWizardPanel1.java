@@ -23,20 +23,16 @@ package net.neilcsmith.praxis.live.pxr.wizard;
 
 import java.awt.Component;
 import java.io.File;
-import java.util.regex.Pattern;
 import javax.swing.event.ChangeListener;
 import net.neilcsmith.praxis.core.ComponentAddress;
 import net.neilcsmith.praxis.core.ComponentType;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
 
 class PXRWizardPanel1 implements WizardDescriptor.Panel {
-
-    public final static Pattern VALID_NAME = Pattern.compile("[ a-zA-Z0-9_-]+");
 
     private PXRVisualPanel1 component;
     private ChangeSupport cs;

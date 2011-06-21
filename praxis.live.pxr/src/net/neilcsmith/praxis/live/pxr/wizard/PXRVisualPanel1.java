@@ -54,10 +54,16 @@ final class PXRVisualPanel1 extends JPanel implements DocumentListener, ActionLi
             fileField.setText(location.toString());
         }
         idField.getDocument().addDocumentListener(this);
-        Set<ComponentType> types = Components.getAllRootTypes();
-        for (ComponentType type : types) {
-            typeField.addItem(type);
-        }
+//        Set<ComponentType> types = Components.getAllRootTypes();
+//        for (ComponentType type : types) {
+//            typeField.addItem(type);
+//        }
+        
+        // Temporary fixed root types for EA release
+        // @TODO remove temporary fixed types.
+        typeField.addItem(ComponentType.create("root:audio"));
+        typeField.addItem(ComponentType.create("root:video"));
+        
         typeField.addActionListener(this);
     }
 
