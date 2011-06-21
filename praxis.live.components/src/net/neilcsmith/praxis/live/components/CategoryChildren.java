@@ -96,9 +96,9 @@ public class CategoryChildren extends Children.Keys<String> {
     }
 
     private boolean include(String type) {
-//        if (type.contains(":test:")) {
-//            return false;
-//        }
+        if (type.contains(":test:")) {
+            return false;
+        }
         if (filters == null) {
             return true;
         } else {

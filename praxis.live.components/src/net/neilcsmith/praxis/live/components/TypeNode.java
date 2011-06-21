@@ -27,6 +27,7 @@ import net.neilcsmith.praxis.core.ComponentType;
 import net.neilcsmith.praxis.live.components.api.Components;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
+import org.openide.util.HelpCtx;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -47,6 +48,12 @@ public class TypeNode extends AbstractNode {
     public Image getIcon(int type) {
         return Components.getIcon(componentType);
     }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(componentType.toString());
+    }
+
 
 
 
