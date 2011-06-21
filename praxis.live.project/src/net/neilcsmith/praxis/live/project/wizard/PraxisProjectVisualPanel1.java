@@ -42,7 +42,8 @@ final class PraxisProjectVisualPanel1 extends JPanel implements DocumentListener
                 .setDirectoriesOnly(true)
                 .setApproveText("Select")
                 .setDefaultWorkingDirectory(ProjectChooser.getProjectsFolder())
-                .forceUseOfDefaultWorkingDirectory(true);
+                .forceUseOfDefaultWorkingDirectory(true)
+                .setFileHiding(true);
         location = fileChooser.createFileChooser().getCurrentDirectory();
         locationField.setText(location.toString());
         projectField.setText(location.toString());
