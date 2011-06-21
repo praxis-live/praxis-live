@@ -5,6 +5,7 @@
 
 package net.neilcsmith.praxis.live.pxr;
 
+import java.awt.EventQueue;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.logging.Logger;
@@ -16,6 +17,8 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.nodes.Sheet;
+import org.openide.util.Exceptions;
+import org.openide.util.HelpCtx;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 
@@ -50,6 +53,28 @@ class PXRProxyNode extends AbstractNode {
 
     @Override
     protected Sheet createSheet() {
+        // this gets called outside of EQ by propertysheet!
+        if (EventQueue.isDispatchThread()) {
+            return createSheetOnEQ();
+        } else {
+            final Sheet[] holder = new Sheet[1];
+            try {
+                EventQueue.invokeAndWait(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        holder[0] = createSheetOnEQ();
+                    }
+                });
+            } catch (Exception ex) {
+                Exceptions.printStackTrace(ex);
+                return super.createSheet();
+            }
+            return holder[0];
+        }
+    }
+
+    private Sheet createSheetOnEQ() {
         Sheet sheet = Sheet.createDefault();
         Sheet.Set props = Sheet.createPropertiesSet();
         sheet.put(props);
@@ -58,6 +83,12 @@ class PXRProxyNode extends AbstractNode {
         }
         return sheet;
     }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(component.getType().toString());
+    }
+
 
 
 

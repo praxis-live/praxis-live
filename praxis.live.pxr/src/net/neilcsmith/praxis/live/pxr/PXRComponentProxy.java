@@ -158,6 +158,7 @@ public class PXRComponentProxy implements ComponentProxy, Syncable {
     }
 
     private void initProperties() {
+        assert EventQueue.isDispatchThread();
         PropertyChangeListener lst = new PropPropListener();
         ComponentAddress cmpAd = getAddress();
         properties = new LinkedHashMap<String, PraxisProperty<?>>();
@@ -205,6 +206,7 @@ public class PXRComponentProxy implements ComponentProxy, Syncable {
 
     @Override
     public void setSyncing(boolean sync) {
+        assert EventQueue.isDispatchThread();
         if (syncing != sync) {
             syncing = sync;
             setPropertySyncing(sync);
