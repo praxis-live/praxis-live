@@ -1,0 +1,88 @@
+body  {font-size: medium;
+	font-family: SansSerif, Arial, Helvetica, sans-serif;
+	margin-left: 5;
+	margin-right: 5;
+	color: White;
+	background-color: Black}
+
+p  {font-size: medium;
+     margin-top: 5;
+     margin-bottom: 5}
+
+h1 { font-size: large;
+     font-weight: bold;
+     margin-top: 10;
+     margin-bottom: 5}
+
+h2 { font-size: large;
+     font-weight: bold;
+     margin-top: 10;
+     margin-bottom: 5}
+
+h3 { font-size: medium;
+     font-weight: bold;
+     margin-top: 10;
+     margin-bottom: 5}
+
+h4 { font-size: medium;
+     font-weight: bold;
+     margin-top: 10;
+     margin-bottom: 5}
+
+h6 { font-size: small;
+     font-weight: bold;
+     margin-top: 0;
+     margin-bottom: 10}
+
+code {font-size: small;
+      font-family: Monospaced}
+
+li {margin-top: 0;
+    margin-bottom: 5}
+
+li p{margin-top: 5;
+     margin-bottom: 0}
+
+
+ul li ol{list-style-image:none;
+         list-style-type: decimal}
+
+ul li ol li ol{list-style-type: lower-alpha}
+
+ul li ol ol{list-style-type: lower-alpha}
+
+ul ol{list-style-image:none;
+      list-style-type: decimal}
+
+ul ol li ol{list-style-type: lower-alpha}
+
+ul ol ol{list-style-type: lower-alpha}
+
+ol {list-style-type: decimal;
+     margin-top: 5;
+     margin-bottom: 0;
+	  margin-left: 22;
+}
+
+ol li ol{list-style-type: lower-alpha}
+
+ol ol{list-style-type: lower-alpha}
+
+dl {margin-left: 0;
+    margin-top: 10;
+    margin-bottom: 5}
+
+dt {font-size: small;
+    font-style: normal;
+    font-weight: bold;
+    margin-top: 0;
+    margin-bottom: 0;
+    text-indent: 0}
+
+dd {font-size: small;
+    font-style: normal;
+    font-weight: normal;
+    margin-top: 2;
+    margin-left: 25}
+
+
