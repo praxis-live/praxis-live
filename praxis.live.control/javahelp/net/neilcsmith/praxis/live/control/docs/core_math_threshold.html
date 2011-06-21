@@ -1,0 +1,31 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+      <title>core:math:threshold</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <link rel="stylesheet" href="nbdocs:/net/neilcsmith/praxis/live/help/docs/help.css" type="text/css">
+  </head>
+  <body>
+    <h1>core:math:threshold</h1>
+    <p>Takes a number on its input port and sends it from its <code>out-high</code>
+       port if greater than or equal to the <code>threshold</code> value, or from
+       the <code>out-low</code> port if below the threshold value.</p>
+    <h2>Ports</h2>
+    <dl>
+      <dt>threshold</dt>
+        <dd>control in | number | Value of threshold.</dd>
+      <dt>in</dt>
+        <dd>control in | number | Input value.</dd>
+      <dt>out-low</dt>
+        <dd>control out | number | Value if lower than threshold.</dd>
+      <dt>out-high</dt>
+        <dd>control out | number | Value if higher than threshold.</dd>
+    </dl>
+    <h2>Controls</h2>
+    <dl>
+      <dt>threshold</dt>
+        <dd>property | number | 0 | Value of threshold.</dd>
+    </dl>
+    
+  </body>
+</html>
