@@ -1,0 +1,44 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+      <title>video:snapshot</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <link rel="stylesheet" href="nbdocs:/net/neilcsmith/praxis/live/help/docs/help.css" type="text/css">
+  </head>
+  <body>
+    <h1>video:snapshot</h1>
+    <p>This component provides the ability to capture and display a still frame
+        from its video input. It extends this ability with the option to fade from
+        the previous captured image to the new one over a period of time, and to
+        mix the new image with the previous one.</p>
+    <h2>Ports</h2>
+    <dl>
+      <dt>in</dt>
+        <dd>video in | Video signal to capture from.</dd>
+      <dt>out</dt>
+        <dd>video out | Video output signal.</dd>
+      <dt>in</dt>
+        <dd>video in | Video signal to capture from.</dd>
+        <dt>fade-time</dt>
+        <dd>control in | number(0..3600) | Period in seconds to fade from previous image to current image.</dd>
+        <dt>mix</dt>
+        <dd>control in | number(0..1) | Level to mix current image with previous image.</dd>
+        <dt>trigger</dt>
+        <dd>control in | any | Trigger new snapshot.</dd>
+        <dt>reset</dt>
+        <dd>control in | any | Clear snapshot.</dd>
+    </dl>
+    <h2>Controls</h2>
+    <dl>
+      <dt>fade-time</dt>
+        <dd>property | number(0..3600) | 0 | Period in seconds to fade from previous image to current image.</dd>
+      <dt>mix</dt>
+        <dd>property | number(0..1) | 1 | Level to mix current image with previous image.</dd>
+      <dt>trigger</dt>
+        <dd>function | - | - | Trigger new snapshot.</dd>
+        <dt>reset</dt>
+        <dd>function | - | - | Clear snapshot.</dd>
+    </dl>
+    
+  </body>
+</html>
