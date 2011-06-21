@@ -39,21 +39,47 @@
         </folder>
     </folder>
     <folder name="Menu">
+        <folder name="Edit">
+            <file name="SeparatorAfterProjectsSearch.instance_hidden"/>
+            <file name="org-netbeans-modules-editor-MainMenuAction$StartMacroRecordingAction.instance_hidden"/>
+            <file name="org-netbeans-modules-editor-MainMenuAction$StopMacroRecordingAction.instance_hidden"/>
+        </folder>
         <folder name="File">
         </folder>
         <file name="GoTo_hidden"/>
+        <folder name="Help">
+            <file name="Separator1.instance_hidden"/>
+            <file name="SeparatorAfterJavadoc.instance_hidden"/>
+            <file name="net-neilcsmith-praxis-live-core-ui-AboutAction-separatorBefore.instance">
+                <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                <attr name="position" intvalue="250"/>
+            </file>
+            <file name="netbeans-kb.url_hidden"/>
+<!--            <file name="org-netbeans-core-actions-AboutAction.shadow_hidden"/>-->
+            <file name="org-netbeans-modules-autoupdate-ui-actions-CheckForUpdatesAction.shadow_hidden"/>
+            <file name="org-netbeans-modules-bugzilla-ReportNBIssueAction.shadow_hidden"/>
+            <file name="org-netbeans-modules-javadoc-search-IndexOverviewAction.shadow_hidden"/>
+            <file name="org-netbeans-modules-javadoc-search-SearchDocAction.shadow_hidden"/>
+            <file name="shortcuts.xml_hidden"/>
+        </folder>
         <file name="Refactoring_hidden"/>
         <file name="RunProject_hidden"/>
         <file name="Source_hidden"/>
         <folder name="Tools">
-            <file name="net-neilcsmith-praxis-live-core-RestartHubAction-separatorAfter.instance">
-                <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                <attr name="position" intvalue="50"/>
-            </file>
-            <file name="net-neilcsmith-praxis-live-core-RestartHubAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Praxis/net-neilcsmith-praxis-live-core-RestartHubAction.instance"/>
+            <file name="I18N_hidden"/>
+            <file name="JavaPlatformsCustomizerAction.shadow_hidden"/>
+            <file name="LibrariesCustomizerAction.shadow_hidden"/>
+            <file name="PaletteManager_hidden"/>
+            <file name="Separator1.instance_hidden"/>
+            <file name="ServerManagerAction3.shadow_hidden"/>
+            <file name="VariablesCustomizerAction.shadow_hidden"/>
+<!--            <file name="net-neilcsmith-praxis-live-core-api-RestartHubAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Praxis/net-neilcsmith-praxis-live-core-api-RestartHubAction.instance"/>
                 <attr name="position" intvalue="0"/>
-            </file>
+            </file>-->
+            <file name="org-netbeans-modules-favorites-templates-TemplatesAction.shadow_hidden"/>
+            <file name="org-netbeans-modules-xml-catalog-CatalogAction.shadow_hidden"/>
+            <file name="org-openide-actions-ToolsAction.shadow_hidden"/>
         </folder>
         <file name="Versioning_hidden"/>
         <folder name="View">
@@ -62,6 +88,10 @@
         <folder name="Window">
             <file name="Debug_hidden">
                 <attr name="position" intvalue="100"/>
+            </file>
+            <file name="Favorites.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-favorites-View.instance"/>
+                <attr name="position" intvalue="350"/>
             </file>
             <file name="KenaiAction.shadow_hidden">
                 <attr name="position" intvalue="300"/>
@@ -72,16 +102,24 @@
             <file name="Other_hidden">
                 <attr name="position" intvalue="500"/>
             </file>
+            <folder name="Output">
+                <file name="AnalyzerAction.shadow_hidden"/>
+                <file name="GsfTestRunnerResultWindowOpenAction.shadow_hidden"/>
+                <file name="RefactoringPreviewOpenAction.shadow_hidden"/>
+                <file name="org-netbeans-modules-dlight-terminal-action-ShowTerminal.shadow_hidden"/>
+                <file name="org-netbeans-modules-versioning-util-OpenVersioningOutputAction.shadow_hidden"/>
+            </folder>
             <file name="Versioning_hidden">
                 <attr name="position" intvalue="700"/>
             </file>
+            <file name="ViewFavoritesTabAction.shadow_hidden"/>
             <file name="org-netbeans-core-ide-ServicesTabAction.shadow_hidden">
                 <attr name="position" intvalue="800"/>
             </file>
             <file name="org-netbeans-modules-kenai-collab-chat-ChatAction.shadow_hidden">
                 <attr name="position" intvalue="900"/>
             </file>
-            <file name="org-netbeans-modules-navigator-ShowNavigatorAction.shadow" url="org-netbeans-modules-navigator-ShowNavigatorAction_1.shadow">
+            <file name="org-netbeans-modules-navigator-ShowNavigatorAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-navigator-ShowNavigatorAction.instance"/>
                 <attr name="position" intvalue="1600"/>
             </file>
@@ -90,6 +128,21 @@
             </file>
             <file name="org-netbeans-modules-tasklist-ui-TaskListAction.shadow_hidden"/>
         </folder>
+    </folder>
+    <folder name="OptionsDialog">
+        <folder name="Advanced">
+            <file name="Ant.instance_hidden"/>
+            <file name="FormEditor.instance_hidden"/>
+            <file name="TermAdvancedOption.instance_hidden"/>
+            <file name="ToDo.instance_hidden"/>
+            <file name="org-netbeans-modules-bugtracking-util-BugtrackingOptions.instance_hidden"/>
+            <file name="org-netbeans-modules-debugger-jpda-ui-options-JavaDebuggerAdvancedOption.instance_hidden"/>
+            <file name="org-netbeans-modules-javascript-editing-options-JsOptionsController.instance_hidden"/>
+            <file name="org-netbeans-modules-versioning-util-VcsAdvancedOptions.instance_hidden"/>
+        </folder>
+        <file name="Editor.instance_hidden"/>
+        <file name="FontsAndColors.instance_hidden"/>
+        <file name="Keymaps.instance_hidden"/>
     </folder>
     <folder name="Toolbars">
         <folder name="Build">
