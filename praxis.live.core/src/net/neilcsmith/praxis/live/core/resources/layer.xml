@@ -144,6 +144,30 @@
         <file name="FontsAndColors.instance_hidden"/>
         <file name="Keymaps.instance_hidden"/>
     </folder>
+    <folder name="Templates">
+        <file name="AWTForms_hidden"/>
+        <file name="Beans_hidden"/>
+        <file name="Classes_hidden"/>
+        <file name="GUIForms_hidden"/>
+        <file name="Hibernate_hidden"/>
+        <file name="JUnit_hidden"/>
+        <file name="JWS_hidden"/>
+        <file name="Licenses_hidden"/>
+        <file name="OSGI_hidden"/>
+        <file name="Persistence_hidden"/>
+        <file name="Privileged_hidden"/>
+        <folder name="Project">
+            <file name="Import_hidden"/>
+            <file name="Maven2_hidden"/>
+            <file name="Samples_hidden"/>
+            <file name="Standard_hidden"/>
+        </folder>
+            <file name="Properties_hidden"/>
+        <file name="SaaSServices_hidden"/>
+        <file name="Services_hidden"/>
+        <file name="SpringFramework_hidden"/>
+            <file name="XML_hidden"/>
+    </folder>
     <folder name="Toolbars">
         <folder name="Build">
             <file name="org-netbeans-modules-debugger-ui-actions-DebugMainProjectAction.shadow_hidden"/>
