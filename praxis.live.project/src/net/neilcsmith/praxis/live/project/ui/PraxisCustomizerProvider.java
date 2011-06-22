@@ -112,10 +112,10 @@ public class PraxisCustomizerProvider implements CustomizerProvider,
             if (runFiles != null) {
                 props.setProjectFiles(ExecutionLevel.RUN, runFiles.getFiles());
             }
-            ProjectState state = project.getLookup().lookup(ProjectState.class);
-            if (state != null) {
-                state.markModified();
-            }
+//            ProjectState state = project.getLookup().lookup(ProjectState.class);
+//            if (state != null) {
+//                state.markModified();
+//            }
         }
 
     }

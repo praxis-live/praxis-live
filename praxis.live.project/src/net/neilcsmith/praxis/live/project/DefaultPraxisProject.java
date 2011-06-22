@@ -58,12 +58,17 @@ public class DefaultPraxisProject extends PraxisProject {
     private boolean built;
     private boolean run;
     private HelperListener helperListener;
+    private PropertiesListener propsListener;
+    private ProjectState state;
 
     DefaultPraxisProject(FileObject directory, FileObject projectFile, ProjectState state)
             throws IOException {
         this.directory = directory;
         this.projectFile = projectFile;
+        this.state = state;
         properties = parseProjectFile(projectFile);
+        propsListener = new PropertiesListener();
+        properties.addPropertyChangeListener(propsListener);
 
         Lookup base = Lookups.fixed(new Object[]{
                     this,
@@ -159,6 +164,15 @@ public class DefaultPraxisProject extends PraxisProject {
                     built = run = false;
                 }
             }
+        }
+
+    }
+
+    private class PropertiesListener implements PropertyChangeListener {
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            state.markModified();
         }
 
     }
