@@ -6,5 +6,5 @@
   <state type="separated" />
   <frame state="0"/>
   <empty-behavior permanent="true"/>
-  <bounds x="40" y="40" width="275" height="440" />
+  <bounds x="40" y="40" width="400" height="550" />
 </mode>
