@@ -8,5 +8,5 @@
     <module name="org.netbeans.spi.palette/0" spec="1.0" />
     <tc-id id="CommonPalette" />
     <state opened="true" />
-    <docking-status maximized-mode="docked" />
+    <!-- <docking-status maximized-mode="docked" /> -->
 </tc-ref>

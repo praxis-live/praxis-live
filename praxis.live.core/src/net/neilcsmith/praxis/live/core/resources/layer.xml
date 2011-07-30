@@ -39,10 +39,26 @@
         </folder>
     </folder>
     <folder name="Menu">
+        <folder name="BuildProject">
+            <file name="org-netbeans-modules-project-ui-actions-ActiveConfigAction.shadow_hidden"/>
+        </folder>
         <folder name="Edit">
+            <file name="Separator2.instance_hidden"/>
+            <file name="SeparatorAfterFindPrevious.instance_hidden"/>
             <file name="SeparatorAfterProjectsSearch.instance_hidden"/>
+            <file name="WhereUsedAction.shadow_hidden"/>
+            <file name="org-netbeans-modules-editor-MainMenuAction$FindNextAction.instance_hidden"/>
+            <file name="org-netbeans-modules-editor-MainMenuAction$FindPreviousAction.instance_hidden"/>
+            <file name="org-netbeans-modules-editor-MainMenuAction$FindSelectionAction.instance_hidden"/>
+            <file name="org-netbeans-modules-editor-MainMenuAction$SelectAllAction.instance_hidden"/>
+            <file name="org-netbeans-modules-editor-MainMenuAction$SelectIdentifierAction.instance_hidden"/>
             <file name="org-netbeans-modules-editor-MainMenuAction$StartMacroRecordingAction.instance_hidden"/>
             <file name="org-netbeans-modules-editor-MainMenuAction$StopMacroRecordingAction.instance_hidden"/>
+            <file name="org-netbeans-modules-search-FindInFilesAction.shadow_hidden"/>
+            <file name="org-netbeans-modules-search-ReplaceInFilesAction.shadow_hidden"/>
+            <file name="org-openide-actions-FindAction.shadow_hidden"/>
+            <file name="org-openide-actions-ReplaceAction.shadow_hidden"/>
+            <file name="sep-before-reposearch.instance_hidden"/>
         </folder>
         <folder name="File">
         </folder>
@@ -84,15 +100,16 @@
         <file name="Versioning_hidden"/>
         <folder name="View">
             <file name="org-netbeans-core-actions-HTMLViewAction.shadow_hidden"/>
+            <file name="org-netbeans-modules-project-ui-SyncEditorWithViewsAction.shadow_hidden"/>
         </folder>
         <folder name="Window">
             <file name="Debug_hidden">
                 <attr name="position" intvalue="100"/>
             </file>
-            <file name="Favorites.shadow">
+<!--            <file name="Favorites.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-favorites-View.instance"/>
                 <attr name="position" intvalue="350"/>
-            </file>
+            </file>-->
             <file name="KenaiAction.shadow_hidden">
                 <attr name="position" intvalue="300"/>
             </file>
@@ -162,16 +179,29 @@
             <file name="Samples_hidden"/>
             <file name="Standard_hidden"/>
         </folder>
-            <file name="Properties_hidden"/>
+        <file name="Properties_hidden"/>
         <file name="SaaSServices_hidden"/>
         <file name="Services_hidden"/>
         <file name="SpringFramework_hidden"/>
-            <file name="XML_hidden"/>
+        <file name="XML_hidden"/>
     </folder>
     <folder name="Toolbars">
         <folder name="Build">
             <file name="org-netbeans-modules-debugger-ui-actions-DebugMainProjectAction.shadow_hidden"/>
         </folder>
+        <folder name="QuickSearch">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="net.neilcsmith.praxis.live.core.api.Bundle"/>
+            <file name="org-netbeans-modules-quicksearch-QuickSearchAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-quicksearch-QuickSearchAction.instance"/>
+            </file>
+        </folder>
+    </folder>
+    
+    <folder name="Shortcuts">
+    
+        <file name="D-S.shadow">
+            <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-SaveAction.instance"/>
+	</file>
     </folder>
     <folder name="Windows2">
         <folder name="Groups">
@@ -202,20 +232,26 @@
                 <file name="services.wstcref_hidden"/>
                 <file name="projectTabLogical_tc.wstcref" url="projectTabLogical_tc.wstcref"/>
                 <file name="favorites.wstcref" url="favorites.wstcref"/>
-            </folder>
-            <file name="explorer.wsmode" url="explorer.wsmode"/>
+            </folder>        
             <folder name="navigator">
                 <file name="ComponentInspector.wstcref_hidden"/>
                 <file name="navigatorTC.wscref" url="navigatorTC.wstcref"/>
-            </folder>
-            <file name="navigator.wsmode" url="navigator.wsmode"/>
+            </folder>   
             <folder name="properties">
                 <file name="AnalyzeStackTopComponent.wstcref_hidden"/>
                 <file name="ChatTopComponent.wstcref_hidden"/>
                 <file name="properties.wstcref" url="properties.wstcref"/>
                 <file name="CommonPalette.wstcref" url="CommonPalette.wstcref"/>
             </folder>
-            <file name="properties.wsmode" url="properties.wsmode"/>
+            <file name="explorer.wsmode" url="explorer.wsmode">
+                <attr name="weight" intvalue="1000"/>
+            </file>
+            <file name="navigator.wsmode" url="navigator.wsmode">
+                <attr name="weight" intvalue="1000"/>
+            </file>
+            <file name="properties.wsmode" url="properties.wsmode">
+                <attr name="weight" intvalue="1000"/>
+            </file>
         </folder>
     </folder>
 </filesystem>
