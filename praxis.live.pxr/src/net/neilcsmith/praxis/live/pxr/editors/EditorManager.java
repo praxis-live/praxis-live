@@ -55,9 +55,7 @@ public class EditorManager {
             PraxisProperty property, ArgumentInfo info) {
         Class<?> type = info.getType();
         if (PString.class.isAssignableFrom(type)) {
-            if (info.getProperties().get(PString.KEY_ALLOWED_VALUES) != null) {
-                return new EnumEditor(property, info);
-            }
+            return findStringEditor(property, info);
         }
         if (PNumber.class.isAssignableFrom(type)) {
             return new NumberEditor(property, info);
@@ -74,6 +72,22 @@ public class EditorManager {
 
         return new ArgumentEditor();
 
+    }
+
+    private static PraxisPropertyEditor findStringEditor(PraxisProperty property,
+            ArgumentInfo info) {
+        if (info.getProperties().get(PString.KEY_ALLOWED_VALUES) != null) {
+            return new EnumEditor(property, info);
+        }
+        Argument mime = info.getProperties().get(PString.KEY_MIME_TYPE);
+        if (mime != null) {
+              String mimetype = mime.toString();
+              if ("text/x-praxis-java".equals(mimetype) ||
+                      "text/x-praxis-script".equals(mimetype)) {
+                  return new CodeEditor(property, info, mimetype);
+              }
+        }
+        return new StringEditor();
     }
 
     public static boolean hasAdditionalEditors(
@@ -109,9 +123,9 @@ public class EditorManager {
             PraxisProperty<?> property, ArgumentInfo info) {
         Class<? extends Argument> type = info.getType();
         if (PArray.class.isAssignableFrom(type)) {
-            return new PraxisPropertyEditor[] {
-                new FileListEditor(property, info)
-            };
+            return new PraxisPropertyEditor[]{
+                        new FileListEditor(property, info)
+                    };
         }
         return new PraxisPropertyEditor[0];
     }
