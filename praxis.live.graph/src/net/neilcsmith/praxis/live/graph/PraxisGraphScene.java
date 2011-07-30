@@ -76,6 +76,7 @@
  */
 package net.neilcsmith.praxis.live.graph;
 
+import java.awt.event.MouseEvent;
 import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.action.ConnectProvider;
 import org.netbeans.api.visual.action.PopupMenuProvider;
@@ -147,8 +148,9 @@ public class PraxisGraphScene<N> extends GraphPinScene<N, EdgeID<N>, PinID<N>> {
         
 
         if (connectProvider != null) {
-            connectAction = ActionFactory.createExtendedConnectAction(
-                    new PraxisConnectDecorator(), upperLayer, connectProvider);
+//            connectAction = ActionFactory.createExtendedConnectAction(
+//                    new PraxisConnectDecorator(), upperLayer, connectProvider, MouseEvent.SHIFT_MASK);
+            connectAction = ActionFactory.createConnectAction(new PraxisConnectDecorator(), connectionLayer, connectProvider);
         }
         if (popupProvider != null) {
             menuAction = ActionFactory.createPopupMenuAction(popupProvider);
