@@ -22,7 +22,11 @@
 package net.neilcsmith.praxis.live.pxr.graph;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Font;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.awt.Point;
 import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
@@ -43,10 +47,13 @@ import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.InputMap;
 import javax.swing.JComponent;
+import javax.swing.JLayeredPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.KeyStroke;
+import javax.swing.OverlayLayout;
+import javax.swing.border.LineBorder;
 import net.neilcsmith.praxis.core.CallArguments;
 import net.neilcsmith.praxis.core.ComponentType;
 import net.neilcsmith.praxis.core.ControlPort;
@@ -103,7 +110,7 @@ public class GraphEditor extends RootEditor {
     private final Map<String, Point> pointMap;
 //    private final Map<EdgeID<String>, Connection> edgeToConnection;
     private Action deleteAction;
-    private JPanel panel;
+    private JComponent panel;
     private PraxisGraphScene<String> scene;
     private ExplorerManager manager;
     private ContainerProxy container;
@@ -131,8 +138,8 @@ public class GraphEditor extends RootEditor {
 
         lookup = new ProxyLookup(ExplorerUtils.createLookup(manager, new ActionMap()),
                 Lookups.fixed(
-                GraphNavigator.HINT,
-                new NavigatorBridge(),
+                /*GraphNavigator.HINT,
+                new NavigatorBridge(),*/
                 Components.getPalette("core", category)));
         scene.addObjectSceneListener(new SelectionListener(),
                 ObjectSceneEventType.OBJECT_SELECTION_CHANGED);
@@ -174,13 +181,42 @@ public class GraphEditor extends RootEditor {
 
     @Override
     public JComponent getEditorComponent() {
+//        if (panel == null) {
+//            panel = new JPanel(new BorderLayout());
+//            JScrollPane scroll = new JScrollPane(
+//                    scene.createView(),
+//                    JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
+//                    JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
+//            panel.add(scroll, BorderLayout.CENTER);
+//        }
+//        return panel;
         if (panel == null) {
-            panel = new JPanel(new BorderLayout());
+            JPanel viewPanel = new JPanel(new BorderLayout());
             JScrollPane scroll = new JScrollPane(
                     scene.createView(),
                     JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
                     JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
-            panel.add(scroll, BorderLayout.CENTER);
+            viewPanel.add(scroll, BorderLayout.CENTER);
+            
+            JPanel satellitePanel = new JPanel();
+            satellitePanel.setLayout(new GridBagLayout());
+            GridBagConstraints gbc = new GridBagConstraints();
+            gbc.weightx = 1;
+            gbc.weighty = 1;
+            gbc.insets = new Insets(0,0,25,25);
+            gbc.anchor = GridBagConstraints.SOUTHEAST;
+            JComponent view = scene.createSatelliteView();
+            JPanel holder = new JPanel(new BorderLayout());
+            holder.setBorder(new LineBorder(Color.LIGHT_GRAY, 1));
+            holder.add(view);
+            satellitePanel.add(holder, gbc);
+            satellitePanel.setOpaque(false);
+            
+            panel = new JLayeredPane();
+            panel.setLayout(new OverlayLayout(panel));
+            panel.add(viewPanel, JLayeredPane.DEFAULT_LAYER);
+            panel.add(satellitePanel, JLayeredPane.PALETTE_LAYER);
+                  
         }
         return panel;
     }
