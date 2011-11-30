@@ -215,7 +215,18 @@ public class RootProxy {
             }
         }
 
+        @Override
+        public Action getPreferredAction() {
+            if (startAction.isEnabled()) {
+                return startAction;
+            } else if (stopAction.isEnabled()) {
+                return stopAction;
+            } else {
+                return null;
+            }
+        }
 
+        
 
 
         private class StartableAction extends AbstractAction {
