@@ -21,6 +21,7 @@
  */
 package net.neilcsmith.praxis.live.pxr.gui;
 
+import java.awt.Dimension;
 import net.neilcsmith.praxis.core.Lookup;
 import java.awt.LayoutManager;
 import java.awt.event.ContainerEvent;
@@ -37,7 +38,6 @@ import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.Timer;
 import net.miginfocom.swing.MigLayout;
 import net.neilcsmith.praxis.core.ControlAddress;
 import net.neilcsmith.praxis.core.IllegalRootStateException;
@@ -56,12 +56,10 @@ import net.neilcsmith.praxis.impl.InstanceLookup;
  */
 public class DockableGuiRoot extends AbstractSwingRoot {
 
-    private final Object lock = new Object();
     private JFrame frame;
     private JPanel container;
     private MigLayout layout;
     private LayoutChangeListener layoutListener;
-    private Timer timer;
     private Map<ControlAddress, DefaultBindingControl> bindingCache;
     private Bindings bindings;
     private Context context;
@@ -75,7 +73,8 @@ public class DockableGuiRoot extends AbstractSwingRoot {
     protected void setup() {
         frame = new JFrame();
         frame.setTitle("PraxisLIVE: " + getAddress());
-        frame.setSize(150, 50);
+//        frame.setSize(150, 50);
+        frame.setMinimumSize(new Dimension(150,50));
         frame.addWindowListener(new WindowAdapter() {
 
             @Override
