@@ -38,8 +38,17 @@ public abstract class RootRegistry {
 
     public abstract void removePropertyChangeListener(PropertyChangeListener listener);
 
-    protected abstract RootProxy[] getRoots();
+    public abstract RootProxy[] getRoots();
 
+    public RootProxy getRootByID(String id) {
+        for (RootProxy root : getRoots()) {
+            if (root.getAddress().getRootID().equals(id)) {
+                return root;
+            }
+        }
+        return null;
+    }
+    
     public RootProxy findRootForFile(FileObject file) {
         for (RootProxy root : getRoots()) {
             if (root.getSourceFile().equals(file)) {

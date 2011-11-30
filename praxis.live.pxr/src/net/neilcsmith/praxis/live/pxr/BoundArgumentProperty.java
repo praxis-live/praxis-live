@@ -51,7 +51,7 @@ public final class BoundArgumentProperty extends ArgumentProperty
     private final ControlInfo info;
     private final boolean writable;
 
-    private PraxisPropertyEditor editor;
+    private DelegatingArgumentEditor editor;
     private Argument value;
     private Argument def;
 
@@ -116,6 +116,9 @@ public final class BoundArgumentProperty extends ArgumentProperty
 
     @Override
     public void restoreDefaultValue() {
+        if (editor != null) {
+            editor.restoreDefaultEditor();
+        }
         setValue(def);
     }
 
@@ -178,10 +181,10 @@ public final class BoundArgumentProperty extends ArgumentProperty
         }
         boolean writable;
         switch (info.getType()) {
-            case RW_Property:
+            case Property:
                 writable = true;
                 break;
-            case RO_Property:
+            case ReadOnlyProperty:
                 writable = false;
                 break;
             default:

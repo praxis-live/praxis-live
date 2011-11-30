@@ -19,29 +19,24 @@
  * Please visit http://neilcsmith.net if you need additional information or
  * have any questions.
  */
+package net.neilcsmith.praxis.live.pxr;
 
-package net.neilcsmith.praxis.live.pxr.editors;
-
-import net.neilcsmith.praxis.core.info.ArgumentInfo;
-import net.neilcsmith.praxis.live.pxr.api.PraxisProperty;
+import net.neilcsmith.praxis.live.pxr.api.RootProxy;
 
 /**
  *
- * @author Neil C Smith (http://neilcsmith.net)
+ * @author Neil C Smith <http://neilcsmith.net>
  */
-public class ArgumentEditor extends StringEditor {
+class PXRRootContext {
     
-    public ArgumentEditor(PraxisProperty<?> property, ArgumentInfo info) {
-        super(property, info);
+    private RootProxy root;
+
+    PXRRootContext(RootProxy root) {
+        this.root = root;
     }
-
-    @Override
-    public String getDisplayName() {
-        return "Argument Editor";
+    
+    RootProxy getRoot() {
+        return root;
     }
-
-
-
-
-
+    
 }

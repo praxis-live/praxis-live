@@ -41,12 +41,17 @@ class PXRWizardPanel1 implements WizardDescriptor.Panel {
 
     private String id;
     private File file;
-    private ComponentType type;
+    ComponentType type;
     private boolean build;
     private boolean autostart;
 
     PXRWizardPanel1() {
         cs = new ChangeSupport(this);
+    }
+    
+    PXRWizardPanel1(ComponentType type) {
+        this();
+        this.type = type;
     }
 
 

@@ -21,10 +21,13 @@
  */
 package net.neilcsmith.praxis.live.pxr;
 
+import java.awt.Image;
 import java.io.IOException;
+import javax.swing.SwingUtilities;
+import net.neilcsmith.praxis.core.ComponentType;
+import net.neilcsmith.praxis.live.components.api.ComponentIconProvider;
 import net.neilcsmith.praxis.live.pxr.api.RootProxy;
 import net.neilcsmith.praxis.live.pxr.api.RootRegistry;
-import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.cookies.CloseCookie;
@@ -39,27 +42,112 @@ import org.openide.loaders.OpenSupport;
 import org.openide.nodes.CookieSet;
 import org.openide.nodes.Node;
 import org.openide.nodes.Children;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.RequestProcessor;
 import org.openide.windows.CloneableTopComponent;
 
 public class PXRDataObject extends MultiDataObject {
+
+    public final static String KEY_ATTR_ROOT_TYPE = "rootType";
+    private final static RequestProcessor RP = new RequestProcessor();
+    private Image icon;
+    private DataNodeImpl node;
+    private ComponentType type;
 
     public PXRDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException, IOException {
         super(pf, loader);
         CookieSet cookies = getCookieSet();
         cookies.add(new EditorSupport());
         cookies.add(new SaveSupport());
+        initType(pf);
     }
 
     @Override
     protected Node createNodeDelegate() {
-        return new DataNode(this, Children.LEAF, getLookup());
+        node = new DataNodeImpl(this, getLookup());
+        return node;
     }
 
     @Override
     public Lookup getLookup() {
         return getCookieSet().getLookup();
     }
+
+    void setType(ComponentType type) {
+        if (this.type == type) {
+            return;
+        }
+        this.type = type;
+        if (type != null) {
+            icon = findIcon(type);
+        } else {
+            icon = null;
+        }
+        if (node != null) {
+            node.updateType();
+        }
+    }
+
+    ComponentType getType() {
+        return type;
+    }
+
+    private Image findIcon(ComponentType type) {
+        try {
+            for (ComponentIconProvider provider : Lookup.getDefault().lookupAll(ComponentIconProvider.class)) {
+                Image img = provider.getIcon(type);
+                if (img != null) {
+                    return img;
+                }
+            }
+        } catch (Exception ex) {
+            //fall through
+        }
+        return null;
+    }
+    
+    private void initType(final FileObject file) {
+        Object attr = file.getAttribute(KEY_ATTR_ROOT_TYPE);
+        if (attr instanceof String) {
+            try {
+                ComponentType type = ComponentType.valueOf(attr.toString());
+                setType(type);
+                return;
+            } catch (Exception ex) {
+                // fall through
+            }
+        }
+        
+        // no type attribute found
+        RP.execute(new Runnable() {
+
+            @Override
+            public void run() {
+                try {
+                    String script = file.asText();
+                    final PXRParser.RootElement root = PXRParser.parse(script);
+                    SwingUtilities.invokeLater(new Runnable() {
+
+                        @Override
+                        public void run() {
+                            setType(root.type);
+                            try {
+                                file.setAttribute(KEY_ATTR_ROOT_TYPE, root.type.toString());
+                            } catch (IOException ex) {
+                                // do nothing
+                            }
+                        }
+                    });
+                } catch (Exception ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        });
+        
+        
+    }
+    
 
     private class EditorSupport extends OpenSupport implements OpenCookie, CloseCookie {
 
@@ -71,7 +159,6 @@ public class PXRDataObject extends MultiDataObject {
         protected CloneableTopComponent createCloneableTopComponent() {
             return new RootEditorTopComponent(PXRDataObject.this);
         }
-
     }
 
     private class SaveSupport implements SaveCookie {
@@ -86,7 +173,31 @@ public class PXRDataObject extends MultiDataObject {
                 DialogDisplayer.getDefault().notify(err);
             }
         }
-
     }
 
+    private static class DataNodeImpl extends DataNode {
+
+        PXRDataObject dob;
+
+        private DataNodeImpl(PXRDataObject dob, Lookup lookup) {
+            super(dob, Children.LEAF, lookup);
+            this.dob = dob;
+            // add property change listener to dob
+        }
+
+        private void updateType() {
+            fireIconChange();
+        }
+
+        @Override
+        public Image getIcon(int type) {
+            Image ret = dob.icon;
+            if (ret == null) {
+                return super.getIcon(type);
+            } else {
+                return ret;
+            }
+
+        }
+    }
 }

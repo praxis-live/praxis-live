@@ -22,7 +22,15 @@
 
 package net.neilcsmith.praxis.live.pxr.editors;
 
+import java.awt.Color;
 import java.awt.Component;
+import java.awt.Font;
+import java.awt.FontMetrics;
+import java.awt.Graphics;
+import java.awt.Rectangle;
+import net.neilcsmith.praxis.core.info.ArgumentInfo;
+import net.neilcsmith.praxis.live.pxr.api.PraxisProperty;
+import org.openide.awt.HtmlRenderer;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
 
@@ -34,7 +42,38 @@ public class StringEditor extends PraxisPropertyEditorSupport
         implements ExPropertyEditor {
 
     private PropertyEnv env;
+    private PraxisProperty<?> property;
+    private boolean emptyIsDefault;
+    
+    public StringEditor(PraxisProperty<?> property, ArgumentInfo info) {
+        if (property == null) {
+            throw new NullPointerException();
+        }
+        this.property = property;
+        emptyIsDefault = info.getProperties().getBoolean(ArgumentInfo.KEY_EMPTY_IS_DEFAULT, false);
+    }
 
+    @Override
+    public boolean isPaintable() {
+        if (emptyIsDefault && getAsText().isEmpty()) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    @Override
+    public void paintValue(Graphics g, Rectangle r) {
+        Font font = g.getFont ();
+        FontMetrics fm = g.getFontMetrics (font);
+        HtmlRenderer.renderHTML("<font color=\"!textInactiveText\">[default]</font>",
+                g, r.x, r.y + (r.height - fm.getHeight ()) / 2 + fm.getAscent(),
+                r.width, r.height, g.getFont(), g.getColor(), 
+                HtmlRenderer.STYLE_TRUNCATE, true);
+    }
+
+    
+    
     @Override
     public String getDisplayName() {
         return "String Editor";

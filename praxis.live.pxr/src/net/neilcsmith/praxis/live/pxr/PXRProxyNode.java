@@ -48,7 +48,7 @@ class PXRProxyNode extends AbstractNode {
 
     @Override
     public Action[] getActions(boolean context) {
-        return new Action[0];
+        return component.getActions();
     }
 
     @Override

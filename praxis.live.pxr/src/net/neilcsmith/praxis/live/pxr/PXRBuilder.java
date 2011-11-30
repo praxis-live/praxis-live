@@ -21,8 +21,8 @@
  */
 package net.neilcsmith.praxis.live.pxr;
 
+import java.util.ArrayList;
 import net.neilcsmith.praxis.live.pxr.api.PraxisProperty;
-import java.lang.reflect.InvocationTargetException;
 import net.neilcsmith.praxis.core.ComponentType;
 import net.neilcsmith.praxis.core.CallArguments;
 import net.neilcsmith.praxis.live.core.api.Callback;
@@ -34,11 +34,10 @@ import java.util.logging.Logger;
 import net.neilcsmith.praxis.core.ComponentAddress;
 import net.neilcsmith.praxis.core.info.ComponentInfo;
 import net.neilcsmith.praxis.live.project.api.PraxisProject;
-import net.neilcsmith.praxis.live.pxr.api.ContainerProxy;
 import static net.neilcsmith.praxis.live.pxr.PXRParser.*;
 import net.neilcsmith.praxis.live.pxr.api.Connection;
+import net.neilcsmith.praxis.live.pxr.api.RootRegistry;
 import org.netbeans.api.project.Project;
-import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
 /**
@@ -53,24 +52,28 @@ class PXRBuilder {
     private final RootElement root;
     private Iterator<Element> iterator;
     private Callback processCallback;
-//    private Callback elementCallback;
-    private PXRComponentProxy active;
     private PXRRootProxy rootProxy;
     private boolean processed;
+    private List<String> errors;
 
     private PXRBuilder(Project project, PXRDataObject source, RootElement root) {
         this.project = project;
         this.source = source;
         this.root = root;
+        errors = new ArrayList<String>();
     }
 
-    public void process(Callback callback) {
+    void process(Callback callback) {
         if (callback == null) {
             throw new NullPointerException();
         }
         this.processCallback = callback;
         buildElementIterator();
         process();
+    }
+    
+    List<String> getErrors() {
+        return errors;
     }
 
     private void process() {
@@ -83,7 +86,12 @@ class PXRBuilder {
         if (!processed && !iterator.hasNext()) {
             processed = true;
             DefaultRootRegistry.getDefault().register(rootProxy);
-            processCallback.onReturn(CallArguments.EMPTY);
+            if (errors.isEmpty()) {
+                processCallback.onReturn(CallArguments.EMPTY);
+            } else {
+                processCallback.onError(CallArguments.EMPTY);
+            }
+            
         }
     }
 
@@ -108,37 +116,11 @@ class PXRBuilder {
         processCallback.onError(args);
     }
 
-    private boolean processProperty(PropertyElement prop) {
-//        LOG.fine("Processing Property Element : " + prop.address);
-//        try {
-//
-//            PXRHelper.getDefault().send(prop.address, CallArguments.create(prop.args), new Callback() {
-//
-//                @Override
-//                public void onReturn(CallArguments args) {
-//                    process();
-//                }
-//
-//                @Override
-//                public void onError(CallArguments args) {
-//                    processError(args);
-//                }
-//            });
-//        } catch (Exception ex) {
-//            Exceptions.printStackTrace(ex);
-//        }
-//        return false;
-//        LOG.fine("Processing Property Element : " + prop.address);
-//        PXRComponentProxy cmp = findComponent(prop.address.getComponentAddress());
-//        if (cmp == null) {
-//            LOG.warning("Component " + prop.address.getComponentAddress() + " not found.");
-//            return true;
-//        }
-//        PraxisProperty<?> p = cmp.getProperty(prop.address.getID());
+    private boolean processProperty(final PropertyElement prop) {
         LOG.fine("Processing Property Element : " + prop.property);
         PXRComponentProxy cmp = findComponent(prop.component.address);
         if (cmp == null) {
-            LOG.warning("Component " + prop.component.address + " not found.");
+            propertyError(prop, CallArguments.EMPTY);            
             return true;
         }
         PraxisProperty<?> p = cmp.getProperty(prop.property);
@@ -153,15 +135,22 @@ class PXRBuilder {
 
                     @Override
                     public void onError(CallArguments args) {
-                        processError(args);
+                        propertyError(prop, args);
+                        process();
                     }
                 });
+                return false;
             } catch (Exception ex) {
                 LOG.warning("Couldn't set property " + prop.property);
-                return true;
             }
         }
-        return false;
+        propertyError(prop, CallArguments.EMPTY);
+        return true;
+    }
+
+    private void propertyError(PropertyElement prop, CallArguments args) {
+        String err = "Error setting property " + prop.component.address + "." + prop.property;
+        errors.add(err);
     }
 
     private boolean processAttribute(AttributeElement attr) {
@@ -172,26 +161,9 @@ class PXRBuilder {
         return true;
     }
 
-    private boolean processConnection(ConnectionElement con) {
-//        ComponentAddress address = cmp.address;
+    private boolean processConnection(final ConnectionElement con) {
         LOG.fine("Processing Connection Element : " + con.port1 + " -> " + con.port2);
         try {
-//            PXRComponentProxy parent = findComponent(con.port1.getComponentAddress().getParentAddress());
-//            if (parent instanceof PXRContainerProxy) {
-//                ((PXRContainerProxy) parent).connect(
-//                        new ContainerProxy.Connection(con.port1, con.port2),
-//                        new Callback() {
-//
-//                            @Override
-//                            public void onReturn(CallArguments args) {
-//                                process();
-//                            }
-//
-//                            @Override
-//                            public void onError(CallArguments args) {
-//                                processError(args);
-//                            }
-//                        });
             PXRComponentProxy parent = findComponent(con.container.address);
             if (parent instanceof PXRContainerProxy) {
                 ((PXRContainerProxy) parent).connect(
@@ -205,18 +177,24 @@ class PXRBuilder {
 
                             @Override
                             public void onError(CallArguments args) {
-                                processError(args);
+                                connectionError(con, args);
+                                process();
                             }
                         });
-
-            } else {
-                processError(CallArguments.EMPTY);
+                return false;
             }
         } catch (Exception ex) {
             Exceptions.printStackTrace(ex);
-            processError(CallArguments.EMPTY);
         }
-        return false;
+        connectionError(con, CallArguments.EMPTY);
+        return true;
+    }
+
+    private void connectionError(ConnectionElement connection, CallArguments args) {
+        String p1 = connection.container.address + "/" + connection.component1 + "!" + connection.port1;
+        String p2 = connection.container.address + "/" + connection.component2 + "!" + connection.port2;
+        String err = "Error creating connection " + p1 + " -> " + p2;
+        errors.add(err);
     }
 
     private boolean processRoot(RootElement root) {
@@ -254,7 +232,7 @@ class PXRBuilder {
         return false;
     }
 
-    private boolean processComponent(ComponentElement cmp) {
+    private boolean processComponent(final ComponentElement cmp) {
         LOG.fine("Processing Component Element : " + cmp.address + ", Type : " + cmp.type);
         try {
             ComponentAddress address = cmp.address;
@@ -270,18 +248,22 @@ class PXRBuilder {
 
                     @Override
                     public void onError(CallArguments args) {
-                        processError(args);
+                        componentError(cmp, args);
+                        process();
                     }
                 });
-
-            } else {
-                processError(CallArguments.EMPTY);
+                return false;
             }
         } catch (Exception ex) {
             Exceptions.printStackTrace(ex);
-            processError(CallArguments.EMPTY);
         }
-        return false;
+        componentError(cmp, CallArguments.EMPTY);
+        return true;
+    }
+    
+    private void componentError(ComponentElement cmp, CallArguments args) {
+        String err = "Error creating component " + cmp.address;
+        errors.add(err);
     }
 
     private PXRComponentProxy findComponent(ComponentAddress address) {

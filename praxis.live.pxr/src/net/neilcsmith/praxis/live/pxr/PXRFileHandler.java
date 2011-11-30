@@ -21,13 +21,17 @@
  */
 package net.neilcsmith.praxis.live.pxr;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import javax.swing.SwingUtilities;
 import net.neilcsmith.praxis.core.CallArguments;
 import net.neilcsmith.praxis.live.core.api.Callback;
 import net.neilcsmith.praxis.live.project.api.ExecutionLevel;
 import net.neilcsmith.praxis.live.project.api.FileHandler;
 import net.neilcsmith.praxis.live.project.api.PraxisProject;
-import org.netbeans.api.project.Project;
+import net.neilcsmith.praxis.live.pxr.api.RootProxy;
+import net.neilcsmith.praxis.live.pxr.api.RootRegistry;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -45,6 +49,7 @@ public class PXRFileHandler extends FileHandler {
     private PraxisProject project;
     private PXRDataObject source;
     private Callback callback;
+    private List<String> errors;
 
     public PXRFileHandler(PraxisProject project, PXRDataObject source) {
         if (project == null || source == null) {
@@ -60,6 +65,13 @@ public class PXRFileHandler extends FileHandler {
             throw new NullPointerException();
         }
         this.callback = callback;
+        
+        RootProxy root = RootRegistry.getDefault().findRootForFile(source.getPrimaryFile());
+        if (root != null) {
+            callback.onReturn(CallArguments.EMPTY);
+            return;
+        }
+             
         RP.execute(new Runnable() {
 
             @Override
@@ -88,11 +100,34 @@ public class PXRFileHandler extends FileHandler {
         });
     }
 
-    private void build(PXRParser.RootElement root) {
-        PXRBuilder.getBuilder(project, source, root).process(callback);
+    @Override
+    public List<String> getErrors() {
+        if (errors == null || errors.isEmpty()) {
+            return Collections.EMPTY_LIST;
+        } else {
+            return new ArrayList<String>(errors);
+        }
     }
 
-    @ServiceProvider(service=FileHandler.Provider.class)
+    private void build(PXRParser.RootElement root) {
+        final PXRBuilder builder = PXRBuilder.getBuilder(project, source, root);
+        builder.process(new Callback() {
+
+            @Override
+            public void onReturn(CallArguments args) {
+                callback.onReturn(args);
+            }
+
+            @Override
+            public void onError(CallArguments args) {
+                errors = builder.getErrors();
+                callback.onError(args);
+            
+            }
+        });
+    }
+
+    @ServiceProvider(service = FileHandler.Provider.class)
     public static class Provider implements FileHandler.Provider {
 
         @Override
@@ -102,11 +137,11 @@ public class PXRFileHandler extends FileHandler {
                     DataObject dob = DataObject.find(file);
                     if (dob instanceof PXRDataObject) {
                         return new PXRFileHandler(project, (PXRDataObject) dob);
-                    }                    
+                    }
                 } catch (DataObjectNotFoundException ex) {
                     // fall through
                 }
-                
+
             }
             return null;
 

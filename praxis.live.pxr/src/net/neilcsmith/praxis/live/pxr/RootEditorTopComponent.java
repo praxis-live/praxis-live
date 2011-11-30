@@ -22,19 +22,29 @@
 package net.neilcsmith.praxis.live.pxr;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.EventQueue;
 import java.beans.BeanInfo;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import javax.swing.Action;
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JToolBar;
+import javax.swing.border.EmptyBorder;
 import net.neilcsmith.praxis.live.pxr.PXRParser.*;
 import net.neilcsmith.praxis.live.pxr.api.RootEditor;
 import net.neilcsmith.praxis.live.pxr.api.RootProxy;
 import net.neilcsmith.praxis.live.pxr.api.RootRegistry;
+import org.openide.awt.Actions;
+import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
+import org.openide.util.actions.Presenter;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 import org.openide.windows.CloneableTopComponent;
@@ -45,12 +55,14 @@ import org.openide.windows.CloneableTopComponent;
  */
 public class RootEditorTopComponent extends CloneableTopComponent {
 
-    
+    private final static Action START_STOP = new StartableRootAction();
     private PXRDataObject dob;
     private RootEditor editor;
     private JComponent editorPanel;
     private EditorLookup lookup;
     private RootProxy root;
+    private PropertyChangeListener registryListener;
+    private JToolBar toolBar;
 
     public RootEditorTopComponent(PXRDataObject dob) {
         this.setDisplayName(dob.getName());
@@ -59,68 +71,118 @@ public class RootEditorTopComponent extends CloneableTopComponent {
         lookup = new EditorLookup(Lookups.singleton(dob), dob.getLookup());
         associateLookup(lookup);
         setLayout(new BorderLayout());
-        root = RootRegistry.getDefault().findRootForFile(dob.getPrimaryFile());
-        installEditor(root);
-        RootRegistry.getDefault().addPropertyChangeListener(new PropertyChangeListener() {
+        toolBar = new ToolBar();
+        add(toolBar, BorderLayout.NORTH);
+        registryListener = new PropertyChangeListener() {
 
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 checkRoot();
             }
-        });
-        checkRoot();
+        };
+    }
+
+    @Override
+    protected void componentOpened() {
+        assert EventQueue.isDispatchThread();
+        root = RootRegistry.getDefault().findRootForFile(dob.getPrimaryFile());
+        install(root);
+        RootRegistry.getDefault().addPropertyChangeListener(registryListener);
     }
 
     @Override
     protected void componentShowing() {
-        editor.componentShowing();
+        if (editor != null) {
+            editor.componentShowing();
+        }
     }
 
     @Override
     protected void componentActivated() {
-        editor.componentActivated();
+        if (editor != null) {
+            editor.componentActivated();
+        }
     }
 
     @Override
     protected void componentDeactivated() {
-        editor.componentDeactivated();
+        if (editor != null) {
+            editor.componentDeactivated();
+        }
     }
 
     @Override
     protected void componentHidden() {
-        editor.componentHidden();
+        if (editor != null) {
+            editor.componentHidden();
+        }
     }
 
+    @Override
+    protected void componentClosed() {
+        RootRegistry.getDefault().removePropertyChangeListener(registryListener);
+        uninstall(root);
+    }
 
-
+    @Override
+    protected CloneableTopComponent createClonedObject() {
+        return new RootEditorTopComponent(dob);
+    }
 
     private void checkRoot() {
         RootProxy root = RootRegistry.getDefault().findRootForFile(dob.getPrimaryFile());
         if (root == this.root) {
             return;
         }
-        uninstallEditor();
+        uninstall(this.root);
         this.root = root;
-        installEditor(root);
+        install(root);
     }
 
-    private void installEditor(RootProxy root) {
+    private void install(RootProxy root) {
         if (root == null) {
             editor = new BlankEditor();
+            lookup.setAdditional();
+            initToolbar(new Action[0]);
         } else {
-//            editor = new DebugRootEditor(root);
             editor = findEditor(root);
+            lookup.setAdditional(
+                    Lookups.singleton(new PXRRootContext(root)),
+                    editor.getLookup());
+            Action[] actions = new Action[]{START_STOP};
+            initToolbar(actions);
         }
         editorPanel = editor.getEditorComponent();
         add(editorPanel);
-        lookup.setEditor(editor);
+
     }
 
-    private void uninstallEditor() {
+    private void uninstall(RootProxy root) {
         remove(editorPanel);
         editorPanel = null;
         editor.dispose();
         editor = null;
+    }
+
+    private void initToolbar(Action[] actions) {
+        toolBar.removeAll();
+        Lookup context = getLookup();
+        for (Action action : actions) {
+            if (action instanceof ContextAwareAction) {
+                action = ((ContextAwareAction) action).createContextAwareInstance(context);
+            }
+            Component c;
+            if (action instanceof Presenter.Toolbar) {
+                c = ((Presenter.Toolbar) action).getToolbarPresenter();
+            } else if (action == null) {
+                c = new JToolBar.Separator();
+            } else {
+                JButton button = new JButton();
+                Actions.connect(button, action);
+                c = button;
+            }
+            toolBar.add(c);
+        }
     }
 
     @Override
@@ -138,8 +200,6 @@ public class RootEditorTopComponent extends CloneableTopComponent {
         return new DebugRootEditor(root);
     }
 
-
-
     private class BlankEditor extends RootEditor {
 
         @Override
@@ -147,48 +207,40 @@ public class RootEditorTopComponent extends CloneableTopComponent {
             return Lookups.singleton(dob.getNodeDelegate());
         }
 
-
         @Override
         public JComponent getEditorComponent() {
             return new JLabel("<Build " + dob.getName() + " to edit>", JLabel.CENTER);
         }
-        
     }
-
 
     private class EditorLookup extends ProxyLookup {
 
-        private Lookup current;
+        private Lookup[] permanent;
 
-        private EditorLookup(Lookup ... lookups) {
+        private EditorLookup(Lookup... lookups) {
             super(lookups);
+            this.permanent = lookups;
         }
 
-        private void setEditor(RootEditor editor) {
-            Lookup[] lkps = getLookups();
-            List<Lookup> lst = new ArrayList<Lookup>(Arrays.asList(lkps));
-            if (current != null) {
-                lst.remove(current);
+        private void setAdditional(Lookup... lookups) {
+            if (lookups == null || lookups.length == 0) {
+                setLookups(permanent);
+            } else {
+                List<Lookup> lst = new ArrayList<Lookup>();
+                lst.addAll(Arrays.asList(permanent));
+                lst.addAll(Arrays.asList(lookups));
+                setLookups(lst.toArray(new Lookup[lst.size()]));
             }
-            current = editor.getLookup();
-            if (current != null) {
-                lst.add(current);
-            }
-            setLookups(lst.toArray(lkps));
         }
-
     }
 
+    private class ToolBar extends JToolBar {
 
-
-
-
-
-
-    @Override
-    protected CloneableTopComponent createClonedObject() {
-        return new RootEditorTopComponent(dob);
+        ToolBar() {
+            super("editorToolbar");
+            setFloatable(false);
+            setRollover(true);
+            setBorder(BorderFactory.createEtchedBorder());
+        }
     }
-
-    
 }

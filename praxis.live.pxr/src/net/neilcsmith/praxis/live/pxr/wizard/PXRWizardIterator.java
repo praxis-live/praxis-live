@@ -60,6 +60,7 @@ public final class PXRWizardIterator implements WizardDescriptor.InstantiatingIt
     private int index;
     private WizardDescriptor wizard;
     private WizardDescriptor.Panel[] panels;
+    private ComponentType rootType;
 
     /**
      * Initialize panels representing individual wizard's steps and sets
@@ -68,7 +69,7 @@ public final class PXRWizardIterator implements WizardDescriptor.InstantiatingIt
     private WizardDescriptor.Panel[] getPanels() {
         if (panels == null) {
             panels = new WizardDescriptor.Panel[] {
-                new PXRWizardPanel1()
+                new PXRWizardPanel1(rootType)
             };
 
             // @TODO - this seems to break Templates.getTargetFolder() ???
@@ -243,6 +244,15 @@ public final class PXRWizardIterator implements WizardDescriptor.InstantiatingIt
     @Override
     public void initialize(WizardDescriptor wizard) {
         this.wizard = wizard;
+        FileObject template = Templates.getTemplate(wizard);
+        Object typeAttr = template.getAttribute("rootType");
+        if (typeAttr != null) {
+            try {
+                rootType = ComponentType.create(typeAttr.toString());
+            } catch (Exception ex) {
+                // do nothing
+            }
+        }      
     }
 
     @Override

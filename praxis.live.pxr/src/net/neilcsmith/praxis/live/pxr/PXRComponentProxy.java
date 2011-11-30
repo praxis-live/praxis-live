@@ -22,6 +22,7 @@
 package net.neilcsmith.praxis.live.pxr;
 
 import java.awt.EventQueue;
+import java.awt.event.ActionEvent;
 import net.neilcsmith.praxis.live.pxr.api.PraxisProperty;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -32,7 +33,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
-import net.neilcsmith.praxis.core.Argument;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
 import net.neilcsmith.praxis.core.CallArguments;
 import net.neilcsmith.praxis.core.ComponentAddress;
 import net.neilcsmith.praxis.core.ComponentType;
@@ -41,12 +43,11 @@ import net.neilcsmith.praxis.core.info.ArgumentInfo;
 import net.neilcsmith.praxis.core.info.ComponentInfo;
 import net.neilcsmith.praxis.core.info.ControlInfo;
 import net.neilcsmith.praxis.core.interfaces.ComponentInterface;
-import net.neilcsmith.praxis.core.types.PString;
 import net.neilcsmith.praxis.live.core.api.Callback;
 import net.neilcsmith.praxis.live.pxr.api.ComponentProxy;
-import net.neilcsmith.praxis.live.pxr.api.ContainerProxy;
 import net.neilcsmith.praxis.live.pxr.api.ProxyException;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.windows.TopComponent;
@@ -66,6 +67,7 @@ public class PXRComponentProxy implements ComponentProxy, Syncable {
     private PropertyChangeSupport pcs;
     private PXRProxyNode delegate;
     private Map<String, PraxisProperty<?>> properties;
+    private List<Action> actions;
     private boolean syncing;
 
     PXRComponentProxy(PXRContainerProxy parent, ComponentType type,
@@ -142,6 +144,23 @@ public class PXRComponentProxy implements ComponentProxy, Syncable {
             throw new ProxyException(ex);
         }
     }
+    
+    public Action[] getActions() {
+        if (actions == null) {
+            initActions();
+        }
+        return actions.toArray(new Action[actions.size()]);
+    }
+    
+    private void initActions() {
+        actions = new ArrayList<Action>();
+        for (String ctlID : info.getControls()) {
+            ControlInfo ctl = info.getControlInfo(ctlID);
+            if (ctl.getType() == ControlInfo.Type.Trigger) {
+                actions.add(new TriggerAction(ctlID));
+            }
+        }
+    }
 
     public String[] getPropertyIDs() {
         if (properties == null) {
@@ -184,7 +203,8 @@ public class PXRComponentProxy implements ComponentProxy, Syncable {
         if (isIgnoredProperty(address.getID())) {
             return null;
         }
-        if (info.getType() == ControlInfo.Type.Function) {
+        if (info.getType() != ControlInfo.Type.Property &&
+                info.getType() != ControlInfo.Type.ReadOnlyProperty) {
             return null;
         }
         ArgumentInfo[] args = info.getOutputsInfo();
@@ -237,6 +257,38 @@ public class PXRComponentProxy implements ComponentProxy, Syncable {
             pcs.firePropertyChange(evt.getPropertyName(), null, null);
         }
     }
+    
+    private class TriggerAction extends AbstractAction {
+        
+        private String control;
+        
+        TriggerAction(String control) {
+            super(control);
+            this.control = control;
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent ae) {
+            try {
+                call(control, CallArguments.EMPTY, new Callback() {
+
+                    @Override
+                    public void onReturn(CallArguments args) {
+                        // do nothing
+                    }
+
+                    @Override
+                    public void onError(CallArguments args) {
+                        // ???
+                    }
+                });
+            } catch (ProxyException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        
+    }
+    
 
     private static class Registry implements LookupListener, PropertyChangeListener {
 

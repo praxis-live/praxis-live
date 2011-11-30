@@ -29,7 +29,8 @@ public class PXRLookupProvider implements LookupProvider {
         @Override
         public String[] getPrivilegedTemplates() {
             return new String[]{
-                "Templates/Praxis/PXRTemplate.pxr"
+                "Templates/Praxis/AudioTemplate.pxr",
+                "Templates/Praxis/VideoTemplate.pxr"
             };
         }
     }

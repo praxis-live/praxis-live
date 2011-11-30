@@ -215,7 +215,10 @@ class DelegatingArgumentEditor extends PropertyEditorSupport
             currentEditor.addPropertyChangeListener(dl);
             LOG.fine("Setting current editor to " + editor.getDisplayName());
         }
-
+    }
+    
+    void restoreDefaultEditor() {
+        setCurrentEditor(defaultEditor);
     }
 
     PraxisPropertyEditor getCurrentEditor() {

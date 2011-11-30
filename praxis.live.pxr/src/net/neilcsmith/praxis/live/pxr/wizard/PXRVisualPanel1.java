@@ -58,13 +58,19 @@ final class PXRVisualPanel1 extends JPanel implements DocumentListener, ActionLi
 //        for (ComponentType type : types) {
 //            typeField.addItem(type);
 //        }
-        
+
         // Temporary fixed root types for EA release
         // @TODO remove temporary fixed types.
-        typeField.addItem(ComponentType.create("root:audio"));
-        typeField.addItem(ComponentType.create("root:video"));
-        
-        typeField.addActionListener(this);
+        if (wizardPanel.type == null) {
+            typeField.addItem(ComponentType.create("root:audio"));
+            typeField.addItem(ComponentType.create("root:video"));
+
+            typeField.addActionListener(this);
+        } else {
+            typeField.addItem(wizardPanel.type);
+            typeField.setEnabled(false);
+        }
+
     }
 
     @Override
@@ -179,7 +185,6 @@ final class PXRVisualPanel1 extends JPanel implements DocumentListener, ActionLi
             locationField.setText(location.toString());
         }
     }//GEN-LAST:event_browseButtonActionPerformed
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox autostartField;
     private javax.swing.JButton browseButton;
@@ -232,7 +237,7 @@ final class PXRVisualPanel1 extends JPanel implements DocumentListener, ActionLi
     private void update() {
         if (location != null) {
             fileField.setText(locationField.getText() + "/" + idField.getText() + ".pxp");
-        }     
+        }
         wizardPanel.validate();
     }
 

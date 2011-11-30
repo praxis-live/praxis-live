@@ -70,7 +70,7 @@ public class EditorManager {
             return new ArrayEditor();
         }
 
-        return new ArgumentEditor();
+        return new ArgumentEditor(property, info);
 
     }
 
@@ -87,7 +87,7 @@ public class EditorManager {
                   return new CodeEditor(property, info, mimetype);
               }
         }
-        return new StringEditor();
+        return new StringEditor(property, info);
     }
 
     public static boolean hasAdditionalEditors(

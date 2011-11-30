@@ -143,7 +143,7 @@ public class DefaultRootRegistry extends RootRegistry {
     }
 
     @Override
-    protected synchronized RootProxy[] getRoots() {
+    public synchronized RootProxy[] getRoots() {
         return roots.toArray(new RootProxy[roots.size()]);
     }
 
