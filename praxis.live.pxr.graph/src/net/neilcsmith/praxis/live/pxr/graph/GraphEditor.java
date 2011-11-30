@@ -48,9 +48,12 @@ import javax.swing.ActionMap;
 import javax.swing.InputMap;
 import javax.swing.JComponent;
 import javax.swing.JLayeredPane;
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
+import javax.swing.JSeparator;
 import javax.swing.KeyStroke;
 import javax.swing.OverlayLayout;
 import javax.swing.border.LineBorder;
@@ -118,7 +121,7 @@ public class GraphEditor extends RootEditor {
     private int lastX;
     private ContainerListener containerListener;
 
-    GraphEditor(RootProxy root, String category) {
+    public GraphEditor(RootProxy root, String category) {
         this.root = root;
         knownChildren = new LinkedHashSet<String>();
         knownConnections = new LinkedHashSet<Connection>();
@@ -157,8 +160,29 @@ public class GraphEditor extends RootEditor {
         scene.getActions().addAction(ActionFactory.createAcceptAction(new TypeAcceptProvider()));
     }
 
-    private JPopupMenu getComponentPopup() {
-        return getScenePopup();
+    private JPopupMenu getComponentPopup(NodeWidget widget) {
+        JPopupMenu menu = new JPopupMenu();
+        Object obj = scene.findObject(widget);
+        if (obj instanceof String) {
+            ComponentProxy cmp = container.getChild(obj.toString());
+            if (cmp != null) {
+                boolean addSep = false;
+                for (Action a : cmp.getNodeDelegate().getActions(false)) {
+                    if (a == null) {
+                        menu.add(new JSeparator());
+                        addSep = false;
+                    } else {
+                        menu.add(a);
+                        addSep = true;
+                    }           
+                }
+                if (addSep) {
+                    menu.add(new JSeparator());
+                }
+            }
+        }
+        menu.add(deleteAction);    
+        return menu;
     }
 
     private JPopupMenu getConnectionPopup() {
@@ -181,15 +205,6 @@ public class GraphEditor extends RootEditor {
 
     @Override
     public JComponent getEditorComponent() {
-//        if (panel == null) {
-//            panel = new JPanel(new BorderLayout());
-//            JScrollPane scroll = new JScrollPane(
-//                    scene.createView(),
-//                    JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
-//                    JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
-//            panel.add(scroll, BorderLayout.CENTER);
-//        }
-//        return panel;
         if (panel == null) {
             JPanel viewPanel = new JPanel(new BorderLayout());
             JScrollPane scroll = new JScrollPane(
@@ -442,7 +457,7 @@ public class GraphEditor extends RootEditor {
         @Override
         public JPopupMenu getPopupMenu(Widget widget, Point localLocation) {
             if (widget instanceof NodeWidget) {
-                return getComponentPopup();
+                return getComponentPopup((NodeWidget) widget);
             } else if (widget instanceof EdgeWidget) {
                 return getConnectionPopup();
             } else if (widget == scene) {
