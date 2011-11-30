@@ -93,6 +93,7 @@
                 <attr name="originalFile" stringvalue="Actions/Praxis/net-neilcsmith-praxis-live-core-api-RestartHubAction.instance"/>
                 <attr name="position" intvalue="0"/>
             </file>-->
+            <file name="org-netbeans-modules-autoupdate-ui-actions-PluginManagerAction.shadow_hidden"/>
             <file name="org-netbeans-modules-favorites-templates-TemplatesAction.shadow_hidden"/>
             <file name="org-netbeans-modules-xml-catalog-CatalogAction.shadow_hidden"/>
             <file name="org-openide-actions-ToolsAction.shadow_hidden"/>
@@ -136,10 +137,6 @@
             <file name="org-netbeans-modules-kenai-collab-chat-ChatAction.shadow_hidden">
                 <attr name="position" intvalue="900"/>
             </file>
-            <file name="org-netbeans-modules-navigator-ShowNavigatorAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-navigator-ShowNavigatorAction.instance"/>
-                <attr name="position" intvalue="1600"/>
-            </file>
             <file name="org-netbeans-modules-project-ui-physical-tab-action.shadow_hidden">
                 <attr name="position" intvalue="1200"/>
             </file>
@@ -157,8 +154,10 @@
             <file name="org-netbeans-modules-javascript-editing-options-JsOptionsController.instance_hidden"/>
             <file name="org-netbeans-modules-versioning-util-VcsAdvancedOptions.instance_hidden"/>
         </folder>
+        <file name="Advanced.instance_hidden"/>
         <file name="Editor.instance_hidden"/>
         <file name="FontsAndColors.instance_hidden"/>
+        <file name="General.instance_hidden"/>
         <file name="Keymaps.instance_hidden"/>
     </folder>
     <folder name="Templates">
@@ -188,6 +187,7 @@
     <folder name="Toolbars">
         <folder name="Build">
             <file name="org-netbeans-modules-debugger-ui-actions-DebugMainProjectAction.shadow_hidden"/>
+            <file name="org-netbeans-modules-project-ui-RebuildMainProject.shadow_hidden"/>
         </folder>
         <folder name="QuickSearch">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="net.neilcsmith.praxis.live.core.api.Bundle"/>
