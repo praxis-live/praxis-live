@@ -76,6 +76,7 @@
  */
 package net.neilcsmith.praxis.live.graph;
 
+import java.awt.Font;
 import java.awt.event.MouseEvent;
 import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.action.ConnectProvider;
@@ -86,6 +87,7 @@ import org.netbeans.api.visual.graph.GraphPinScene;
 import org.netbeans.api.visual.layout.SceneLayout;
 import org.netbeans.api.visual.router.Router;
 import org.netbeans.api.visual.router.RouterFactory;
+import org.netbeans.api.visual.widget.ConnectionWidget.RoutingPolicy;
 import org.netbeans.api.visual.widget.EventProcessingType;
 import org.netbeans.api.visual.widget.LayerWidget;
 import org.netbeans.api.visual.widget.Widget;
@@ -97,8 +99,8 @@ public class PraxisGraphScene<N> extends GraphPinScene<N, EdgeID<N>, PinID<N>> {
     private LayerWidget connectionLayer = new LayerWidget(this);
     private LayerWidget upperLayer = new LayerWidget(this);
     private Router router;
-//    private WidgetAction moveControlPointAction = ActionFactory.
     private WidgetAction moveAction = ActionFactory.createMoveAction();
+//    private WidgetAction moveAction = ActionFactory.createAlignWithMoveAction(mainLayer, upperLayer, null);
     private SceneLayout sceneLayout;
     private LAFScheme scheme;
     private WidgetAction menuAction;
@@ -143,13 +145,11 @@ public class PraxisGraphScene<N> extends GraphPinScene<N, EdgeID<N>, PinID<N>> {
 //        router = RouterFactory.createDirectRouter();
         router = RouterFactory.createOrthogonalSearchRouter(mainLayer);
 
-        getActions().addAction(ActionFactory.createZoomAction());
+        getActions().addAction(ActionFactory.createMouseCenteredZoomAction(1.2));
         getActions().addAction(ActionFactory.createPanAction());
-        
+
 
         if (connectProvider != null) {
-//            connectAction = ActionFactory.createExtendedConnectAction(
-//                    new PraxisConnectDecorator(), upperLayer, connectProvider, MouseEvent.SHIFT_MASK);
             connectAction = ActionFactory.createConnectAction(new PraxisConnectDecorator(), connectionLayer, connectProvider);
         }
         if (popupProvider != null) {

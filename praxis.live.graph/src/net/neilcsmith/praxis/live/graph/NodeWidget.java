@@ -127,7 +127,8 @@ public class NodeWidget extends Widget implements StateModel.Listener, MinimizeA
         this.scheme = scene.getColorScheme();
         
         setLayout (LayoutFactory.createVerticalFlowLayout ());
-        setMinimumSize (new Dimension (128, 8));
+//        setMinimumSize (new Dimension (128, 8));
+        setMinimumSize(new Dimension(100,10));
 
         header = new Widget (scene);
         header.setLayout (LayoutFactory.createHorizontalFlowLayout (LayoutFactory.SerialAlignment.CENTER, 8));

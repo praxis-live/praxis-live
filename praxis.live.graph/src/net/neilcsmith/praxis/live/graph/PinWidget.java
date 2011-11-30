@@ -113,6 +113,7 @@ public class PinWidget extends Widget {
         this.category = DEFAULT_CATEGORY;
         setLayout(LayoutFactory.createOverlayLayout());
         addChild(nameWidget = new LabelWidget(scene));
+//        nameWidget.setFont(scene.getDefaultFont().deriveFont(10.0f));
         nameWidget.setLabel(name);
         addChild(glyphsWidget = new GlyphSetWidget(scene));
         nameWidget.setAlignment(LabelWidget.Alignment.CENTER);
