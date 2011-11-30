@@ -36,18 +36,10 @@ public abstract class FileHandler {
 
     public abstract void process(Callback callback) throws Exception;
 
-    public List<Throwable> getErrors() {
-        List<Throwable> list = Collections.emptyList();
+    public List<String> getErrors() {
+        List<String> list = Collections.emptyList();
         return list;
     }
-
-//    public static interface Callback {
-//
-//        public void onSuccess();
-//
-//        public void onFailure();
-//
-//    }
 
     public static interface Provider {
 

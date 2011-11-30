@@ -76,7 +76,6 @@ class PraxisProjectNode extends FilterNode {
             null,
             ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_RUN, "Run", null),
             ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_BUILD, "Build", null),
-            ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_CLEAN, "Clear All", null),
             null,
             CommonProjectActions.setAsMainProjectAction(),
             CommonProjectActions.closeProjectAction(),

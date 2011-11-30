@@ -21,11 +21,18 @@
  */
 package net.neilcsmith.praxis.live.project;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.HashSet;
+import java.util.Set;
+import javax.swing.SwingUtilities;
 import net.neilcsmith.praxis.core.CallArguments;
 import net.neilcsmith.praxis.live.core.api.Callback;
+import net.neilcsmith.praxis.live.project.api.ExecutionLevel;
 import net.neilcsmith.praxis.live.project.api.FileHandler;
 import net.neilcsmith.praxis.live.project.api.PraxisProject;
 import org.openide.filesystems.FileObject;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -33,39 +40,48 @@ import org.openide.filesystems.FileObject;
  */
 class DefaultFileHandler extends FileHandler {
 
+    private static BuildRegistry REGISTRY = new BuildRegistry();
+//    private static RequestProcessor RP = new RequestProcessor();
+    private ExecutionLevel level;
     private PraxisProject project;
     private FileObject file;
 
-    DefaultFileHandler(PraxisProject project, FileObject file) {
+    DefaultFileHandler(PraxisProject project, ExecutionLevel level, FileObject file) {
         this.project = project;
         this.file = file;
+        this.level = level;
     }
 
     @Override
     public void process(Callback callback) throws Exception {
+        if (level == ExecutionLevel.BUILD) {
+            if (!REGISTRY.addIfAbsent(file)) {
+                
+            }
+        }
         String script = file.asText();
         script = "set _PWD " + project.getProjectDirectory().getURL().toURI() + "\n" + script;
-//        ProjectHelper.executeScript(script, new CallbackWrapper(callback));]
         ProjectHelper.getDefault().executeScript(script, callback);
     }
 
-//    private class CallbackWrapper implements net.neilcsmith.praxis.live.core.api.Callback {
-//
-//        private Callback callback;
-//
-//        private CallbackWrapper(Callback callback) {
-//            this.callback = callback;
-//
-//        }
-//
-//        @Override
-//        public void onReturn(CallArguments args) {
-//            callback.onSuccess();
-//        }
-//
-//        @Override
-//        public void onError(CallArguments args) {
-//            callback.onFailure();
-//        }
-//    }
+    private static class BuildRegistry implements PropertyChangeListener {
+
+        private Set<FileObject> files;
+
+        private BuildRegistry() {
+            files = new HashSet<FileObject>();
+            ProjectHelper.getDefault().addPropertyChangeListener(this);
+        }
+
+        private boolean addIfAbsent(FileObject file) {
+            return files.add(file);
+        }
+
+        @Override
+        public void propertyChange(PropertyChangeEvent pce) {
+            if (ProjectHelper.PROP_HUB_CONNECTED.equals(pce.getPropertyName())) {
+                files.clear();
+            }
+        }
+    }
 }
