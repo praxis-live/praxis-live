@@ -37,9 +37,9 @@ import org.openide.nodes.Node;
 public class CategoryChildren extends Children.Keys<String> {
     
     private String[] filters;
-//    private java.util.Map<String, List<ComponentType>> map;
     private TreeMap<String, TreeSet<ComponentType>> core;
     private TreeMap<String, TreeSet<ComponentType>> others;
+    private boolean includeTest = ComponentSettings.getShowTestComponents();
     
 
     public CategoryChildren() {
@@ -56,21 +56,6 @@ public class CategoryChildren extends Children.Keys<String> {
     }
     
     private void buildMap() {
-//        map = new LinkedHashMap<String, List<ComponentType>>();
-//        Collection<ComponentType> types = ComponentRegistry.getDefault().getAllComponents();
-//        for (ComponentType type : types) {
-//            String str = type.toString();
-//            if (!include(str)) {
-//                continue;
-//            }
-//            str = str.substring(0, str.lastIndexOf(':'));
-//            List<ComponentType> list = map.get(str);
-//            if (list == null) {
-//                list = new ArrayList<ComponentType>();
-//                map.put(str, list);
-//            }
-//            list.add(type);
-//        }
         core = new TreeMap<String, TreeSet<ComponentType>>();
         others = new TreeMap<String, TreeSet<ComponentType>>();
         Set<ComponentType> types = ComponentRegistry.getDefault().getAllComponents();
@@ -97,7 +82,7 @@ public class CategoryChildren extends Children.Keys<String> {
 
     private boolean include(String type) {
         if (type.contains(":test:")) {
-            return false;
+            return includeTest;
         }
         if (filters == null) {
             return true;
