@@ -121,7 +121,9 @@ public class AbstractHelperComponent extends AbstractComponent {
         if (adaptor == null) {
             throw new NullPointerException();
         }
-        bindingContext.unbind(adaptor);
+        if (bindingContext != null) {
+            bindingContext.unbind(adaptor);
+        }     
     }
 
     private void rebind() {
