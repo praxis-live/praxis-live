@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 2010 Neil C Smith.
+ * Copyright 2011 Neil C Smith.
  * 
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -42,31 +42,34 @@ import net.miginfocom.swing.MigLayout;
 import net.neilcsmith.praxis.core.ControlAddress;
 import net.neilcsmith.praxis.core.IllegalRootStateException;
 import net.neilcsmith.praxis.gui.Keys;
-import net.neilcsmith.praxis.gui.ControlBinding;
 import net.neilcsmith.praxis.gui.ControlBinding.Adaptor;
 import net.neilcsmith.praxis.gui.BindingContext;
 import net.neilcsmith.praxis.gui.GuiContext;
-import net.neilcsmith.praxis.gui.impl.DefaultBindingControl;
 import net.neilcsmith.praxis.impl.AbstractSwingRoot;
 import net.neilcsmith.praxis.impl.InstanceLookup;
+import net.neilcsmith.praxis.impl.RootState;
 
 /**
  *
  * @author Neil C Smith
  */
 public class DockableGuiRoot extends AbstractSwingRoot {
-
+    
+    private final static Map<String, DockableGuiRoot> REGISTRY = 
+            new HashMap<String, DockableGuiRoot>();
+    
     private JFrame frame;
+//    private JScrollPane scrollPane;
     private JPanel container;
     private MigLayout layout;
     private LayoutChangeListener layoutListener;
-    private Map<ControlAddress, DefaultBindingControl> bindingCache;
     private Bindings bindings;
     private Context context;
     private Lookup lookup;
+    private GuiEditor activeEditor;
 
     public DockableGuiRoot() {
-        bindingCache = new HashMap<ControlAddress, DefaultBindingControl>();
+//        bindingCache = new HashMap<ControlAddress, DefaultBindingControl>();
     }
 
     @Override
@@ -74,25 +77,31 @@ public class DockableGuiRoot extends AbstractSwingRoot {
         frame = new JFrame();
         frame.setTitle("PraxisLIVE: " + getAddress());
 //        frame.setSize(150, 50);
-        frame.setMinimumSize(new Dimension(150,50));
+        frame.setMinimumSize(new Dimension(150, 50));
         frame.addWindowListener(new WindowAdapter() {
 
             @Override
             public void windowClosing(WindowEvent e) {
                 try {
-                    setIdle();
+                    if (activeEditor == null) {
+                        setIdle();
+                    }
                 } catch (IllegalRootStateException ex) {
                     Logger.getLogger(DockableGuiRoot.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
         });
-        frame.getContentPane().setLayout(new MigLayout("fill", "[fill, grow]"));
-        layout = new MigLayout("fill", "[fill]");
+//        frame.getContentPane().setLayout(new MigLayout("fill", "[fill, grow]"));
+        layout = new MigLayout("", "[fill]");
         container = new JPanel(layout);
         container.addContainerListener(new ChildrenListener());
+        container.putClientProperty(Keys.Address, getAddress());
         layoutListener = new LayoutChangeListener();
+//        frame.getContentPane().add(new JScrollPane(container), "grow, push");
+        frame.getContentPane().add(new JScrollPane(container));
         
-        frame.getContentPane().add(new JScrollPane(container), "grow, push");
+        REGISTRY.put(getAddress().getRootID(), this);
+        
     }
 
     @Override
@@ -108,46 +117,79 @@ public class DockableGuiRoot extends AbstractSwingRoot {
     @Override
     protected void starting() {
         super.starting();
-        frame.pack();
-        frame.setVisible(true);
+        Utils.enableAll(container);
+        if (activeEditor == null) {
+            frame.pack();
+            frame.setVisible(true);
+        }
     }
 
     @Override
     protected void stopping() {
         super.stopping();
-        frame.setVisible(false);
+        Utils.disableAll(container);
+        if (activeEditor == null) {
+            frame.setVisible(false);
+        }      
     }
 
     @Override
     protected void dispose() {
         super.dispose();
+        if (activeEditor != null) {
+            activeEditor.removeRootPanel(container);
+            activeEditor = null;
+        }
         frame.setVisible(false);
         frame.dispose();
+        
+        REGISTRY.values().remove(this);
     }
 
+    void requestConnect(GuiEditor editor) {
+        if (editor == activeEditor) {
+            return;
+        }
+        if (activeEditor != null) {
+            activeEditor.removeRootPanel(container);
+            activeEditor = null;
+        } else {
+            frame.setVisible(false);
+            container.getParent().remove(container);
+            frame.getContentPane().removeAll();
+        }
+        activeEditor = editor;
+        editor.addRootPanel(container);
+    }
+
+    void requestDisconnect(GuiEditor editor) {
+        if (activeEditor == editor) {
+            editor.removeRootPanel(container);
+            activeEditor = null;
+            frame.getContentPane().add(new JScrollPane(container));
+            if (getState() == RootState.ACTIVE_RUNNING) {           
+                frame.pack();
+                frame.setVisible(true);
+                frame.requestFocus();
+                frame.toFront();
+            }
+        }
+    }
+    
+    static DockableGuiRoot find(String id) {
+        return REGISTRY.get(id);
+    }
 
     private class Bindings extends BindingContext {
 
+        @Override
         public void bind(ControlAddress address, Adaptor adaptor) {
-            DefaultBindingControl binding = bindingCache.get(address);
-            if (binding == null) {
-                binding = new DefaultBindingControl(address);
-                registerControl("_binding_" + Integer.toHexString(binding.hashCode()),
-                        binding);
-                bindingCache.put(address, binding);
-            }
-            binding.bind(adaptor);
+            GuiHelper.getDefault().bind(address, adaptor);
         }
 
+        @Override
         public void unbind(Adaptor adaptor) {
-            ControlBinding cBinding = adaptor.getBinding();
-            if (cBinding == null) {
-                return;
-            }
-            DefaultBindingControl binding = bindingCache.get(cBinding.getAddress());
-            if (binding != null) {
-                binding.unbind(adaptor);
-            }
+            GuiHelper.getDefault().unbind(adaptor);
         }
     }
 
@@ -159,10 +201,10 @@ public class DockableGuiRoot extends AbstractSwingRoot {
         }
     }
 
-
-
-    private void setLayoutConstraint(JComponent child) {
-        layout.setComponentConstraints(child, child.getClientProperty(Keys.LayoutConstraint));
+    private void updateLayout(JComponent child) {
+        if (child != null) {
+            layout.setComponentConstraints(child, child.getClientProperty(Keys.LayoutConstraint));
+        }   
         container.revalidate();
         container.repaint();
     }
@@ -174,7 +216,7 @@ public class DockableGuiRoot extends AbstractSwingRoot {
                 JComponent child = (JComponent) e.getChild();
                 child.addPropertyChangeListener(
                         Keys.LayoutConstraint, layoutListener);
-                setLayoutConstraint(child);
+                updateLayout(child);
             }
         }
 
@@ -183,8 +225,8 @@ public class DockableGuiRoot extends AbstractSwingRoot {
                 ((JComponent) e.getChild()).removePropertyChangeListener(
                         Keys.LayoutConstraint, layoutListener);
             }
+            updateLayout(null);
         }
-
     }
 
     private class LayoutChangeListener implements PropertyChangeListener {
@@ -200,5 +242,4 @@ public class DockableGuiRoot extends AbstractSwingRoot {
             }
         }
     }
-
 }
