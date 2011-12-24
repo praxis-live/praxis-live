@@ -22,11 +22,16 @@
 package net.neilcsmith.praxis.live.pxr.editors;
 
 import java.awt.Component;
+import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyEditor;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.AbstractAction;
+import javax.swing.JColorChooser;
 import javax.swing.JComponent;
 import javax.swing.JSpinner;
 import javax.swing.KeyStroke;
@@ -58,10 +63,21 @@ class NumberInplaceEditor implements InplaceEditor, ChangeListener {
     private ControlAddress address;
     private boolean ignoreChanges;
     private Object initialValue;
+    private List<ActionListener> listeners;
 
     NumberInplaceEditor(ArgumentInfo info) {
+        listeners = new ArrayList<ActionListener>();
         spinner = new JSpinner(getSpinnerModel(info));
         spinner.addChangeListener(this);
+        spinner.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0, false), "resetValue");
+        spinner.getActionMap().put("resetValue", new AbstractAction() {
+
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+                reset();
+                fireActionEvent(true);
+            }
+        });
     }
 
     private SpinnerNumberModel getSpinnerModel(ArgumentInfo info) {
@@ -155,17 +171,27 @@ class NumberInplaceEditor implements InplaceEditor, ChangeListener {
 
     @Override
     public void addActionListener(ActionListener al) {
-        // no op
+        listeners.add(al);
     }
 
     @Override
     public void removeActionListener(ActionListener al) {
-        // no op
+        listeners.remove(al);
+    }
+    
+    private void fireActionEvent(boolean success) {
+        ActionEvent ev = new ActionEvent(this, 0, success ? COMMAND_SUCCESS : COMMAND_FAILURE);
+        for(ActionListener l : listeners.toArray(new ActionListener[0])) {
+            l.actionPerformed(ev);
+        }
     }
 
     @Override
     public KeyStroke[] getKeyStrokes() {
-        return new KeyStroke[0];
+        LOG.fine("getKeyStrokes() called");
+        return new KeyStroke[] {
+            KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0, false)
+        };
     }
 
     @Override

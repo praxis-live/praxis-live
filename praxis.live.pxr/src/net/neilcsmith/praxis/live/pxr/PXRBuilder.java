@@ -54,13 +54,13 @@ class PXRBuilder {
     private Callback processCallback;
     private PXRRootProxy rootProxy;
     private boolean processed;
-    private List<String> errors;
+    private List<String> warnings;
 
     private PXRBuilder(Project project, PXRDataObject source, RootElement root) {
         this.project = project;
         this.source = source;
         this.root = root;
-        errors = new ArrayList<String>();
+        warnings = new ArrayList<String>();
     }
 
     void process(Callback callback) {
@@ -73,7 +73,7 @@ class PXRBuilder {
     }
     
     List<String> getErrors() {
-        return errors;
+        return warnings;
     }
 
     private void process() {
@@ -86,7 +86,7 @@ class PXRBuilder {
         if (!processed && !iterator.hasNext()) {
             processed = true;
             DefaultRootRegistry.getDefault().register(rootProxy);
-            if (errors.isEmpty()) {
+            if (warnings.isEmpty()) {
                 processCallback.onReturn(CallArguments.EMPTY);
             } else {
                 processCallback.onError(CallArguments.EMPTY);
@@ -149,8 +149,8 @@ class PXRBuilder {
     }
 
     private void propertyError(PropertyElement prop, CallArguments args) {
-        String err = "Error setting property " + prop.component.address + "." + prop.property;
-        errors.add(err);
+        String err = "Couldn't set property " + prop.component.address + "." + prop.property;
+        warnings.add(err);
     }
 
     private boolean processAttribute(AttributeElement attr) {
@@ -193,8 +193,8 @@ class PXRBuilder {
     private void connectionError(ConnectionElement connection, CallArguments args) {
         String p1 = connection.container.address + "/" + connection.component1 + "!" + connection.port1;
         String p2 = connection.container.address + "/" + connection.component2 + "!" + connection.port2;
-        String err = "Error creating connection " + p1 + " -> " + p2;
-        errors.add(err);
+        String err = "Couldn't create connection " + p1 + " -> " + p2;
+        warnings.add(err);
     }
 
     private boolean processRoot(RootElement root) {
@@ -262,8 +262,8 @@ class PXRBuilder {
     }
     
     private void componentError(ComponentElement cmp, CallArguments args) {
-        String err = "Error creating component " + cmp.address;
-        errors.add(err);
+        String err = "Couldn't create component " + cmp.address;
+        warnings.add(err);
     }
 
     private PXRComponentProxy findComponent(ComponentAddress address) {

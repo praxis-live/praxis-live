@@ -8,11 +8,16 @@ package net.neilcsmith.praxis.live.pxr;
 import java.awt.EventQueue;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.util.List;
 import java.util.logging.Logger;
 import javax.swing.Action;
 import net.neilcsmith.praxis.core.ComponentAddress;
 import net.neilcsmith.praxis.live.pxr.api.ComponentProxy;
 import net.neilcsmith.praxis.live.pxr.api.ContainerProxy;
+import net.neilcsmith.praxis.live.pxr.api.ProxyException;
+import net.neilcsmith.praxis.live.pxr.api.RootProxy;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -48,7 +53,74 @@ class PXRProxyNode extends AbstractNode {
 
     @Override
     public Action[] getActions(boolean context) {
-        return component.getActions();
+        List<Action> triggers = component.getTriggerActions();
+        Action[] actions;
+        if (triggers.isEmpty()) {
+            actions = new Action[]{component.getEditorAction()};
+        } else {
+            int size = triggers.size() + 2;
+            actions = triggers.toArray(new Action[size]);
+            actions[size - 1] = component.getEditorAction();
+            return actions;
+        }
+        return actions;
+    }
+
+    @Override
+    public Action getPreferredAction() {
+        return component.getEditorAction();
+    }
+
+    @Override
+    public boolean canDestroy() {
+//        if (EventQueue.isDispatchThread()) {
+            return canDestroyImpl();
+//        } else {
+//            try {
+//                final boolean[] res = new boolean[0];
+//                EventQueue.invokeAndWait(new Runnable() {
+//
+//                    @Override
+//                    public void run() {
+//                        res[0] = canDestroyImpl();
+//                    }
+//                });
+//                return res[0];
+//            } catch (Exception ex) {
+//                Exceptions.printStackTrace(ex);
+//            }
+//        }
+//        return false;
+    }
+    
+    private boolean canDestroyImpl() {
+//        assert EventQueue.isDispatchThread();
+        return component.getParent() != null;
+    }
+
+    @Override
+    public void destroy() throws IOException {
+        if (EventQueue.isDispatchThread()) {
+            destroyImpl();
+        } else {
+            EventQueue.invokeLater(new Runnable() {
+
+                @Override
+                public void run() {
+                    destroyImpl();
+                }
+            });
+        }      
+    }
+    
+    private void destroyImpl() {
+        assert EventQueue.isDispatchThread();
+        try {
+            PXRContainerProxy container = component.getParent();
+            container.removeChild(container.getChildID(component), null);
+        } catch (ProxyException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
 
     @Override
@@ -92,7 +164,7 @@ class PXRProxyNode extends AbstractNode {
 
 
 
-    private class ComponentPropListener implements PropertyChangeListener {
+    class ComponentPropListener implements PropertyChangeListener {
 
         @Override
         public void propertyChange(PropertyChangeEvent evt) {

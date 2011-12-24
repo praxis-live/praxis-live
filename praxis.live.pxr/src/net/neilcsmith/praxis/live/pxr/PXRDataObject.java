@@ -22,14 +22,14 @@
 package net.neilcsmith.praxis.live.pxr;
 
 import java.awt.Image;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import java.util.Collections;
 import javax.swing.SwingUtilities;
 import net.neilcsmith.praxis.core.ComponentType;
 import net.neilcsmith.praxis.live.components.api.ComponentIconProvider;
-import net.neilcsmith.praxis.live.pxr.api.RootProxy;
-import net.neilcsmith.praxis.live.pxr.api.RootRegistry;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
+import net.neilcsmith.praxis.live.core.api.Task.State;
 import org.openide.cookies.CloseCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.cookies.SaveCookie;
@@ -93,6 +93,22 @@ public class PXRDataObject extends MultiDataObject {
         return type;
     }
 
+    @Override
+    public boolean isCopyAllowed() {
+        return false;
+    }
+
+    @Override
+    public boolean isMoveAllowed() {
+        return false;
+    }
+
+    @Override
+    public boolean isRenameAllowed() {
+        return false;
+    }
+
+    
     private Image findIcon(ComponentType type) {
         try {
             for (ComponentIconProvider provider : Lookup.getDefault().lookupAll(ComponentIconProvider.class)) {
@@ -161,16 +177,32 @@ public class PXRDataObject extends MultiDataObject {
         }
     }
 
-    private class SaveSupport implements SaveCookie {
+    private class SaveSupport implements SaveCookie, PropertyChangeListener {
 
+        private SaveTask task;
+        
         @Override
         public void save() throws IOException {
-            RootProxy root = RootRegistry.getDefault().findRootForFile(getPrimaryFile());
-            if (root instanceof PXRRootProxy) {
-                PXRWriter.write(PXRDataObject.this, (PXRRootProxy) root);
-            } else {
-                NotifyDescriptor err = new NotifyDescriptor.Message("Unable to save file " + getName(), NotifyDescriptor.ERROR_MESSAGE);
-                DialogDisplayer.getDefault().notify(err);
+//            RootProxy root = RootRegistry.getDefault().findRootForFile(getPrimaryFile());
+//            if (root instanceof PXRRootProxy) {
+//                PXRWriter.write(PXRDataObject.this, (PXRRootProxy) root);
+//            } else {
+//                NotifyDescriptor err = new NotifyDescriptor.Message("Unable to save file " + getName(), NotifyDescriptor.ERROR_MESSAGE);
+//                DialogDisplayer.getDefault().notify(err);
+//            }
+            if (task != null) {
+                return;
+            }
+            task = SaveTask.createSaveTask(Collections.singleton(PXRDataObject.this));
+            task.addPropertyChangeListener(this);
+            task.execute();
+        }
+
+        @Override
+        public void propertyChange(PropertyChangeEvent pce) {
+            if (task.getState() != State.RUNNING) {
+                task.removePropertyChangeListener(this);
+                task = null;
             }
         }
     }

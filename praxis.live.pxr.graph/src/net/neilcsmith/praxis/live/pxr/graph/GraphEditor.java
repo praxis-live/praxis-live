@@ -82,7 +82,9 @@ import org.netbeans.api.visual.action.AcceptProvider;
 import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.action.ConnectProvider;
 import org.netbeans.api.visual.action.ConnectorState;
+import org.netbeans.api.visual.action.EditProvider;
 import org.netbeans.api.visual.action.PopupMenuProvider;
+import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.model.ObjectSceneEvent;
 import org.netbeans.api.visual.model.ObjectSceneEventType;
 import org.netbeans.api.visual.widget.Scene;
@@ -264,7 +266,7 @@ public class GraphEditor extends RootEditor {
 
     }
 
-    private void buildChild(String id, ComponentProxy cmp) {
+    private void buildChild(String id, final ComponentProxy cmp) {
 
         if (LOG.isLoggable(Level.FINEST)) {
             LOG.finest("Adding " + cmp.getAddress() + " to graph.");
@@ -273,6 +275,13 @@ public class GraphEditor extends RootEditor {
 //        widget.setNodeType(cmp.getType().toString());
         widget.setToolTipText(cmp.getType().toString());
         widget.setPreferredLocation(resolveLocation(id, cmp));
+        widget.getActions().addAction(ActionFactory.createEditAction(new EditProvider() {
+
+            @Override
+            public void edit(Widget widget) {
+                cmp.getNodeDelegate().getPreferredAction().actionPerformed(new ActionEvent(this, 0, ""));
+            }
+        }));
         ComponentInfo info = cmp.getInfo();
         for (String portID : info.getPorts()) {
             PortInfo pi = info.getPortInfo(portID);

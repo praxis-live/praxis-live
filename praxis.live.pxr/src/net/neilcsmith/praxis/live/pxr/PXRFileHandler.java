@@ -49,7 +49,7 @@ public class PXRFileHandler extends FileHandler {
     private PraxisProject project;
     private PXRDataObject source;
     private Callback callback;
-    private List<String> errors;
+    private List<String> warnings;
 
     public PXRFileHandler(PraxisProject project, PXRDataObject source) {
         if (project == null || source == null) {
@@ -101,11 +101,11 @@ public class PXRFileHandler extends FileHandler {
     }
 
     @Override
-    public List<String> getErrors() {
-        if (errors == null || errors.isEmpty()) {
+    public List<String> getWarnings() {
+        if (warnings == null || warnings.isEmpty()) {
             return Collections.EMPTY_LIST;
         } else {
-            return new ArrayList<String>(errors);
+            return new ArrayList<String>(warnings);
         }
     }
 
@@ -120,7 +120,7 @@ public class PXRFileHandler extends FileHandler {
 
             @Override
             public void onError(CallArguments args) {
-                errors = builder.getErrors();
+                warnings = builder.getErrors();
                 callback.onError(args);
             
             }

@@ -29,9 +29,11 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -48,15 +50,13 @@ import net.neilcsmith.praxis.live.pxr.api.ComponentProxy;
 import net.neilcsmith.praxis.live.pxr.api.ProxyException;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
-import org.openide.util.LookupEvent;
-import org.openide.util.LookupListener;
 import org.openide.windows.TopComponent;
 
 /**
  *
  * @author Neil C Smith (http://neilcsmith.net)
  */
-public class PXRComponentProxy implements ComponentProxy, Syncable {
+public class PXRComponentProxy implements ComponentProxy {
 
     private final static Logger LOG = Logger.getLogger(PXRComponentProxy.class.getName());
     private final static Registry registry = new Registry();
@@ -67,8 +67,11 @@ public class PXRComponentProxy implements ComponentProxy, Syncable {
     private PropertyChangeSupport pcs;
     private PXRProxyNode delegate;
     private Map<String, PraxisProperty<?>> properties;
-    private List<Action> actions;
+    private List<Action> triggers;
+    private Action editorAction;
     private boolean syncing;
+    private int listenerCount = 0;
+    private boolean nodeSyncing;
 
     PXRComponentProxy(PXRContainerProxy parent, ComponentType type,
             ComponentInfo info) {
@@ -124,11 +127,21 @@ public class PXRComponentProxy implements ComponentProxy, Syncable {
     @Override
     public void addPropertyChangeListener(PropertyChangeListener listener) {
         pcs.addPropertyChangeListener(listener);
+        if (listener instanceof PXRProxyNode.ComponentPropListener) {
+            return;
+        }
+        listenerCount++;
+        checkSyncing();
     }
 
     @Override
     public void removePropertyChangeListener(PropertyChangeListener listener) {
         pcs.removePropertyChangeListener(listener);
+        if (listener instanceof PXRProxyNode.ComponentPropListener) {
+            return;
+        }
+        listenerCount--;
+        checkSyncing();
     }
 
     void firePropertyChange(String property, Object oldValue, Object newValue) {
@@ -145,21 +158,29 @@ public class PXRComponentProxy implements ComponentProxy, Syncable {
         }
     }
     
-    public Action[] getActions() {
-        if (actions == null) {
-            initActions();
+    List<Action> getTriggerActions() {
+        if (triggers == null) {
+            initTriggerActions();
         }
-        return actions.toArray(new Action[actions.size()]);
+        return triggers;
     }
-    
-    private void initActions() {
-        actions = new ArrayList<Action>();
+
+    private void initTriggerActions() {
+        triggers = new ArrayList<Action>();
         for (String ctlID : info.getControls()) {
             ControlInfo ctl = info.getControlInfo(ctlID);
             if (ctl.getType() == ControlInfo.Type.Trigger) {
-                actions.add(new TriggerAction(ctlID));
+                triggers.add(new TriggerAction(ctlID));
             }
         }
+        triggers = Collections.unmodifiableList(triggers);
+    }
+    
+    Action getEditorAction() {
+        if (editorAction == null) {
+            editorAction = new EditorAction();
+        }
+        return editorAction;
     }
 
     public String[] getPropertyIDs() {
@@ -195,7 +216,7 @@ public class PXRComponentProxy implements ComponentProxy, Syncable {
             }
         }
         if (syncing) {
-            setPropertySyncing(true);
+            setPropertiesSyncing(true);
         }
     }
 
@@ -203,15 +224,14 @@ public class PXRComponentProxy implements ComponentProxy, Syncable {
         if (isIgnoredProperty(address.getID())) {
             return null;
         }
-        if (info.getType() != ControlInfo.Type.Property &&
-                info.getType() != ControlInfo.Type.ReadOnlyProperty) {
+        if (info.getType() != ControlInfo.Type.Property
+                && info.getType() != ControlInfo.Type.ReadOnlyProperty) {
             return null;
         }
         ArgumentInfo[] args = info.getOutputsInfo();
         if (args.length != 1) {
             return null;
         }
-
         return BoundArgumentProperty.create(address, info);
 
     }
@@ -224,22 +244,27 @@ public class PXRComponentProxy implements ComponentProxy, Syncable {
         return parent.getRoot();
     }
 
-    @Override
-    public void setSyncing(boolean sync) {
+    private void setNodeSyncing(boolean sync) {
         assert EventQueue.isDispatchThread();
-        if (syncing != sync) {
-            syncing = sync;
-            setPropertySyncing(sync);
+        nodeSyncing = sync;
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, "Setting node syncing {0} on {1}", new Object[]{sync, getAddress()});
+        }
+        checkSyncing();
+    }
 
+    private void checkSyncing() {
+        boolean toSync = nodeSyncing || (listenerCount > 0);
+        if (toSync != syncing) {
+            syncing = toSync;
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.log(Level.FINE, "Setting properties syncing {0} on {1}", new Object[]{toSync, getAddress()});
+            }
+            setPropertiesSyncing(toSync);
         }
     }
 
-    @Override
-    public boolean isSyncing() {
-        return syncing;
-    }
-
-    private void setPropertySyncing(boolean sync) {
+    private void setPropertiesSyncing(boolean sync) {
         if (properties == null) {
             return;
         }
@@ -257,11 +282,11 @@ public class PXRComponentProxy implements ComponentProxy, Syncable {
             pcs.firePropertyChange(evt.getPropertyName(), null, null);
         }
     }
-    
+
     private class TriggerAction extends AbstractAction {
-        
+
         private String control;
-        
+
         TriggerAction(String control) {
             super(control);
             this.control = control;
@@ -286,74 +311,58 @@ public class PXRComponentProxy implements ComponentProxy, Syncable {
                 Exceptions.printStackTrace(ex);
             }
         }
-        
     }
     
+    private class EditorAction extends AbstractAction {
+        
+        private PXRComponentEditor editor;
 
-    private static class Registry implements LookupListener, PropertyChangeListener {
+        EditorAction() {
+            super("Edit...");
+        }
 
-//        private Lookup.Result<PXRComponentProxy> result;
+        @Override
+        public void actionPerformed(ActionEvent ae) {
+            if (editor == null) {
+                editor = new PXRComponentEditor(PXRComponentProxy.this);
+            }
+            editor.show();
+        }
+    }
+
+    private static class Registry implements PropertyChangeListener {
+
         private List<PXRComponentProxy> syncing;
 
         public Registry() {
             syncing = new ArrayList<PXRComponentProxy>();
-//            result = Utilities.actionsGlobalContext().lookupResult(PXRComponentProxy.class);
-//            result.addLookupListener(this);
             TopComponent.getRegistry().addPropertyChangeListener(this);
-        }
-
-        @Override
-        public void resultChanged(LookupEvent ev) {
-//            if (EventQueue.isDispatchThread()) {
-//                resultChanged();
-//            } else {
-//                EventQueue.invokeLater(new Runnable() {
-//
-//                    @Override
-//                    public void run() {
-//                        resultChanged();
-//                    }
-//                });
-//            }
         }
 
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
             assert EventQueue.isDispatchThread();
-            ArrayList<PXRComponentProxy> tmp = new ArrayList<PXRComponentProxy>();
-            Node[] nodes = TopComponent.getRegistry().getActivatedNodes();
-            for (Node node : nodes) {
-                PXRComponentProxy cmp = node.getLookup().lookup(PXRComponentProxy.class);
-                if (cmp != null) {
-                    tmp.add(cmp);
+            if (TopComponent.Registry.PROP_ACTIVATED_NODES.equals(evt.getPropertyName())) {
+                ArrayList<PXRComponentProxy> tmp = new ArrayList<PXRComponentProxy>();
+                Node[] nodes = TopComponent.getRegistry().getActivatedNodes();
+                for (Node node : nodes) {
+                    PXRComponentProxy cmp = node.getLookup().lookup(PXRComponentProxy.class);
+                    if (cmp != null) {
+                        tmp.add(cmp);
+                    }
                 }
+                syncing.removeAll(tmp);
+                for (PXRComponentProxy cmp : syncing) {
+                    cmp.setNodeSyncing(false);
+                }
+                syncing.clear();
+                syncing.addAll(tmp);
+                for (PXRComponentProxy cmp : syncing) {
+                    cmp.setNodeSyncing(true);
+                }
+                tmp.clear();
             }
-            syncing.removeAll(tmp);
-            for (PXRComponentProxy cmp : syncing) {
-                LOG.fine("Removing sync for : " + cmp.getAddress());
-                cmp.setSyncing(false);
-            }
-            syncing.clear();
-            syncing.addAll(tmp);
-            for (PXRComponentProxy cmp : syncing) {
-                LOG.fine("Adding sync for : " + cmp.getAddress());
-                cmp.setSyncing(true);
-            }
-            tmp.clear();
+
         }
-//        private void resultChanged() {
-//            Collection<? extends PXRComponentProxy> res = result.allInstances();
-//            syncing.removeAll(res);
-//            for (PXRComponentProxy cmp : syncing) {
-//                LOG.fine("Removing sync for : " + cmp.getAddress());
-//                cmp.setSyncing(false);
-//            }
-//            syncing.clear();
-//            syncing.addAll(res);
-//            for (PXRComponentProxy cmp : syncing) {
-//                LOG.fine("Adding sync for : " + cmp.getAddress());
-//                cmp.setSyncing(true);
-//            }
-//        }
     }
 }

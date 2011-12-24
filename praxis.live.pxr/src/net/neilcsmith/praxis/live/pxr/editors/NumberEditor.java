@@ -29,19 +29,19 @@ import net.neilcsmith.praxis.core.info.ArgumentInfo;
 import net.neilcsmith.praxis.core.types.PNumber;
 import net.neilcsmith.praxis.live.pxr.api.PraxisProperty;
 import net.neilcsmith.praxis.live.pxr.api.PraxisPropertyEditor;
-//import org.openide.explorer.propertysheet.ExPropertyEditor;
-//import org.openide.explorer.propertysheet.InplaceEditor;
-//import org.openide.explorer.propertysheet.PropertyEnv;
+import org.openide.explorer.propertysheet.ExPropertyEditor;
+import org.openide.explorer.propertysheet.InplaceEditor;
+import org.openide.explorer.propertysheet.PropertyEnv;
 
 /**
  *
  * @author Neil C Smith (http://neilcsmith.net)
  */
 public class NumberEditor extends PropertyEditorSupport implements 
-        PraxisPropertyEditor { //, ExPropertyEditor {//, InplaceEditor.Factory {
+        PraxisPropertyEditor { //, ExPropertyEditor, InplaceEditor.Factory {
 
     private ArgumentInfo info;
-//    private NumberInplaceEditor inplace;
+    private NumberInplaceEditor inplace;
 
     private PNumber minimum;
     private PNumber maximum;
@@ -99,12 +99,12 @@ public class NumberEditor extends PropertyEditorSupport implements
 
 
 
-
+//
 //    @Override
 //    public void attachEnv(PropertyEnv env) {
 //        env.registerInplaceEditorFactory(this);
 //    }
-
+//
 //    @Override
 //    public InplaceEditor getInplaceEditor() {
 //        if (inplace == null) {

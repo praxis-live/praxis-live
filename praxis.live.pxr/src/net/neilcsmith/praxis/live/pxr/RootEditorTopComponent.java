@@ -30,13 +30,13 @@ import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import javax.swing.AbstractButton;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JToolBar;
-import javax.swing.border.EmptyBorder;
 import net.neilcsmith.praxis.live.pxr.PXRParser.*;
 import net.neilcsmith.praxis.live.pxr.api.RootEditor;
 import net.neilcsmith.praxis.live.pxr.api.RootProxy;
@@ -149,12 +149,27 @@ public class RootEditorTopComponent extends CloneableTopComponent {
             lookup.setAdditional(
                     Lookups.singleton(new PXRRootContext(root)),
                     editor.getLookup());
-            Action[] actions = new Action[]{START_STOP};
-            initToolbar(actions);
+            initToolbar(buildActions(editor));
         }
         editorPanel = editor.getEditorComponent();
         add(editorPanel);
+        if (isVisible()) {
+            editor.componentShowing();
+            editor.componentActivated();
+        }
 
+    }
+    
+    private Action[] buildActions(RootEditor editor) {
+        Action[] editorActions = editor.getActions();
+        if (editorActions == null || editorActions.length == 0) {
+            return new Action[]{START_STOP};
+        }
+        ArrayList<Action> actions = new ArrayList<Action>(editorActions.length + 2);
+        actions.add(START_STOP);
+        actions.add(null);
+        actions.addAll(Arrays.asList(editorActions));
+        return actions.toArray(new Action[actions.size()]);   
     }
 
     private void uninstall(RootProxy root) {
@@ -180,6 +195,9 @@ public class RootEditorTopComponent extends CloneableTopComponent {
                 JButton button = new JButton();
                 Actions.connect(button, action);
                 c = button;
+            }
+            if (c instanceof AbstractButton) {
+                c.setFocusable(false);
             }
             toolBar.add(c);
         }
@@ -238,6 +256,7 @@ public class RootEditorTopComponent extends CloneableTopComponent {
 
         ToolBar() {
             super("editorToolbar");
+            setFocusable(false);
             setFloatable(false);
             setRollover(true);
             setBorder(BorderFactory.createEtchedBorder());

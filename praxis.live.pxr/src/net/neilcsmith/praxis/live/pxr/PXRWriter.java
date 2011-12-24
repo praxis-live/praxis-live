@@ -39,24 +39,30 @@ import org.openide.util.RequestProcessor;
  *
  * @author Neil C Smith (http://neilcsmith.net)
  */
-public class PXRWriter {
+class PXRWriter {
 
     private final static Logger LOG = Logger.getLogger(PXRWriter.class.getName());
-
     final static String INDENT = "  ";
     final static String AT = "@";
     final static String CONNECT = "~";
-    
     private final static RequestProcessor RP = new RequestProcessor();
     private PXRDataObject dob;
     private PXRRootProxy root;
 
+    private PXRWriter(PXRRootProxy root) {
+        this(null, root);
+    }
+    
     private PXRWriter(PXRDataObject dob, PXRRootProxy root) {
         this.dob = dob;
         this.root = root;
     }
+    
+    private void doWrite(Appendable target) throws IOException {
+        writeComponent(target, root, 0);
+    }
 
-    private void doWrite() {
+    private void doWrite() throws IOException {
         final StringBuilder sb = new StringBuilder();
         writeComponent(sb, root, 0);
         RP.execute(new Runnable() {
@@ -84,12 +90,12 @@ public class PXRWriter {
         });
     }
 
-    private void writeComponent(StringBuilder sb, PXRComponentProxy cmp, int level) {
+    private void writeComponent(Appendable sb, PXRComponentProxy cmp, int level) throws IOException {
         LOG.finest("Writing component " + cmp.getAddress());
         writeIndent(sb, level);
         sb.append(AT).append(' ');
         writeComponentID(sb, cmp);
-        sb.append(' ').append(cmp.getType()).append(" {\n");
+        sb.append(' ').append(cmp.getType().toString()).append(" {\n");
         writeAttributes(sb, cmp, level + 1);
         writeProperties(sb, cmp, level + 1);
         if (cmp instanceof PXRContainerProxy) {
@@ -100,9 +106,9 @@ public class PXRWriter {
         sb.append("}\n");
     }
 
-    private void writeComponentID(StringBuilder sb, PXRComponentProxy cmp) {
+    private void writeComponentID(Appendable sb, PXRComponentProxy cmp) throws IOException {
         if (cmp == root) {
-            sb.append(cmp.getAddress());
+            sb.append(cmp.getAddress().toString());
         } else {
             ComponentAddress ad = cmp.getAddress();
             String id = ad.getComponentID(ad.getDepth() - 1);
@@ -111,7 +117,7 @@ public class PXRWriter {
         }
     }
 
-    private void writeAttributes(StringBuilder sb, PXRComponentProxy cmp, int level) {
+    private void writeAttributes(Appendable sb, PXRComponentProxy cmp, int level) throws IOException {
         String[] keys = cmp.getAttributeKeys();
         for (String key : keys) {
             writeIndent(sb, level);
@@ -119,13 +125,13 @@ public class PXRWriter {
         }
     }
 
-    private void writeAttribute(StringBuilder sb, String key, String value) {
+    private void writeAttribute(Appendable sb, String key, String value) throws IOException {
         LOG.finest("Writing attribute " + key + " : " + value);
         sb.append("#%").append(key).append(' ');
         sb.append(SyntaxUtils.escape(value)).append('\n');
     }
 
-    private void writeProperties(StringBuilder sb, PXRComponentProxy cmp, int level) {
+    private void writeProperties(Appendable sb, PXRComponentProxy cmp, int level) {
         String[] propIDs = cmp.getPropertyIDs();
         for (String id : propIDs) {
             try {
@@ -153,18 +159,18 @@ public class PXRWriter {
         }
     }
 
-    private void writeProperty(StringBuilder sb, String id, String code) {
+    private void writeProperty(Appendable sb, String id, String code) throws IOException {
         sb.append('.').append(id).append(' ').append(code).append('\n');
     }
 
-    private void writeChildren(StringBuilder sb, PXRContainerProxy container, int level) {
+    private void writeChildren(Appendable sb, PXRContainerProxy container, int level) throws IOException {
         String[] childIDs = container.getChildIDs();
         for (String id : childIDs) {
             writeComponent(sb, container.getChild(id), level);
         }
     }
 
-    private void writeConnections(StringBuilder sb, PXRContainerProxy container, int level) {
+    private void writeConnections(Appendable sb, PXRContainerProxy container, int level) throws IOException {
         Connection[] connections = container.getConnections();
         for (Connection connection : connections) {
 //            ComponentAddress ad1 = connection.getPort1().getComponentAddress();
@@ -185,20 +191,31 @@ public class PXRWriter {
         }
     }
 
-    private void writeConnection(StringBuilder sb, String c1, String p1,
-            String c2, String p2) {
+    private void writeConnection(Appendable sb, String c1, String p1,
+            String c2, String p2) throws IOException {
         sb.append(CONNECT).append(' ');
         sb.append("./").append(c1).append('!').append(p1).append(' ');
         sb.append("./").append(c2).append('!').append(p2).append('\n');
     }
 
-    private void writeIndent(StringBuilder sb, int level) {
+    private void writeIndent(Appendable sb, int level) throws IOException {
         for (int i = 0; i < level; i++) {
             sb.append(INDENT);
         }
     }
 
+    @Deprecated
     static void write(PXRDataObject dob, PXRRootProxy root) {
-        new PXRWriter(dob, root).doWrite();
+        try {
+            new PXRWriter(dob, root).doWrite();
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
+    
+    static void write(PXRRootProxy root, Appendable target) throws IOException {
+        new PXRWriter(root).doWrite(target);
+    }
+
+    
 }

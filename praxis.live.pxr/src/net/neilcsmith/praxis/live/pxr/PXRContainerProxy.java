@@ -37,6 +37,7 @@ import net.neilcsmith.praxis.live.core.api.Callback;
 import net.neilcsmith.praxis.live.pxr.api.Connection;
 import net.neilcsmith.praxis.live.pxr.api.ContainerProxy;
 import net.neilcsmith.praxis.live.pxr.api.ProxyException;
+import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 
 /**
@@ -84,7 +85,9 @@ public class PXRContainerProxy extends PXRComponentProxy implements ContainerPro
                     }
 
                     firePropertyChange(ContainerProxy.PROP_CHILDREN, null, null);
-                    callback.onReturn(args);
+                    if (callback != null) {
+                        callback.onReturn(args);
+                    }
                 } catch (Exception ex) {
                     Exceptions.printStackTrace(ex);
                     onError(args);
@@ -93,7 +96,9 @@ public class PXRContainerProxy extends PXRComponentProxy implements ContainerPro
 
             @Override
             public void onError(CallArguments args) {
-                callback.onError(args);
+                if (callback != null) {
+                    callback.onReturn(args);
+                }
             }
         });
 
@@ -116,28 +121,33 @@ public class PXRContainerProxy extends PXRComponentProxy implements ContainerPro
             @Override
             public void onReturn(CallArguments args) {
 
-                    children.remove(id);
-                    Iterator<Connection> itr = connections.iterator();
-                    boolean conChanged = false;
-                    while(itr.hasNext()) {
-                        Connection con = itr.next();
-                        if (con.getChild1().equals(id) ||
-                                con.getChild2().equals(id)) {
-                            itr.remove();
-                            conChanged = true;
-                        }
+                children.remove(id);
+                Iterator<Connection> itr = connections.iterator();
+                boolean conChanged = false;
+                while (itr.hasNext()) {
+                    Connection con = itr.next();
+                    if (con.getChild1().equals(id)
+                            || con.getChild2().equals(id)) {
+                        itr.remove();
+                        conChanged = true;
                     }
-                    if (conChanged) {
-                        firePropertyChange(ContainerProxy.PROP_CONNECTIONS, null, null);
-                    }
-                    firePropertyChange(ContainerProxy.PROP_CHILDREN, null, null);
+                }
+                if (conChanged) {
+                    firePropertyChange(ContainerProxy.PROP_CONNECTIONS, null, null);
+                }
+                firePropertyChange(ContainerProxy.PROP_CHILDREN, null, null);
+                if (callback != null) {
                     callback.onReturn(args);
+                }
+
 
             }
 
             @Override
             public void onError(CallArguments args) {
-                callback.onError(args);
+                if (callback != null) {
+                    callback.onReturn(args);
+                }
             }
         });
     }
@@ -151,12 +161,16 @@ public class PXRContainerProxy extends PXRComponentProxy implements ContainerPro
             public void onReturn(CallArguments args) {
                 connections.add(connection);
                 firePropertyChange(ContainerProxy.PROP_CONNECTIONS, null, null);
-                callback.onReturn(args);
+                if (callback != null) {
+                    callback.onReturn(args);
+                }
             }
 
             @Override
             public void onError(CallArguments args) {
-                callback.onError(args);
+                if (callback != null) {
+                    callback.onReturn(args);
+                }
             }
         });
     }
@@ -170,15 +184,26 @@ public class PXRContainerProxy extends PXRComponentProxy implements ContainerPro
             public void onReturn(CallArguments args) {
                 connections.remove(connection);
                 firePropertyChange(ContainerProxy.PROP_CONNECTIONS, null, null);
-                callback.onReturn(args);
+                if (callback != null) {
+                    callback.onReturn(args);
+                }
             }
 
             @Override
             public void onError(CallArguments args) {
-                callback.onError(args);
+                if (callback != null) {
+                    callback.onReturn(args);
+                }
             }
         });
 
+    }
+
+    @Override
+    public Node getNodeDelegate() {
+        Node n = super.getNodeDelegate();
+        n.getChildren().getNodes();
+        return n;
     }
 
     ComponentAddress getAddress(PXRComponentProxy child) {
@@ -207,11 +232,9 @@ public class PXRContainerProxy extends PXRComponentProxy implements ContainerPro
 
     @Override
     protected boolean isIgnoredProperty(String id) {
-        return super.isIgnoredProperty(id) ||
-                ContainerInterface.CHILDREN.equals(id) ||
-                ContainerInterface.CONNECTIONS.equals(id);
+        return super.isIgnoredProperty(id)
+                || ContainerInterface.CHILDREN.equals(id)
+                || ContainerInterface.CONNECTIONS.equals(id);
 
     }
-
-
 }
