@@ -19,16 +19,38 @@
  * Please visit http://neilcsmith.net if you need additional information or
  * have any questions.
  */
-package net.neilcsmith.praxis.live.core.api;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import net.neilcsmith.praxis.live.core.DefaultHubManager;
+package net.neilcsmith.praxis.live.core.ui;
 
-public final class RestartHubAction implements ActionListener {
+import net.neilcsmith.praxis.core.Component;
+import net.neilcsmith.praxis.live.core.api.ExtensionProvider;
+import net.neilcsmith.praxis.live.util.AbstractHelperComponent;
+import org.openide.util.lookup.ServiceProvider;
 
-    @Override
-    public void actionPerformed(ActionEvent e) {
-            DefaultHubManager.getInstance().restart();
+/**
+ *
+ * @author Neil C Smith (http://neilcsmith.net)
+ */
+public class HubUIHelper extends AbstractHelperComponent {
+
+    private final static HubUIHelper INSTANCE = new HubUIHelper();
+
+    private HubUIHelper() {
+
     }
+
+    public static HubUIHelper getDefault() {
+        return INSTANCE;
+    }
+
+    @ServiceProvider(service=ExtensionProvider.class)
+    public static class Provider implements ExtensionProvider {
+
+        @Override
+        public Component getExtensionComponent() {
+            return getDefault();
+        }
+
+    }
+
 }

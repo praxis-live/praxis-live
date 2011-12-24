@@ -19,16 +19,11 @@
  * Please visit http://neilcsmith.net if you need additional information or
  * have any questions.
  */
-package net.neilcsmith.praxis.live.hubui;
+package net.neilcsmith.praxis.live.core.ui;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.logging.Logger;
-import javax.swing.JToggleButton;
 import javax.swing.ListSelectionModel;
-import net.neilcsmith.praxis.live.core.api.HubManager;
-import net.neilcsmith.praxis.live.core.api.HubStateException;
-import org.openide.util.Exceptions;
+import net.neilcsmith.praxis.live.core.DefaultHubManager;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
@@ -36,7 +31,6 @@ import org.openide.windows.WindowManager;
 import org.netbeans.api.settings.ConvertAsProperties;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.ListView;
-import org.openide.nodes.Node;
 
 /**
  * Top component which displays something.
@@ -77,7 +71,7 @@ public final class HubUITopComponent extends TopComponent implements ExplorerMan
         systemRootToggle = new javax.swing.JToggleButton();
         restartButton = new javax.swing.JButton();
 
-        systemRootToggle.setIcon(new javax.swing.ImageIcon(getClass().getResource("/net/neilcsmith/praxis/live/hubui/resources/show-system.png"))); // NOI18N
+        systemRootToggle.setIcon(new javax.swing.ImageIcon(getClass().getResource("/net/neilcsmith/praxis/live/core/ui/resources/show-system.png"))); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(systemRootToggle, org.openide.util.NbBundle.getMessage(HubUITopComponent.class, "HubUITopComponent.systemRootToggle.text")); // NOI18N
         systemRootToggle.setToolTipText(org.openide.util.NbBundle.getMessage(HubUITopComponent.class, "LBL_ShowSystemRoots")); // NOI18N
         systemRootToggle.setFocusable(false);
@@ -89,7 +83,7 @@ public final class HubUITopComponent extends TopComponent implements ExplorerMan
             }
         });
 
-        restartButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/net/neilcsmith/praxis/live/hubui/resources/restart.png"))); // NOI18N
+        restartButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/net/neilcsmith/praxis/live/core/ui/resources/restart.png"))); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(restartButton, org.openide.util.NbBundle.getMessage(HubUITopComponent.class, "HubUITopComponent.restartButton.text")); // NOI18N
         restartButton.setToolTipText(org.openide.util.NbBundle.getMessage(HubUITopComponent.class, "LBL_RestartHub")); // NOI18N
         restartButton.addActionListener(new java.awt.event.ActionListener() {
@@ -123,11 +117,8 @@ public final class HubUITopComponent extends TopComponent implements ExplorerMan
     }// </editor-fold>//GEN-END:initComponents
 
     private void restartButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_restartButtonActionPerformed
-        try {
-            HubManager.getDefault().restart();
-        } catch (HubStateException ex) {
-            Exceptions.printStackTrace(ex);
-        }
+
+            DefaultHubManager.getInstance().restart();
     }//GEN-LAST:event_restartButtonActionPerformed
 
     private void systemRootToggleActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_systemRootToggleActionPerformed

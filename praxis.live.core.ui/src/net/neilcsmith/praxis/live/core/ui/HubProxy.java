@@ -19,7 +19,7 @@
  * Please visit http://neilcsmith.net if you need additional information or
  * have any questions.
  */
-package net.neilcsmith.praxis.live.hubui;
+package net.neilcsmith.praxis.live.core.ui;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;

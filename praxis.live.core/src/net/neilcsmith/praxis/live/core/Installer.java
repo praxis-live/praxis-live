@@ -4,11 +4,8 @@
  */
 package net.neilcsmith.praxis.live.core;
 
-import net.neilcsmith.praxis.live.core.api.HubManager;
-import net.neilcsmith.praxis.live.core.api.HubStateException;
 import org.openide.modules.ModuleInfo;
 import org.openide.modules.ModuleInstall;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
 /**
@@ -30,10 +27,7 @@ public class Installer extends ModuleInstall {
         System.setProperty("netbeans.buildnumber", version);
 
 
-        try {
-            HubManager.getDefault().start();
-        } catch (HubStateException ex) {
-            Exceptions.printStackTrace(ex);
-        }
+        DefaultHubManager.getInstance().start();
+
     }
 }

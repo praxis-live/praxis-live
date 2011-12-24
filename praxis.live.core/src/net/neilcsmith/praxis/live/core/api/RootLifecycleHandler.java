@@ -19,38 +19,16 @@
  * Please visit http://neilcsmith.net if you need additional information or
  * have any questions.
  */
+package net.neilcsmith.praxis.live.core.api;
 
-package net.neilcsmith.praxis.live.hubui;
-
-import net.neilcsmith.praxis.core.Component;
-import net.neilcsmith.praxis.live.core.api.ExtensionProvider;
-import net.neilcsmith.praxis.live.util.AbstractHelperComponent;
-import org.openide.util.lookup.ServiceProvider;
+import java.util.Set;
 
 /**
  *
- * @author Neil C Smith (http://neilcsmith.net)
+ * @author Neil C Smith <http://neilcsmith.net>
  */
-public class HubUIHelper extends AbstractHelperComponent {
-
-    private final static HubUIHelper INSTANCE = new HubUIHelper();
-
-    private HubUIHelper() {
-
-    }
-
-    public static HubUIHelper getDefault() {
-        return INSTANCE;
-    }
-
-    @ServiceProvider(service=ExtensionProvider.class)
-    public static class Provider implements ExtensionProvider {
-
-        @Override
-        public Component getExtensionComponent() {
-            return getDefault();
-        }
-
-    }
-
+public abstract class RootLifecycleHandler {
+    
+    public abstract Task getDeletionTask(Set<String> rootIDs);
+    
 }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Neil C Smith.
+ * Copyright 2011 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -19,29 +19,27 @@
  * Please visit http://neilcsmith.net if you need additional information or
  * have any questions.
  */
-
 package net.neilcsmith.praxis.live.core.api;
 
-import net.neilcsmith.praxis.live.core.DefaultHubManager;
+import java.beans.PropertyChangeListener;
+import org.openide.util.Cancellable;
 
 /**
  *
- * @author Neil C Smith (http://neilcsmith.net)
+ * @author Neil C Smith <http://neilcsmith.net>
  */
-public abstract class HubManager {
-
-    private final static HubManager DEFAULT = new DefaultHubManager();
-
-    public abstract void start() throws HubStateException;
-
-    public abstract void stop() throws HubStateException;
-
-    public abstract void restart() throws HubStateException;
-
-    public abstract boolean isRunning();
-
-    public static HubManager getDefault() {
-        return DEFAULT;
-    }
-
+public interface Task extends Cancellable {
+    
+    public final static String PROP_STATE = "state";
+    
+    public static enum State {NEW, RUNNING, CANCELLED, COMPLETED, ERROR};
+    
+    public State execute();
+    
+    public State getState();
+    
+    public void addPropertyChangeListener(PropertyChangeListener listener);
+    
+    public void removePropertyChangeListener(PropertyChangeListener listener);
+    
 }

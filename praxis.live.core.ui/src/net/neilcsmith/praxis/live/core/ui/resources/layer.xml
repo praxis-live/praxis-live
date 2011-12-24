@@ -7,10 +7,10 @@
    
     <folder name="Actions">
         <folder name="Window">
-            <file name="net-neilcsmith-praxis-live-hubui-HubUIAction.instance">
-                <attr name="component" methodvalue="net.neilcsmith.praxis.live.hubui.HubUITopComponent.findInstance"/>
-                <attr name="displayName" bundlevalue="net.neilcsmith.praxis.live.hubui.Bundle#CTL_HubUIAction"/>
-                <attr name="iconBase" stringvalue="net/neilcsmith/praxis/live/hubui/resources/hub-action.png"/>
+            <file name="net-neilcsmith-praxis-live-core-ui-HubUIAction.instance">
+                <attr name="component" methodvalue="net.neilcsmith.praxis.live.core.ui.HubUITopComponent.findInstance"/>
+                <attr name="displayName" bundlevalue="net.neilcsmith.praxis.live.core.ui.Bundle#CTL_HubUIAction"/>
+                <attr name="iconBase" stringvalue="net/neilcsmith/praxis/live/core/ui/resources/hub-action.png"/>
                 <attr name="instanceCreate" methodvalue="org.openide.windows.TopComponent.openAction"/>
             </file>
         </folder>
@@ -18,7 +18,7 @@
     <folder name="Menu">
         <folder name="Window">
             <file name="HubUIAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Window/net-neilcsmith-praxis-live-hubui-HubUIAction.instance"/>
+                <attr name="originalFile" stringvalue="Actions/Window/net-neilcsmith-praxis-live-core-ui-HubUIAction.instance"/>
                 <attr name="position" intvalue="1750"/>
             </file>
         </folder>

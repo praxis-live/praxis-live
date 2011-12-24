@@ -20,7 +20,7 @@
  * have any questions.
  */
 
-package net.neilcsmith.praxis.live.hubui;
+package net.neilcsmith.praxis.live.core.ui;
 
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
@@ -56,7 +56,7 @@ import org.openide.util.lookup.Lookups;
 public class RootProxy {
 
     private final static Logger LOG = Logger.getLogger(RootProxy.class.getName());
-    private final static String RESOURCE_DIR = "net/neilcsmith/praxis/live/hubui/resources/";
+    private final static String RESOURCE_DIR = "net/neilcsmith/praxis/live/core/ui/resources/";
 
     private String id;
     private ComponentAddress address;
@@ -266,7 +266,6 @@ public class RootProxy {
                 } catch (Exception ex) {
                     Exceptions.printStackTrace(ex);
                 }
-                setEnabled(false);
             }
 
             

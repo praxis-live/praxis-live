@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Neil C Smith.
+ * Copyright 2011 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -50,7 +50,7 @@ class ExtensionContainer extends AbstractSwingRoot {
     private Component[] extensions;
     private Map<ControlAddress, DefaultBindingControl> bindingCache;
     private Lookup lookup;
-    private Bindings bindings;
+//    private Bindings bindings;
 
     ExtensionContainer(Component[] extensions) {
         super(EnumSet.noneOf(Caps.class));
