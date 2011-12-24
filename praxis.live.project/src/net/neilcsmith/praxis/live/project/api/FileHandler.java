@@ -36,7 +36,7 @@ public abstract class FileHandler {
 
     public abstract void process(Callback callback) throws Exception;
 
-    public List<String> getErrors() {
+    public List<String> getWarnings() {
         List<String> list = Collections.emptyList();
         return list;
     }

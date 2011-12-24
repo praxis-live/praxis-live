@@ -23,9 +23,15 @@ package net.neilcsmith.praxis.live.project;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.util.Arrays;
+import java.util.LinkedHashSet;
+import java.util.Set;
 import net.neilcsmith.praxis.live.project.api.ExecutionLevel;
 import net.neilcsmith.praxis.live.project.api.PraxisProjectProperties;
+import org.openide.filesystems.FileChangeAdapter;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
 
 /**
@@ -33,22 +39,30 @@ import org.openide.filesystems.FileUtil;
  * @author Neil C Smith (http://neilcsmith.net)
  */
 public class ProjectPropertiesImpl extends PraxisProjectProperties {
+    
+    private final static FileObject[] FILEOBJECT_ARRAY = new FileObject[0];
 
-    private FileObject[] buildFiles = new FileObject[0];
-    private FileObject[] runFiles = new FileObject[0];
-    private PropertyChangeSupport pcs= new PropertyChangeSupport(this);
+    private Set<FileObject> buildFiles;
+    private Set<FileObject> runFiles;
+    private PropertyChangeSupport pcs;
     private DefaultPraxisProject project;
+    private FileListener listener;
 
     ProjectPropertiesImpl(DefaultPraxisProject project) {
         this.project = project;
+        buildFiles = new LinkedHashSet<FileObject>();
+        runFiles = new LinkedHashSet<FileObject>();
+        pcs = new PropertyChangeSupport(this);
+        listener = new FileListener();
+        project.getProjectDirectory().addRecursiveListener(listener);
     }
 
     @Override
     public FileObject[] getProjectFiles(ExecutionLevel level) {
         if (level == ExecutionLevel.BUILD) {
-            return (FileObject[]) buildFiles.clone();
+            return buildFiles.toArray(FILEOBJECT_ARRAY);
         } else if (level == ExecutionLevel.RUN) {
-            return (FileObject[]) runFiles.clone();
+            return runFiles.toArray(FILEOBJECT_ARRAY);
         } else {
             throw new IllegalArgumentException();
         }
@@ -56,14 +70,15 @@ public class ProjectPropertiesImpl extends PraxisProjectProperties {
 
     @Override
     public void setProjectFiles(ExecutionLevel level, FileObject[] files) {
-        files = (FileObject[]) files.clone();
         for (FileObject file : files) {
             checkFile(file);
         }
         if (level == ExecutionLevel.BUILD) {
-            buildFiles = files;
+            buildFiles.clear();
+            buildFiles.addAll(Arrays.asList(files));
         } else if (level == ExecutionLevel.RUN) {
-            runFiles = files;
+            runFiles.clear();
+            runFiles.addAll(Arrays.asList(files));
         } else {
             throw new IllegalArgumentException("Unknown build level");
         }
@@ -85,4 +100,32 @@ public class ProjectPropertiesImpl extends PraxisProjectProperties {
     public void removePropertyChangeListener(PropertyChangeListener listener) {
         pcs.removePropertyChangeListener(listener);
     }
+    
+    private class FileListener extends FileChangeAdapter {
+
+        @Override
+        public void fileDeleted(FileEvent fe) {
+            FileObject file = fe.getFile();
+            boolean changed = false;
+            if (buildFiles.remove(file)) {
+                changed = true;
+            }
+            if (runFiles.remove(file)) {
+                changed = true;
+            }
+            if (changed) {
+                pcs.firePropertyChange(PROP_FILES_CHANGED, null, null);
+            }
+        }
+
+        @Override
+        public void fileRenamed(FileRenameEvent fe) {
+            pcs.firePropertyChange(PROP_FILES_CHANGED, null, null);
+        }
+       
+        
+    }
+    
+    
+    
 }

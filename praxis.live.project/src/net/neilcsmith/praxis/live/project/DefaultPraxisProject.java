@@ -22,7 +22,6 @@
 package net.neilcsmith.praxis.live.project;
 
 import java.beans.PropertyChangeEvent;
-import net.neilcsmith.praxis.live.core.api.HubStateException;
 import net.neilcsmith.praxis.live.project.ui.PraxisCustomizerProvider;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
@@ -35,7 +34,6 @@ import java.util.Set;
 import javax.swing.Icon;
 import net.neilcsmith.praxis.core.CallArguments;
 import net.neilcsmith.praxis.live.core.api.Callback;
-import net.neilcsmith.praxis.live.core.api.HubManager;
 import net.neilcsmith.praxis.live.project.api.ExecutionLevel;
 import net.neilcsmith.praxis.live.project.api.FileHandler;
 import net.neilcsmith.praxis.live.project.api.PraxisProject;
@@ -50,8 +48,6 @@ import org.netbeans.spi.project.ProjectState;
 import org.netbeans.spi.project.support.LookupProviderSupport;
 import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.netbeans.spi.project.ui.support.UILookupMergerSupport;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Cancellable;
@@ -250,7 +246,7 @@ public class DefaultPraxisProject extends PraxisProject {
         private ProgressHandle progress = null;
         private int index = -1;
         private FileHandler.Provider[] handlers = new FileHandler.Provider[0];
-        private Map<FileObject, List<String>> errors;
+        private Map<FileObject, List<String>> warnings;
 
         private FileHandlerIterator(FileObject[] buildFiles, FileObject[] runFiles) {
             this.buildFiles = buildFiles;
@@ -264,6 +260,7 @@ public class DefaultPraxisProject extends PraxisProject {
                 return;
             }
             progress = ProgressHandleFactory.createHandle("Executing...", this);
+            progress.setInitialDelay(0);
             progress.start(totalFiles);
             next();
         }
@@ -296,16 +293,27 @@ public class DefaultPraxisProject extends PraxisProject {
                 handler.process(new CallbackImpl(handler, file));
             } catch (Exception ex) {
                 Exceptions.printStackTrace(ex);
-                error(handler, file);
-                next();
+                if (continueOnError(handler, file)) {
+                    next();
+                } else {
+                    done();
+                }
             }
         }
 
-        private void error(FileHandler handler, FileObject file) {
-            if (errors == null) {
-                errors = new LinkedHashMap<FileObject, List<String>>();
+        private boolean continueOnError(FileHandler handler, FileObject file) {
+            return true;
+        }
+        
+        private void logWarnings(FileHandler handler, FileObject file) {
+            List<String> wl = handler.getWarnings();
+            if (wl == null || wl.isEmpty()) {
+                return;
             }
-            errors.put(file, handler.getErrors());
+            if (warnings == null) {
+                warnings = new LinkedHashMap<FileObject, List<String>>();
+            }
+            warnings.put(file, wl);
         }
 
         private void done() {
@@ -343,13 +351,17 @@ public class DefaultPraxisProject extends PraxisProject {
             
             @Override
             public void onReturn(CallArguments args) {
+                logWarnings(handler, file);
                 next();
             }
 
             @Override
             public void onError(CallArguments args) {
-                error(handler, file);
-                next();
+                if (continueOnError(handler, file)) {
+                    next();
+                } else {
+                    done();
+                }
             }
         }
     }
