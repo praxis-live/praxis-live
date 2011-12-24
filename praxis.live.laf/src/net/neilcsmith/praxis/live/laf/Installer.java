@@ -53,6 +53,9 @@ public class Installer extends ModuleInstall {
 
     @Override
     public void restored() {
+        
+        System.setProperty("netbeans.ps.hideSingleExpansion", "true");
+        
         try {
             EventQueue.invokeAndWait(new Runnable() {
 
