@@ -81,8 +81,8 @@ public class CategoryChildren extends Children.Keys<String> {
     }
 
     private boolean include(String type) {
-        if (type.contains(":test:")) {
-            return includeTest;
+        if (type.contains(":test:") && !includeTest) {
+            return false;
         }
         if (filters == null) {
             return true;
