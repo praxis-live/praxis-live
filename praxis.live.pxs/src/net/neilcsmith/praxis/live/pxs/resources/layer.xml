@@ -1,12 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
 <filesystem>
+    <folder name="Actions">
+        <folder name="PXS">
+            <file name="net-neilcsmith-praxis-live-pxs-RunScriptAction.instance">
+                <attr name="delegate" methodvalue="org.openide.awt.Actions.inject"/>
+                <attr name="displayName" bundlevalue="net.neilcsmith.praxis.live.pxs.Bundle#CTL_RunScriptAction"/>
+                <attr name="injectable" stringvalue="net.neilcsmith.praxis.live.pxs.RunScriptAction"/>
+                <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.context"/>
+                <attr name="noIconInMenu" boolvalue="false"/>
+                <attr name="selectionType" stringvalue="EXACTLY_ONE"/>
+                <attr name="type" stringvalue="net.neilcsmith.praxis.live.pxs.RunScriptCookie"/>
+            </file>
+        </folder>
+    </folder>
     <folder name="Loaders">
         <folder name="text">
             <folder name="x-praxis-script">
                 <folder name="Actions">
                     <file name="net-neilcsmith-praxis-live-core-api-RunScriptAction.shadow">
-                        <attr name="originalFile" stringvalue="Actions/Praxis/net-neilcsmith-praxis-live-core-api-RunScriptAction.instance"/>
+                        <attr name="originalFile" stringvalue="Actions/PXS/net-neilcsmith-praxis-live-pxs-RunScriptAction.instance"/>
                         <attr name="position" intvalue="150"/>
                     </file>
                     <file name="org-openide-actions-CopyAction.shadow">

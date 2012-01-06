@@ -22,7 +22,6 @@
 package net.neilcsmith.praxis.live.pxs;
 
 import java.io.IOException;
-import net.neilcsmith.praxis.live.core.api.RunScriptCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataNode;
 import org.openide.loaders.DataObjectExistsException;
