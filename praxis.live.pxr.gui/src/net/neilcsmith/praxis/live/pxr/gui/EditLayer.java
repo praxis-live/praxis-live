@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Neil C Smith.
+ * Copyright 2012 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -41,6 +41,8 @@ import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
+import javax.swing.event.AncestorEvent;
+import javax.swing.event.AncestorListener;
 import javax.swing.event.ChangeListener;
 import net.miginfocom.swing.MigLayout;
 import net.neilcsmith.praxis.core.CallArguments;
@@ -73,6 +75,7 @@ class EditLayer extends JComponent {
     private JComponent hovered;
     private JComponent selected;
     private ChangeSupport cs;
+    private SelectedListener selectedListener;
 
     EditLayer(GuiEditor editor, JPanel rootPanel) {
         this.editor = editor;
@@ -80,6 +83,7 @@ class EditLayer extends JComponent {
         root = editor.getRoot();
         cs = new ChangeSupport(this);
         mouse = new MouseController();
+        selectedListener = new SelectedListener();
         addMouseListener(mouse);
         addMouseMotionListener(mouse);
         setFocusable(true);
@@ -89,13 +93,13 @@ class EditLayer extends JComponent {
         super.setVisible(false);
 
     }
+    
+    void addChangeListener(ChangeListener listener) {
+        cs.addChangeListener(listener);
+    }
 
     void removeChangeListener(ChangeListener listener) {
         cs.removeChangeListener(listener);
-    }
-
-    void addChangeListener(ChangeListener listener) {
-        cs.addChangeListener(listener);
     }
 
     void performLayoutAction(LayoutAction.Type type) {
@@ -236,7 +240,11 @@ class EditLayer extends JComponent {
             return;
         }
         try {
+            if (selected != null) {
+                selected.removeAncestorListener(selectedListener);
+            }
             selected = cmp;
+            selected.addAncestorListener(selectedListener);
             ComponentProxy pxy = Utils.findComponentProxy(root, cmp);
             if (pxy == null) {
                 editor.setSelected(new Node[]{root.getNodeDelegate()});
@@ -246,6 +254,7 @@ class EditLayer extends JComponent {
 
         } catch (Exception ex) {
             LOG.log(Level.WARNING, null, ex);
+            selected.removeAncestorListener(selectedListener);
             selected = null;
         }
         cs.fireChange();
@@ -263,7 +272,7 @@ class EditLayer extends JComponent {
         final ContainerProxy pxy = (ContainerProxy) Utils.findComponentProxy(root, container);
         int[] pos;
         if (container == dropOver) {
-            if (container.getComponentCount() == 0) {
+            if (container.getComponentCount() == 0 || !(container.getLayout() instanceof MigLayout)) {
                 pos = new int[]{0, 0};
             } else {
                 pos = Utils.getGridPosition(container, x, y);
@@ -318,6 +327,21 @@ class EditLayer extends JComponent {
         Component cmp = SwingUtilities.getDeepestComponentAt(rootPanel, x, y);
         return Utils.findAddressedComponent(cmp);
     }
+    
+    private class SelectedListener implements AncestorListener {
+
+        @Override
+        public void ancestorAdded(AncestorEvent ae) {}
+
+        @Override
+        public void ancestorRemoved(AncestorEvent ae) {
+            updateSelectedComponent(0, 0);
+        }
+
+        @Override
+        public void ancestorMoved(AncestorEvent ae) {}
+        
+    }
 
     private class MouseController extends MouseAdapter {
 
@@ -340,14 +364,14 @@ class EditLayer extends JComponent {
         }
 
         @Override
-        public void mouseDragged(MouseEvent me) {
-            super.mouseDragged(me);
+        public void mouseClicked(MouseEvent me) {
+            if (me.getClickCount() == 2) {
+                updateSelectedComponent(me.getX(), me.getY());
+                editor.performPreferredAction();
+            }
         }
 
-        @Override
-        public void mouseReleased(MouseEvent me) {
-            super.mouseReleased(me);
-        }
+        
     }
 
     private class DnDController extends DropTargetAdapter {

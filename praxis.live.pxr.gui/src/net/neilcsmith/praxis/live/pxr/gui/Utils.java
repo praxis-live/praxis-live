@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 2011 Neil C Smith.
+ * Copyright 2012 Neil C Smith.
  * 
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -130,6 +130,9 @@ class Utils {
 
     static int[] getGridPosition(JComponent container, JComponent component) {
         HashMap<Object, int[]> gridPositions = IDEUtil.getGridPositions(container);
+        if (gridPositions == null) {
+            return null;
+        }
         int[] result = gridPositions.get(component);
         if (LOG.isLoggable(Level.FINE)) {
             if (result == null) {
@@ -227,6 +230,9 @@ class Utils {
     
     private static void changeBounds(RootProxy root, JComponent cmp, int dx, int dy, int dSpanX, int dSpanY, boolean vertical) {
         JComponent container = findContainerComponent(root, cmp);
+        if (container == cmp) {
+            container = findContainerComponent(root, cmp.getParent());
+        }
         int[] pos = getGridPosition(container, cmp);
         if (pos == null) {
             LOG.log(Level.FINE, "changeBounds() can't find component {0} in {1}",

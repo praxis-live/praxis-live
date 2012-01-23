@@ -127,7 +127,7 @@ public class GuiEditor extends RootEditor {
         actionMap.put("decrease-span-y", actions[10]);
         
         actionMap.put(DeleteAction.get(DeleteAction.class).getActionMapKey(),
-                ExplorerUtils.actionDelete(em, false));
+                ExplorerUtils.actionDelete(em, true));
         
     }
 
@@ -152,6 +152,13 @@ public class GuiEditor extends RootEditor {
 
     void setSelected(Node[] nodes) throws Exception {
         em.setSelectedNodes(nodes);
+    }
+    
+    void performPreferredAction() {
+        Node[] nodes = em.getSelectedNodes();
+        if (nodes.length == 1) {
+            nodes[0].getPreferredAction().actionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, ""));
+        }
     }
 
     void addRootPanel(JPanel panel) {
