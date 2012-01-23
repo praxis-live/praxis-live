@@ -73,7 +73,7 @@ final class GeneralVideoPanel extends javax.swing.JPanel {
                     .addGroup(defaultConfigPanelLayout.createSequentialGroup()
                         .addComponent(rendererLbl)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(rendererChooser, 0, 488, Short.MAX_VALUE))
+                        .addComponent(rendererChooser, 0, 490, Short.MAX_VALUE))
                     .addComponent(defaultConfigDescription, javax.swing.GroupLayout.Alignment.TRAILING))
                 .addContainerGap())
         );
@@ -84,7 +84,7 @@ final class GeneralVideoPanel extends javax.swing.JPanel {
                 .addGroup(defaultConfigPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(rendererChooser, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(rendererLbl))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 317, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 311, Short.MAX_VALUE)
                 .addComponent(defaultConfigDescription)
                 .addContainerGap())
         );
@@ -101,7 +101,7 @@ final class GeneralVideoPanel extends javax.swing.JPanel {
                 .addGroup(layout.createSequentialGroup()
                     .addContainerGap()
                     .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addContainerGap(606, Short.MAX_VALUE)))
+                    .addContainerGap(608, Short.MAX_VALUE)))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -113,7 +113,7 @@ final class GeneralVideoPanel extends javax.swing.JPanel {
                 .addGroup(layout.createSequentialGroup()
                     .addContainerGap()
                     .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addContainerGap(424, Short.MAX_VALUE)))
+                    .addContainerGap(418, Short.MAX_VALUE)))
         );
     }// </editor-fold>//GEN-END:initComponents
 

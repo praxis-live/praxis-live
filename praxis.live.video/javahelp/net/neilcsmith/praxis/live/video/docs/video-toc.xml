@@ -10,8 +10,10 @@ and open the template in the editor.
             <tocitem text="video:output" target="video:output"/>
             <tocitem text="video:snapshot" target="video:snapshot"/>
             <tocitem text="video:still" target="video:still"/>
+            <tocitem text="video:code:composite" target="video:code:composite"/>
             <tocitem text="video:mix:composite" target="video:mix:composite"/>
             <tocitem text="video:mix:xfader" target="video:mix:xfader"/>
+            <tocitem text="video:source:noise" target="video:source:noise"/>
         </tocitem>
     </tocitem>
 </toc>

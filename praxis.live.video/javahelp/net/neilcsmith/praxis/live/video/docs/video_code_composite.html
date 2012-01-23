@@ -1,14 +1,14 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd"> 
 <html>
   <head>
-      <title>video:mix:composite</title>
+      <title>video:code:composite</title>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <link rel="stylesheet" href="nbdocs:/net/neilcsmith/praxis/live/help/docs/help.css" type="text/css">
   </head>
   <body>
-    <h1>video:mix:composite</h1>
-    <p>Compose the video input source onto the video input destination using the blend mode and additional opacity as set.</p>
-    <p>The blend modes available are <code>Normal, Add, Sub, Difference, Multiply, Screen, BitXor</code></p>
+    <h1>video:code:composite</h1>
+    <p>Live coding component.</p>
+    <p>Uses a 2D subset of the Processing API.</p>
     <h2>Ports</h2>
     <table border="1" cellpadding="5" cellspacing="0">
         <thead>
@@ -33,7 +33,8 @@
                 <td>video</td>
                 <td>in</td>
                 <td></td>
-                <td>Video input to be composed on top of <code>in</code>.</td>
+                <td>Additional video input. Can be referenced from code using the
+                    <code>src</code> variable.</td>
             </tr>
             <tr>
                 <td><b>out</b></td>
@@ -43,19 +44,28 @@
                 <td>Video output.</td>
             </tr>
             <tr>
-                <td><b>mode</b></td>
+                <td><b>p1 - p8</b></td>
                 <td>control</td>
                 <td>in</td>
-                <td>string(from blend modes)</td>
-                <td>Blend mode to use.</td>
+                <td>any</td>
+                <td>Parameters that can be read from code using <code>p(X)</code>.
+                    Use <code>d(X) to get the parameter as a number.</code></td>
             </tr>
             <tr>
-                <td><b>mix</b></td>
+                <td><b>t1 - t4</b></td>
                 <td>control</td>
                 <td>in</td>
-                <td>number(0..1)</td>
-                <td>Opacity of <code>src</code>.</td>
+                <td></td>
+                <td>Triggers that can be checked from code using <code>t(X)</code></td>
             </tr>
+            <tr>
+                <td><b>out-1 / out-2</b></td>
+                <td>control</td>
+                <td>out</td>
+                <td></td>
+                <td>Outputs that can be used from code.</td>
+            </tr>
+            
         </tbody>
     </table>
     <h2>Controls</h2>
@@ -72,29 +82,37 @@
         </thead>
         <tbody>
             <tr>
-                <td><b>force-alpha</b></td>
+                <td><b>code</b></td>
                 <td>property</td>
-                <td>boolean</td>
+                <td>string</td>
                 <td></td>
-                <td>false</td>
-                <td>Force <code>src</code> to have an alpha channel, even if output 
-                    doesn't (defaults to same as output).</td>
+                <td>{}</td>
+                <td>Java class body.</td>
             </tr>
             <tr>
-                <td><b>mode</b></td>
+                <td><b>img1 - img4</b></td>
                 <td>property</td>
-                <td>string(from blend modes)</td>
+                <td>resource or {}</td>
                 <td></td>
-                <td>Normal</td>
-                <td>Blend mode to use.</td>
+                <td>{}</td>
+                <td>Images files that can be reference from code using <code>img(X)</code>.</td>
             </tr>
             <tr>
-                <td><b>mix</b></td>
+                <td><b>p1 - p16</b></td>
                 <td>property</td>
-                <td>number(0..1)</td>
+                <td>any</td>
                 <td></td>
-                <td>1</td>
-                <td>Opacity of <code>src</code>.</td>
+                <td>{}</td>
+                <td>Parameters that can be read from code using <code>p(X)</code>.
+                    Use <code>d(X) to get the parameter as a number.</code></td>
+            </tr>
+            <tr>
+                <td><b>t1 - t4</b></td>
+                <td>action</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td>Triggers that can be checked from code using <code>t(X)</code></td>
             </tr>
         </tbody>
     </table>

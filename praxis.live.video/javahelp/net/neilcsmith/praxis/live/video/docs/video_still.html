@@ -1,54 +1,143 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd"> 
 <html>
-  <head>
-      <title>video:still</title>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <link rel="stylesheet" href="nbdocs:/net/neilcsmith/praxis/live/help/docs/help.css" type="text/css">
-  </head>
-  <body>
-    <h1>video:still</h1>
-    <p>Output a still image loaded from a file. This component offers an optional input
-        onto which the still image will be drawn; this is only used if the still image
-        doesn't fill the frame, or the image is not opaque. Still images are aligned
-        and resized according to the <code>align-x</code>, <code>align-y</code> and
-        <code>resize-mode</code> properties. Images are loaded in the background, and
-        a signal will be sent from the <code>ready</code> port when loaded, or the
-        <code>error</code> port if an image could not be loaded from the supplied uri.
-        Control calls to <code>uri</code> will not return until the image is loaded
-        (or causes an error). An empty string sent to <code>uri</code> will clear the
-        current image - any input signal will show through unchanged.</p>
-    <h2>Ports</h2>
-    <dl>
-      <dt>in</dt>
-        <dd>video in | Input video signal.</dd>
-      <dt>out</dt>
-        <dd>video out | Output video signal.</dd>
-      <dt>uri</dt>
-        <dd>control in | resource or {} | Location of image to load, or empty string to clear.</dd>
-        <dt>align-x</dt>
-        <dd>control in | number(0..1) | Horizontal alignment used when cropping or scaling image.</dd>
-        <dt>align-y</dt>
-        <dd>control in | number(0..1) | Vertical alignment used when cropping or scaling image.</dd>
-        <dt>resize-mode</dt>
-        <dd>control in | string(Crop,Scale,Stretch) | Mode to use for resizing if image size does not match frame size.</dd>
-        <dt>ready</dt>
-        <dd>control out | {} | Signals a new image is loaded (or the image has been cleared).</dd>
-        <dt>error</dt>
-        <dd>control out | {} | Signals an error occurred while trying to load image.</dd>
+    <head>
+        <title>video:still</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <link rel="stylesheet" href="nbdocs:/net/neilcsmith/praxis/live/help/docs/help.css" type="text/css">
+    </head>
+    <body>
+        <h1>video:still</h1>
+        <p>Output a still image loaded from a file. This component offers an optional input
+            onto which the still image will be drawn; this is only used if the still image
+            doesn't fill the frame, or the image is not opaque. Still images are aligned
+            and resized according to the <code>align-x</code>, <code>align-y</code> and
+            <code>resize-mode</code> properties. Images are loaded in the background, and
+            a signal will be sent from the <code>ready</code> port when loaded, or the
+            <code>error</code> port if an image could not be loaded from the supplied uri.
+            Control calls to <code>uri</code> will not return until the image is loaded
+            (or causes an error). An empty string sent to <code>uri</code> will clear the
+            current image - any input signal will show through unchanged.</p>
+        <h2>Ports</h2>
 
-    </dl>
-    <h2>Controls</h2>
-    <dl>
-      <dt>uri</dt>
-        <dd>property | resource or {} | {} | Location of image to load, or empty string to clear.</dd>
-        <dt>align-x</dt>
-        <dd>property | number(0..1) | 0.5 | Horizontal alignment used when cropping or scaling image.</dd>
-        <dt>align-y</dt>
-        <dd>property | number(0..1) | 0.5 | Vertical alignment used when cropping or scaling image.</dd>
-        <dt>resize-mode</dt>
-        <dd>property | string(Crop,Scale,Stretch) | Stretch | Mode to use for resizing if image size does not match frame size.</dd>
-    </dl>
-    
+        <table border="1" cellpadding="5" cellspacing="0">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Type</th>
+                    <th>Direction</th>
+                    <th>Values</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><b>in</b></td>
+                    <td>video</td>
+                    <td>in</td>
+                    <td></td>
+                    <td>Input video signal.</td>
+                </tr>
+                <tr>
+                    <td><b>out</b></td>
+                    <td>video</td>
+                    <td>out</td>
+                    <td></td>
+                    <td>Output video signal.</td>
+                </tr>
+                <tr>
+                    <td><b>image</b></td>
+                    <td>control</td>
+                    <td>in</td>
+                    <td>resource or {}</td>
+                    <td>Location of image to load, or empty string to clear.</td>
+                </tr>
+                <tr>
+                    <td><b>align-x</b></td>
+                    <td>control</td>
+                    <td>in</td>
+                    <td>number(0..1)</td>
+                    <td>Horizontal alignment used when cropping or scaling image.</td>
+                </tr>
+                <tr>
+                    <td><b>align-y</b></td>
+                    <td>control</td>
+                    <td>in</td>
+                    <td>number(0..1)</td>
+                    <td>Vertical alignment used when cropping or scaling image.</td>
+                </tr>
+                <tr>
+                    <td><b>resize-mode</b></td>
+                    <td>control</td>
+                    <td>in</td>
+                    <td>string(Crop,Scale,Stretch)</td>
+                    <td>Mode to use for resizing if image size does not match frame size.</td>
+                </tr>
+                <tr>
+                    <td><b>ready</b></td>
+                    <td>control</td>
+                    <td>out</td>
+                    <td>{}</td>
+                    <td>Signals a new image is loaded (or the image has been cleared)</td>
+                </tr>
+                <tr>
+                    <td><b>error</b></td>
+                    <td>control</td>
+                    <td>out</td>
+                    <td>{}</td>
+                    <td>Signals an error occurred while trying to load image.</td>
+                </tr>
+            </tbody>
+        </table>
 
-  </body>
+
+        <h2>Controls</h2>
+
+        <table border="1" cellpadding="5" cellspacing="0">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Type</th>
+                    <th>Input</th>
+                    <th>Output</th>
+                    <th>Default</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><b>image</b></td>
+                    <td>property</td>
+                    <td>resource or {}</td>
+                    <td></td>
+                    <td>{}</td>
+                    <td>Location of image to load, or empty string to clear.</td>
+                </tr>
+                <tr>
+                    <td><b>align-x</b></td>
+                    <td>property</td>
+                    <td>number(0..1)</td>
+                    <td></td>
+                    <td>0.5</td>
+                    <td>Horizontal alignment used when cropping or scaling image.</td>
+                </tr>
+                <tr>
+                    <td><b>align-y</b></td>
+                    <td>property</td>
+                    <td>number(0..1)</td>
+                    <td></td>
+                    <td>0.5</td>
+                    <td>Vertical alignment used when cropping or scaling image.</td>
+                </tr>
+                <tr>
+                    <td><b>resize-mode</b></td>
+                    <td>property</td>
+                    <td>string(Crop,Scale,Stretch)</td>
+                    <td></td>
+                    <td>Stretch</td>
+                    <td>Mode to use for resizing if image size does not match frame size</td>
+                </tr>
+            </tbody>
+        </table>
+
+    </body>
 </html>

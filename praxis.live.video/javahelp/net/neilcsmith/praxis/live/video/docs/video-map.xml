@@ -1,13 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--
-To change this template, choose Tools | Templates
-and open the template in the editor.
--->
 <!DOCTYPE map PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp Map Version 2.0//EN" "http://java.sun.com/products/javahelp/map_2_0.dtd">
 <map version="2.0">
     <mapID target="video:output" url="video_output.html"/>
     <mapID target="video:snapshot" url="video_snapshot.html"/>
     <mapID target="video:still" url="video_still.html"/>
+    <mapID target="video:code:composite" url="video_code_composite.html"/>
     <mapID target="video:mix:composite" url="video_mix_composite.html"/>
     <mapID target="video:mix:xfader" url="video_mix_xfader.html"/>
+    <mapID target="video:source:noise" url="video_source_noise.html"/>
 </map>

@@ -11,15 +11,17 @@ import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 
-@OptionsPanelController.SubRegistration(location = "Video",
-id = "General",
-displayName = "#AdvancedOption_DisplayName_GeneralVideo",
-keywords = "#AdvancedOption_Keywords_GeneralVideo",
-keywordsCategory = "Video/GeneralVideo",
-position = 0)
-public final class GeneralVideoOptionsPanelController extends OptionsPanelController {
+//@OptionsPanelController.SubRegistration(location = "Video",
+//id = "Capture",
+//displayName = "#AdvancedOption_DisplayName_Capture",
+//keywords = "#AdvancedOption_Keywords_Capture",
+//keywordsCategory = "Video/Capture",
+//position = 100)
 
-    private GeneralVideoPanel panel;
+// @TODO reenable when capture options support is fixed.
+public final class CaptureOptionsPanelController extends OptionsPanelController {
+
+    private CapturePanel panel;
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
     private boolean changed;
 
@@ -61,9 +63,9 @@ public final class GeneralVideoOptionsPanelController extends OptionsPanelContro
         pcs.removePropertyChangeListener(l);
     }
 
-    private GeneralVideoPanel getPanel() {
+    private CapturePanel getPanel() {
         if (panel == null) {
-            panel = new GeneralVideoPanel(this);
+            panel = new CapturePanel(this);
         }
         return panel;
     }
