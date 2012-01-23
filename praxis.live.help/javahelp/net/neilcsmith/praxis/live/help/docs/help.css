@@ -9,7 +9,7 @@ p  {font-size: medium;
      margin-top: 5;
      margin-bottom: 5}
 
-h1 { font-size: large;
+h1 { font-size: x-large;
      font-weight: bold;
      margin-top: 10;
      margin-bottom: 5}
@@ -34,7 +34,7 @@ h6 { font-size: small;
      margin-top: 0;
      margin-bottom: 10}
 
-code {font-size: small;
+code {font-size: medium;
       font-family: Monospaced}
 
 li {margin-top: 0;
@@ -72,17 +72,40 @@ dl {margin-left: 0;
     margin-top: 10;
     margin-bottom: 5}
 
-dt {font-size: small;
+dt {font-size: medium;
     font-style: normal;
     font-weight: bold;
     margin-top: 0;
     margin-bottom: 0;
     text-indent: 0}
 
-dd {font-size: small;
+dd {font-size: medium;
     font-style: normal;
     font-weight: normal;
     margin-top: 2;
     margin-left: 25}
+
+table {border-style: solid;
+       border-color: black;
+       margin-top: 5;
+       margin-bottom: 5;
+}
+
+td {border-style: solid;
+    border-color: silver;
+/*    padding-left: 4;
+    padding-right: 4;
+    padding-top: 4;
+    padding-bottom: 4;*/
+}
+
+th {border-style: solid;
+    border-color: silver;
+/*    padding-left: 4;
+    padding-right: 4;
+    padding-top: 4;
+    padding-bottom: 4;*/
+    text-align: left;
+}
 
 
