@@ -654,12 +654,4 @@ public class GraphEditor extends RootEditor {
             return "";
         }
     }
-
-    private class NavigatorBridge implements GraphNavigator.Bridge {
-
-        @Override
-        public JComponent getNavigatorComponent() {
-            return scene.createSatelliteView();
-        }
-    }
 }

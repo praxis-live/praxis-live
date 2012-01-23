@@ -1,16 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
-
-
 <filesystem>
-    <folder name="Navigator">
-        <folder name="Panels">
-            <folder name="x-praxis-root">
-                <folder name="graph">
-                    <file name="net-neilcsmith-praxis-live-pxr-graph-GraphNavigator.instance"/>
-                </folder>
-            </folder>
-        </folder>
-    </folder>
-
 </filesystem>
