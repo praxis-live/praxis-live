@@ -48,6 +48,16 @@ public class Components {
     private Components() {}
 
     public static Image getIcon(ComponentType type) {
+        try {
+            for (ComponentIconProvider provider : Lookup.getDefault().lookupAll(ComponentIconProvider.class)) {
+                Image img = provider.getIcon(type);
+                if (img != null) {
+                    return img;
+                }
+            }
+        } catch (Exception ex) {
+            //fall through
+        }
         return DEFAULT_ICON;
     }
 

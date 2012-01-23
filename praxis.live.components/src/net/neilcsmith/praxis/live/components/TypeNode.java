@@ -37,6 +37,7 @@ import org.openide.util.lookup.Lookups;
 public class TypeNode extends AbstractNode {
 
     private ComponentType componentType;
+    private Image icon;
 
     public TypeNode(ComponentType type) {
         super(Children.LEAF, Lookups.singleton(type));
@@ -46,7 +47,10 @@ public class TypeNode extends AbstractNode {
 
     @Override
     public Image getIcon(int type) {
-        return Components.getIcon(componentType);
+        if (icon == null) {
+            icon = Components.getIcon(componentType);
+        }
+        return icon;
     }
 
     @Override
