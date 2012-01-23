@@ -36,7 +36,9 @@ public abstract class PraxisProperty<T> extends Node.Property<T> {
     @Override
     public abstract PraxisPropertyEditor getPropertyEditor();
 
-    
+    public boolean isTransient() {
+        return false;
+    }
 
    
 }

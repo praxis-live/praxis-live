@@ -115,6 +115,7 @@ public class PXRFileHandler extends FileHandler {
 
             @Override
             public void onReturn(CallArguments args) {
+                warnings = builder.getErrors();
                 callback.onReturn(args);
             }
 

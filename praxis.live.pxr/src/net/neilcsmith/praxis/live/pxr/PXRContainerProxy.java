@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Neil C Smith.
+ * Copyright 2012 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -97,7 +97,7 @@ public class PXRContainerProxy extends PXRComponentProxy implements ContainerPro
             @Override
             public void onError(CallArguments args) {
                 if (callback != null) {
-                    callback.onReturn(args);
+                    callback.onError(args);
                 }
             }
         });
@@ -146,7 +146,7 @@ public class PXRContainerProxy extends PXRComponentProxy implements ContainerPro
             @Override
             public void onError(CallArguments args) {
                 if (callback != null) {
-                    callback.onReturn(args);
+                    callback.onError(args);
                 }
             }
         });
@@ -169,7 +169,7 @@ public class PXRContainerProxy extends PXRComponentProxy implements ContainerPro
             @Override
             public void onError(CallArguments args) {
                 if (callback != null) {
-                    callback.onReturn(args);
+                    callback.onError(args);
                 }
             }
         });
@@ -192,7 +192,7 @@ public class PXRContainerProxy extends PXRComponentProxy implements ContainerPro
             @Override
             public void onError(CallArguments args) {
                 if (callback != null) {
-                    callback.onReturn(args);
+                    callback.onError(args);
                 }
             }
         });

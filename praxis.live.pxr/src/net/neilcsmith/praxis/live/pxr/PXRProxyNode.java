@@ -6,6 +6,7 @@
 package net.neilcsmith.praxis.live.pxr;
 
 import java.awt.EventQueue;
+import java.awt.Image;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
@@ -14,6 +15,7 @@ import java.util.List;
 import java.util.logging.Logger;
 import javax.swing.Action;
 import net.neilcsmith.praxis.core.ComponentAddress;
+import net.neilcsmith.praxis.live.components.api.Components;
 import net.neilcsmith.praxis.live.pxr.api.ComponentProxy;
 import net.neilcsmith.praxis.live.pxr.api.ContainerProxy;
 import net.neilcsmith.praxis.live.pxr.api.ProxyException;
@@ -36,6 +38,7 @@ class PXRProxyNode extends AbstractNode {
     private final static Logger LOG = Logger.getLogger(PXRProxyNode.class.getName());
 
     private PXRComponentProxy component;
+    private Image icon;
 
     PXRProxyNode(PXRComponentProxy component, PXRDataObject dob) {
         super(component instanceof PXRContainerProxy ?
@@ -47,8 +50,9 @@ class PXRProxyNode extends AbstractNode {
 
     @Override
     public String getDisplayName() {
-        ComponentAddress address = component.getAddress();
-        return address.getComponentID(address.getDepth() - 1) + " " + component.getType();
+//        ComponentAddress address = component.getAddress();
+//        return address.getComponentID(address.getDepth() - 1) + " " + component.getType();
+        return component.getAddress().getID();
     }
 
     @Override
@@ -118,11 +122,20 @@ class PXRProxyNode extends AbstractNode {
         try {
             PXRContainerProxy container = component.getParent();
             container.removeChild(container.getChildID(component), null);
+            component.dispose(); //@TODO should be done from container callback?
         } catch (ProxyException ex) {
             Exceptions.printStackTrace(ex);
         }
     }
 
+    @Override
+    public Image getIcon(int type) {
+        if (icon == null) {
+            icon = Components.getIcon(component.getType());
+        }
+        return icon;
+    }
+    
     @Override
     protected Sheet createSheet() {
         // this gets called outside of EQ by propertysheet!

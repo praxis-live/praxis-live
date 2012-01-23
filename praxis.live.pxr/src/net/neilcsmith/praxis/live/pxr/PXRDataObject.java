@@ -29,7 +29,10 @@ import java.util.Collections;
 import javax.swing.SwingUtilities;
 import net.neilcsmith.praxis.core.ComponentType;
 import net.neilcsmith.praxis.live.components.api.ComponentIconProvider;
+import net.neilcsmith.praxis.live.components.api.Components;
 import net.neilcsmith.praxis.live.core.api.Task.State;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.openide.cookies.CloseCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.cookies.SaveCookie;
@@ -80,7 +83,7 @@ public class PXRDataObject extends MultiDataObject {
         }
         this.type = type;
         if (type != null) {
-            icon = findIcon(type);
+            icon = Components.getIcon(type);
         } else {
             icon = null;
         }
@@ -108,21 +111,35 @@ public class PXRDataObject extends MultiDataObject {
         return false;
     }
 
-    
-    private Image findIcon(ComponentType type) {
-        try {
-            for (ComponentIconProvider provider : Lookup.getDefault().lookupAll(ComponentIconProvider.class)) {
-                Image img = provider.getIcon(type);
-                if (img != null) {
-                    return img;
+    @Override
+    protected void handleDelete() throws IOException {
+        Project owner = FileOwnerQuery.getOwner(getPrimaryFile());
+        if (owner != null) {
+            FileObject file = owner.getProjectDirectory();
+            file = file.getFileObject("config");
+            if (file != null) {
+                file = file.getFileObject(getName() + "_autostart");
+                if (file != null) {
+                    file.delete();
                 }
             }
-        } catch (Exception ex) {
-            //fall through
         }
-        return null;
+        super.handleDelete();
     }
-    
+
+//    private Image findIcon(ComponentType type) {
+//        try {
+//            for (ComponentIconProvider provider : Lookup.getDefault().lookupAll(ComponentIconProvider.class)) {
+//                Image img = provider.getIcon(type);
+//                if (img != null) {
+//                    return img;
+//                }
+//            }
+//        } catch (Exception ex) {
+//            //fall through
+//        }
+//        return null;
+//    }
     private void initType(final FileObject file) {
         Object attr = file.getAttribute(KEY_ATTR_ROOT_TYPE);
         if (attr instanceof String) {
@@ -134,7 +151,7 @@ public class PXRDataObject extends MultiDataObject {
                 // fall through
             }
         }
-        
+
         // no type attribute found
         RP.execute(new Runnable() {
 
@@ -160,10 +177,9 @@ public class PXRDataObject extends MultiDataObject {
                 }
             }
         });
-        
-        
+
+
     }
-    
 
     private class EditorSupport extends OpenSupport implements OpenCookie, CloseCookie {
 
@@ -180,7 +196,7 @@ public class PXRDataObject extends MultiDataObject {
     private class SaveSupport implements SaveCookie, PropertyChangeListener {
 
         private SaveTask task;
-        
+
         @Override
         public void save() throws IOException {
 //            RootProxy root = RootRegistry.getDefault().findRootForFile(getPrimaryFile());
@@ -204,6 +220,11 @@ public class PXRDataObject extends MultiDataObject {
                 task.removePropertyChangeListener(this);
                 task = null;
             }
+        }
+
+        @Override
+        public String toString() {
+            return PXRDataObject.this.getName();
         }
     }
 

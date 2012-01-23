@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Neil C Smith.
+ * Copyright 2012 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -50,6 +50,7 @@ public final class BoundArgumentProperty extends ArgumentProperty
     private final ControlAddress address;
     private final ControlInfo info;
     private final boolean writable;
+    private final boolean isTransient;
 
     private DelegatingArgumentEditor editor;
     private Argument value;
@@ -57,11 +58,12 @@ public final class BoundArgumentProperty extends ArgumentProperty
 
 
     private BoundArgumentProperty(ControlAddress address, ControlInfo info,
-            Argument def, boolean writable) {
+            Argument def, boolean writable, boolean isTransient) {
         this.address = address;
         this.def = def;
         this.info = info;
         this.writable = writable;
+        this.isTransient = isTransient;
         pcs = new PropertyChangeSupport(this);
         adaptor = new Adaptor();
         value = def;
@@ -122,7 +124,21 @@ public final class BoundArgumentProperty extends ArgumentProperty
         setValue(def);
     }
 
+    @Override
+    public boolean isTransient() {
+        return isTransient;
+    }
 
+    @Override
+    public String getHtmlDisplayName() {
+        if (isTransient) {
+            return "<i>" + getDisplayName() + "</i>";
+        } else {
+            return null;
+        }
+    }
+
+    
 
 
     @Override
@@ -142,7 +158,10 @@ public final class BoundArgumentProperty extends ArgumentProperty
         return adaptor.isActive();
     }
 
-
+    void dispose() {
+        PXRHelper.getDefault().unbind(adaptor);
+    }
+    
 
     private void setValueImpl(Argument value, boolean send, Callback callback) {
         if (value == null) {
@@ -201,7 +220,8 @@ public final class BoundArgumentProperty extends ArgumentProperty
         if (def == null) {
             def = PString.EMPTY;
         }
-        return new BoundArgumentProperty(address, info, def, writable);
+        boolean isTransient = info.getProperties().getBoolean(ControlInfo.KEY_TRANSIENT, false);
+        return new BoundArgumentProperty(address, info, def, writable, isTransient);
     }
 
 
@@ -211,7 +231,7 @@ public final class BoundArgumentProperty extends ArgumentProperty
 
         private Adaptor() {
             setSyncRate(ControlBinding.SyncRate.Medium);
-//            setActive(true);
+//            setActive(false);
         }
 
         @Override

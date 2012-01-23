@@ -29,6 +29,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -169,7 +170,7 @@ public class PXRComponentProxy implements ComponentProxy {
         triggers = new ArrayList<Action>();
         for (String ctlID : info.getControls()) {
             ControlInfo ctl = info.getControlInfo(ctlID);
-            if (ctl.getType() == ControlInfo.Type.Trigger) {
+            if (ctl.getType() == ControlInfo.Type.Action) {
                 triggers.add(new TriggerAction(ctlID));
             }
         }
@@ -242,6 +243,19 @@ public class PXRComponentProxy implements ComponentProxy {
 
     PXRRootProxy getRoot() {
         return parent.getRoot();
+    }
+    
+    void dispose() {
+        parent = null;
+        if (properties == null) {
+            return;
+        }
+        for (PraxisProperty<?> prop : properties.values()) {
+            if (prop instanceof BoundArgumentProperty) {
+                ((BoundArgumentProperty)prop).dispose();
+            }
+        }
+        properties = null;
     }
 
     private void setNodeSyncing(boolean sync) {
@@ -341,26 +355,34 @@ public class PXRComponentProxy implements ComponentProxy {
 
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
+            try {
             assert EventQueue.isDispatchThread();
-            if (TopComponent.Registry.PROP_ACTIVATED_NODES.equals(evt.getPropertyName())) {
-                ArrayList<PXRComponentProxy> tmp = new ArrayList<PXRComponentProxy>();
-                Node[] nodes = TopComponent.getRegistry().getActivatedNodes();
-                for (Node node : nodes) {
-                    PXRComponentProxy cmp = node.getLookup().lookup(PXRComponentProxy.class);
-                    if (cmp != null) {
-                        tmp.add(cmp);
+            
+                if (TopComponent.Registry.PROP_ACTIVATED_NODES.equals(evt.getPropertyName())) {
+                    ArrayList<PXRComponentProxy> tmp = new ArrayList<PXRComponentProxy>();
+                    Node[] nodes = TopComponent.getRegistry().getActivatedNodes();
+                    if (LOG.isLoggable(Level.FINEST)) {
+                        LOG.log(Level.FINEST, "Activated nodes = {0}", Arrays.toString(nodes));
                     }
+                    for (Node node : nodes) {
+                        PXRComponentProxy cmp = node.getLookup().lookup(PXRComponentProxy.class);
+                        if (cmp != null) {
+                            tmp.add(cmp);
+                        }
+                    }
+                    syncing.removeAll(tmp);
+                    for (PXRComponentProxy cmp : syncing) {
+                        cmp.setNodeSyncing(false);
+                    }
+                    syncing.clear();
+                    syncing.addAll(tmp);
+                    for (PXRComponentProxy cmp : syncing) {
+                        cmp.setNodeSyncing(true);
+                    }
+                    tmp.clear();
                 }
-                syncing.removeAll(tmp);
-                for (PXRComponentProxy cmp : syncing) {
-                    cmp.setNodeSyncing(false);
-                }
-                syncing.clear();
-                syncing.addAll(tmp);
-                for (PXRComponentProxy cmp : syncing) {
-                    cmp.setNodeSyncing(true);
-                }
-                tmp.clear();
+            } catch (Exception e) {
+                Exceptions.printStackTrace(e);
             }
 
         }

@@ -26,6 +26,7 @@ import java.beans.PropertyEditorSupport;
 import net.neilcsmith.praxis.core.Argument;
 import net.neilcsmith.praxis.core.ArgumentFormatException;
 import net.neilcsmith.praxis.core.info.ArgumentInfo;
+import net.neilcsmith.praxis.core.types.PMap;
 import net.neilcsmith.praxis.core.types.PNumber;
 import net.neilcsmith.praxis.live.pxr.api.PraxisProperty;
 import net.neilcsmith.praxis.live.pxr.api.PraxisPropertyEditor;
@@ -45,6 +46,7 @@ public class NumberEditor extends PropertyEditorSupport implements
 
     private PNumber minimum;
     private PNumber maximum;
+    private boolean isInteger;
 
     public NumberEditor(PraxisProperty<?> property, ArgumentInfo info) {
         this.info = info;
@@ -52,8 +54,9 @@ public class NumberEditor extends PropertyEditorSupport implements
     }
 
     private void checkBounds() {
-        Argument minProp = info.getProperties().get(PNumber.KEY_MINIMUM);
-        Argument maxProp = info.getProperties().get(PNumber.KEY_MAXIMUM);
+        PMap props = info.getProperties();
+        Argument minProp = props.get(PNumber.KEY_MINIMUM);
+        Argument maxProp = props.get(PNumber.KEY_MAXIMUM);
         if (minProp != null && maxProp != null) {
             try {
                 minimum = PNumber.coerce(minProp);
@@ -62,6 +65,8 @@ public class NumberEditor extends PropertyEditorSupport implements
                 minimum = maximum = null;
             }
         }
+        isInteger = props.getBoolean(PNumber.KEY_IS_INTEGER, false);
+        
     }
 
     @Override
@@ -89,7 +94,7 @@ public class NumberEditor extends PropertyEditorSupport implements
 
     @Override
     public boolean supportsCustomEditor() {
-        return minimum != null && maximum != null;
+        return !isInteger && minimum != null && maximum != null;
     }
 
     @Override

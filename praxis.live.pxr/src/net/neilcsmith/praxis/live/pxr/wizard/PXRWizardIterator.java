@@ -145,23 +145,13 @@ public final class PXRWizardIterator implements WizardDescriptor.InstantiatingIt
         Project project = Templates.getProject(wizard);
         if (project != null) {
 
-
-            FileObject autostarter = null;
-            if (autostart) {
-                autostarter = writeAutostartFile(project, id);
-            }
+            FileObject autostarter = writeAutostartFile(project, id);
 
             PraxisProjectProperties props = project.getLookup().lookup(PraxisProjectProperties.class);
             if (props != null) {
-                List<FileObject> files =
-                        new ArrayList<FileObject>(Arrays.asList(props.getProjectFiles(ExecutionLevel.BUILD)));
-                files.add(fileObj);
-                props.setProjectFiles(ExecutionLevel.BUILD, files.toArray(new FileObject[files.size()]));
-                if (autostarter != null) {
-                    files.clear();
-                    files.addAll(Arrays.asList(props.getProjectFiles(ExecutionLevel.RUN)));
-                    files.add(autostarter);
-                    props.setProjectFiles(ExecutionLevel.RUN, files.toArray(new FileObject[files.size()]));
+                props.addProjectFile(ExecutionLevel.BUILD, fileObj);
+                if (autostart) {
+                    props.addProjectFile(ExecutionLevel.RUN, autostarter);
                 }
 
             }
@@ -180,7 +170,7 @@ public final class PXRWizardIterator implements WizardDescriptor.InstantiatingIt
     private void writeFile(FileObject file, String id, ComponentType type, boolean autostart) throws IOException {
         StringBuilder code = new StringBuilder();
         code.append("@ /").append(id).append(" ").append(type).append(" {\n");
-        code.append("  ").append("#%autostart ").append(autostart).append("\n");
+//        code.append("  ").append("#%autostart ").append(autostart).append("\n");
         code.append("}");
 
         Writer writer = null;

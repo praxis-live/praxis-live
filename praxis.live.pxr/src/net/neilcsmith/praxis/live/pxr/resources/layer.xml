@@ -83,17 +83,17 @@
         </folder>
     </folder>
 
-    <folder name="Templates">
+<!--    <folder name="Templates">
         <folder name="Praxis">
             <file name="PXRTemplate.pxr">
                 <attr name="displayName" bundlevalue="net.neilcsmith.praxis.live.pxr.resources.Bundle#Templates/Praxis/PXRTemplate.pxr"/>
                 <attr name="instantiatingIterator" newvalue="net.neilcsmith.praxis.live.pxr.wizard.PXRWizardIterator"/>
                 <attr name="template" boolvalue="true"/>
-<!--                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/net/neilcsmith/praxis/live/pxr/resources/pxr16.png"/>-->
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/net/neilcsmith/praxis/live/pxr/resources/pxr16.png"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/net/neilcsmith/praxis/live/pxr/resources/PXRinfo.html"/>
             </file>
         </folder>
-    </folder>
+    </folder>-->
 
     
 </filesystem>

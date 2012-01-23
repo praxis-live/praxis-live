@@ -58,20 +58,21 @@ public class ResourceEditor extends PraxisPropertyEditorSupport
         } else {
             base = new File("").toURI();
         }
-        allowEmpty = supportsEmpty(info);
+        allowEmpty = info.getProperties().getBoolean(ArgumentInfo.KEY_ALLOW_EMPTY, false);
+//        allowEmpty = supportsEmpty(info);
     }
 
-    private boolean supportsEmpty(ArgumentInfo info) {
-        Argument val = info.getProperties().get(ArgumentInfo.KEY_ALLOW_EMPTY);
-        if (val == null) {
-            return false;
-        }
-        if (Argument.equivalent(null, PBoolean.TRUE, val)) {
-            return true;
-        } else {
-            return false;
-        }
-    }
+//    private boolean supportsEmpty(ArgumentInfo info) {
+//        Argument val = info.getProperties().get(ArgumentInfo.KEY_ALLOW_EMPTY);
+//        if (val == null) {
+//            return false;
+//        }
+//        if (Argument.equivalent(null, PBoolean.TRUE, val)) {
+//            return true;
+//        } else {
+//            return false;
+//        }
+//    }
 
     @Override
     public String getPraxisInitializationString() {

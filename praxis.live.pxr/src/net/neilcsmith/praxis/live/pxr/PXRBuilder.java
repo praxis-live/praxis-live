@@ -86,11 +86,11 @@ class PXRBuilder {
         if (!processed && !iterator.hasNext()) {
             processed = true;
             DefaultRootRegistry.getDefault().register(rootProxy);
-            if (warnings.isEmpty()) {
+//            if (warnings.isEmpty()) {
                 processCallback.onReturn(CallArguments.EMPTY);
-            } else {
-                processCallback.onError(CallArguments.EMPTY);
-            }
+//            } else {
+//                processCallback.onError(CallArguments.EMPTY);
+//            }
             
         }
     }

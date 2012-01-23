@@ -143,6 +143,10 @@ class PXRWriter {
                 if (prop.supportsDefaultValue() && prop.isDefaultValue()) {
                     continue;
                 }
+                if (prop.isTransient()) {
+                    LOG.finest("Property is transient " + id);
+                    continue;
+                }
                 LOG.finest("Writing property " + id);
                 PraxisPropertyEditor editor = prop.getPropertyEditor();
                 String code = editor.getPraxisInitializationString();

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Neil C Smith.
+ * Copyright 2012 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -42,7 +42,7 @@ import org.openide.util.lookup.ServiceProvider;
 public class RootLifecycleHandlerImpl extends RootLifecycleHandler {
 
     @Override
-    public Task getDeletionTask(Set<String> rootIDs) {
+    public Task getDeletionTask(String description, Set<String> rootIDs) {
         Set<PXRDataObject> dobs = new HashSet<PXRDataObject>();
         for (String rootID : rootIDs) {
             RootProxy root = RootRegistry.getDefault().getRootByID(rootID);
@@ -52,7 +52,7 @@ public class RootLifecycleHandlerImpl extends RootLifecycleHandler {
         }
         if (!dobs.isEmpty()) {
 //            return SaveTask.createSaveTask(dobs);
-            return new DeletionSaveTask(dobs);
+            return new DeletionSaveTask(description, dobs);
         } else {
             return null;
         }
@@ -65,8 +65,10 @@ public class RootLifecycleHandlerImpl extends RootLifecycleHandler {
         private State state;
         private PropertyChangeSupport pcs;
         private SaveTask delegate;
+        private String description;
         
-        private DeletionSaveTask(Set<PXRDataObject> dobs) {
+        private DeletionSaveTask(String description, Set<PXRDataObject> dobs) {
+            this.description = description;
             this.dobs = dobs;
             this.state = State.NEW;
             pcs = new PropertyChangeSupport(this);
@@ -78,7 +80,7 @@ public class RootLifecycleHandlerImpl extends RootLifecycleHandler {
                 throw new IllegalStateException();
             }
             updateState(State.RUNNING);
-            NotifyDescriptor nd = new NotifyDescriptor.Confirmation(buildDialogMessage(), "Save changes?");
+            NotifyDescriptor nd = new NotifyDescriptor.Confirmation(buildDialogMessage(), description);
             Object ret = DialogDisplayer.getDefault().notify(nd);
             if (ret == NotifyDescriptor.YES_OPTION) {
                 // save

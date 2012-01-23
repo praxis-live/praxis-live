@@ -24,6 +24,7 @@ package net.neilcsmith.praxis.live.pxr;
 import java.awt.BorderLayout;
 import java.awt.Dialog;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.beans.PropertyChangeEvent;
@@ -40,6 +41,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
+import net.miginfocom.swing.MigLayout;
 import net.neilcsmith.praxis.core.info.ComponentInfo;
 import net.neilcsmith.praxis.core.info.ControlInfo;
 import net.neilcsmith.praxis.gui.ControlBinding;
@@ -110,14 +112,12 @@ class PXRComponentEditor {
         
         // triggers
         List<Action> triggers = component.getTriggerActions();
-        JToolBar actionsPanel = null;
+        JPanel actionsPanel = null;
         if (triggers.size() > 0) {
-            actionsPanel = new JToolBar();
-            actionsPanel.setFloatable(false);
+            actionsPanel = new JPanel(new MigLayout("", ""));
             for (Action trigger : triggers) {
                 JButton bt = new JButton(trigger);
-                bt.setBorderPainted(false);
-                actionsPanel.add(bt);
+                actionsPanel.add(bt, "sizegroup trigger");
             }
         }
         

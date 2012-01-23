@@ -53,7 +53,7 @@ final class PXRVisualPanel1 extends JPanel implements DocumentListener, ActionLi
             locationField.setText(location.toString());
             fileField.setText(location.toString());
         }
-        idField.getDocument().addDocumentListener(this);
+        
 //        Set<ComponentType> types = Components.getAllRootTypes();
 //        for (ComponentType type : types) {
 //            typeField.addItem(type);
@@ -61,18 +61,50 @@ final class PXRVisualPanel1 extends JPanel implements DocumentListener, ActionLi
 
         // Temporary fixed root types for EA release
         // @TODO remove temporary fixed types.
-        if (wizardPanel.type == null) {
+        ComponentType type = wizardPanel.type;
+        if (type == null) {
             typeField.addItem(ComponentType.create("root:audio"));
             typeField.addItem(ComponentType.create("root:video"));
 
             typeField.addActionListener(this);
         } else {
-            typeField.addItem(wizardPanel.type);
+            typeField.addItem(type);
             typeField.setEnabled(false);
         }
-
+        
+        idField.getDocument().addDocumentListener(this);
+             
+        autostartField.addActionListener(this);
+        buildField.addActionListener(this);
     }
 
+    @Override
+    public void addNotify() {
+        super.addNotify();
+        String id = initialRootID(location, wizardPanel.type);
+        if (!id.isEmpty()) {
+            idField.setText(id);  
+        } 
+    }
+
+    
+    
+    private String initialRootID(File dir, ComponentType type) {
+        if (dir == null || type == null) {
+            return "";
+        }
+        String typeString = type.toString();
+        if (!typeString.startsWith("root:")) {
+            return "";
+        }
+        typeString = typeString.substring(5);
+        File f = new File(dir, typeString + ".pxr");
+        if (!f.exists()) {
+            return typeString;
+        }
+        return "";
+    }
+    
     @Override
     public String getName() {
         return "Root File";
@@ -236,7 +268,7 @@ final class PXRVisualPanel1 extends JPanel implements DocumentListener, ActionLi
 
     private void update() {
         if (location != null) {
-            fileField.setText(locationField.getText() + "/" + idField.getText() + ".pxp");
+            fileField.setText(locationField.getText() + "/" + idField.getText() + ".pxr");
         }
         wizardPanel.validate();
     }

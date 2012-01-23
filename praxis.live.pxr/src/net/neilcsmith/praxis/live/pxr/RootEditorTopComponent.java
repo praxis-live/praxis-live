@@ -41,6 +41,8 @@ import net.neilcsmith.praxis.live.pxr.PXRParser.*;
 import net.neilcsmith.praxis.live.pxr.api.RootEditor;
 import net.neilcsmith.praxis.live.pxr.api.RootProxy;
 import net.neilcsmith.praxis.live.pxr.api.RootRegistry;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.openide.awt.Actions;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
@@ -68,7 +70,12 @@ public class RootEditorTopComponent extends CloneableTopComponent {
         this.setDisplayName(dob.getName());
         this.setIcon(dob.getNodeDelegate().getIcon(BeanInfo.ICON_COLOR_16x16));
         this.dob = dob;
-        lookup = new EditorLookup(Lookups.singleton(dob), dob.getLookup());
+        Project project = FileOwnerQuery.getOwner(dob.getPrimaryFile());
+        if (project != null) {
+            lookup = new EditorLookup(Lookups.fixed(dob, project), dob.getLookup());
+        } else {
+            lookup = new EditorLookup(Lookups.singleton(dob), dob.getLookup());
+        }
         associateLookup(lookup);
         setLayout(new BorderLayout());
         toolBar = new ToolBar();
@@ -227,7 +234,9 @@ public class RootEditorTopComponent extends CloneableTopComponent {
 
         @Override
         public JComponent getEditorComponent() {
-            return new JLabel("<Build " + dob.getName() + " to edit>", JLabel.CENTER);
+            JComponent editor = new JLabel("<Build " + dob.getName() + " to edit>", JLabel.CENTER);
+            editor.setFocusable(true);
+            return editor;
         }
     }
 

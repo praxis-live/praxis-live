@@ -24,6 +24,7 @@ package net.neilcsmith.praxis.live.pxr.editors;
 import java.beans.PropertyEditorSupport;
 import net.neilcsmith.praxis.core.types.PString;
 import net.neilcsmith.praxis.live.pxr.SyntaxUtils;
+import net.neilcsmith.praxis.live.pxr.api.PraxisProperty;
 import net.neilcsmith.praxis.live.pxr.api.PraxisPropertyEditor;
 
 /**
@@ -32,7 +33,7 @@ import net.neilcsmith.praxis.live.pxr.api.PraxisPropertyEditor;
  */
 public class PraxisPropertyEditorSupport extends PropertyEditorSupport
         implements PraxisPropertyEditor {
-
+    
     @Override
     public void setAsText(String text) throws IllegalArgumentException {
         setValue(PString.valueOf(text));
