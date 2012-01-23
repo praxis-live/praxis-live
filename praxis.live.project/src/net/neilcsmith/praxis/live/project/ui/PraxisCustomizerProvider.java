@@ -27,6 +27,7 @@ import java.awt.event.ActionListener;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import net.neilcsmith.praxis.live.project.DefaultPraxisProject;
+import net.neilcsmith.praxis.live.project.ProjectPropertiesImpl;
 import net.neilcsmith.praxis.live.project.api.ExecutionLevel;
 import net.neilcsmith.praxis.live.project.api.PraxisProjectProperties;
 import org.netbeans.api.project.ProjectUtils;
@@ -102,7 +103,7 @@ public class PraxisCustomizerProvider implements CustomizerProvider,
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            PraxisProjectProperties props = project.getLookup().lookup(PraxisProjectProperties.class);
+            ProjectPropertiesImpl props = project.getLookup().lookup(ProjectPropertiesImpl.class);
             if (props == null) {
                return;
             }

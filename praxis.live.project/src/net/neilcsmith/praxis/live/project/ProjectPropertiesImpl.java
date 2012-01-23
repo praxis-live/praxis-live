@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Neil C Smith.
+ * Copyright 2012 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -39,9 +39,8 @@ import org.openide.filesystems.FileUtil;
  * @author Neil C Smith (http://neilcsmith.net)
  */
 public class ProjectPropertiesImpl extends PraxisProjectProperties {
-    
-    private final static FileObject[] FILEOBJECT_ARRAY = new FileObject[0];
 
+    private final static FileObject[] FILEOBJECT_ARRAY = new FileObject[0];
     private Set<FileObject> buildFiles;
     private Set<FileObject> runFiles;
     private PropertyChangeSupport pcs;
@@ -58,6 +57,40 @@ public class ProjectPropertiesImpl extends PraxisProjectProperties {
     }
 
     @Override
+    public boolean addProjectFile(ExecutionLevel level, FileObject file) {
+        Set<FileObject> set;
+        if (level == ExecutionLevel.BUILD) {
+            set = buildFiles;
+        } else if (level == ExecutionLevel.RUN) {
+            set = runFiles;
+        } else {
+            throw new IllegalArgumentException("Unknown build level");
+        }
+        boolean changed = set.add(file);
+        if (changed) {
+            pcs.firePropertyChange(PROP_FILES_CHANGED, null, null);
+        }
+        return changed;
+    }
+
+    @Override
+    public boolean removeProjectFile(ExecutionLevel level, FileObject file) {
+        Set<FileObject> set;
+        if (level == ExecutionLevel.BUILD) {
+            set = buildFiles;
+        } else if (level == ExecutionLevel.RUN) {
+            set = runFiles;
+        } else {
+            throw new IllegalArgumentException("Unknown build level");
+        }
+        boolean changed = set.remove(file);
+        if (changed) {
+            pcs.firePropertyChange(PROP_FILES_CHANGED, null, null);
+        }
+        return changed;
+    }
+
+    @Override
     public FileObject[] getProjectFiles(ExecutionLevel level) {
         if (level == ExecutionLevel.BUILD) {
             return buildFiles.toArray(FILEOBJECT_ARRAY);
@@ -68,7 +101,6 @@ public class ProjectPropertiesImpl extends PraxisProjectProperties {
         }
     }
 
-    @Override
     public void setProjectFiles(ExecutionLevel level, FileObject[] files) {
         for (FileObject file : files) {
             checkFile(file);
@@ -100,7 +132,7 @@ public class ProjectPropertiesImpl extends PraxisProjectProperties {
     public void removePropertyChangeListener(PropertyChangeListener listener) {
         pcs.removePropertyChangeListener(listener);
     }
-    
+
     private class FileListener extends FileChangeAdapter {
 
         @Override
@@ -122,10 +154,5 @@ public class ProjectPropertiesImpl extends PraxisProjectProperties {
         public void fileRenamed(FileRenameEvent fe) {
             pcs.firePropertyChange(PROP_FILES_CHANGED, null, null);
         }
-       
-        
     }
-    
-    
-    
 }

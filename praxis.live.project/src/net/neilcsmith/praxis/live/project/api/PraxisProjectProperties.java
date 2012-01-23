@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Neil C Smith.
+ * Copyright 2012 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -33,10 +33,11 @@ public abstract class PraxisProjectProperties {
     
     public final static String PROP_FILES_CHANGED = "filesChanged";
 
+    public abstract boolean addProjectFile(ExecutionLevel level, FileObject file);
+    
+    public abstract boolean removeProjectFile(ExecutionLevel level, FileObject file);
 
     public abstract FileObject[] getProjectFiles(ExecutionLevel level);
-
-    public abstract void setProjectFiles(ExecutionLevel level, FileObject[] files);
 
     public abstract void addPropertyChangeListener(PropertyChangeListener listener);
 

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Neil C Smith.
+ * Copyright 2012 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -40,7 +40,7 @@ import static net.neilcsmith.praxis.core.syntax.Token.Type.*;
  *
  * @author Neil C Smith (http://neilcsmith.net)
  */
-public class PXPReader {
+class PXPReader {
 
     final static String INCLUDE_CMD = "include";
     final static String FILE_CMD = "file";
@@ -50,13 +50,13 @@ public class PXPReader {
 
     private FileObject projectDir;
     private FileObject data;
-    private PraxisProjectProperties props;
+    private ProjectPropertiesImpl props;
     private ExecutionLevel level;
     private List<FileObject> buildFiles;
     private List<FileObject> runFiles;
 
     private PXPReader(FileObject projectDir,
-            FileObject data, PraxisProjectProperties props) {
+            FileObject data, ProjectPropertiesImpl props) {
         this.projectDir = projectDir;
         this.data = data;
         this.props = props;
@@ -156,9 +156,9 @@ public class PXPReader {
     }
 
 
-    public static void initializeProjectProperties(FileObject projectDir,
+    static void initializeProjectProperties(FileObject projectDir,
             FileObject file,
-            PraxisProjectProperties props) throws Exception {
+            ProjectPropertiesImpl props) throws Exception {
         new PXPReader(projectDir, file, props).parse();
     }
 

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Neil C Smith.
+ * Copyright 2012 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -39,6 +39,7 @@ import net.neilcsmith.praxis.live.project.api.FileHandler;
 import net.neilcsmith.praxis.live.project.api.PraxisProject;
 import net.neilcsmith.praxis.live.project.api.PraxisProjectProperties;
 import net.neilcsmith.praxis.live.project.ui.PraxisLogicalViewProvider;
+import net.neilcsmith.praxis.live.project.ui.ProjectDialogManager;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.Project;
@@ -247,6 +248,7 @@ public class DefaultPraxisProject extends PraxisProject {
         private int index = -1;
         private FileHandler.Provider[] handlers = new FileHandler.Provider[0];
         private Map<FileObject, List<String>> warnings;
+        private ExecutionLevel level;
 
         private FileHandlerIterator(FileObject[] buildFiles, FileObject[] runFiles) {
             this.buildFiles = buildFiles;
@@ -277,7 +279,7 @@ public class DefaultPraxisProject extends PraxisProject {
                 return;
             }
             FileObject file;
-            ExecutionLevel level;
+//            ExecutionLevel level;
             if (index < buildFiles.length) {
                 file = buildFiles[index];
                 executedBuildFiles.add(file);
@@ -293,7 +295,7 @@ public class DefaultPraxisProject extends PraxisProject {
                 handler.process(new CallbackImpl(handler, file));
             } catch (Exception ex) {
                 Exceptions.printStackTrace(ex);
-                if (continueOnError(handler, file)) {
+                if (continueOnError(handler, file, null)) {
                     next();
                 } else {
                     done();
@@ -301,8 +303,9 @@ public class DefaultPraxisProject extends PraxisProject {
             }
         }
 
-        private boolean continueOnError(FileHandler handler, FileObject file) {
-            return true;
+        private boolean continueOnError(FileHandler handler, FileObject file, CallArguments args) {
+            return ProjectDialogManager.getDefault().continueOnError(
+                    DefaultPraxisProject.this, file, args, level);
         }
         
         private void logWarnings(FileHandler handler, FileObject file) {
@@ -317,8 +320,11 @@ public class DefaultPraxisProject extends PraxisProject {
         }
 
         private void done() {
-            actionsEnabled = true;
             progress.finish();
+            if (warnings != null) {
+                ProjectDialogManager.getDefault().showWarningsDialog(DefaultPraxisProject.this, warnings, level);
+            }       
+            actionsEnabled = true;
         }
 
         private FileHandler findHandler(ExecutionLevel level, FileObject file) {
@@ -357,7 +363,7 @@ public class DefaultPraxisProject extends PraxisProject {
 
             @Override
             public void onError(CallArguments args) {
-                if (continueOnError(handler, file)) {
+                if (continueOnError(handler, file, args)) {
                     next();
                 } else {
                     done();
