@@ -31,6 +31,7 @@ import org.openide.windows.WindowManager;
 import org.netbeans.api.settings.ConvertAsProperties;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.ListView;
+import org.openide.util.ImageUtilities;
 
 /**
  * Top component which displays something.
@@ -41,9 +42,8 @@ public final class HubUITopComponent extends TopComponent implements ExplorerMan
 
     private static HubUITopComponent instance;
     /** path to the icon used by the component and its open action */
-//    static final String ICON_PATH = "SET/PATH/TO/ICON/HERE";
+    static final String ICON_PATH = "net/neilcsmith/praxis/live/core/ui/resources/hub-action.png";
     private static final String PREFERRED_ID = "HubUITopComponent";
-
     private HubProxy hub;
     private ExplorerManager manager;
 
@@ -55,7 +55,7 @@ public final class HubUITopComponent extends TopComponent implements ExplorerMan
         ((ListView) rootList).setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         setName(NbBundle.getMessage(HubUITopComponent.class, "CTL_HubUITopComponent"));
         setToolTipText(NbBundle.getMessage(HubUITopComponent.class, "HINT_HubUITopComponent"));
-//        setIcon(ImageUtilities.loadImage(ICON_PATH, true));
+        setIcon(ImageUtilities.loadImage(ICON_PATH, true));
 
     }
 
@@ -68,10 +68,24 @@ public final class HubUITopComponent extends TopComponent implements ExplorerMan
     private void initComponents() {
 
         rootList = new ListView();
-        systemRootToggle = new javax.swing.JToggleButton();
+        jToolBar1 = new javax.swing.JToolBar();
         restartButton = new javax.swing.JButton();
+        systemRootToggle = new javax.swing.JToggleButton();
 
-        systemRootToggle.setIcon(new javax.swing.ImageIcon(getClass().getResource("/net/neilcsmith/praxis/live/core/ui/resources/show-system.png"))); // NOI18N
+        jToolBar1.setFloatable(false);
+        jToolBar1.setRollover(true);
+
+        restartButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/net/neilcsmith/praxis/live/core/ui/resources/restart.png"))); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(restartButton, org.openide.util.NbBundle.getMessage(HubUITopComponent.class, "HubUITopComponent.restartButton.text")); // NOI18N
+        restartButton.setToolTipText(org.openide.util.NbBundle.getMessage(HubUITopComponent.class, "LBL_RestartHub")); // NOI18N
+        restartButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                restartButtonActionPerformed(evt);
+            }
+        });
+        jToolBar1.add(restartButton);
+
+        systemRootToggle.setIcon(new javax.swing.ImageIcon(getClass().getResource("/net/neilcsmith/praxis/live/core/ui/resources/system.png"))); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(systemRootToggle, org.openide.util.NbBundle.getMessage(HubUITopComponent.class, "HubUITopComponent.systemRootToggle.text")); // NOI18N
         systemRootToggle.setToolTipText(org.openide.util.NbBundle.getMessage(HubUITopComponent.class, "LBL_ShowSystemRoots")); // NOI18N
         systemRootToggle.setFocusable(false);
@@ -82,54 +96,41 @@ public final class HubUITopComponent extends TopComponent implements ExplorerMan
                 systemRootToggleActionPerformed(evt);
             }
         });
-
-        restartButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/net/neilcsmith/praxis/live/core/ui/resources/restart.png"))); // NOI18N
-        org.openide.awt.Mnemonics.setLocalizedText(restartButton, org.openide.util.NbBundle.getMessage(HubUITopComponent.class, "HubUITopComponent.restartButton.text")); // NOI18N
-        restartButton.setToolTipText(org.openide.util.NbBundle.getMessage(HubUITopComponent.class, "LBL_RestartHub")); // NOI18N
-        restartButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                restartButtonActionPerformed(evt);
-            }
-        });
+        jToolBar1.add(systemRootToggle);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(310, Short.MAX_VALUE)
-                .addComponent(systemRootToggle)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(restartButton)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(jToolBar1, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
-            .addComponent(rootList, javax.swing.GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
+            .addComponent(rootList, javax.swing.GroupLayout.DEFAULT_SIZE, 200, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addComponent(rootList, javax.swing.GroupLayout.DEFAULT_SIZE, 250, Short.MAX_VALUE)
+                .addComponent(rootList, javax.swing.GroupLayout.DEFAULT_SIZE, 218, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(systemRootToggle, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(restartButton, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap())
+                .addComponent(jToolBar1, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
     private void restartButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_restartButtonActionPerformed
 
-            DefaultHubManager.getInstance().restart();
+        DefaultHubManager.getInstance().restart();
     }//GEN-LAST:event_restartButtonActionPerformed
 
     private void systemRootToggleActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_systemRootToggleActionPerformed
         hub.setShowSystemRoots(systemRootToggle.isSelected());
     }//GEN-LAST:event_systemRootToggleActionPerformed
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JToolBar jToolBar1;
     private javax.swing.JButton restartButton;
     private javax.swing.JScrollPane rootList;
     private javax.swing.JToggleButton systemRootToggle;
     // End of variables declaration//GEN-END:variables
+
     /**
      * Gets default instance. Do not use directly: reserved for *.settings files only,
      * i.e. deserialization routines; otherwise you could get a non-deserialized instance.
@@ -205,6 +206,4 @@ public final class HubUITopComponent extends TopComponent implements ExplorerMan
     public ExplorerManager getExplorerManager() {
         return manager;
     }
-
-
 }

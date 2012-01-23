@@ -80,7 +80,7 @@ public class RootProxy {
                 updateInfo();
             }
         });
-        HubUIHelper.getDefault().bind(infoAddress, infoAdaptor);
+        CoreHelper.getDefault().bind(infoAddress, infoAdaptor);
         runningAddress = ControlAddress.create(address, StartableInterface.IS_RUNNING);
         updateInfo();
     }
@@ -127,19 +127,19 @@ public class RootProxy {
                     }
                 });
             }
-            HubUIHelper.getDefault().bind(runningAddress, runningAdaptor);
+            CoreHelper.getDefault().bind(runningAddress, runningAdaptor);
         } else {
             this.startable = false;
             if (runningAdaptor != null) {
-                HubUIHelper.getDefault().unbind(runningAdaptor);
+                CoreHelper.getDefault().unbind(runningAdaptor);
             }
         }
     }
 
     void dispose() {
-        HubUIHelper.getDefault().unbind(infoAdaptor);
+        CoreHelper.getDefault().unbind(infoAdaptor);
         if (runningAdaptor != null) {
-            HubUIHelper.getDefault().unbind(runningAdaptor);
+            CoreHelper.getDefault().unbind(runningAdaptor);
         }
     }
 
@@ -242,7 +242,7 @@ public class RootProxy {
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
-                    HubUIHelper.getDefault().send(to, CallArguments.EMPTY, null);
+                    CoreHelper.getDefault().send(to, CallArguments.EMPTY, null);
                 } catch (HubUnavailableException ex) {
                     Exceptions.printStackTrace(ex);
                 }
@@ -260,7 +260,7 @@ public class RootProxy {
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
-                    HubUIHelper.getDefault().send(RootManagerService.INSTANCE,
+                    CoreHelper.getDefault().send(RootManagerService.INSTANCE,
                             RootManagerService.REMOVE_ROOT,
                             CallArguments.create(PString.valueOf(root.id)), null);
                 } catch (Exception ex) {

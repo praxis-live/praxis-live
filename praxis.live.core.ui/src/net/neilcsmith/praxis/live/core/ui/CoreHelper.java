@@ -31,15 +31,15 @@ import org.openide.util.lookup.ServiceProvider;
  *
  * @author Neil C Smith (http://neilcsmith.net)
  */
-public class HubUIHelper extends AbstractHelperComponent {
+class CoreHelper extends AbstractHelperComponent {
 
-    private final static HubUIHelper INSTANCE = new HubUIHelper();
+    private final static CoreHelper INSTANCE = new CoreHelper();
 
-    private HubUIHelper() {
+    private CoreHelper() {
 
     }
 
-    public static HubUIHelper getDefault() {
+    public static CoreHelper getDefault() {
         return INSTANCE;
     }
 

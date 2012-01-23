@@ -69,7 +69,7 @@ public class HubProxy {
                 refreshRoots();
             }
         });
-        HubUIHelper.getDefault().addPropertyChangeListener(new HubListener());
+        CoreHelper.getDefault().addPropertyChangeListener(new HubListener());
         bindRootsAdaptor();
     }
 
@@ -114,7 +114,7 @@ public class HubProxy {
 
     private void bindRootsAdaptor() {
         try {
-            HubUIHelper hlp = HubUIHelper.getDefault();
+            CoreHelper hlp = CoreHelper.getDefault();
             hlp.bind(
                     ControlAddress.create(hlp.findService(RootManagerService.INSTANCE),
                     RootManagerService.ROOTS), rootsAdaptor);
@@ -123,7 +123,7 @@ public class HubProxy {
     }
 
     private void unbindRootsAdaptor() {
-        HubUIHelper.getDefault().unbind(rootsAdaptor);
+        CoreHelper.getDefault().unbind(rootsAdaptor);
     }
 
     private class DelegateNode extends AbstractNode {
@@ -158,8 +158,8 @@ public class HubProxy {
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
 
-            if (evt.getPropertyName().equals(HubUIHelper.PROP_HUB_CONNECTED)) {
-                if (HubUIHelper.getDefault().isConnected()) {
+            if (evt.getPropertyName().equals(CoreHelper.PROP_HUB_CONNECTED)) {
+                if (CoreHelper.getDefault().isConnected()) {
                     bindRootsAdaptor();
                 }
 //                } else {
