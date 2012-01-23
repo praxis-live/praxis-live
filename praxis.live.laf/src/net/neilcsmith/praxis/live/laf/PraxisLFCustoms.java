@@ -43,14 +43,13 @@
  */
 package net.neilcsmith.praxis.live.laf;
 
-import com.nilo.plaf.nimrod.NimRODTheme;
 import org.netbeans.swing.plaf.LFCustoms;
-import org.netbeans.swing.plaf.util.UIBootstrapValue;
 
 import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
+import javax.swing.plaf.ColorUIResource;
 import net.neilcsmith.praxis.laf.PraxisLookAndFeel;
 import org.netbeans.swing.plaf.util.UIUtils;
 
@@ -98,14 +97,14 @@ public final class PraxisLFCustoms extends LFCustoms {
 
         Color borderColor = (Color) UIManager.get("InternalFrame.borderShadow");
         if (borderColor == null) {
-            borderColor = new Color(144,150,162);
+            borderColor = new Color(144, 150, 162);
         }
 
         Object[] result = {
-
             "LabelUI", "net.neilcsmith.praxis.live.laf.OptionsAwareLabelUI",
             "EditorPaneUI", "net.neilcsmith.praxis.live.laf.HonorDisplayEditorPaneUI",
-
+            "TextPaneUI", "net.neilcsmith.praxis.live.laf.HonorDisplayTextPaneUI",
+            TOOLBAR_UI, "net.neilcsmith.praxis.live.laf.MainToolbarUI",
             DESKTOP_BORDER, new EmptyBorder(1, 1, 1, 1),
             SCROLLPANE_BORDER, new PraxisScrollPaneBorder(),
             EXPLORER_STATUS_BORDER, new PraxisStatusLineBorder(PraxisStatusLineBorder.TOP),
@@ -114,12 +113,7 @@ public final class PraxisLFCustoms extends LFCustoms {
             EDITOR_STATUS_INNER_BORDER, new PraxisStatusLineBorder(PraxisStatusLineBorder.TOP | PraxisStatusLineBorder.LEFT | PraxisStatusLineBorder.RIGHT),
             EDITOR_STATUS_ONLYONEBORDER, new PraxisStatusLineBorder(PraxisStatusLineBorder.TOP),
             EDITOR_TOOLBAR_BORDER, new PraxisEditorToolbarBorder(),
-
-
-
-
-
-////            PROPERTYSHEET_BOOTSTRAP, propertySheetColorings,
+            ////            PROPERTYSHEET_BOOTSTRAP, propertySheetColorings,
             PROPSHEET_SELECTION_BACKGROUND, PraxisLookAndFeel.getControlShadow(),
             PROPSHEET_SELECTION_FOREGROUND, PraxisLookAndFeel.getBlack(),
             PROPSHEET_SET_BACKGROUND, PraxisLookAndFeel.getControl(),
@@ -127,23 +121,19 @@ public final class PraxisLFCustoms extends LFCustoms {
             PROPSHEET_SELECTED_SET_BACKGROUND, PraxisLookAndFeel.getControlDarkShadow(),
             PROPSHEET_SELECTED_SET_FOREGROUND, PraxisLookAndFeel.getBlack(),
             PROPSHEET_DISABLED_FOREGROUND, PraxisLookAndFeel.getMenuDisabledForeground(),
-
-//            PROPSHEET_SELECTION_BACKGROUND, UIManager.get("Table.selectionBackground"),
-//            PROPSHEET_SELECTION_FOREGROUND, UIManager.get("Table.selectionForeground"),
-//            PROPSHEET_SET_BACKGROUND, UIManager.get("Table.selectionBackground"),
-//            PROPSHEET_SET_FOREGROUND, UIManager.get("Table.selectionForeground"),
-//            PROPSHEET_SELECTED_SET_BACKGROUND, UIManager.get("Table.selectionBackground"),
-//            PROPSHEET_SELECTED_SET_FOREGROUND, UIManager.get("Table.selectionForeground"),
-//            PROPSHEET_DISABLED_FOREGROUND, new Color(153, 153, 153),
+            //            PROPSHEET_SELECTION_BACKGROUND, UIManager.get("Table.selectionBackground"),
+            //            PROPSHEET_SELECTION_FOREGROUND, UIManager.get("Table.selectionForeground"),
+            //            PROPSHEET_SET_BACKGROUND, UIManager.get("Table.selectionBackground"),
+            //            PROPSHEET_SET_FOREGROUND, UIManager.get("Table.selectionForeground"),
+            //            PROPSHEET_SELECTED_SET_BACKGROUND, UIManager.get("Table.selectionBackground"),
+            //            PROPSHEET_SELECTED_SET_FOREGROUND, UIManager.get("Table.selectionForeground"),
+            //            PROPSHEET_DISABLED_FOREGROUND, new Color(153, 153, 153),
 
             "textText", PraxisLookAndFeel.getBlack(),
-            TAB_SELECTION_FOREGROUND, new Color(224,224,224),
-            TAB_SELECTION_BACKGROUND, new Color(24,24,24),
+            TAB_SELECTION_FOREGROUND, new Color(224, 224, 224),
+            TAB_SELECTION_BACKGROUND, new Color(24, 24, 24),
             TAB_ACTIVE_SELECTION_FOREGROUND, UIManager.get("Table.selectionForeground"),
             TAB_ACTIVE_SELECTION_BACKGROUND, UIManager.get("Table.selectionBackground"),
-
-
-
             //UI Delegates for the tab control
             //            EDITOR_TAB_DISPLAYER_UI, "org.netbeans.swing.tabcontrol.plaf.MetalEditorTabDisplayerUI",
             //            VIEW_TAB_DISPLAYER_UI, "org.netbeans.swing.tabcontrol.plaf.MetalViewTabDisplayerUI",
@@ -151,23 +141,23 @@ public final class PraxisLFCustoms extends LFCustoms {
             EDITOR_TAB_DISPLAYER_UI, "net.neilcsmith.praxis.live.laf.tabs.PraxisEditorTabDisplayerUI",
             VIEW_TAB_DISPLAYER_UI, "net.neilcsmith.praxis.live.laf.tabs.PraxisViewTabDisplayerUI",
             SLIDING_BUTTON_UI, "net.neilcsmith.praxis.live.laf.tabs.PraxisSlidingButtonUI",
-//            EDITOR_TAB_OUTER_BORDER, outerBorder,
-//            VIEW_TAB_OUTER_BORDER, outerBorder,
+            //            EDITOR_TAB_OUTER_BORDER, outerBorder,
+            //            VIEW_TAB_OUTER_BORDER, outerBorder,
             EXPLORER_MINISTATUSBAR_BORDER, BorderFactory.createMatteBorder(1, 0, 0, 0, UIManager.getColor("controlShadow")),
-
             VIEW_TAB_OUTER_BORDER, BorderFactory.createEmptyBorder(),
             VIEW_TAB_TABS_BORDER, BorderFactory.createEmptyBorder(),
-            VIEW_TAB_CONTENT_BORDER, BorderFactory.createMatteBorder(0,1,1,1,borderColor),
+            VIEW_TAB_CONTENT_BORDER, BorderFactory.createMatteBorder(0, 1, 1, 1, borderColor),
             EDITOR_TAB_OUTER_BORDER, BorderFactory.createEmptyBorder(),
-            EDITOR_TAB_CONTENT_BORDER, BorderFactory.createMatteBorder(0,1,1,1,borderColor),
+            EDITOR_TAB_CONTENT_BORDER, BorderFactory.createMatteBorder(0, 1, 1, 1, borderColor),
             EDITOR_TAB_TABS_BORDER, BorderFactory.createEmptyBorder(),
+            //            EDITOR_STATUS_LEFT_BORDER, new InsetBorder (false, true),
+            //            EDITOR_STATUS_RIGHT_BORDER, new InsetBorder (false, false),
+            //            EDITOR_STATUS_ONLYONEBORDER, new InsetBorder (false, false),
+            //            EDITOR_STATUS_INNER_BORDER, new InsetBorder (false, true),
 
-//            EDITOR_STATUS_LEFT_BORDER, new InsetBorder (false, true),
-//            EDITOR_STATUS_RIGHT_BORDER, new InsetBorder (false, false),
-//            EDITOR_STATUS_ONLYONEBORDER, new InsetBorder (false, false),
-//            EDITOR_STATUS_INNER_BORDER, new InsetBorder (false, true),
             
-
+            
+            
             //#48951 invisible unfocused selection background in Metal L&F
             "nb.explorer.unfocusedSelBg", unfocusedSelBg,
             PROGRESS_CANCEL_BUTTON_ICON, UIUtils.loadImage("org/netbeans/swing/plaf/resources/cancel_task_win_linux_mac.png"),
@@ -178,7 +168,9 @@ public final class PraxisLFCustoms extends LFCustoms {
             //            "nbProgressBar.popupText.background", new Color(231, 249, 249),
             "nbProgressBar.popupText.foreground", UIManager.getColor("TextField.foreground"),
             "nbProgressBar.popupText.selectBackground", UIManager.getColor("List.selectionBackground"),
-            "nbProgressBar.popupText.selectForeground", UIManager.getColor("List.selectionForeground"),}; //NOI18N
+            "nbProgressBar.popupText.selectForeground", UIManager.getColor("List.selectionForeground"),
+            "nb.errorForeground", Color.RED,
+            "nb.warningForeground", UIManager.getColor("Label.foreground"),}; //NOI18N
 
 
 
@@ -186,7 +178,6 @@ public final class PraxisLFCustoms extends LFCustoms {
         //#108517 - turn off ctrl+page_up and ctrl+page_down mapping
         return UIUtils.addInputMapsWithoutCtrlPageUpAndCtrlPageDown(result);
     }
-
 //    private class MetalPropertySheetColorings extends UIBootstrapValue.Lazy {
 //
 //        public MetalPropertySheetColorings() {

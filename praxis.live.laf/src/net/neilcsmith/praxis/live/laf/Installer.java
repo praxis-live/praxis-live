@@ -43,7 +43,10 @@ import javax.swing.UnsupportedLookAndFeelException;
 import net.neilcsmith.praxis.laf.PraxisLookAndFeel;
 import org.openide.modules.ModuleInstall;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
+import org.openide.windows.TopComponent;
+import org.openide.windows.WindowManager;
 
 /**
  * Manages a module's lifecycle. Remember that an installer is optional and
@@ -82,5 +85,17 @@ public class Installer extends ModuleInstall {
         } catch (InvocationTargetException ex) {
             Exceptions.printStackTrace(ex);
         }
+        
+        WindowManager.getDefault().invokeWhenUIReady(new Runnable() {
+
+            @Override
+            public void run() {
+                WindowManager wm = WindowManager.getDefault();
+                TopComponent tc = wm.findTopComponent("projectTabLogical_tc");
+                tc.setIcon(ImageUtilities.loadImage("org/netbeans/modules/project/ui/resources/projectTab.png", true));
+                tc = wm.findTopComponent("CommonPalette");
+                tc.setIcon(ImageUtilities.loadImage("org/netbeans/modules/palette/resources/palette.png", true));
+            }
+        });
     }
 }
