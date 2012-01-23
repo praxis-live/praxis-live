@@ -76,8 +76,8 @@
  */
 package net.neilcsmith.praxis.live.graph;
 
-import java.awt.Font;
-import java.awt.event.MouseEvent;
+import java.awt.Rectangle;
+import java.util.List;
 import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.action.ConnectProvider;
 import org.netbeans.api.visual.action.PopupMenuProvider;
@@ -85,9 +85,10 @@ import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.anchor.Anchor;
 import org.netbeans.api.visual.graph.GraphPinScene;
 import org.netbeans.api.visual.layout.SceneLayout;
+import org.netbeans.api.visual.router.ConnectionWidgetCollisionsCollector;
 import org.netbeans.api.visual.router.Router;
 import org.netbeans.api.visual.router.RouterFactory;
-import org.netbeans.api.visual.widget.ConnectionWidget.RoutingPolicy;
+import org.netbeans.api.visual.widget.ConnectionWidget;
 import org.netbeans.api.visual.widget.EventProcessingType;
 import org.netbeans.api.visual.widget.LayerWidget;
 import org.netbeans.api.visual.widget.Widget;
@@ -143,7 +144,8 @@ public class PraxisGraphScene<N> extends GraphPinScene<N, EdgeID<N>, PinID<N>> {
         setBackground(scheme.getBackgroundColor());
 
 //        router = RouterFactory.createDirectRouter();
-        router = RouterFactory.createOrthogonalSearchRouter(mainLayer);
+//        router = RouterFactory.createOrthogonalSearchRouter(mainLayer);
+        router = RouterFactory.createOrthogonalSearchRouter(new WidgetCollector());
 
         getActions().addAction(ActionFactory.createMouseCenteredZoomAction(1.2));
         getActions().addAction(ActionFactory.createPanAction());
@@ -309,58 +311,29 @@ public class PraxisGraphScene<N> extends GraphPinScene<N, EdgeID<N>, PinID<N>> {
     public void layoutScene() {
         sceneLayout.invokeLayout();
     }
-//    private class ConnectDecoratorImpl implements ConnectDecorator {
-//
-//        public ConnectionWidget createConnectionWidget(Scene scene) {
-//            ConnectionWidget widget = new ConnectionWidget(scene);
-//            widget.setForeground(Color.WHITE);
-//            return widget;
-//        }
-//
-//        public Anchor createSourceAnchor(Widget sourceWidget) {
-//            return AnchorFactory.createCenterAnchor(sourceWidget);
-//        }
-//
-//        public Anchor createTargetAnchor(Widget targetWidget) {
-//            return AnchorFactory.createCenterAnchor(targetWidget);
-//        }
-//
-//        public Anchor createFloatAnchor(Point location) {
-//            return AnchorFactory.createFixedAnchor(location);
-//        }
-//    }
-//
-//    private class ConnectProviderImpl implements ConnectProvider {
-//
-//        @Override
-//        public boolean isSourceWidget(Widget sourceWidget) {
-//            return sourceWidget instanceof PinWidget;
-//        }
-//
-//        @Override
-//        public ConnectorState isTargetWidget(Widget sourceWidget, Widget targetWidget) {
-//            if (sourceWidget instanceof PinWidget && targetWidget instanceof PinWidget) {
-//                return ConnectorState.ACCEPT;
-//            } else {
-//                return ConnectorState.REJECT;
-//            }
-//        }
-//
-//        @Override
-//        public boolean hasCustomTargetWidgetResolver(Scene scene) {
-//            return false;
-//        }
-//
-//        @Override
-//        public Widget resolveTargetWidget(Scene scene, Point sceneLocation) {
-//            return null;
-//        }
-//
-//        @Override
-//        public void createConnection(Widget sourceWidget, Widget targetWidget) {
-//            PinID p1 = (PinID) findObject(sourceWidget);
-//            PinID p2 = (PinID) findObject(targetWidget);
-//            connect(p1, p2);
-//        }
-//    }
+
+    private static class WidgetCollector implements ConnectionWidgetCollisionsCollector {
+
+        @Override
+        public void collectCollisions(ConnectionWidget connectionWidget, List<Rectangle> verticalCollisions, List<Rectangle> horizontalCollisions) {
+            // anchor widget is pin - get node.
+            Widget w1 = connectionWidget.getSourceAnchor().getRelatedWidget().getParentWidget();
+            Widget w2 = connectionWidget.getTargetAnchor().getRelatedWidget().getParentWidget();
+            Rectangle rect;
+            
+            rect = w1.getBounds();
+            rect = w1.convertLocalToScene(rect);
+            rect.grow(10, 10);
+            verticalCollisions.add(rect);
+            horizontalCollisions.add(rect);
+            
+            rect = w2.getBounds();
+            rect = w2.convertLocalToScene(rect);
+            rect.grow(10, 10);
+            verticalCollisions.add(rect);
+            horizontalCollisions.add(rect);
+        }
+        
+    }
+    
 }
