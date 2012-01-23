@@ -22,6 +22,7 @@
 package net.neilcsmith.praxis.live.pxr.editors;
 
 import net.neilcsmith.praxis.core.Argument;
+import net.neilcsmith.praxis.core.ControlAddress;
 import net.neilcsmith.praxis.core.info.ArgumentInfo;
 import net.neilcsmith.praxis.core.info.ControlInfo;
 import net.neilcsmith.praxis.core.types.PArray;
@@ -68,6 +69,9 @@ public class EditorManager {
         }
         if (PArray.class.isAssignableFrom(type)) {
             return new ArrayEditor();
+        }
+        if (ControlAddress.class.isAssignableFrom(type)) {
+            return new ControlAddressEditor(property, info);
         }
 
         return new ArgumentEditor(property, info);
