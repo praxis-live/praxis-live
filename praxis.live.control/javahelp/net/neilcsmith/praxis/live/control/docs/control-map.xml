@@ -6,10 +6,19 @@ and open the template in the editor.
 <!DOCTYPE map PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp Map Version 2.0//EN" "http://java.sun.com/products/javahelp/map_2_0.dtd">
 <map version="2.0">
     <mapID target="net.neilcsmith.praxis.live.control.components" url="core-components.html"/>
+    <mapID target="core:control-rate" url="core_control-rate.html"/>
     <mapID target="core:property" url="core_property.html"/>
+    <mapID target="core:start-trigger" url="core_start-trigger.html"/>
     <mapID target="core:variable" url="core_variable.html"/>
+    <mapID target="core:array:iterator" url="core_array_iterator.html"/>
     <mapID target="core:array:random" url="core_array_random.html"/>
+    <mapID target="core:math:add" url="core_math_add.html"/>
+    <mapID target="core:math:multiply" url="core_math_multiply.html"/>
     <mapID target="core:math:random" url="core_math_random.html"/>
     <mapID target="core:math:scale" url="core_math_scale.html"/>
     <mapID target="core:math:threshold" url="core_math_threshold.html"/>
+    <mapID target="core:routing:join" url="core_routing_join.html"/>
+    <mapID target="core:timing:animator" url="core_timing_animator.html"/>
+    <mapID target="core:timing:delay" url="core_timing_delay.html"/>
+    <mapID target="core:timing:timer" url="core_timing_timer.html"/>
 </map>

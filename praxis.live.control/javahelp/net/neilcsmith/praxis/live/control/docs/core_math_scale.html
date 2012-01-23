@@ -1,43 +1,122 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd"> 
 <html>
-  <head>
-      <title>core:math:scale</title>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <link rel="stylesheet" href="nbdocs:/net/neilcsmith/praxis/live/help/docs/help.css" type="text/css">
-  </head>
-  <body>
-    <h1>core:math:scale</h1>
-    <p>Takes a number between <code>x1</code> and <code>x2</code> and scales it
-       between <code>y1</code> and <code>y2</code>. The input value will be clamped
-       between <code>x1</code> and <code>x2</code> before scaling. <code>x1</code>
-       may be higher than <code>x2</code>, and <code>y1</code> may be higher than
-       <code>y2</code> - this allows inverse scaling.</p>
-    <h2>Ports</h2>
-    <dl>
-      <dt>x1</dt>
-        <dd>control in | number | Value of x1.</dd>
-      <dt>x2</dt>
-        <dd>control in | number | Value of x2.</dd>
-      <dt>y1</dt>
-        <dd>control in | number | Value of y1.</dd>
-      <dt>y2</dt>
-        <dd>control in | number | Value of y2.</dd>
-      <dt>in</dt>
-        <dd>control in | number | Input value.</dd>
-      <dt>out</dt>
-        <dd>control out | number | Output value.</dd>
-    </dl>
-    <h2>Controls</h2>
-    <dl>
-      <dt>x1</dt>
-        <dd>property | number | 0 | Value of x1.</dd>
-      <dt>x2</dt>
-        <dd>property | number | 1 | Value of x2.</dd>
-      <dt>y1</dt>
-        <dd>property | number | 0 | Value of y1.</dd>
-      <dt>y2</dt>
-        <dd>property | number | 1 | Value of y2.</dd>
-    </dl>
-    
-  </body>
+    <head>
+        <title>core:math:scale</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <link rel="stylesheet" href="nbdocs:/net/neilcsmith/praxis/live/help/docs/help.css" type="text/css">
+    </head>
+    <body>
+        <h1>core:math:scale</h1>
+        <p>Takes a number between <code>x1</code> and <code>x2</code> and scales it
+            between <code>y1</code> and <code>y2</code>. The input value will be clamped
+            between <code>x1</code> and <code>x2</code> before scaling. <code>x1</code>
+            may be higher than <code>x2</code>, and <code>y1</code> may be higher than
+            <code>y2</code> - this allows inverse scaling.</p>
+        <h2>Ports</h2>
+
+        <table border="1" cellpadding="5" cellspacing="0">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Type</th>
+                    <th>Direction</th>
+                    <th>Values</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><b>in</b></td>
+                    <td>control</td>
+                    <td>in</td>
+                    <td>number</td>
+                    <td>Input value.</td>
+                </tr>
+                <tr>
+                    <td><b>out</b></td>
+                    <td>control</td>
+                    <td>out</td>
+                    <td>number</td>
+                    <td>Output value.</td>
+                </tr>
+                <tr>
+                    <td><b>x1</b></td>
+                    <td>control</td>
+                    <td>in</td>
+                    <td>number</td>
+                    <td>Value of x1.</td>
+                </tr>
+                <tr>
+                    <td><b>x2</b></td>
+                    <td>control</td>
+                    <td>in</td>
+                    <td>number</td>
+                    <td>Value of x2.</td>
+                </tr>
+                <tr>
+                    <td><b>y1</b></td>
+                    <td>control</td>
+                    <td>in</td>
+                    <td>number</td>
+                    <td>Value of y1.</td>
+                </tr>
+                <tr>
+                    <td><b>y2</b></td>
+                    <td>control</td>
+                    <td>in</td>
+                    <td>number</td>
+                    <td>Value of y2.</td>
+                </tr>
+                
+            </tbody>
+        </table>
+        <h2>Controls</h2>
+
+        <table border="1" cellpadding="5" cellspacing="0">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Type</th>
+                <th>Input</th>
+                <th>Output</th>
+                <th>Default</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><b>x1</b></td>
+                <td>property</td>
+                <td>number</td>
+                <td></td>
+                <td>0</td>
+                <td>Value of x1.</td>
+            </tr>
+            <tr>
+                <td><b>x2</b></td>
+                <td>property</td>
+                <td>number</td>
+                <td></td>
+                <td>1</td>
+                <td>Value of x2.</td>
+            </tr>
+            <tr>
+                <td><b>y1</b></td>
+                <td>property</td>
+                <td>number</td>
+                <td></td>
+                <td>0</td>
+                <td>Value of y1.</td>
+            </tr>
+            <tr>
+                <td><b>y2</b></td>
+                <td>property</td>
+                <td>number</td>
+                <td></td>
+                <td>1</td>
+                <td>Value of y2.</td>
+            </tr>
+        </tbody>
+    </table>
+    </body>
 </html>

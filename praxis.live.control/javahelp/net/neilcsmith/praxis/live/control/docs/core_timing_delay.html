@@ -1,13 +1,15 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd"> 
 <html>
   <head>
-    <title>core:property</title>
+      <title>core:timing:delay</title>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <link rel="stylesheet" href="nbdocs:/net/neilcsmith/praxis/live/help/docs/help.css" type="text/css">
   </head>
   <body>
-    <h1>core:property</h1>
-    <p>Stores a property, and sends it from its output port whenever a value is received.</p>
+    <h1>core:timing:delay</h1>
+    <p>Delay an input signal for a period of time.</p>
+    <p>A delay of 0 will delay the signal until the next control period 
+        (video frame, audio buffer, etc.) is processed.</p>
     <h2>Ports</h2>
     <table border="1" cellpadding="5" cellspacing="0">
         <thead>
@@ -21,13 +23,26 @@
         </thead>
         <tbody>
             <tr>
+                <td><b>in</b></td>
+                <td>control</td>
+                <td>in</td>
+                <td>any</td>
+                <td>Input signal.</td>
+            </tr>
+            <tr>
                 <td><b>out</b></td>
                 <td>control</td>
                 <td>out</td>
-                <td>argument</td>
-                <td>Sends value on update.</td>
+                <td>any</td>
+                <td>Output signal.</td>
             </tr>
-            
+            <tr>
+                <td><b>time</b></td>
+                <td>control</td>
+                <td>in</td>
+                <td>number(0..3600)</td>
+                <td>Delay time in seconds.</td>
+            </tr>
         </tbody>
     </table>
     <h2>Controls</h2>
@@ -44,14 +59,13 @@
         </thead>
         <tbody>
             <tr>
-                <td><b>value</b></td>
+                <td><b>time</b></td>
                 <td>property</td>
-                <td>argument</td>
+                <td>number(0..3600)</td>
                 <td></td>
-                <td>{}</td>
-                <td>Value of this component.</td>
+                <td>0</td>
+                <td>Delay time in seconds.</td>
             </tr>
-            
         </tbody>
     </table>
     

@@ -1,14 +1,13 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd"> 
 <html>
   <head>
-    <title>core:variable</title>
+      <title>core:timing:animator</title>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <link rel="stylesheet" href="nbdocs:/net/neilcsmith/praxis/live/help/docs/help.css" type="text/css">
   </head>
   <body>
-    <h1>core:variable</h1>
-    <p>Stores a variable and sends it whenever triggered. Unlike <code>core:property</code>
-        it does not send on each update.</p>
+    <h1>core:timing:animator</h1>
+    <p>Animate a value.</p>
     <h2>Ports</h2>
     <table border="1" cellpadding="5" cellspacing="0">
         <thead>
@@ -20,31 +19,38 @@
                 <th>Description</th>
             </tr>
         </thead>
-        <tbody>       
+        <tbody>
             <tr>
-                <td><b>trigger</b></td>
+                <td><b>to</b></td>
                 <td>control</td>
                 <td>in</td>
-                <td>argument</td>
-                <td>Triggers sending of value when a signal is received.</td>
+                <td>number</td>
+                <td>Start animating to value.</td>
             </tr>
             <tr>
                 <td><b>out</b></td>
                 <td>control</td>
                 <td>out</td>
-                <td>argument</td>
-                <td>Sends value when triggered.</td>
+                <td>number</td>
+                <td>Animated value.</td>
             </tr>
             <tr>
                 <td><b>value</b></td>
                 <td>control</td>
                 <td>in</td>
-                <td>argument</td>
-                <td>Sets value to signal received.</td>
+                <td>number</td>
+                <td>Set current value. Stops animation.</td>
+            </tr>
+            <tr>
+                <td><b>time</b></td>
+                <td>control</td>
+                <td>in</td>
+                <td>number(0..300)</td>
+                <td>Time (in seconds) of animation.</td>
             </tr>
         </tbody>
     </table>
-    <h2>Controls</h2>  
+    <h2>Controls</h2>
     <table border="1" cellpadding="5" cellspacing="0">
         <thead>
             <tr>
@@ -57,26 +63,32 @@
             </tr>
         </thead>
         <tbody>
-            
             <tr>
-                <td><b>trigger</b></td>
-                <td>action</td>
+                <td><b>to</b></td>
+                <td>function</td>
+                <td>number</td>
                 <td></td>
                 <td></td>
-                <td></td>
-                <td>Trigger sending of value from output.</td>
+                <td>Start animating to value.</td>
             </tr>
             <tr>
                 <td><b>value</b></td>
                 <td>property</td>
-                <td>argument</td>
+                <td>number</td>
                 <td></td>
-                <td>{}</td>
-                <td>value of this component.</td>
+                <td>0</td>
+                <td>Current value.  Set stops animation.</td>
+            </tr>
+            <tr>
+                <td><b>time</b></td>
+                <td>property</td>
+                <td>number(0..300)</td>
+                <td></td>
+                <td>0</td>
+                <td>Time (in seconds) of animation.</td>
             </tr>
         </tbody>
     </table>
-
     
   </body>
 </html>

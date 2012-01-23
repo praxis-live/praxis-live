@@ -7,12 +7,21 @@ and open the template in the editor.
 <toc version="2.0">
     <tocitem text="Components">
         <tocitem text="Core Components" target="net.neilcsmith.praxis.live.control.components">
+            <tocitem text="core:control-rate" target="core:control-rate"/>
             <tocitem text="core:property" target="core:property"/>
+            <tocitem text="core:start-trigger" target="core:start-trigger"/>
             <tocitem text="core:variable" target="core:variable"/>
+            <tocitem text="core:array:iterator" target="core:array:iterator"/>
             <tocitem text="core:array:random" target="core:array:random"/>
+            <tocitem text="core:math:add" target="core:math:add"/>
+            <tocitem text="core:math:multiply" target="core:math:multiply"/>
             <tocitem text="core:math:random" target="core:math:random"/>
             <tocitem text="core:math:scale" target="core:math:scale"/>
             <tocitem text="core:math:threshold" target="core:math:threshold"/>
+            <tocitem text="core:routing:join" target="core:routing:join"/>
+            <tocitem text="core:timing:animator" target="core:timing:animator"/>
+            <tocitem text="core:timing:delay" target="core:timing:delay"/>
+            <tocitem text="core:timing:timer" target="core:timing:timer"/>
         </tocitem>
     </tocitem>
 </toc>

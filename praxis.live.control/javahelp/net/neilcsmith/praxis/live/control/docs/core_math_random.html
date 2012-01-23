@@ -1,4 +1,4 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd"> 
 <html>
   <head>
       <title>core:math:random</title>
@@ -11,25 +11,87 @@
     when triggered. If <code>range</code> is zero, the value of <code>minimum</code> will
     be sent when triggered.</p>
     <h2>Ports</h2>
-    <dl>
-      <dt>minimum</dt>
-        <dd>control in | number | Value of minimum.</dd>
-      <dt>range</dt>
-        <dd>control in | number(>=0) | Value of range.</dd>
-      <dt>trigger</dt>
-        <dd>control in | argument | Trigger random number to be sent from output.</dd>
-      <dt>out</dt>
-        <dd>control out | number | Output.</dd>
-    </dl>
+    <table border="1" cellpadding="5" cellspacing="0">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Type</th>
+                <th>Direction</th>
+                <th>Values</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><b>trigger</b></td>
+                <td>control</td>
+                <td>in</td>
+                <td>argument</td>
+                <td>Trigger random number to be sent from output.</td>
+            </tr>
+            <tr>
+                <td><b>out</b></td>
+                <td>control</td>
+                <td>out</td>
+                <td>number</td>
+                <td>Output.</td>
+            </tr>
+            <tr>
+                <td><b>minimum</b></td>
+                <td>control</td>
+                <td>in</td>
+                <td>number</td>
+                <td>Value of minimum.</td>
+            </tr>
+            <tr>
+                <td><b>range</b></td>
+                <td>control</td>
+                <td>in</td>
+                <td>number(>=0)</td>
+                <td>Value of range.</td>
+            </tr>
+            
+        </tbody>
+    </table>
     <h2>Controls</h2>
-    <dl>
-      <dt>minimum</dt>
-        <dd>property | number | 0 | Value of minimum.</dd>
-      <dt>range</dt>
-        <dd>property | number(>=0) | 1 | Value of range.</dd>
-      <dt>trigger</dt>
-        <dd>function | - | - | Trigger random number to be sent from output.</dd>
-    </dl>
-    
+    <table border="1" cellpadding="5" cellspacing="0">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Type</th>
+                <th>Input</th>
+                <th>Output</th>
+                <th>Default</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><b>trigger</b></td>
+                <td>action</td>
+                <td>number(>=0)</td>
+                <td></td>
+                <td>1</td>
+                <td>Trigger random number to be sent from output.</td>
+            </tr>
+            <tr>
+                <td><b>minimum</b></td>
+                <td>property</td>
+                <td>number</td>
+                <td></td>
+                <td>0</td>
+                <td>Value of minimum.</td>
+            </tr>
+            <tr>
+                <td><b>range</b></td>
+                <td>property</td>
+                <td>number(>=0)</td>
+                <td></td>
+                <td>1</td>
+                <td>Value of range.</td>
+            </tr>
+            
+        </tbody>
+    </table>
   </body>
 </html>
