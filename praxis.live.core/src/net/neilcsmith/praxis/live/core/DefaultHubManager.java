@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Neil C Smith.
+ * Copyright 2012 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -24,11 +24,8 @@ package net.neilcsmith.praxis.live.core;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Queue;
 import java.util.Set;
 import java.util.logging.Level;
@@ -37,12 +34,9 @@ import net.neilcsmith.praxis.core.Component;
 import net.neilcsmith.praxis.core.IllegalRootStateException;
 import net.neilcsmith.praxis.hub.DefaultHub;
 import net.neilcsmith.praxis.hub.TaskServiceImpl;
-import net.neilcsmith.praxis.live.core.api.ExtensionProvider;
-import net.neilcsmith.praxis.live.core.api.RootLifecycleHandler;
 import net.neilcsmith.praxis.live.core.api.Task;
 import net.neilcsmith.praxis.script.impl.ScriptServiceImpl;
 import org.openide.util.Exceptions;
-import org.openide.util.Lookup;
 
 /**
  *
@@ -105,6 +99,7 @@ public class DefaultHubManager {
             markForRestart = false;
             return;
         }
+        markForRestart = false;
         doShutdown();
     }
 
@@ -184,7 +179,7 @@ public class DefaultHubManager {
     
     private void cancelShutdown() {
         shutdownTasks.clear();
-        state = State.Running;
+        updateState(State.Running);
     }
 
     private void updateState(State state) {
@@ -228,7 +223,8 @@ public class DefaultHubManager {
 //                shutdownTasks.add(task);
 //            }
 //        }
-        shutdownTasks.addAll(Utils.findRootDeletionTasks(roots));
+        String description = markForRestart ? "Hub Restart" : "Hub Shutdown";
+        shutdownTasks.addAll(Utils.findRootDeletionTasks(description, roots));
     }
 
 //    private Component[] findExtensions() {

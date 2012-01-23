@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Neil C Smith.
+ * Copyright 2012 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -40,11 +40,11 @@ class Utils {
     
     private Utils() {}
     
-    static List<Task> findRootDeletionTasks(Set<String> roots) {
+    static List<Task> findRootDeletionTasks(String description, Set<String> roots) {
         List<Task> tasks = new ArrayList<Task>();
         for (RootLifecycleHandler handler :
                 Lookup.getDefault().lookupAll(RootLifecycleHandler.class)) {
-            Task task = handler.getDeletionTask(roots);
+            Task task = handler.getDeletionTask(description, roots);
             if (task != null) {
                 tasks.add(task);
             }
