@@ -47,7 +47,20 @@
     </folder>
     <folder name="Menu">
         <folder name="BuildProject">
+            <file name="org-netbeans-modules-project-ui-BuildMainProject.shadow_hidden"/>
+            <file name="org-netbeans-modules-project-ui-RunMainProject.shadow_hidden"/>
             <file name="org-netbeans-modules-project-ui-actions-ActiveConfigAction.shadow_hidden"/>
+
+            <file name="org-netbeans-modules-project-ui-RunProject.shadow">
+                <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-RunProject.instance"/>
+                <attr name="position" intvalue="100"/>
+            </file>
+            
+            <file name="org-netbeans-modules-project-ui-BuildProject.shadow">
+                <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-BuildProject.instance"/>
+                <attr name="position" intvalue="200"/>
+            </file>
+            
         </folder>
         <folder name="Edit">
             <file name="Separator2.instance_hidden"/>
