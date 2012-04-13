@@ -22,6 +22,8 @@
 package net.neilcsmith.praxis.live.pxr.editors;
 
 import java.awt.Component;
+import java.awt.Graphics;
+import java.awt.Rectangle;
 import java.beans.PropertyEditorSupport;
 import net.neilcsmith.praxis.core.Argument;
 import net.neilcsmith.praxis.core.ArgumentFormatException;
@@ -39,7 +41,7 @@ import org.openide.explorer.propertysheet.PropertyEnv;
  * @author Neil C Smith (http://neilcsmith.net)
  */
 public class NumberEditor extends PropertyEditorSupport implements 
-        PraxisPropertyEditor { //, ExPropertyEditor, InplaceEditor.Factory {
+        PraxisPropertyEditor, ExPropertyEditor, InplaceEditor.Factory {
 
     private ArgumentInfo info;
     private NumberInplaceEditor inplace;
@@ -50,10 +52,10 @@ public class NumberEditor extends PropertyEditorSupport implements
 
     public NumberEditor(PraxisProperty<?> property, ArgumentInfo info) {
         this.info = info;
-        checkBounds();
+        init();
     }
 
-    private void checkBounds() {
+    private void init() {
         PMap props = info.getProperties();
         Argument minProp = props.get(PNumber.KEY_MINIMUM);
         Argument maxProp = props.get(PNumber.KEY_MAXIMUM);
@@ -66,7 +68,9 @@ public class NumberEditor extends PropertyEditorSupport implements
             }
         }
         isInteger = props.getBoolean(PNumber.KEY_IS_INTEGER, false);
-        
+        if (!isInteger && minimum != null && maximum != null) {
+            inplace = new NumberInplaceEditor(minimum, maximum);
+        }
     }
 
     @Override
@@ -94,27 +98,44 @@ public class NumberEditor extends PropertyEditorSupport implements
 
     @Override
     public boolean supportsCustomEditor() {
-        return !isInteger && minimum != null && maximum != null;
+        return false;
+//        return !isInteger && minimum != null && maximum != null;
     }
 
     @Override
     public Component getCustomEditor() {
-        return new NumberCustomEditor(this, minimum, maximum);
+//        return new NumberCustomEditor(this, minimum, maximum);
+        return null;
     }
 
+    @Override
+    public boolean isPaintable() {
+        return inplace != null;
+    }
 
+    @Override
+    public void paintValue(Graphics g, Rectangle box) {
+        double value;
+        try {
+            value = PNumber.coerce((Argument) getValue()).value();
+        } catch(Exception ex) {
+            value = minimum.value();
+        }
+        inplace.paintValue(g, box, value, false);
+    }
 
-//
-//    @Override
-//    public void attachEnv(PropertyEnv env) {
-//        env.registerInplaceEditorFactory(this);
-//    }
-//
-//    @Override
-//    public InplaceEditor getInplaceEditor() {
-//        if (inplace == null) {
-//            inplace = new NumberInplaceEditor(info);
-//        }
-//        return inplace;
-//    }
+    @Override
+    public void attachEnv(PropertyEnv env) {
+        if (inplace != null) {
+            env.registerInplaceEditorFactory(this);
+        }   
+    }
+
+    @Override
+    public InplaceEditor getInplaceEditor() {
+        return inplace;
+    }
+    
+
+    
 }

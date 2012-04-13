@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Neil C Smith.
+ * Copyright 2012 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -21,30 +21,29 @@
  */
 package net.neilcsmith.praxis.live.pxr.editors;
 
+import java.awt.Color;
 import java.awt.Component;
+import java.awt.EventQueue;
+import java.awt.FontMetrics;
+import java.awt.Graphics;
+import java.awt.GridLayout;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.beans.PropertyEditor;
+import java.lang.reflect.InvocationTargetException;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.AbstractAction;
-import javax.swing.JColorChooser;
 import javax.swing.JComponent;
-import javax.swing.JSpinner;
+import javax.swing.JTextField;
 import javax.swing.KeyStroke;
-import javax.swing.SpinnerNumberModel;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import net.neilcsmith.praxis.core.Argument;
-import net.neilcsmith.praxis.core.ArgumentFormatException;
-import net.neilcsmith.praxis.core.CallArguments;
-import net.neilcsmith.praxis.core.ControlAddress;
-import net.neilcsmith.praxis.core.info.ArgumentInfo;
 import net.neilcsmith.praxis.core.types.PNumber;
-import net.neilcsmith.praxis.live.pxr.PXRHelper;
 import org.openide.explorer.propertysheet.InplaceEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.explorer.propertysheet.PropertyModel;
@@ -53,109 +52,142 @@ import org.openide.explorer.propertysheet.PropertyModel;
  *
  * @author Neil C Smith (http://neilcsmith.net)
  */
-class NumberInplaceEditor implements InplaceEditor, ChangeListener {
+class NumberInplaceEditor extends JComponent implements InplaceEditor {
 
     private static final Logger LOG = Logger.getLogger(NumberInplaceEditor.class.getName());
-
-    private final JSpinner spinner;
+    private static final Color ACTIVE_COLOR = Color.WHITE;
+    private static final Color INACTIVE_COLOR = Color.GRAY;
+    private static final DecimalFormat FORMATTER = new DecimalFormat("####0.0####");
+    
     private PropertyEditor propertyEditor;
     private PropertyModel propertyModel;
-    private ControlAddress address;
-    private boolean ignoreChanges;
-    private Object initialValue;
     private List<ActionListener> listeners;
+    private JTextField textField;
+    private Object initialValue;
+    private PNumber currentValue;
+    private double minimum;
+    private double maximum;
 
-    NumberInplaceEditor(ArgumentInfo info) {
+    NumberInplaceEditor(PNumber min, PNumber max) {
+        minimum = min.value();
+        maximum = max.value();
+        if (minimum >= maximum) {
+            throw new IllegalArgumentException();
+        }
         listeners = new ArrayList<ActionListener>();
-        spinner = new JSpinner(getSpinnerModel(info));
-        spinner.addChangeListener(this);
-        spinner.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0, false), "resetValue");
-        spinner.getActionMap().put("resetValue", new AbstractAction() {
+        initThis();
+        initComponents();
 
-            @Override
-            public void actionPerformed(ActionEvent ae) {
-                reset();
-                fireActionEvent(true);
-            }
-        });
     }
 
-    private SpinnerNumberModel getSpinnerModel(ArgumentInfo info) {
-        Argument minProp = info.getProperties().get(PNumber.KEY_MINIMUM);
-        Argument maxProp = info.getProperties().get(PNumber.KEY_MAXIMUM);
-        if (minProp != null && maxProp != null) {
-            try {
-                double min = PNumber.coerce(minProp).value();
-                double max = PNumber.coerce(maxProp).value();
-                double step;
-                double diff = Math.abs(max - min);
-                if (diff > 99) {
-                    step = 1;
-                } else if (diff > 9) {
-                    step = 0.1;
-                } else {
-                    step = 0.01;
-                }
-                return new SpinnerNumberModel(min, min, max, step);
-            } catch (ArgumentFormatException ex) {
-                LOG.log(Level.FINE, "Error setting min and max values", ex);
-                // fall through to default
-            }
+    private void initThis() {
+        setFocusable(true);
+        setLayout(new GridLayout());
+        MouseHandler handler = new MouseHandler();
+        addMouseListener(handler);
+        addMouseMotionListener(handler);
+    }
+
+    private void initComponents() {
+        textField = new JTextField();
+        textField.setVisible(false);
+        add(textField);
+    }
+
+    @Override
+    protected void paintComponent(Graphics g) {
+        if (textField.isVisible()) {
+            return;
         }
-        return new SpinnerNumberModel(0, PNumber.MIN_VALUE, PNumber.MAX_VALUE, 1);
+        Rectangle bounds = new Rectangle(3, 0, getWidth() - 3, getHeight());
+        paintValue(g, bounds, currentValue.value(), true);
+    }
+
+    void paintValue(Graphics g, Rectangle box, double value, boolean highlight) {
+        Color c = g.getColor();
+        String stringValue = FORMATTER.format(value);
+        double delta = (value - minimum) / (maximum - minimum);
+        int x = (int) (delta * (box.width - 1));
+        x += box.x;
+        FontMetrics fm = g.getFontMetrics();
+        if (!highlight) {
+            g.setColor(INACTIVE_COLOR);
+            g.drawLine(x, box.y, x, box.height);
+            g.setColor(c);
+            g.drawString(stringValue, box.x, box.y
+                    + (box.height - fm.getHeight()) / 2 + fm.getAscent());
+        } else {
+            g.setColor(INACTIVE_COLOR);
+            g.drawString(stringValue, box.x, box.y
+                    + (box.height - fm.getHeight()) / 2 + fm.getAscent());
+            g.setColor(ACTIVE_COLOR);
+            g.drawLine(x, box.y, x, box.height);
+            g.setColor(c);
+
+        }
+
+    }
+
+    @Override
+    public void addNotify() {
+        super.addNotify();
+        if (EventQueue.getCurrentEvent() instanceof MouseEvent) {
+            textField.setVisible(false);
+        } else {
+            EventQueue.invokeLater(new Runnable() {
+
+                @Override
+                public void run() {
+                    focusTextField();
+                }
+            });
+        }
     }
 
     @Override
     public void connect(PropertyEditor pe, PropertyEnv env) {
         this.propertyEditor = pe;
-        address = null;
-        Object ad = env.getFeatureDescriptor().getValue("address");
-        if (ad instanceof ControlAddress) {
-            address = (ControlAddress) ad;
-        }
         initialValue = pe.getValue();
-        setValue(initialValue);
-
+        textField.setVisible(false);
+        reset();
     }
 
     @Override
     public JComponent getComponent() {
-        return spinner;
+        return this;
     }
 
     @Override
     public void clear() {
         propertyEditor = null;
         propertyModel = null;
-        address = null;
-    }
-
-    @Override
-    public Object getValue() {
-        try {
-            spinner.commitEdit();
-            return PNumber.valueOf(((Number) spinner.getValue()).doubleValue());
-        } catch (Exception ex) {
-            LOG.log(Level.FINE, "Exception in getValue()", ex);
-            return propertyEditor.getValue();
-
-        }
     }
 
     @Override
     public void setValue(Object o) {
-        ignoreChanges = true;
-        setValueImpl(o);
-        ignoreChanges = false;
-    }
-
-    private void setValueImpl(Object o) {
-         try {
-            PNumber val = PNumber.coerce((Argument) o);
-            spinner.setValue(val.value());
+        try {
+            currentValue = PNumber.coerce((Argument) o);
         } catch (Exception ex) {
             LOG.log(Level.FINE, "Exception in setValue()", ex);
+            if (currentValue == null) {
+                currentValue = PNumber.valueOf(0);
+            }
         }
+        if (textField.isVisible()) {
+            textField.setText(currentValue.toString());
+        }
+    }
+
+    @Override
+    public Object getValue() {
+        if (textField.isVisible()) {
+            try {
+                return PNumber.valueOf(textField.getText());
+            } catch (Exception ex) {
+                LOG.log(Level.FINE, "Exception in getValue()", ex);
+            }
+        }
+        return currentValue;
     }
 
     @Override
@@ -166,7 +198,7 @@ class NumberInplaceEditor implements InplaceEditor, ChangeListener {
     @Override
     public void reset() {
         LOG.fine("Reset Called");
-        setValueImpl(initialValue);
+        setValue(initialValue);
     }
 
     @Override
@@ -178,20 +210,17 @@ class NumberInplaceEditor implements InplaceEditor, ChangeListener {
     public void removeActionListener(ActionListener al) {
         listeners.remove(al);
     }
-    
+
     private void fireActionEvent(boolean success) {
-        ActionEvent ev = new ActionEvent(this, 0, success ? COMMAND_SUCCESS : COMMAND_FAILURE);
-        for(ActionListener l : listeners.toArray(new ActionListener[0])) {
+        ActionEvent ev = new ActionEvent(this, ActionEvent.ACTION_PERFORMED, success ? COMMAND_SUCCESS : COMMAND_FAILURE);
+        for (ActionListener l : listeners.toArray(new ActionListener[0])) {
             l.actionPerformed(ev);
         }
     }
 
     @Override
     public KeyStroke[] getKeyStrokes() {
-        LOG.fine("getKeyStrokes() called");
-        return new KeyStroke[] {
-            KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0, false)
-        };
+        return new KeyStroke[0];
     }
 
     @Override
@@ -211,17 +240,68 @@ class NumberInplaceEditor implements InplaceEditor, ChangeListener {
 
     @Override
     public boolean isKnownComponent(Component c) {
-        return c == spinner || spinner.isAncestorOf(c);
+        return c == this || c == textField;
     }
 
-    @Override
-    public void stateChanged(ChangeEvent e) {
-        if (address != null && !ignoreChanges) {
-            try {
-                PXRHelper.getDefault().send(address, CallArguments.create(PNumber.valueOf(((Number) spinner.getValue()).doubleValue())), null);
-            } catch (Exception ex) {
-                LOG.log(Level.FINE, "Exception sending value", ex);
+    private void updateValue(double value) {
+        currentValue = PNumber.valueOf(value);
+        try {
+            propertyModel.setValue(currentValue);
+        } catch (InvocationTargetException ex) {
+        }
+        repaint();
+    }
+
+    private void focusTextField() {
+        textField.setText(currentValue.toString());
+        textField.setVisible(true);
+        textField.selectAll();
+        textField.requestFocusInWindow();
+    }
+
+    private class MouseHandler extends MouseAdapter {
+
+        private int startX;
+        private double startValue;
+        private boolean dragging;
+
+        @Override
+        public void mousePressed(MouseEvent me) {
+            if (textField.isVisible()) {
+                return;
             }
+            startX = me.getX();
+            startValue = currentValue.value();
+        }
+
+        @Override
+        public void mouseReleased(MouseEvent me) {
+            if (dragging) {
+                dragging = false;
+                update(me);
+                fireActionEvent(true);
+            } else {
+                focusTextField();
+            }
+
+        }
+
+        @Override
+        public void mouseDragged(MouseEvent me) {
+            dragging = true;
+            update(me);
+        }
+
+        private void update(MouseEvent me) {
+            double delta = (me.getX() - startX) / (double) getWidth();
+            delta *= (maximum - minimum);
+            double value = startValue + delta;
+            if (value > maximum) {
+                value = maximum;
+            } else if (value < minimum) {
+                value = minimum;
+            }
+            updateValue(value);
         }
     }
 }
