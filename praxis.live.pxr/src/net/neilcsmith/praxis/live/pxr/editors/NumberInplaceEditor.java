@@ -58,6 +58,7 @@ class NumberInplaceEditor extends JComponent implements InplaceEditor {
     private static final Color ACTIVE_COLOR = Color.WHITE;
     private static final Color INACTIVE_COLOR = Color.GRAY;
     private static final DecimalFormat FORMATTER = new DecimalFormat("####0.0####");
+    private static final long IGNORE_CLICK_TIME = 500 * 1000000;
     
     private PropertyEditor propertyEditor;
     private PropertyModel propertyModel;
@@ -264,12 +265,14 @@ class NumberInplaceEditor extends JComponent implements InplaceEditor {
         private int startX;
         private double startValue;
         private boolean dragging;
+        private long clickTime;
 
         @Override
         public void mousePressed(MouseEvent me) {
             if (textField.isVisible()) {
                 return;
             }
+            clickTime = System.nanoTime();
             startX = me.getX();
             startValue = currentValue.value();
         }
@@ -280,8 +283,10 @@ class NumberInplaceEditor extends JComponent implements InplaceEditor {
                 dragging = false;
                 update(me);
                 fireActionEvent(true);
-            } else {
+            } else if ((System.nanoTime() - clickTime) < IGNORE_CLICK_TIME) {
                 focusTextField();
+            } else {
+                fireActionEvent(false);
             }
 
         }
