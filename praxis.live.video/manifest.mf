@@ -4,4 +4,5 @@ OpenIDE-Module-Layer: net/neilcsmith/praxis/live/video/resources/layer.xml
 OpenIDE-Module-Localizing-Bundle: net/neilcsmith/praxis/live/video/resources/Bundle.properties
 OpenIDE-Module-Requires: org.netbeans.api.javahelp.Help
 OpenIDE-Module-Specification-Version: 1.0
-
+AutoUpdate-Essential-Module: true
+AutoUpdate-Show-In-Client: false

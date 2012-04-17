@@ -4,4 +4,5 @@ OpenIDE-Module-Install: net/neilcsmith/praxis/live/pxr/gui/Installer.class
 OpenIDE-Module-Layer: net/neilcsmith/praxis/live/pxr/gui/resources/layer.xml
 OpenIDE-Module-Localizing-Bundle: net/neilcsmith/praxis/live/pxr/gui/resources/Bundle.properties
 OpenIDE-Module-Specification-Version: 1.0
-
+AutoUpdate-Essential-Module: true
+AutoUpdate-Show-In-Client: false
