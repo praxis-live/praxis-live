@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Neil C Smith.
+ * Copyright 2012 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -41,7 +41,6 @@ import net.neilcsmith.praxis.live.pxr.PXRParser.*;
 import net.neilcsmith.praxis.live.pxr.api.RootEditor;
 import net.neilcsmith.praxis.live.pxr.api.RootProxy;
 import net.neilcsmith.praxis.live.pxr.api.RootRegistry;
-import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.openide.awt.Actions;
 import org.openide.util.ContextAwareAction;
@@ -57,7 +56,8 @@ import org.openide.windows.CloneableTopComponent;
  */
 public class RootEditorTopComponent extends CloneableTopComponent {
 
-    private final static Action START_STOP = new StartableRootAction();
+    private final static Action START_STOP_ACTION = new StartableRootAction();
+    private final static Action ROOT_CONFIG_ACTION = new RootConfigAction();
     private PXRDataObject dob;
     private RootEditor editor;
     private JComponent editorPanel;
@@ -70,12 +70,7 @@ public class RootEditorTopComponent extends CloneableTopComponent {
         this.setDisplayName(dob.getName());
         this.setIcon(dob.getNodeDelegate().getIcon(BeanInfo.ICON_COLOR_16x16));
         this.dob = dob;
-        Project project = FileOwnerQuery.getOwner(dob.getPrimaryFile());
-        if (project != null) {
-            lookup = new EditorLookup(Lookups.fixed(dob, project), dob.getLookup());
-        } else {
-            lookup = new EditorLookup(Lookups.singleton(dob), dob.getLookup());
-        }
+        lookup = new EditorLookup(Lookups.singleton(dob), dob.getLookup());
         associateLookup(lookup);
         setLayout(new BorderLayout());
         toolBar = new ToolBar();
@@ -108,6 +103,7 @@ public class RootEditorTopComponent extends CloneableTopComponent {
     protected void componentActivated() {
         if (editor != null) {
             editor.componentActivated();
+            requestFocusInWindow();
         }
     }
 
@@ -131,6 +127,24 @@ public class RootEditorTopComponent extends CloneableTopComponent {
         uninstall(root);
     }
 
+//    @Override
+//    public void requestFocus() {
+//        super.requestFocus();
+//        if (editorPanel != null) {
+//            editorPanel.requestFocus();
+//        }
+//    }
+//
+//    @Override
+//    public boolean requestFocusInWindow() {
+//        super.requestFocusInWindow();
+//        if (editorPanel != null) {
+//            return editorPanel.requestFocusInWindow();
+//        } else {
+//            return false;
+//        }
+//    }
+
     @Override
     protected CloneableTopComponent createClonedObject() {
         return new RootEditorTopComponent(dob);
@@ -149,7 +163,7 @@ public class RootEditorTopComponent extends CloneableTopComponent {
     private void install(RootProxy root) {
         if (root == null) {
             editor = new BlankEditor();
-            lookup.setAdditional();
+            lookup.setAdditional(editor.getLookup());
             initToolbar(new Action[0]);
         } else {
             editor = findEditor(root);
@@ -166,17 +180,18 @@ public class RootEditorTopComponent extends CloneableTopComponent {
         }
 
     }
-    
+
     private Action[] buildActions(RootEditor editor) {
         Action[] editorActions = editor.getActions();
         if (editorActions == null || editorActions.length == 0) {
-            return new Action[]{START_STOP};
+            return new Action[]{START_STOP_ACTION, ROOT_CONFIG_ACTION};
         }
         ArrayList<Action> actions = new ArrayList<Action>(editorActions.length + 2);
-        actions.add(START_STOP);
+        actions.add(START_STOP_ACTION);
+        actions.add(ROOT_CONFIG_ACTION);
         actions.add(null);
         actions.addAll(Arrays.asList(editorActions));
-        return actions.toArray(new Action[actions.size()]);   
+        return actions.toArray(new Action[actions.size()]);
     }
 
     private void uninstall(RootProxy root) {
