@@ -24,16 +24,17 @@ package net.neilcsmith.praxis.live.pxr.editors;
 import java.awt.Component;
 import java.io.File;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import net.neilcsmith.praxis.core.Argument;
 import net.neilcsmith.praxis.core.ArgumentFormatException;
 import net.neilcsmith.praxis.core.info.ArgumentInfo;
 import net.neilcsmith.praxis.core.syntax.Token;
 import net.neilcsmith.praxis.core.syntax.Tokenizer;
-import net.neilcsmith.praxis.core.types.PBoolean;
-import net.neilcsmith.praxis.core.types.PResource;
-import net.neilcsmith.praxis.core.types.PString;
+import net.neilcsmith.praxis.core.types.*;
 import net.neilcsmith.praxis.live.pxr.SyntaxUtils;
 import net.neilcsmith.praxis.live.pxr.api.PraxisProperty;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
@@ -50,6 +51,7 @@ public class ResourceEditor extends PraxisPropertyEditorSupport
     private PropertyEnv env;
     private URI base;
     private boolean allowEmpty;
+    private List<String> suggested;
 
     public ResourceEditor(PraxisProperty property, ArgumentInfo info) {
         Object dir = property.getValue("workingDir");
@@ -58,21 +60,23 @@ public class ResourceEditor extends PraxisPropertyEditorSupport
         } else {
             base = new File("").toURI();
         }
-        allowEmpty = info.getProperties().getBoolean(ArgumentInfo.KEY_ALLOW_EMPTY, false);
-//        allowEmpty = supportsEmpty(info);
+        PMap props = info.getProperties();
+        allowEmpty = props.getBoolean(ArgumentInfo.KEY_ALLOW_EMPTY, false);
+        Argument arg = props.get(ArgumentInfo.KEY_SUGGESTED_VALUES);
+        if (arg != null) {
+            try {
+                PArray arr = PArray.coerce(arg);
+                suggested = new ArrayList<String>(arr.getSize());
+                for (Argument val : arr) {
+                    suggested.add(val.toString());
+                }
+                 property.setValue("canEditAsText", Boolean.TRUE);
+            } catch (ArgumentFormatException ex) {
+                // no op
+            }
+        }
     }
 
-//    private boolean supportsEmpty(ArgumentInfo info) {
-//        Argument val = info.getProperties().get(ArgumentInfo.KEY_ALLOW_EMPTY);
-//        if (val == null) {
-//            return false;
-//        }
-//        if (Argument.equivalent(null, PBoolean.TRUE, val)) {
-//            return true;
-//        } else {
-//            return false;
-//        }
-//    }
 
     @Override
     public String getPraxisInitializationString() {
@@ -140,15 +144,24 @@ public class ResourceEditor extends PraxisPropertyEditorSupport
             case QUOTED:
             case BRACED:
                 URI path = base.resolve(new URI(null, null, file.getText(), null));
-                LOG.info("Setting path to " + path);
+                LOG.log(Level.FINE, "Setting path to {0}", path);
                 setValue(PResource.valueOf(path));
                 break;
             default:
                 throw new IllegalArgumentException("Couldn't parse file");
         }
-
-
     }
+
+    @Override
+    public String[] getTags() {
+        if (suggested != null) {
+            return suggested.toArray(new String[suggested.size()]);
+        } else {
+            return null;
+        }
+    }
+    
+    
 
     @Override
     public String[] getSupportedCommands() {

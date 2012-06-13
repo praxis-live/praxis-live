@@ -40,25 +40,35 @@ public class CodeCustomEditor extends JPanel implements PropertyChangeListener {
     private final PraxisPropertyEditor editor;
     private final PropertyEnv env;
     private final JEditorPane pane;
+    private final String template;
 
-    CodeCustomEditor(PraxisPropertyEditor editor, PropertyEnv env, String mime) {
+    CodeCustomEditor(PraxisPropertyEditor editor, PropertyEnv env, String mime, String template) {
         this.editor = editor;
         this.env = env;
+        this.template = template;
         env.setState(PropertyEnv.STATE_NEEDS_VALIDATION);
         env.addPropertyChangeListener(this);
-        
+
         setLayout(new BorderLayout());
         pane = new JEditorPane();
-        pane.setPreferredSize(new Dimension(600, 400));
-        add(new JScrollPane(pane));
+        JScrollPane scroll = new JScrollPane(pane);
+        scroll.setPreferredSize(new Dimension(600, 400));
+        add(scroll);
+
+        String contents = editor.getAsText();
         pane.setContentType(mime);
-        pane.setText(editor.getAsText());
+        pane.setText(contents.isEmpty() ? template : contents);
     }
 
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (PropertyEnv.PROP_STATE.equals(evt.getPropertyName()) && evt.getNewValue() == PropertyEnv.STATE_VALID) {
-            editor.setAsText(pane.getText());
+            String text = pane.getText();
+            if (text.equals(template)) {
+                editor.setAsText("");
+            } else {
+                editor.setAsText(text);
+            }
         }
     }
 }

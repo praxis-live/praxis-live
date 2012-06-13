@@ -86,10 +86,10 @@ public class EditorManager {
         Argument mime = info.getProperties().get(PString.KEY_MIME_TYPE);
         if (mime != null) {
               String mimetype = mime.toString();
-              if ("text/x-praxis-java".equals(mimetype) ||
-                      "text/x-praxis-script".equals(mimetype)) {
+//              if ("text/x-praxis-java".equals(mimetype) ||
+//                      "text/x-praxis-script".equals(mimetype)) {
                   return new CodeEditor(property, info, mimetype);
-              }
+//              }
         }
         return new StringEditor(property, info);
     }

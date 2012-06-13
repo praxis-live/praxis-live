@@ -37,9 +37,11 @@ public class CodeEditor extends PraxisPropertyEditorSupport
 
     private final String mime;
     private PropertyEnv env;
+    private String template;
 
     CodeEditor(PraxisProperty property, ArgumentInfo info, String mimetype) {
         this.mime = mimetype;
+        this.template = info.getProperties().getString(ArgumentInfo.KEY_TEMPLATE, null);
         property.setValue("canEditAsText", Boolean.FALSE);
     }
     
@@ -61,7 +63,7 @@ public class CodeEditor extends PraxisPropertyEditorSupport
 
     @Override
     public Component getCustomEditor() {
-        return new CodeCustomEditor(this, env, mime);
+        return new CodeCustomEditor(this, env, mime, template);
     }
 
 
