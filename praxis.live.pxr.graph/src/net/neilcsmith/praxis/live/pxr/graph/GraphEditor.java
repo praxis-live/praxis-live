@@ -42,20 +42,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.ActionMap;
-import javax.swing.InputMap;
-import javax.swing.JComponent;
-import javax.swing.JLayeredPane;
-import javax.swing.JMenu;
-import javax.swing.JMenuItem;
-import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
-import javax.swing.JScrollPane;
-import javax.swing.JSeparator;
-import javax.swing.KeyStroke;
-import javax.swing.OverlayLayout;
+import javax.swing.*;
 import javax.swing.border.LineBorder;
 import net.neilcsmith.praxis.core.CallArguments;
 import net.neilcsmith.praxis.core.ComponentType;
@@ -322,10 +309,13 @@ public class GraphEditor extends RootEditor {
     }
 
     private void buildPin(String cmpID, String pinID, PortInfo info) {
-        boolean control = ControlPort.class.isAssignableFrom(info.getType());
+        boolean primary = info.getType().getSimpleName().startsWith("Audio") ||
+                info.getType().getSimpleName().startsWith("Video");
         PinWidget pin = scene.addPin(cmpID, pinID, "", getPinAlignment(info));
-        if (!control) {
-            pin.setFont(pin.getFont().deriveFont(Font.BOLD));
+        if (primary) {
+            pin.setFont(scene.getDefaultFont().deriveFont(Font.BOLD, 11.0f));
+        } else {
+            pin.setFont(scene.getDefaultFont().deriveFont(11.0f));
         }
         pin.setToolTipText(pinID + " : " + info.getType().getSimpleName());
     }
@@ -600,34 +590,41 @@ public class GraphEditor extends RootEditor {
         }
 
         @Override
-        public void accept(Widget widget, Point point, Transferable transferable) {
-            ComponentType type = extractType(transferable);
+        public void accept(Widget widget, final Point point, Transferable transferable) {
+            final ComponentType type = extractType(transferable);
             if (type != null) {
-                NotifyDescriptor.InputLine dlg = new NotifyDescriptor.InputLine(
-                        "ID:", "Enter an ID for " + type);
-                dlg.setInputText(getFreeID(type));
-                Object retval = DialogDisplayer.getDefault().notify(dlg);
-                if (retval == NotifyDescriptor.OK_OPTION) {
-                    final String id = dlg.getInputText();
-                    try {
-                        container.addChild(id, type, new Callback() {
+                Runnable runnable = new Runnable() {
 
-                            @Override
-                            public void onReturn(CallArguments args) {
-                                // nothing wait for sync
+                    @Override
+                    public void run() {
+                        NotifyDescriptor.InputLine dlg = new NotifyDescriptor.InputLine(
+                                "ID:", "Enter an ID for " + type);
+                        dlg.setInputText(getFreeID(type));
+                        Object retval = DialogDisplayer.getDefault().notify(dlg);
+                        if (retval == NotifyDescriptor.OK_OPTION) {
+                            final String id = dlg.getInputText();
+                            try {
+                                container.addChild(id, type, new Callback() {
+                                    
+                                    @Override
+                                    public void onReturn(CallArguments args) {
+                                        // nothing wait for sync
+                                    }
+                                    
+                                    @Override
+                                    public void onError(CallArguments args) {
+                                        pointMap.remove(id);
+                                        DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message("Error creating component", NotifyDescriptor.ERROR_MESSAGE));
+                                    }
+                                });
+                            } catch (ProxyException ex) {
+                                Exceptions.printStackTrace(ex);
                             }
-
-                            @Override
-                            public void onError(CallArguments args) {
-                                pointMap.remove(id);
-                                DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message("Error creating component", NotifyDescriptor.ERROR_MESSAGE));
-                            }
-                        });
-                    } catch (ProxyException ex) {
-                        Exceptions.printStackTrace(ex);
+                            pointMap.put(id, point);
+                        }
                     }
-                    pointMap.put(id, point);
-                }
+                };
+                SwingUtilities.invokeLater(runnable);
             }
 
         }
