@@ -310,8 +310,8 @@ public class PraxisGraphScene<N> extends GraphPinScene<N, EdgeID<N>, PinID<N>> {
      */
     public void layoutScene() {
         sceneLayout.invokeLayout();
-    }
-
+    }  
+    
     private static class WidgetCollector implements ConnectionWidgetCollisionsCollector {
 
         @Override
