@@ -142,20 +142,28 @@ class PXRProxyNode extends AbstractNode {
         if (EventQueue.isDispatchThread()) {
             return createSheetOnEQ();
         } else {
-            final Sheet[] holder = new Sheet[1];
-            try {
-                EventQueue.invokeAndWait(new Runnable() {
+//            final Sheet[] holder = new Sheet[1];
+//            try {
+//                EventQueue.invokeAndWait(new Runnable() {
+//
+//                    @Override
+//                    public void run() {
+//                        holder[0] = createSheetOnEQ();
+//                    }
+//                });
+//            } catch (Exception ex) {
+//                Exceptions.printStackTrace(ex);
+//                return super.createSheet();
+//            }
+//            return holder[0];
+            EventQueue.invokeLater(new Runnable() {
 
-                    @Override
-                    public void run() {
-                        holder[0] = createSheetOnEQ();
-                    }
-                });
-            } catch (Exception ex) {
-                Exceptions.printStackTrace(ex);
-                return super.createSheet();
-            }
-            return holder[0];
+                @Override
+                public void run() {
+                    setSheet(createSheetOnEQ());
+                }
+            });
+            return super.createSheet();
         }
     }
 
