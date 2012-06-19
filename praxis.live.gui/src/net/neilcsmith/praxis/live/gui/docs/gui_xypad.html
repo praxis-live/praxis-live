@@ -1,0 +1,110 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd"> 
+<html>
+  <head>
+      <title>gui:xy-pad</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <link rel="stylesheet" href="nbdocs:/net/neilcsmith/praxis/live/help/docs/help.css" type="text/css">
+  </head>
+  <body>
+    <h1>gui:xy-pad</h1>
+    <p>An XY pad. Different controls can be bound to vertical and horizontal movement.</p>
+    <p>If minimum, maximum or scale value are not set, the pad will attempt to configure these from
+    the bound controls. If these are not specified by the control they will default to 0, 1 and Linear respectively.</p>
+    <h2>Controls</h2>
+    <table border="1" cellpadding="5" cellspacing="0">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Type</th>
+                <th>Input</th>
+                <th>Output</th>
+                <th>Default</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><b>label</b></td>
+                <td>property</td>
+                <td>string</td>
+                <td></td>
+                <td>{}</td>
+                <td>The component label.</td>
+            </tr>
+            <tr>
+                <td><b>binding-x</b></td>
+                <td>property</td>
+                <td>control address</td>
+                <td></td>
+                <td>{}</td>
+                <td>Address of the control to bind to for horizontal movement.</td>
+            </tr>
+            <tr>
+                <td><b>binding-y</b></td>
+                <td>property</td>
+                <td>control address</td>
+                <td></td>
+                <td>{}</td>
+                <td>Address of the control to bind to for vertical movement.</td>
+            </tr>
+            <tr>
+                <td><b>minimum-x</b></td>
+                <td>property</td>
+                <td>number(0..1) or {}</td>
+                <td></td>
+                <td>{}</td>
+                <td>Minimum value for horizontal movement (see note above).</td>
+            </tr>
+            <tr>
+                <td><b>minimum-y</b></td>
+                <td>property</td>
+                <td>number(0..1) or {}</td>
+                <td></td>
+                <td>{}</td>
+                <td>Minimum value for vertical movement (see note above).</td>
+            </tr>
+            <tr>
+                <td><b>maximum-x</b></td>
+                <td>property</td>
+                <td>number(0..1) or {}</td>
+                <td></td>
+                <td>{}</td>
+                <td>Maximum value for horizontal movement (see note above).</td>
+            </tr>
+            <tr>
+                <td><b>maximum-y</b></td>
+                <td>property</td>
+                <td>number(0..1) or {}</td>
+                <td></td>
+                <td>{}</td>
+                <td>Maximum value for vertical movement (see note above).</td>
+            </tr>
+            <tr>
+                <td><b>scale-x</b></td>
+                <td>property</td>
+                <td>string(Linear, Exponential) or {}</td>
+                <td></td>
+                <td>{}</td>
+                <td>Scale type for horizontal movement (see note above).</td>
+            </tr>
+            <tr>
+                <td><b>scale-y</b></td>
+                <td>property</td>
+                <td>string(Linear, Exponential) or {}</td>
+                <td></td>
+                <td>{}</td>
+                <td>Scale type for vertical movement (see note above).</td>
+            </tr>
+            <tr>
+                <td><b>layout</b></td>
+                <td>property</td>
+                <td>string</td>
+                <td></td>
+                <td>{}</td>
+                <td>A layout string (based on the format of MigLayout).</td>
+            </tr>
+        </tbody>
+    </table>
+    
+  </body>
+</html>

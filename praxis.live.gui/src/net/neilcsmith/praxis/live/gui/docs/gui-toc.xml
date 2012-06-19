@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE toc PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp TOC Version 2.0//EN" "http://java.sun.com/products/javahelp/toc_2_0.dtd">
+<toc version="2.0">
+    <tocitem text="Components">
+        <tocitem text="GUI Components">
+            <tocitem text="gui:button" target="gui:button"/>
+            <tocitem text="gui:combobox" target="gui:combobox"/>
+            <tocitem text="gui:filefield" target="gui:filefield"/>
+            <tocitem text="gui:h-rangeslider" target="gui:h-rangeslider"/>
+            <tocitem text="gui:h-slider" target="gui:h-slider"/>
+            <tocitem text="gui:panel" target="gui:panel"/>
+            <tocitem text="gui:tabs" target="gui:tabs"/>
+            <tocitem text="gui:textfield" target="gui:textfield"/>
+            <tocitem text="gui:togglebutton" target="gui:togglebutton"/>
+            <tocitem text="gui:v-slider" target="gui:v-slider"/>
+            <tocitem text="gui:xy-pad" target="gui:xy-pad"/>
+        </tocitem>
+    </tocitem>
+</toc>

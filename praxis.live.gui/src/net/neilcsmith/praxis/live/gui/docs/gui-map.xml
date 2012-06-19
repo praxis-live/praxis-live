@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE map PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp Map Version 2.0//EN" "http://java.sun.com/products/javahelp/map_2_0.dtd">
+<map version="2.0">
+    <mapID target="gui:button" url="gui_button.html"/>
+    <mapID target="gui:combobox" url="gui_combobox.html"/>
+    <mapID target="gui:filefield" url="gui_filefield.html"/>
+    <mapID target="gui:h-rangeslider" url="gui_hrangeslider.html"/>
+    <mapID target="gui:h-slider" url="gui_hslider.html"/>
+    <mapID target="gui:panel" url="gui_panel.html"/>
+    <mapID target="gui:tabs" url="gui_tabs.html"/>
+    <mapID target="gui:textfield" url="gui_textfield.html"/>
+    <mapID target="gui:togglebutton" url="gui_togglebutton.html"/>
+    <mapID target="gui:v-slider" url="gui_vslider.html"/>
+    <mapID target="gui:xy-pad" url="gui_xypad.html"/>
+</map>

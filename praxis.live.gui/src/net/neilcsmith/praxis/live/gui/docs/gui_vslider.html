@@ -1,0 +1,78 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd"> 
+<html>
+  <head>
+      <title>gui:h-slider</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <link rel="stylesheet" href="nbdocs:/net/neilcsmith/praxis/live/help/docs/help.css" type="text/css">
+  </head>
+  <body>
+    <h1>gui:h-slider</h1>
+    <p>A vertical slider.</p>
+    <p>If a minimum, maximum or scale value are not set, the slider will attempt to configure these from
+    the bound control. If these are not specified by the control they will default to 0, 1 and Linear respectively.</p>
+    <h2>Controls</h2>
+    <table border="1" cellpadding="5" cellspacing="0">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Type</th>
+                <th>Input</th>
+                <th>Output</th>
+                <th>Default</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><b>label</b></td>
+                <td>property</td>
+                <td>string</td>
+                <td></td>
+                <td>{}</td>
+                <td>The component label.</td>
+            </tr>
+            <tr>
+                <td><b>binding</b></td>
+                <td>property</td>
+                <td>control address</td>
+                <td></td>
+                <td>{}</td>
+                <td>Address of the control to bind to.</td>
+            </tr>
+            <tr>
+                <td><b>minimum</b></td>
+                <td>property</td>
+                <td>number(0..1) or {}</td>
+                <td></td>
+                <td>{}</td>
+                <td>Minimum value (see note above).</td>
+            </tr>
+            <tr>
+                <td><b>maximum</b></td>
+                <td>property</td>
+                <td>number(0..1) or {}</td>
+                <td></td>
+                <td>{}</td>
+                <td>Maximum value (see note above).</td>
+            </tr>
+            <tr>
+                <td><b>scale</b></td>
+                <td>property</td>
+                <td>string(Linear, Exponential) or {}</td>
+                <td></td>
+                <td>{}</td>
+                <td>Scale type (see note above).</td>
+            </tr>
+            <tr>
+                <td><b>layout</b></td>
+                <td>property</td>
+                <td>string</td>
+                <td></td>
+                <td>{}</td>
+                <td>A layout string (based on the format of MigLayout).</td>
+            </tr>
+        </tbody>
+    </table>
+    
+  </body>
+</html>
