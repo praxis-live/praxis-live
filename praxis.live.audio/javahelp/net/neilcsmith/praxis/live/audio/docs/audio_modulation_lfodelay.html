@@ -1,0 +1,132 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd"> 
+<html>
+  <head>
+      <title>audio:modulation:lfo-delay</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <link rel="stylesheet" href="nbdocs:/net/neilcsmith/praxis/live/help/docs/help.css" type="text/css">
+  </head>
+  <body>
+    <h1>audio:modulation:lfo-delay</h1>
+    <p>A mono delay with delay time controlled by a low frequency oscillator.</p>
+    <p>This is similar to <code>audio:modulation:chorus</code> but with a wider range of parameters.</p>
+    <h2>Ports</h2>
+    <table border="1" cellpadding="5" cellspacing="0">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Type</th>
+                <th>Direction</th>
+                <th>Values</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><b>in</b></td>
+                <td>audio</td>
+                <td>in</td>
+                <td></td>
+                <td>Audio input.</td>
+            </tr>
+            <tr>
+                <td><b>out</b></td>
+                <td>audio</td>
+                <td>out</td>
+                <td></td>
+                <td>Audio output.</td>
+            </tr>
+            <tr>
+                <td><b>time</b></td>
+                <td>control</td>
+                <td>in</td>
+                <td>number(0..1)</td>
+                <td>Delay time (average) in seconds.</td>
+            </tr>
+            <tr>
+                <td><b>range</b></td>
+                <td>control</td>
+                <td>in</td>
+                <td>number(0..1)</td>
+                <td>Depth of LFO (in proportion of delay time).</td>
+            </tr>
+            <tr>
+                <td><b>rate</b></td>
+                <td>control</td>
+                <td>in</td>
+                <td>number(0..40)</td>
+                <td>Rate of LFO (in Hertz).</td>
+            </tr>
+            <tr>
+                <td><b>feedback</b></td>
+                <td>control</td>
+                <td>in</td>
+                <td>number(0..1)</td>
+                <td>Amount of signal fed back into input.</td>
+            </tr>
+            <tr>
+                <td><b>mix</b></td>
+                <td>control</td>
+                <td>in</td>
+                <td>number(0..1)</td>
+                <td>Mix.</td>
+            </tr>
+        </tbody>
+    </table>
+    <h2>Controls</h2>
+    <table border="1" cellpadding="5" cellspacing="0">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Type</th>
+                <th>Input</th>
+                <th>Output</th>
+                <th>Default</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><b>time</b></td>
+                <td>property</td>
+                <td>number(0..1)</td>
+                <td></td>
+                <td>0</td>
+                <td>Delay time (average) in seconds.</td>
+            </tr>
+            <tr>
+                <td><b>range</b></td>
+                <td>property</td>
+                <td>number(0..1)</td>
+                <td></td>
+                <td>0</td>
+                <td>Depth of LFO (in proportion of delay time).</td>
+            </tr>
+            <tr>
+                <td><b>rate</b></td>
+                <td>property</td>
+                <td>number(0..40)</td>
+                <td></td>
+                <td>0</td>
+                <td>Rate of LFO (in Hertz).</td>
+            </tr>
+            <tr>
+                <td><b>feedback</b></td>
+                <td>property</td>
+                <td>number(0..1)</td>
+                <td></td>
+                <td>0</td>
+                <td>Amount of signal fed back into input.</td>
+            </tr>
+            <tr>
+                <td><b>mix</b></td>
+                <td>property</td>
+                <td>number(0..1)</td>
+                <td></td>
+                <td>0</td>
+                <td>Mix.</td>
+            </tr>
+        </tbody>
+    </table>
+    
+  </body>
+</html>

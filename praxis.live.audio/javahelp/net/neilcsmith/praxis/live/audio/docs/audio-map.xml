@@ -1,9 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--
-To change this template, choose Tools | Templates
-and open the template in the editor.
--->
 <!DOCTYPE map PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp Map Version 2.0//EN" "http://java.sun.com/products/javahelp/map_2_0.dtd">
 <map version="2.0">
-    
+    <mapID target="audio:gain" url="audio_gain.html"/>
+    <mapID target="audio:input" url="audio_input.html"/>
+    <mapID target="audio:output" url="audio_output.html"/>
+    <mapID target="audio:sampleplayer" url="audio_sampleplayer.html"/>
+    <mapID target="audio:analysis:level" url="audio_analysis_level.html"/>
+    <mapID target="audio:delay:mono-delay" url="audio_delay_monodelay.html"/>
+    <mapID target="audio:distortion:overdrive" url="audio_distortion_overdrive.html"/>
+    <mapID target="audio:filter:comb" url="audio_filter_comb.html"/>
+    <mapID target="audio:filter:iir" url="audio_filter_iir.html"/>
+    <mapID target="audio:mix:xfader" url="audio_mix_xfader.html"/>
+    <mapID target="audio:modulation:chorus" url="audio_modulation_chorus.html"/>
+    <mapID target="audio:modulation:lfo-delay" url="audio_modulation_lfodelay.html"/>
+    <mapID target="audio:reverb:freeverb" url="audio_reverb_freeverb.html"/>
+    <mapID target="audio:sampling:looper" url="audio_sampling_looper.html"/>
 </map>

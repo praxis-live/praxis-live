@@ -1,9 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--
-To change this template, choose Tools | Templates
-and open the template in the editor.
--->
 <!DOCTYPE toc PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp TOC Version 2.0//EN" "http://java.sun.com/products/javahelp/toc_2_0.dtd">
 <toc version="2.0">
+    <tocitem text="Components">
+        <tocitem text="Audio Components">
+            <tocitem text="audio:gain" target="audio:gain"/>
+            <tocitem text="audio:input" target="audio:input"/>
+            <tocitem text="audio:output" target="audio:output"/>
+            <tocitem text="audio:sampleplayer" target="audio:sampleplayer"/>
+            <tocitem text="audio:analysis:level" target="audio:analysis:level"/>
+            <tocitem text="audio:delay:mono-delay" target="audio:delay:mono-delay"/>
+            <tocitem text="audio:distortion:overdrive" target="audio:distortion:overdrive"/>
+            <tocitem text="audio:filter:comb" target="audio:filter:comb"/>
+            <tocitem text="audio:filter:iir" target="audio:filter:iir"/>
+            <tocitem text="audio:mix:xfader" target="audio:mix:xfader"/>
+            <tocitem text="audio:modulation:chorus" target="audio:modulation:chorus"/>
+            <tocitem text="audio:modulation:lfo-delay" target="audio:modulation:lfo-delay"/>
+            <tocitem text="audio:reverb:freeverb" target="audio:reverb:freeverb"/>
+            <tocitem text="audio:sampling:looper" target="audio:sampling:looper"/>
+        </tocitem>
+    </tocitem>
 
 </toc>

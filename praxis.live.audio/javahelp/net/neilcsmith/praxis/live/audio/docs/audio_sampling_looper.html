@@ -1,0 +1,191 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd"> 
+<html>
+    <head>
+        <title>audio:sampling:looper</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <link rel="stylesheet" href="nbdocs:/net/neilcsmith/praxis/live/help/docs/help.css" type="text/css">
+    </head>
+    <body>
+        <h1>audio:sampling:looper</h1>
+        <p>A mono phrase sampler.  Supports in/out points, variable speed.</p>
+        <h2>Ports</h2>
+
+        <table border="1" cellpadding="5" cellspacing="0">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Type</th>
+                    <th>Direction</th>
+                    <th>Values</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><b>in</b></td>
+                    <td>audio</td>
+                    <td>in</td>
+                    <td></td>
+                    <td>Audio input.</td>
+                </tr>
+                <tr>
+                    <td><b>out</b></td>
+                    <td>audio</td>
+                    <td>out</td>
+                    <td></td>
+                    <td>Audio output.</td>
+                </tr>   
+                <tr>
+                    <td><b>position</b></td>
+                    <td>control</td>
+                    <td>in</td>
+                    <td>number(0..1)</td>
+                    <td>Position within audio sample.</td>
+                </tr>
+                <tr>
+                    <td><b>start</b></td>
+                    <td>control</td>
+                    <td>in</td>
+                    <td>number(0..1)</td>
+                    <td>Start point for playback / looping.</td>
+                </tr>
+                <tr>
+                    <td><b>end</b></td>
+                    <td>control</td>
+                    <td>in</td>
+                    <td>number(0..1)</td>
+                    <td>End point for playback / looping.</td>
+                </tr>
+                <tr>
+                    <td><b>speed</b></td>
+                    <td>control</td>
+                    <td>in</td>
+                    <td>number(-4..4)</td>
+                    <td>Playback speed.</td>
+                </tr>
+                <tr>
+                    <td><b>play</b></td>
+                    <td>control</td>
+                    <td>in</td>
+                    <td>any</td>
+                    <td>Trigger playback.</td>
+                </tr>
+                <tr>
+                    <td><b>stop</b></td>
+                    <td>control</td>
+                    <td>in</td>
+                    <td>any</td>
+                    <td>Stop playback.</td>
+                </tr>
+                <tr>
+                    <td><b>record</b></td>
+                    <td>control</td>
+                    <td>in</td>
+                    <td>any</td>
+                    <td>Start recording.</td>
+                </tr>
+
+            </tbody>
+        </table>
+
+        <h2>Controls</h2>
+
+        <table border="1" cellpadding="5" cellspacing="0">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Type</th>
+                    <th>Input</th>
+                    <th>Output</th>
+                    <th>Default</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><b>loop-size</b></td>
+                    <td>property</td>
+                    <td>number(0..60)</td>
+                    <td></td>
+                    <td>1</td>
+                    <td>The loop size (in seconds).</td>
+                </tr>
+                <tr>
+                    <td><b>position</b></td>
+                    <td>property</td>
+                    <td>number(0..1)</td>
+                    <td></td>
+                    <td>0</td>
+                    <td>Position within audio sample.</td>
+                </tr>
+                <tr>
+                    <td><b>start</b></td>
+                    <td>property</td>
+                    <td>number(0..1)</td>
+                    <td></td>
+                    <td>0</td>
+                    <td>Start point for playback / looping.</td>
+                </tr>
+                <tr>
+                    <td><b>end</b></td>
+                    <td>property</td>
+                    <td>number(0..1)</td>
+                    <td></td>
+                    <td>0</td>
+                    <td>End point for playback / looping.</td>
+                </tr>
+                <tr>
+                    <td><b>range</b></td>
+                    <td>property</td>
+                    <td>number(0..1) number(0..1)</td>
+                    <td></td>
+                    <td>0 1</td>
+                    <td>Specify the start and end loop points in one go.<br>
+                        <i>This property doesn't currently show up in Praxis LIVE, but can be
+                        bound to using a <code>gui:h-rangeslider</code></i>.</td>
+                </tr>
+                <tr>
+                    <td><b>speed</b></td>
+                    <td>property</td>
+                    <td>number(-4..4)</td>
+                    <td></td>
+                    <td>0</td>
+                    <td>Playback speed.</td>
+                </tr>
+                <tr>
+                    <td><b>loop</b></td>
+                    <td>property</td>
+                    <td>boolean</td>
+                    <td></td>
+                    <td>false</td>
+                    <td>Loop playback.</td>
+                </tr>               
+                <tr>
+                    <td><b>play</b></td>
+                    <td>action</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td>Trigger playback.</td>
+                </tr>
+                <tr>
+                    <td><b>stop</b></td>
+                    <td>action</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td>Stop playback.</td>
+                </tr>
+                <tr>
+                    <td><b>record</b></td>
+                    <td>action</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td>Start recording.</td>
+                </tr>
+            </tbody>
+        </table>
+
+    </body>
+</html>
