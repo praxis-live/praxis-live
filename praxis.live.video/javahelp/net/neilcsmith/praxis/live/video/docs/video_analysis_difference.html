@@ -1,0 +1,86 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd"> 
+<html>
+  <head>
+      <title>video:analysis:difference</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <link rel="stylesheet" href="nbdocs:/net/neilcsmith/praxis/live/help/docs/help.css" type="text/css">
+  </head>
+  <body>
+    <h1>video:analysis:difference</h1>
+    <p>The difference of two video inputs. Supports three modes - Color, Mono and Threshold (black or white).
+    Differences less than the <code>threshold</code> value are ignored in all modes and come out black.</p>
+    <h2>Ports</h2>
+    <table border="1" cellpadding="5" cellspacing="0">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Type</th>
+                <th>Direction</th>
+                <th>Values</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><b>in-1</b></td>
+                <td>video</td>
+                <td>in</td>
+                <td></td>
+                <td>First video input.</td>
+            </tr>
+            <tr>
+                <td><b>in-2</b></td>
+                <td>video</td>
+                <td>in</td>
+                <td></td>
+                <td>Second video input.</td>
+            </tr>
+            <tr>
+                <td><b>out</b></td>
+                <td>video</td>
+                <td>out</td>
+                <td></td>
+                <td>Video output.</td>
+            </tr>
+            <tr>
+                <td><b>threshold</b></td>
+                <td>control</td>
+                <td>in</td>
+                <td>number(0..1)</td>
+                <td>Threshold (see above).</td>
+            </tr>
+        </tbody>
+    </table>
+    <h2>Controls</h2>
+     <table border="1" cellpadding="5" cellspacing="0">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Type</th>
+                <th>Input</th>
+                <th>Output</th>
+                <th>Default</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><b>mode</b></td>
+                <td>property</td>
+                <td>string(Color, Mono, Threshold)</td>
+                <td></td>
+                <td>Color</td>
+                <td>Mode (see above).</td>
+            </tr>
+            <tr>
+                <td><b>threshold</b></td>
+                <td>property</td>
+                <td>number(0..1)</td>
+                <td></td>
+                <td>0</td>
+                <td>Threshold (see above).</td>
+            </tr>
+        </tbody>
+    </table>
+  </body>
+</html>

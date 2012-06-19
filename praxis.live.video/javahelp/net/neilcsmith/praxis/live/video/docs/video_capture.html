@@ -1,16 +1,22 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd"> 
 <html>
     <head>
-        <title>video:snapshot</title>
+        <title>video:capture</title>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
         <link rel="stylesheet" href="nbdocs:/net/neilcsmith/praxis/live/help/docs/help.css" type="text/css">
     </head>
     <body>
-        <h1>video:snapshot</h1>
-        <p>This component provides the ability to capture and display a still frame
-            from its video input. It extends this ability with the option to fade from
-            the previous captured image to the new one over a period of time, and to
-            mix the new image with the previous one.</p>
+        <h1>video:capture</h1>
+        <p>Video capture support for using webcams, etc. Generally you should use a generic device
+            URI (capture://0, capture://1, etc.) which will work cross-platform. The first device is
+        index 0 and so on.</p>
+        <p>If your input device supports multiple capture sizes or framerates, it is possible to 
+            specify these using the URI query string - eg. <code>capture://0?width=640&amp;height=480&amp;framerate=15/1</code>.
+            Be aware that the device will fail to open if the requested settings are not supported.
+        </p>
+        <p>A capture device will not start automatically.  To get it to start when the video root is
+            started, use a <code>core:start-trigger</code> attached to the <code>play</code> port.
+        </p>
         <h2>Ports</h2>
 
         <table border="1" cellpadding="5" cellspacing="0">
@@ -25,13 +31,6 @@
             </thead>
             <tbody>
                 <tr>
-                    <td><b>in</b></td>
-                    <td>video</td>
-                    <td>in</td>
-                    <td></td>
-                    <td>Video signal to capture from.</td>
-                </tr>
-                <tr>
                     <td><b>out</b></td>
                     <td>video</td>
                     <td>out</td>
@@ -39,32 +38,18 @@
                     <td>Video output.</td>
                 </tr>
                 <tr>
-                    <td><b>fade-time</b></td>
-                    <td>control</td>
-                    <td>in</td>
-                    <td>number(0..60)</td>
-                    <td>Period in seconds to fade from previous image to current image.</td>
-                </tr>
-                <tr>
-                    <td><b>mix</b></td>
-                    <td>control</td>
-                    <td>in</td>
-                    <td>number(0..1)</td>
-                    <td>Level to mix current image with previous image.</td>
-                </tr>
-                <tr>
-                    <td><b>trigger</b></td>
+                    <td><b>play</b></td>
                     <td>control</td>
                     <td>in</td>
                     <td>any</td>
-                    <td>Trigger new snapshot.</td>
+                    <td>Start capture device.</td>
                 </tr>
                 <tr>
-                    <td><b>reset</b></td>
+                    <td><b>stop</b></td>
                     <td>control</td>
                     <td>in</td>
                     <td>any</td>
-                    <td>Clear snapshot.</td>
+                    <td>Stop capture device.</td>
                 </tr>
             </tbody>
         </table>
@@ -84,36 +69,28 @@
             </thead>
             <tbody>
                 <tr>
-                    <td><b>fade-time</b></td>
+                    <td><b>device</b></td>
                     <td>property</td>
-                    <td>number(0..60)</td>
+                    <td>resource</td>
                     <td></td>
-                    <td>0</td>
-                    <td>Period in seconds to fade from previous image to current image.</td>
+                    <td>{}</td>
+                    <td>Capture device - see details above.</td>
                 </tr>
                 <tr>
-                    <td><b>mix</b></td>
-                    <td>property</td>
-                    <td>number(0..1)</td>
-                    <td></td>
-                    <td>1</td>
-                    <td>Level to mix current image with previous image.</td>
-                </tr>
-                <tr>
-                    <td><b>trigger</b></td>
+                    <td><b>play</b></td>
                     <td>action</td>
                     <td></td>
                     <td></td>
                     <td></td>
-                    <td>Trigger new snapshot.</td>
+                    <td>Start capture device.</td>
                 </tr>
                 <tr>
-                    <td><b>reset</b></td>
+                    <td><b>stop</b></td>
                     <td>action</td>
                     <td></td>
                     <td></td>
                     <td></td>
-                    <td>Reset snapshot.</td>
+                    <td>Stop capture device.</td>
                 </tr>
             </tbody>
         </table>

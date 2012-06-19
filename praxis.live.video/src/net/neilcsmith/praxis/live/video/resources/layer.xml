@@ -4,7 +4,7 @@
     <folder name="Services">
         <folder name="JavaHelp">
             <file name="video-helpset.xml" url="video-helpset.xml">
-                <attr name="position" intvalue="3809"/>
+                <attr name="position" intvalue="2000"/>
             </file>
         </folder>
     </folder>

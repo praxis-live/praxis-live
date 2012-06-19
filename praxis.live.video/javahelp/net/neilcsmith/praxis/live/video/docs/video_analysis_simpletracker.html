@@ -1,0 +1,95 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd"> 
+<html>
+  <head>
+      <title>video:analysis:simple-tracker</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <link rel="stylesheet" href="nbdocs:/net/neilcsmith/praxis/live/help/docs/help.css" type="text/css">
+  </head>
+  <body>
+    <h1>video:analysis:simple-tracker</h1>
+    <p>A simple blob tracker.  Tracks the largest blob in an image.</p>
+    <p>The input video should be high-contrast monochrome.  This can be achieved using
+        <code>video:analysis:difference</code> set to <code>Threshold</code> mode. It may also be 
+    good to pass the output of the difference component through <code>video:filter:blur</code>.</p>
+    <h2>Ports</h2>
+    <table border="1" cellpadding="5" cellspacing="0">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Type</th>
+                <th>Direction</th>
+                <th>Values</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><b>in</b></td>
+                <td>video</td>
+                <td>in</td>
+                <td></td>
+                <td>Video input.</td>
+            </tr>
+            <tr>
+                <td><b>out</b></td>
+                <td>video</td>
+                <td>out</td>
+                <td></td>
+                <td>Video output.</td>
+            </tr>
+            <tr>
+                <td><b>x</b></td>
+                <td>control</td>
+                <td>out</td>
+                <td>number(0..1)</td>
+                <td>The horizontal centre point of the blob.</td>
+            </tr>
+            <tr>
+                <td><b>y</b></td>
+                <td>control</td>
+                <td>out</td>
+                <td>number(0..1)</td>
+                <td>The vertical centre point of the blob.</td>
+            </tr>
+            <tr>
+                <td><b>width</b></td>
+                <td>control</td>
+                <td>out</td>
+                <td>number(0..1)</td>
+                <td>The width of the blob.</td>
+            </tr>
+            <tr>
+                <td><b>height</b></td>
+                <td>control</td>
+                <td>out</td>
+                <td>number(0..1)</td>
+                <td>The height of the blob.</td>
+            </tr>
+        </tbody>
+    </table>
+    <h2>Controls</h2>
+     <table border="1" cellpadding="5" cellspacing="0">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Type</th>
+                <th>Input</th>
+                <th>Output</th>
+                <th>Default</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><b>debug</b></td>
+                <td>property</td>
+                <td>boolean</td>
+                <td></td>
+                <td>false</td>
+                <td>Draw bounding rectangles of detected blobs on the image.
+                The tracked blob is highlighted.</td>
+            </tr>
+        </tbody>
+    </table>
+  </body>
+</html>

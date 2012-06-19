@@ -1,19 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--
-To change this template, choose Tools | Templates
-and open the template in the editor.
--->
 <!DOCTYPE toc PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp TOC Version 2.0//EN" "http://java.sun.com/products/javahelp/toc_2_0.dtd">
 <toc version="2.0">
     <tocitem text="Components">
         <tocitem text="Video Components">
+            <tocitem text="video:capture" target="video:capture"/>
             <tocitem text="video:output" target="video:output"/>
+            <tocitem text="video:player" target="video:player"/>
             <tocitem text="video:snapshot" target="video:snapshot"/>
+            <tocitem text="video:splitter" target="video:splitter"/>
             <tocitem text="video:still" target="video:still"/>
+            <tocitem text="video:analysis:difference" target="video:analysis:difference"/>
+            <tocitem text="video:analysis:frame-delay" target="video:analysis:frame-delay"/>
+            <tocitem text="video:analysis:simple-tracker" target="video:analysis:simple-tracker"/>
             <tocitem text="video:code:composite" target="video:code:composite"/>
+            <tocitem text="video:filter:blur" target="video:filter:blur"/>
             <tocitem text="video:mix:composite" target="video:mix:composite"/>
             <tocitem text="video:mix:xfader" target="video:mix:xfader"/>
+            <tocitem text="video:opengl:filter" target="video:opengl:filter"/>
             <tocitem text="video:source:noise" target="video:source:noise"/>
+            <tocitem text="video:time-fx:difference" target="video:time-fx:difference"/>
+            <tocitem text="video:time-fx:ripple" target="video:time-fx:ripple"/>
         </tocitem>
     </tocitem>
 </toc>
