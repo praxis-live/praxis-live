@@ -1,13 +1,13 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd"> 
 <html>
   <head>
-      <title>core:timing:animator</title>
+      <title>core:routing:inhibitor</title>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <link rel="stylesheet" href="nbdocs:/net/neilcsmith/praxis/live/help/docs/help.css" type="text/css">
   </head>
   <body>
-    <h1>core:timing:animator</h1>
-    <p>Animate a value.</p>
+    <h1>core:routing:inhibitor</h1>
+    <p>Stop more than one signal being sent through the component in a period of time.</p>
     <h2>Ports</h2>
     <table border="1" cellpadding="5" cellspacing="0">
         <thead>
@@ -21,32 +21,25 @@
         </thead>
         <tbody>
             <tr>
-                <td><b>to</b></td>
+                <td><b>in</b></td>
                 <td>control</td>
                 <td>in</td>
-                <td>number</td>
-                <td>Start animating to value.</td>
+                <td>any</td>
+                <td>Input.</td>
             </tr>
             <tr>
                 <td><b>out</b></td>
                 <td>control</td>
                 <td>out</td>
-                <td>number</td>
-                <td>Animated value.</td>
-            </tr>
-            <tr>
-                <td><b>value</b></td>
-                <td>control</td>
-                <td>in</td>
-                <td>number</td>
-                <td>Set current value. Stops animation.</td>
+                <td></td>
+                <td>Output</td>
             </tr>
             <tr>
                 <td><b>time</b></td>
                 <td>control</td>
                 <td>in</td>
                 <td>number(0..60)</td>
-                <td>Time (in seconds) of animation.</td>
+                <td>Time between signals (in seconds).</td>
             </tr>
         </tbody>
     </table>
@@ -64,28 +57,12 @@
         </thead>
         <tbody>
             <tr>
-                <td><b>to</b></td>
-                <td>function</td>
-                <td>number</td>
-                <td></td>
-                <td></td>
-                <td>Start animating to value.</td>
-            </tr>
-            <tr>
-                <td><b>value</b></td>
-                <td>property</td>
-                <td>number</td>
-                <td></td>
-                <td>0</td>
-                <td>Current value.  Set stops animation.</td>
-            </tr>
-            <tr>
                 <td><b>time</b></td>
                 <td>property</td>
                 <td>number(0..60)</td>
                 <td></td>
                 <td>0</td>
-                <td>Time (in seconds) of animation.</td>
+                <td>Time between signals (in seconds).</td>
             </tr>
         </tbody>
     </table>

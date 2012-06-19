@@ -1,0 +1,114 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd"> 
+<html>
+  <head>
+      <title>core:routing:gate</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <link rel="stylesheet" href="nbdocs:/net/neilcsmith/praxis/live/help/docs/help.css" type="text/css">
+  </head>
+  <body>
+    <h1>core:routing:gate</h1>
+    <p>A gate for control signals. Stops signals getting through when inactive.</p>
+    <p>The <code>pattern</code> property offers rudimentary sequencing support. It accepts an array of numbers
+    between 0 and 1. The pattern loops through with each input signal (when active).  A value of <code>0</code> 
+    means the signal is discarded. A value of <code>1</code> means the signal gets through.  Values in-between mean that the signal 
+    will sometimes get through - <code>0.5</code> means the signal will get through on average half of the time, 
+    <code>0.25</code> means quarter of the time, etc. An empty pattern is ignored and the value of <code>active</code> 
+    is used as is.</p>
+    <h2>Ports</h2>
+    <table border="1" cellpadding="5" cellspacing="0">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Type</th>
+                <th>Direction</th>
+                <th>Values</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><b>in</b></td>
+                <td>control</td>
+                <td>in</td>
+                <td>any</td>
+                <td>Input port.</td>
+            </tr>
+            <tr>
+                <td><b>out</b></td>
+                <td>control</td>
+                <td>out</td>
+                <td></td>
+                <td>Output port.</td>
+            </tr>
+            <tr>
+                <td><b>discard</b></td>
+                <td>control</td>
+                <td>out</td>
+                <td></td>
+                <td>Output port for all discarded signals.</td>
+            </tr>
+            <tr>
+                <td><b>active</b></td>
+                <td>control</td>
+                <td>in</td>
+                <td>boolean</td>
+                <td>Whether gate is open.</td>
+            </tr>
+            <tr>
+                <td><b>pattern</b></td>
+                <td>control</td>
+                <td>in</td>
+                <td>array(of number(0..1))</td>
+                <td>Pattern (see above).</td>
+            </tr>
+            <tr>
+                <td><b>retrigger</b></td>
+                <td>control</td>
+                <td>in</td>
+                <td></td>
+                <td>Restart pattern.</td>
+            </tr>
+        </tbody>
+    </table>
+    <h2>Controls</h2>
+    <table border="1" cellpadding="5" cellspacing="0">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Type</th>
+                <th>Input</th>
+                <th>Output</th>
+                <th>Default</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><b>active</b></td>
+                <td>property</td>
+                <td>boolean</td>
+                <td></td>
+                <td>false</td>
+                <td>Whether the gate is active.</td>
+            </tr>
+            <tr>
+                <td><b>pattern</b></td>
+                <td>property</td>
+                <td>array(number(0..1))</td>
+                <td></td>
+                <td>{}</td>
+                <td>Pattern (see above).</td>
+            </tr>
+            <tr>
+                <td><b>retrigger</b></td>
+                <td>action</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td>Restart pattern.</td>
+            </tr>
+        </tbody>
+    </table>
+    
+  </body>
+</html>

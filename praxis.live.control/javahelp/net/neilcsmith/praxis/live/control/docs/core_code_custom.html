@@ -1,13 +1,13 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd"> 
 <html>
   <head>
-      <title>core:timing:animator</title>
+      <title>core:code:custom</title>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <link rel="stylesheet" href="nbdocs:/net/neilcsmith/praxis/live/help/docs/help.css" type="text/css">
   </head>
   <body>
-    <h1>core:timing:animator</h1>
-    <p>Animate a value.</p>
+    <h1>core:code:custom</h1>
+    <p>Live coding component.</p>
     <h2>Ports</h2>
     <table border="1" cellpadding="5" cellspacing="0">
         <thead>
@@ -21,37 +21,32 @@
         </thead>
         <tbody>
             <tr>
-                <td><b>to</b></td>
+                <td><b>p1 - p8</b></td>
                 <td>control</td>
                 <td>in</td>
-                <td>number</td>
-                <td>Start animating to value.</td>
+                <td>any</td>
+                <td>Parameters that can be read from code using <code>p(X)</code>.
+                    Use <code>d(X)</code> to get the parameter as a number.</td>
             </tr>
             <tr>
-                <td><b>out</b></td>
+                <td><b>t1 - t4</b></td>
+                <td>control</td>
+                <td>in</td>
+                <td></td>
+                <td>Triggers that can be checked from code using <code>t(X)</code></td>
+            </tr>
+            <tr>
+                <td><b>out-1 - out-4</b></td>
                 <td>control</td>
                 <td>out</td>
-                <td>number</td>
-                <td>Animated value.</td>
+                <td></td>
+                <td>Outputs that can be used from code.</td>
             </tr>
-            <tr>
-                <td><b>value</b></td>
-                <td>control</td>
-                <td>in</td>
-                <td>number</td>
-                <td>Set current value. Stops animation.</td>
-            </tr>
-            <tr>
-                <td><b>time</b></td>
-                <td>control</td>
-                <td>in</td>
-                <td>number(0..60)</td>
-                <td>Time (in seconds) of animation.</td>
-            </tr>
+            
         </tbody>
     </table>
     <h2>Controls</h2>
-    <table border="1" cellpadding="5" cellspacing="0">
+     <table border="1" cellpadding="5" cellspacing="0">
         <thead>
             <tr>
                 <th>ID</th>
@@ -64,31 +59,31 @@
         </thead>
         <tbody>
             <tr>
-                <td><b>to</b></td>
-                <td>function</td>
-                <td>number</td>
+                <td><b>code</b></td>
+                <td>property</td>
+                <td>string</td>
                 <td></td>
-                <td></td>
-                <td>Start animating to value.</td>
+                <td>{}</td>
+                <td>Java class body.</td>
             </tr>
             <tr>
-                <td><b>value</b></td>
+                <td><b>p1 - p16</b></td>
                 <td>property</td>
-                <td>number</td>
+                <td>any</td>
                 <td></td>
-                <td>0</td>
-                <td>Current value.  Set stops animation.</td>
+                <td>{}</td>
+                <td>Parameters that can be read from code using <code>p(X)</code>.
+                    Use <code>d(X)</code>to get the parameter as a number.</td>
             </tr>
             <tr>
-                <td><b>time</b></td>
-                <td>property</td>
-                <td>number(0..60)</td>
+                <td><b>t1 - t4</b></td>
+                <td>action</td>
                 <td></td>
-                <td>0</td>
-                <td>Time (in seconds) of animation.</td>
+                <td></td>
+                <td></td>
+                <td>Triggers that can be checked from code using <code>t(X)</code></td>
             </tr>
         </tbody>
     </table>
-    
   </body>
 </html>
