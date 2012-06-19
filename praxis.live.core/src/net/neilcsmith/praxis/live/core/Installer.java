@@ -17,7 +17,7 @@ public class Installer extends ModuleInstall {
     @Override
     public void restored() {
 
-        String version = "EA:";
+        String version = "build:";
 
         for (ModuleInfo info : Lookup.getDefault().lookupAll(ModuleInfo.class)) {
             if (info.owns(this.getClass())) {
