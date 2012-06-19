@@ -249,10 +249,26 @@
         <file name="D-S.shadow">
             <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-SaveAction.instance"/>
         </file>
+        <file name="D-C.shadow">
+            <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-CopyAction.instance"/>
+        </file>
+        <file name="D-X.shadow">
+            <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-CutAction.instance"/>
+        </file>
+        <file name="D-V.shadow">
+            <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-PasteAction.instance"/>
+        </file>
         <file name="DELETE.shadow">
             <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-DeleteAction.instance"/>
         </file>
+        <file name="F1.shadow">
+            <attr name="originalFile" stringvalue="Actions/Help/org-netbeans-modules-javahelp-HelpAction.instance"/>
+        </file> 
     </folder>
+    
+    
+    
+    
     <folder name="Windows2">
         <folder name="Components">
             <file name="HubUITopComponent.settings" url="HubUITopComponentSettings.xml"/>
