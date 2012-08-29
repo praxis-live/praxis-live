@@ -42,9 +42,11 @@ import net.neilcsmith.praxis.core.info.ControlInfo;
 import net.neilcsmith.praxis.core.interfaces.RootManagerService;
 import net.neilcsmith.praxis.core.interfaces.ServiceManager;
 import net.neilcsmith.praxis.core.interfaces.ServiceUnavailableException;
+import net.neilcsmith.praxis.core.interfaces.SystemManagerService;
 import net.neilcsmith.praxis.impl.AbstractAsyncControl;
 import net.neilcsmith.praxis.impl.AbstractControl;
 import net.neilcsmith.praxis.impl.AbstractSwingRoot;
+import net.neilcsmith.praxis.impl.SimpleControl;
 import net.neilcsmith.praxis.live.core.api.Task;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -66,6 +68,8 @@ class RootManagerOverride extends AbstractSwingRoot {
         registerControl(RootManagerService.REMOVE_ROOT, new RemoveRootControl());
         registerControl(RootManagerService.ROOTS, new RootsControl());
         registerInterface(RootManagerService.INSTANCE);
+        registerControl(SystemManagerService.SYSTEM_EXIT, new ExitControl());
+        registerInterface(SystemManagerService.INSTANCE);
         knownRoots = new LinkedHashSet<String>();
     }
 
@@ -197,8 +201,8 @@ class RootManagerOverride extends AbstractSwingRoot {
                     LOG.log(Level.FINE, "No tasks found for root removal /{0}", rootID);
                     Object ret = DialogDisplayer.getDefault().notify(
                             new NotifyDescriptor.Confirmation("Remove root " + call.getArgs().get(0).toString(),
-                                    "Remove Root?",
-                                    NotifyDescriptor.YES_NO_OPTION));
+                            "Remove Root?",
+                            NotifyDescriptor.YES_NO_OPTION));
                     if (ret == NotifyDescriptor.YES_OPTION) {
                         forwardCall(rootID, call, router);
                     } else {
@@ -300,6 +304,30 @@ class RootManagerOverride extends AbstractSwingRoot {
                 taskError(rootID);
 
             }
+        }
+    }
+
+    private class ExitControl extends AbstractControl {
+
+
+        @Override
+        public void call(Call call, PacketRouter router) throws Exception {
+            if (call.getType() == Call.Type.INVOKE || call.getType() == Call.Type.INVOKE_QUIET) {
+                for (String id : knownRoots) {
+                    ControlAddress to = ControlAddress.create("/" + id + ".stop");
+                    Call msg = Call.createQuietCall(to, getAddress(), getTime(), CallArguments.EMPTY);
+                    getPacketRouter().route(msg);
+                }
+            } else {
+                // no op?
+            }
+
+
+        }
+
+        @Override
+        public ControlInfo getInfo() {
+            return SystemManagerService.SYSTEM_EXIT_INFO;
         }
     }
 }
