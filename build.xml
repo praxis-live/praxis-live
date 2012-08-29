@@ -6,6 +6,14 @@
     <description>Builds the module suite praxis-live.</description>
     <import file="nbproject/build-impl.xml"/>
     
+    
+    <target name="build-launchers" depends="suite.build-launchers">
+        <copy file="${build.launcher.dir}/bin/${app.name}.exe" tofile="${build.launcher.dir}/bin/praxis.exe"/>
+        <copy file="${build.launcher.dir}/bin/${app.name}" tofile="${build.launcher.dir}/bin/praxis"/>
+        <copy file="praxis.conf" todir="${build.launcher.dir}/etc/"/>
+        <copy file="praxis.clusters" todir="${build.launcher.dir}/etc/"/>
+    </target>
+    
     <target name="build-zip" depends="build,build-launchers" description="Builds a ZIP distribution of the suite, launchers, and selected modules from the platform.">
         <mkdir dir="${dist.dir}"/>
         <!-- pathfileset does not support 'prefix' and 'filemode' parameters,
