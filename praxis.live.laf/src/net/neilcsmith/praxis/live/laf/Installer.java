@@ -53,7 +53,7 @@ import org.openide.windows.WindowManager;
  * often not needed at all.
  */
 public class Installer extends ModuleInstall {
-
+    
     @Override
     public void restored() {
         
@@ -77,7 +77,7 @@ public class Installer extends ModuleInstall {
                     } catch (UnsupportedLookAndFeelException ex) {
                         Exceptions.printStackTrace(ex);
                     }
-
+                    
                 }
             });
         } catch (InterruptedException ex) {
