@@ -85,10 +85,10 @@ public class EditorManager {
         }
         Argument mime = info.getProperties().get(PString.KEY_MIME_TYPE);
         if (mime != null) {
-              String mimetype = mime.toString();
+            String mimetype = mime.toString();
 //              if ("text/x-praxis-java".equals(mimetype) ||
 //                      "text/x-praxis-script".equals(mimetype)) {
-                  return new CodeEditor(property, info, mimetype);
+            return new CodeEditor(property, info, mimetype);
 //              }
         }
         return new StringEditor(property, info);
@@ -109,6 +109,8 @@ public class EditorManager {
         Class<? extends Argument> type = info.getType();
         if (PArray.class.isAssignableFrom(type)) {
             return true;
+        } else if (type.equals(Argument.class)) {
+            return true;
         }
         return false;
     }
@@ -128,6 +130,11 @@ public class EditorManager {
         Class<? extends Argument> type = info.getType();
         if (PArray.class.isAssignableFrom(type)) {
             return new PraxisPropertyEditor[]{
+                        new FileListEditor(property, info)
+                    };
+        } else if (type.equals(Argument.class)) {
+            return new PraxisPropertyEditor[]{
+                        new ResourceEditor(property, info),
                         new FileListEditor(property, info)
                     };
         }
