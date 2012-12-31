@@ -107,7 +107,7 @@
         </folder>
     </folder>
     
-    <folder name="Editors">
+<!--    <folder name="Editors">
         <folder name="text">
             <folder name="x-praxis-script">                    
                 <file name="EditorKit.instance">
@@ -116,6 +116,6 @@
                 </file>
             </folder>
         </folder>
-    </folder>
+    </folder>-->
     
 </filesystem>
