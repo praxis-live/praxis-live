@@ -24,10 +24,10 @@ package net.neilcsmith.praxis.live.core.ui;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import net.neilcsmith.praxis.live.core.DefaultHubManager;
-import org.openide.awt.ActionRegistration;
+import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionReferences;
-import org.openide.awt.ActionID;
+import org.openide.awt.ActionRegistration;
 import org.openide.util.NbBundle.Messages;
 
 @ActionID(category = "System",
@@ -36,7 +36,7 @@ id = "net.neilcsmith.praxis.live.core.ui.RestartHubAction")
 displayName = "#CTL_RestartHubAction")
 @ActionReferences({
     @ActionReference(path = "Menu/BuildProject", position = 302),
-    @ActionReference(path = "Toolbars/Build", position = 3333)
+    @ActionReference(path = "Toolbars/Build", position = 1)
 })
 @Messages("CTL_RestartHubAction=Restart Hub")
 public final class RestartHubAction implements ActionListener {
