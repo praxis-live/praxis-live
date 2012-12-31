@@ -53,8 +53,9 @@ import javax.swing.plaf.ColorUIResource;
 import net.neilcsmith.praxis.laf.PraxisLookAndFeel;
 import org.netbeans.swing.plaf.util.UIUtils;
 
-/** Default system-provided customizer for Metal LF
- * Public only to be accessible by ProxyLazyValue, please don't abuse.
+/**
+ * Default system-provided customizer for Metal LF Public only to be accessible
+ * by ProxyLazyValue, please don't abuse.
  */
 public final class PraxisLFCustoms extends LFCustoms {
 
@@ -155,9 +156,6 @@ public final class PraxisLFCustoms extends LFCustoms {
             //            EDITOR_STATUS_ONLYONEBORDER, new InsetBorder (false, false),
             //            EDITOR_STATUS_INNER_BORDER, new InsetBorder (false, true),
 
-            
-            
-            
             //#48951 invisible unfocused selection background in Metal L&F
             "nb.explorer.unfocusedSelBg", unfocusedSelBg,
             PROGRESS_CANCEL_BUTTON_ICON, UIUtils.loadImage("org/netbeans/swing/plaf/resources/cancel_task_win_linux_mac.png"),
@@ -170,7 +168,9 @@ public final class PraxisLFCustoms extends LFCustoms {
             "nbProgressBar.popupText.selectBackground", UIManager.getColor("List.selectionBackground"),
             "nbProgressBar.popupText.selectForeground", UIManager.getColor("List.selectionForeground"),
             "nb.errorForeground", Color.RED,
-            "nb.warningForeground", UIManager.getColor("Label.foreground"),}; //NOI18N
+            "nb.warningForeground", UIManager.getColor("Label.foreground"),
+            "NbMainWindow.showCustomBackground", true
+        }; //NOI18N
 
 
 

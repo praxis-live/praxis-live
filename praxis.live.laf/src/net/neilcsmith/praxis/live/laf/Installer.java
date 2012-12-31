@@ -38,6 +38,7 @@ package net.neilcsmith.praxis.live.laf;
 import java.awt.EventQueue;
 import java.lang.reflect.InvocationTargetException;
 import javax.swing.LookAndFeel;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import net.neilcsmith.praxis.laf.PraxisLookAndFeel;
@@ -73,7 +74,6 @@ public class Installer extends ModuleInstall {
                     try {
                         LookAndFeel laf = new PraxisLookAndFeel();
                         UIManager.setLookAndFeel(laf);
-                        
                     } catch (UnsupportedLookAndFeelException ex) {
                         Exceptions.printStackTrace(ex);
                     }

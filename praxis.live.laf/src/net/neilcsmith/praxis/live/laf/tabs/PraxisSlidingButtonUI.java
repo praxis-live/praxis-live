@@ -44,32 +44,13 @@
 
 package net.neilcsmith.praxis.live.laf.tabs;
 
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Insets;
-import java.awt.Rectangle;
-
-import javax.swing.plaf.basic.BasicToggleButtonUI;
-import java.awt.geom.AffineTransform;
 import javax.swing.AbstractButton;
-import javax.swing.BorderFactory;
-import javax.swing.ButtonModel;
-import javax.swing.Icon;
 import javax.swing.JComponent;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
-import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
 import javax.swing.plaf.ComponentUI;
-import javax.swing.plaf.basic.BasicHTML;
-import javax.swing.plaf.metal.MetalToggleButtonUI;
-import javax.swing.text.View;
-import org.netbeans.swing.tabcontrol.SlideBarDataModel;
-import org.netbeans.swing.tabcontrol.SlidingButton;
 import org.netbeans.swing.tabcontrol.SlidingButtonUI;
 
 /** 

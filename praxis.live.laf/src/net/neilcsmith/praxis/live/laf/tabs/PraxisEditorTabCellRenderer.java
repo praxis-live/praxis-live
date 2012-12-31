@@ -52,6 +52,7 @@ package net.neilcsmith.praxis.live.laf.tabs;
 import javax.swing.*;
 import java.awt.*;
 import org.netbeans.swing.tabcontrol.plaf.AbstractTabCellRenderer;
+import org.netbeans.swing.tabcontrol.plaf.BusyTabsSupport;
 import org.netbeans.swing.tabcontrol.plaf.TabControlButtonFactory;
 import org.netbeans.swing.tabcontrol.plaf.TabPainter;
 
@@ -61,9 +62,9 @@ import org.netbeans.swing.tabcontrol.plaf.TabPainter;
  * @author Tim Boudreau
  */
 class PraxisEditorTabCellRenderer extends AbstractTabCellRenderer {
-    private static final MetalTabPainter metalborder = new MetalTabPainter();
-    private static final MetalRightClippedTabPainter rightBorder = new MetalRightClippedTabPainter();
-    private static final MetalLeftClippedTabPainter leftBorder = new MetalLeftClippedTabPainter();
+    private static final PraxisEditorTabCellRenderer.MetalTabPainter metalborder = new PraxisEditorTabCellRenderer.MetalTabPainter();
+    private static final PraxisEditorTabCellRenderer.MetalRightClippedTabPainter rightBorder = new PraxisEditorTabCellRenderer.MetalRightClippedTabPainter();
+    private static final PraxisEditorTabCellRenderer.MetalLeftClippedTabPainter leftBorder = new PraxisEditorTabCellRenderer.MetalLeftClippedTabPainter();
 
     static final Color ATTENTION_COLOR = new Color(255, 238, 120);
     /**
@@ -82,6 +83,14 @@ class PraxisEditorTabCellRenderer extends AbstractTabCellRenderer {
         Dimension d = super.getPadding();
         d.width = isShowCloseButton() && !Boolean.getBoolean("nb.tabs.suppressCloseButton") ? 34 : 24;
         return d;
+    }
+
+    @Override
+    protected void paintIconAndText( Graphics g ) {
+        if( isBusy() ) {
+            setIcon( BusyTabsSupport.getDefault().getBusyIcon( isSelected() ) );
+        }
+        super.paintIconAndText( g );
     }
 
     private static class MetalTabPainter implements TabPainter {
@@ -229,12 +238,12 @@ class PraxisEditorTabCellRenderer extends AbstractTabCellRenderer {
          */
         private String findIconPath( PraxisEditorTabCellRenderer renderer ) {
             if( renderer.inCloseButton() && renderer.isPressed() ) {
-                return "org/netbeans/swing/tabcontrol/resources/metal_close_pressed.png"; // NOI18N
+                return "org/openide/awt/resources/metal_close_pressed.png"; // NOI18N
             }
             if( renderer.inCloseButton() ) {
-                return "org/netbeans/swing/tabcontrol/resources/metal_close_rollover.png"; // NOI18N
+                return "org/openide/awt/resources/metal_close_rollover.png"; // NOI18N
             }
-            return "org/netbeans/swing/tabcontrol/resources/metal_close_enabled.png"; // NOI18N
+            return "org/openide/awt/resources/metal_close_enabled.png"; // NOI18N
         }
     }
 

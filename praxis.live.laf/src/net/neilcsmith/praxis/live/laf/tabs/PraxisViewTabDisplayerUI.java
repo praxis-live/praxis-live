@@ -56,14 +56,13 @@ import java.util.Map;
 import javax.swing.Icon;
 import javax.swing.JComponent;
 import javax.swing.UIManager;
-import org.netbeans.swing.tabcontrol.TabDisplayer;
-
 import javax.swing.plaf.ComponentUI;
+import org.netbeans.swing.tabcontrol.TabDisplayer;
+import org.netbeans.swing.tabcontrol.WinsysInfoForTabbedContainer;
 import org.netbeans.swing.tabcontrol.plaf.AbstractViewTabDisplayerUI;
+import org.netbeans.swing.tabcontrol.plaf.BusyTabsSupport;
 import org.netbeans.swing.tabcontrol.plaf.TabControlButton;
 import org.netbeans.swing.tabcontrol.plaf.TabControlButtonFactory;
-
-
 import org.openide.awt.HtmlRenderer;
 
 /**
@@ -117,6 +116,7 @@ public final class PraxisViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
         return new PraxisViewTabDisplayerUI((TabDisplayer) c);
     }
 
+    @Override
     public Dimension getPreferredSize(JComponent c) {
         FontMetrics fm = getTxtFontMetrics();
         int height = fm == null ?
@@ -130,6 +130,7 @@ public final class PraxisViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
      * Overrides basic paint mathod, adds painting of overall blue or gray
      * bottom area, depending on activation status value
      */
+    @Override
     public void paint(Graphics g, JComponent c) {
         super.paint(g, c);
         paintBottomBorder(g, c);
@@ -147,8 +148,14 @@ public final class PraxisViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
         g.drawLine(1, bounds.height - 1, bounds.width - 1, bounds.height - 1);
     }
 
+    @Override
     protected void paintTabContent(Graphics g, int index, String text, int x,
                                    int y, int width, int height) {
+        boolean slidedOut = false;
+        WinsysInfoForTabbedContainer winsysInfo = displayer.getContainerWinsysInfo();
+        if( null != winsysInfo && winsysInfo.isSlidedOutContainer() )
+            slidedOut = false;
+
         FontMetrics fm = getTxtFontMetrics();
         // setting font already here to compute string width correctly
         g.setFont(getTxtFont());
@@ -158,12 +165,24 @@ public final class PraxisViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
             int buttonsWidth = 0;
             if( null != buttons ) {
                 Dimension buttonsSize = buttons.getPreferredSize();
-                buttonsWidth = buttonsSize.width + ICON_X_LEFT_PAD + ICON_X_RIGHT_PAD;
-                txtWidth = width - (buttonsWidth + 2*TXT_X_PAD);
-                buttons.setLocation( x + txtWidth+2*TXT_X_PAD+ICON_X_LEFT_PAD, y + (height-buttonsSize.height)/2+1 );
+                if( width < buttonsSize.width+ICON_X_LEFT_PAD+ICON_X_RIGHT_PAD ) {
+                    buttons.setVisible( false );
+                } else {
+                    buttons.setVisible( true );
+                    buttonsWidth = buttonsSize.width + ICON_X_LEFT_PAD + ICON_X_RIGHT_PAD;
+                    txtWidth = width - (buttonsWidth + TXT_X_PAD);
+                    buttons.setLocation( x + txtWidth+TXT_X_PAD+ICON_X_LEFT_PAD, y + (height-buttonsSize.height)/2-1 );
+                }
             }
             
-            txtWidth = (int)HtmlRenderer.renderString(text, g, x + TXT_X_PAD, height - 
+            if( isTabBusy( index ) && !slidedOut ) {
+                Icon busyIcon = BusyTabsSupport.getDefault().getBusyIcon( isSelected( index ) );
+                txtWidth -= busyIcon.getIconWidth() - 3 - TXT_X_PAD;
+                busyIcon.paintIcon( displayer, g, x+TXT_X_PAD, y+(height-busyIcon.getIconHeight())/2);
+                x += busyIcon.getIconWidth() + 3;
+            }
+
+            txtWidth = (int)HtmlRenderer.renderString(text, g, x + TXT_X_PAD, height -
                     fm.getDescent() - 4, txtWidth, height, getTxtFont(),
                     UIManager.getColor("textText"),
                     HtmlRenderer.STYLE_TRUNCATE, true);
@@ -174,15 +193,22 @@ public final class PraxisViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
                           y + BUMP_Y_PAD, bumpWidth, height - 2 * BUMP_Y_PAD);
             }
         } else {
+            if( isTabBusy( index ) && !slidedOut ) {
+                Icon busyIcon = BusyTabsSupport.getDefault().getBusyIcon( isSelected( index ) );
+                txtWidth -= busyIcon.getIconWidth() - 3 - TXT_X_PAD;
+                busyIcon.paintIcon( displayer, g, x+TXT_X_PAD, y+(height-busyIcon.getIconHeight())/2);
+                x += busyIcon.getIconWidth() + 3;
+            }
+
             txtWidth = width - 2 * TXT_X_PAD;
             HtmlRenderer.renderString(text, g, x + TXT_X_PAD, height - 
                 fm.getDescent() - 4, txtWidth, height, getTxtFont(),
-//                UIManager.getColor("textText"),
-                UIManager.getColor("textText").darker(),
+                UIManager.getColor("textText"),
                 HtmlRenderer.STYLE_TRUNCATE, true);
         }
     }
 
+    @Override
     protected void paintTabBorder(Graphics g, int index, int x, int y,
                                   int width, int height) {
         Color highlight = getBorderHighlight();
@@ -210,11 +236,16 @@ public final class PraxisViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
         }
         if (!isSelected) {
             g.drawLine(0, height - 4, isLast ? width - 1 : width, height - 4);
+        } 
+        if( isLast ) {
+            g.setColor(shadow);
+            g.drawLine(width-1, 0, width-1, height - 5);
         }
 
         g.translate(-x, -y);
     }
 
+    @Override
     protected void paintTabBackground(Graphics g, int index, int x, int y,
                                       int width, int height) {
         boolean selected = isSelected(index);
@@ -230,6 +261,11 @@ public final class PraxisViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
             g.setColor(getInactBgColor());
             g.fillRect(x, y, width, height - 3);
         }
+    }
+
+//    @Override
+    int getModeButtonVerticalOffset() {
+        return -1;
     }
 
     private void paintBump(int index, Graphics g, int x, int y, int width,
@@ -280,10 +316,10 @@ public final class PraxisViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
             
             //close button
             String[] iconPaths = new String[4];
-            iconPaths[TabControlButton.STATE_DEFAULT] = "org/netbeans/swing/tabcontrol/resources/metal_bigclose_enabled.png"; // NOI18N
-            iconPaths[TabControlButton.STATE_PRESSED] = "org/netbeans/swing/tabcontrol/resources/metal_bigclose_pressed.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_DEFAULT] = "org/openide/awt/resources/metal_bigclose_enabled.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_PRESSED] = "org/openide/awt/resources/metal_bigclose_pressed.png"; // NOI18N
             iconPaths[TabControlButton.STATE_DISABLED] = iconPaths[TabControlButton.STATE_DEFAULT];
-            iconPaths[TabControlButton.STATE_ROLLOVER] = "org/netbeans/swing/tabcontrol/resources/metal_bigclose_rollover.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_ROLLOVER] = "org/openide/awt/resources/metal_bigclose_rollover.png"; // NOI18N
             buttonIconPaths.put( TabControlButton.ID_CLOSE_BUTTON, iconPaths );
             
             //slide/pin button
@@ -314,6 +350,20 @@ public final class PraxisViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
             iconPaths[TabControlButton.STATE_DISABLED] = iconPaths[TabControlButton.STATE_DEFAULT];
             iconPaths[TabControlButton.STATE_ROLLOVER] = "org/netbeans/swing/tabcontrol/resources/metal_pin_rollover.png"; // NOI18N
             buttonIconPaths.put( TabControlButton.ID_PIN_BUTTON, iconPaths );
+            
+            iconPaths = new String[4];
+            iconPaths[TabControlButton.STATE_DEFAULT] = "org/netbeans/swing/tabcontrol/resources/metal_restore_group_enabled.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_PRESSED] = "org/netbeans/swing/tabcontrol/resources/metal_restore_group_pressed.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_DISABLED] = iconPaths[TabControlButton.STATE_DEFAULT];
+            iconPaths[TabControlButton.STATE_ROLLOVER] = "org/netbeans/swing/tabcontrol/resources/metal_restore_group_rollover.png"; // NOI18N
+            buttonIconPaths.put( TabControlButton.ID_RESTORE_GROUP_BUTTON, iconPaths );
+            
+            iconPaths = new String[4];
+            iconPaths[TabControlButton.STATE_DEFAULT] = "org/netbeans/swing/tabcontrol/resources/metal_minimize_enabled.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_PRESSED] = "org/netbeans/swing/tabcontrol/resources/metal_minimize_pressed.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_DISABLED] = iconPaths[TabControlButton.STATE_DEFAULT];
+            iconPaths[TabControlButton.STATE_ROLLOVER] = "org/netbeans/swing/tabcontrol/resources/metal_minimize_rollover.png"; // NOI18N
+            buttonIconPaths.put( TabControlButton.ID_SLIDE_GROUP_BUTTON, iconPaths );
         }
     }
 

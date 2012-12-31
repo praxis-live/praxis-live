@@ -58,21 +58,16 @@ import java.awt.Insets;
 import java.awt.Rectangle;
 import java.util.HashMap;
 import java.util.Map;
-import javax.swing.Action;
 import javax.swing.Icon;
-import javax.swing.JButton;
 import javax.swing.JComponent;
-import javax.swing.JPanel;
-import javax.swing.JToolBar;
 import javax.swing.UIManager;
-import org.netbeans.swing.tabcontrol.TabDisplayer;
 import javax.swing.plaf.ComponentUI;
+import org.netbeans.swing.tabcontrol.TabDisplayer;
 import org.netbeans.swing.tabcontrol.plaf.BasicScrollingTabDisplayerUI;
 import org.netbeans.swing.tabcontrol.plaf.TabCellRenderer;
 import org.netbeans.swing.tabcontrol.plaf.TabControlButton;
 import org.netbeans.swing.tabcontrol.plaf.TabControlButtonFactory;
 import org.netbeans.swing.tabcontrol.plaf.TabState;
-import org.openide.util.ImageUtilities;
 
 /**
  * Tab displayer UI for Metal look and feel
@@ -82,13 +77,7 @@ import org.openide.util.ImageUtilities;
 public final class PraxisEditorTabDisplayerUI extends BasicScrollingTabDisplayerUI {
     
     private Rectangle scratch = new Rectangle();
-    
-    private JComponent controlButtons;
-    private Icon scrollLeftIcon;
-    private Icon scrollRightIcon;
-    private Icon dropDownIcon;
-    private Icon maximiseIcon;
-    private Icon restoreIcon;
+    private static Map<Integer, String[]> buttonIconPaths;
 
     /**
      * Creates a new instance of MetalEditorTabDisplayerUI
@@ -189,45 +178,68 @@ public final class PraxisEditorTabDisplayerUI extends BasicScrollingTabDisplayer
         g.drawLine(0, displayer.getHeight() - 5, displayer.getWidth(),
                    displayer.getHeight() - 5);
     }
-    
 
-
-    
-    private void initIcons() {
-        if (scrollLeftIcon == null) {
-            scrollLeftIcon = ImageUtilities.loadImageIcon("net/neilcsmith/praxis/live/laf/resources/go-previous.png", true);
-        }
-        if (scrollRightIcon == null) {
-            scrollRightIcon = ImageUtilities.loadImageIcon("net/neilcsmith/praxis/live/laf/resources/go-next.png", true);
-        }
-        if (dropDownIcon == null) {
-            dropDownIcon = ImageUtilities.loadImageIcon("net/neilcsmith/praxis/live/laf/resources/window-list.png", true);
-        }
-        if (maximiseIcon == null) {
-            maximiseIcon = ImageUtilities.loadImageIcon("net/neilcsmith/praxis/live/laf/resources/view-fullscreen.png", true);
-        }
-        if (restoreIcon == null) {
-            restoreIcon = ImageUtilities.loadImageIcon("net/neilcsmith/praxis/live/laf/resources/view-restore.png", true);
+    private static void initIcons() {
+        if( null == buttonIconPaths ) {
+            buttonIconPaths = new HashMap<Integer, String[]>(7);
+            
+            String path;
+            
+            //left button
+            path = "net/neilcsmith/praxis/live/laf/resources/go-previous.png"; // NOI18N
+            String[] iconPaths = new String[4];
+            iconPaths[TabControlButton.STATE_DEFAULT] = path;
+            iconPaths[TabControlButton.STATE_DISABLED] = path;
+            iconPaths[TabControlButton.STATE_ROLLOVER] = path;
+            iconPaths[TabControlButton.STATE_PRESSED] = path;
+            buttonIconPaths.put( TabControlButton.ID_SCROLL_LEFT_BUTTON, iconPaths );
+            
+            //right button
+            path = "net/neilcsmith/praxis/live/laf/resources/go-next.png"; 
+            iconPaths = new String[4];
+            iconPaths[TabControlButton.STATE_DEFAULT] = path;
+            iconPaths[TabControlButton.STATE_DISABLED] = path;
+            iconPaths[TabControlButton.STATE_ROLLOVER] = path;
+            iconPaths[TabControlButton.STATE_PRESSED] = path;
+            buttonIconPaths.put( TabControlButton.ID_SCROLL_RIGHT_BUTTON, iconPaths );
+            
+            //drop down button
+            path = "net/neilcsmith/praxis/live/laf/resources/window-list.png";
+            iconPaths = new String[4];
+            iconPaths[TabControlButton.STATE_DEFAULT] = path;
+            iconPaths[TabControlButton.STATE_DISABLED] = path;
+            iconPaths[TabControlButton.STATE_ROLLOVER] = path;
+            iconPaths[TabControlButton.STATE_PRESSED] = path;
+            buttonIconPaths.put( TabControlButton.ID_DROP_DOWN_BUTTON, iconPaths );
+            
+            // maximize button
+            path = "net/neilcsmith/praxis/live/laf/resources/view-fullscreen.png";
+            iconPaths = new String[4];
+            iconPaths[TabControlButton.STATE_DEFAULT] = path;
+            iconPaths[TabControlButton.STATE_DISABLED] = path;
+            iconPaths[TabControlButton.STATE_ROLLOVER] = path;
+            iconPaths[TabControlButton.STATE_PRESSED] = path;
+            buttonIconPaths.put( TabControlButton.ID_MAXIMIZE_BUTTON, iconPaths );
+            
+            // restore button
+            path = "net/neilcsmith/praxis/live/laf/resources/view-restore.png";
+            iconPaths = new String[4];
+            iconPaths[TabControlButton.STATE_DEFAULT] = path;
+            iconPaths[TabControlButton.STATE_DISABLED] = path;
+            iconPaths[TabControlButton.STATE_ROLLOVER] = path;
+            iconPaths[TabControlButton.STATE_PRESSED] = path;
+            buttonIconPaths.put( TabControlButton.ID_RESTORE_BUTTON, iconPaths );
         }
     }
 
-    @Override
     public Icon getButtonIcon(int buttonId, int buttonState) {
+        Icon res = null;
         initIcons();
-        switch (buttonId) {
-            case TabControlButton.ID_SCROLL_LEFT_BUTTON:
-                return scrollLeftIcon;
-            case TabControlButton.ID_SCROLL_RIGHT_BUTTON:
-                return scrollRightIcon;
-            case TabControlButton.ID_DROP_DOWN_BUTTON:
-                return dropDownIcon;
-            case TabControlButton.ID_MAXIMIZE_BUTTON:
-                return maximiseIcon;
-            case TabControlButton.ID_RESTORE_BUTTON:
-                return restoreIcon;
-            default:
-                return super.getButtonIcon(buttonId, buttonState);
+        String[] paths = buttonIconPaths.get( buttonId );
+        if( null != paths && buttonState >=0 && buttonState < paths.length ) {
+            res = TabControlButtonFactory.getIcon( paths[buttonState] );
         }
+        return res;
     }
     
     protected Rectangle getControlButtonsRectangle( Container parent ) {
