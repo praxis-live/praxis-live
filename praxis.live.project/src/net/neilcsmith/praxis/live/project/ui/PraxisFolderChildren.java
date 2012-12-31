@@ -47,10 +47,9 @@ class PraxisFolderChildren extends FilterNode.Children {
 
     @Override
     protected Node[] createNodes(Node original) {
-        DataObject dob = original.getLookup().lookup(DataObject.class);
+        FileObject fob = original.getLookup().lookup(FileObject.class);
         
-        if (dob != null) {
-            FileObject fob = dob.getPrimaryFile();
+        if (fob != null) {
             if (fob.isFolder()) {
                 // hide config
                 if (CONFIG_FOLDER_NAME.equals(fob.getName()) &&
