@@ -25,12 +25,14 @@ package net.neilcsmith.praxis.live.project;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import net.neilcsmith.praxis.live.project.api.PraxisProjectProperties;
+import javax.swing.Icon;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager.Result;
 import org.netbeans.spi.project.ProjectFactory;
+import org.netbeans.spi.project.ProjectFactory2;
 import org.netbeans.spi.project.ProjectState;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
+import org.openide.util.ImageUtilities;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -38,7 +40,12 @@ import org.openide.util.lookup.ServiceProvider;
  * @author Neil C Smith (http://neilcsmith.net)
  */
 @ServiceProvider(service = ProjectFactory.class, position = 0)
-public class PraxisProjectFactory implements ProjectFactory {
+public class PraxisProjectFactory implements ProjectFactory2 {
+    
+    private final static Icon icon = 
+            ImageUtilities.loadImageIcon(
+            "net/neilcsmith/praxis/live/project/resources/pxp16.png",
+            false);
 
     @Override
     public boolean isProject(FileObject projectDirectory) {
@@ -49,6 +56,16 @@ public class PraxisProjectFactory implements ProjectFactory {
             }
         }
         return false;
+    }
+    
+    
+    @Override
+    public Result isProject2(FileObject projectDirectory) {
+        if (isProject(projectDirectory)) {
+            return new Result(icon);
+        } else {
+            return null;
+        }
     }
 
     @Override
@@ -81,5 +98,6 @@ public class PraxisProjectFactory implements ProjectFactory {
             p.save();
         }
     }
+
 
 }
