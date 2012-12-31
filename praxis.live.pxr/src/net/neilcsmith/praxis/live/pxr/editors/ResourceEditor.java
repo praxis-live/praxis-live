@@ -22,9 +22,11 @@
 package net.neilcsmith.praxis.live.pxr.editors;
 
 import java.awt.Component;
+import java.awt.FontMetrics;
+import java.awt.Graphics;
+import java.awt.Rectangle;
 import java.io.File;
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
@@ -39,6 +41,9 @@ import net.neilcsmith.praxis.live.pxr.SyntaxUtils;
 import net.neilcsmith.praxis.live.pxr.api.PraxisProperty;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -49,32 +54,31 @@ public class ResourceEditor extends PraxisPropertyEditorSupport
 
     private final static Logger LOG = Logger.getLogger(ResourceEditor.class.getName());
     private PropertyEnv env;
-    private URI base;
+    private FileObject workingDir;
     private boolean allowEmpty;
     private List<String> suggested;
 
     public ResourceEditor(PraxisProperty property, ArgumentInfo info) {
         Object dir = property.getValue("workingDir");
         if (dir instanceof File) {
-            base = ((File) dir).toURI();
-        } else {
-            base = new File("").toURI();
+            workingDir = FileUtil.toFileObject((File)dir);
         }
         PMap props = info.getProperties();
-        allowEmpty = props.getBoolean(ArgumentInfo.KEY_ALLOW_EMPTY, false);
-        Argument arg = props.get(ArgumentInfo.KEY_SUGGESTED_VALUES);
-        if (arg != null) {
-            try {
-                PArray arr = PArray.coerce(arg);
-                suggested = new ArrayList<String>(arr.getSize());
-                for (Argument val : arr) {
-                    suggested.add(val.toString());
-                }
-                 property.setValue("canEditAsText", Boolean.TRUE);
-            } catch (ArgumentFormatException ex) {
-                // no op
-            }
-        }
+        allowEmpty = true;
+//        property.setValue("canEditAsText", Boolean.FALSE);
+//        Argument arg = props.get(ArgumentInfo.KEY_SUGGESTED_VALUES);
+//        if (arg != null) {
+//            try {
+//                PArray arr = PArray.coerce(arg);
+//                suggested = new ArrayList<String>(arr.getSize());
+//                for (Argument val : arr) {
+//                    suggested.add(val.toString());
+//                }
+//                 property.setValue("canEditAsText", Boolean.TRUE);
+//            } catch (ArgumentFormatException ex) {
+//                // no op
+//            }
+//        }
     }
 
 
@@ -85,7 +89,10 @@ public class ResourceEditor extends PraxisPropertyEditorSupport
         if (uri == null) {
             return "{}";
         } else {
-            uri = base.relativize(uri);
+            if (workingDir != null) {
+                uri = workingDir.toURI().relativize(uri);
+            }
+//            uri = base.relativize(uri);
             if (uri.isAbsolute()) {
                 return uri.toString();
             } else {
@@ -115,22 +122,30 @@ public class ResourceEditor extends PraxisPropertyEditorSupport
 
     @Override
     public void setAsText(String text) throws IllegalArgumentException {
-        String val = text.trim();
-        if (val.isEmpty()) {
-            if (allowEmpty) {
-                setValue(PString.EMPTY);
-            } else {
-                throw new IllegalArgumentException("Property doesn't support empty value");
-            }
-        } else {
-            try {
-                setValue(PResource.valueOf(val));
-            } catch (ArgumentFormatException ex) {
-                throw new IllegalArgumentException(ex);
-            }
-        }
+        // ignore?  Property sheet is calling with empty String on cancel???
+        
+        // Exceptions.printStackTrace(new Exception());
+
     }
 
+    @Override
+    public String getAsText() {
+        return null;
+    }
+    
+        @Override
+    public boolean isPaintable() {
+        return true;
+    }
+
+    @Override
+    public void paintValue(Graphics gfx, Rectangle box) {
+        FontMetrics fm = gfx.getFontMetrics();
+        gfx.drawString(getValue().toString(), box.x, box.y
+                + (box.height - fm.getHeight()) / 2 + fm.getAscent());
+    }
+    
+    
     @Override
     public void setFromCommand(String command) throws Exception {
         Iterator<Token> toks = new Tokenizer(command).iterator();
@@ -143,21 +158,12 @@ public class ResourceEditor extends PraxisPropertyEditorSupport
             case PLAIN:
             case QUOTED:
             case BRACED:
-                URI path = base.resolve(new URI(null, null, file.getText(), null));
+                URI path = workingDir.toURI().resolve(new URI(null, null, file.getText(), null));
                 LOG.log(Level.FINE, "Setting path to {0}", path);
                 setValue(PResource.valueOf(path));
                 break;
             default:
                 throw new IllegalArgumentException("Couldn't parse file");
-        }
-    }
-
-    @Override
-    public String[] getTags() {
-        if (suggested != null) {
-            return suggested.toArray(new String[suggested.size()]);
-        } else {
-            return null;
         }
     }
     
@@ -180,6 +186,6 @@ public class ResourceEditor extends PraxisPropertyEditorSupport
 
     @Override
     public Component getCustomEditor() {
-        return new ResourceCustomEditor(this, base, getURI(), env);
+        return new ResourceCustomEditor(this, workingDir, getURI(), env);
     }
 }

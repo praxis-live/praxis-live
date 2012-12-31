@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Neil C Smith.
+ * Copyright 2012 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -81,42 +81,4 @@ public final class Connection {
         return port2;
     }
 
-    
-
-    //        private final PortAddress port1;
-    //        private final PortAddress port2;
-    //
-    //        public Connection(PortAddress port1, PortAddress port2) {
-    //            if (port1 == null || port2 == null) {
-    //                throw new NullPointerException();
-    //            }
-    //            this.port1 = port1;
-    //            this.port2 = port2;
-    //        }
-    //
-    //        public PortAddress getPort1() {
-    //            return port1;
-    //        }
-    //
-    //        public PortAddress getPort2() {
-    //            return port2;
-    //        }
-    //        private final PortAddress port1;
-    //        private final PortAddress port2;
-    //
-    //        public Connection(PortAddress port1, PortAddress port2) {
-    //            if (port1 == null || port2 == null) {
-    //                throw new NullPointerException();
-    //            }
-    //            this.port1 = port1;
-    //            this.port2 = port2;
-    //        }
-    //
-    //        public PortAddress getPort1() {
-    //            return port1;
-    //        }
-    //
-    //        public PortAddress getPort2() {
-    //            return port2;
-    //        }
 }

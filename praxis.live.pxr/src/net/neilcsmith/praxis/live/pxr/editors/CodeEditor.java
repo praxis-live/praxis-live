@@ -35,13 +35,15 @@ import org.openide.explorer.propertysheet.PropertyEnv;
 public class CodeEditor extends PraxisPropertyEditorSupport
         implements ExPropertyEditor {
 
+    private final PraxisProperty property;
     private final String mime;
     private PropertyEnv env;
     private String template;
 
     CodeEditor(PraxisProperty property, ArgumentInfo info, String mimetype) {
+        this.property = property;
         this.mime = mimetype;
-        this.template = info.getProperties().getString(ArgumentInfo.KEY_TEMPLATE, null);
+        this.template = info.getProperties().getString(ArgumentInfo.KEY_TEMPLATE, "");
         property.setValue("canEditAsText", Boolean.FALSE);
     }
     
@@ -66,7 +68,9 @@ public class CodeEditor extends PraxisPropertyEditorSupport
         return new CodeCustomEditor(this, env, mime, template);
     }
 
-
+    PraxisProperty<?> getProperty() {
+        return property;
+    }
 
 
 

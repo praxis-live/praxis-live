@@ -65,7 +65,7 @@ final class PXRVisualPanel1 extends JPanel implements DocumentListener, ActionLi
         if (type == null) {
             typeField.addItem(ComponentType.create("root:audio"));
             typeField.addItem(ComponentType.create("root:video"));
-
+            typeField.addItem(ComponentType.create("root:tinkerforge"));
             typeField.addActionListener(this);
         } else {
             typeField.addItem(type);

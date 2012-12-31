@@ -39,7 +39,6 @@ import net.neilcsmith.praxis.gui.ControlBinding.SyncRate;
 import net.neilcsmith.praxis.live.pxr.api.RootProxy;
 import net.neilcsmith.praxis.live.pxr.api.RootRegistry;
 import net.neilcsmith.praxis.live.util.ArgumentPropertyAdaptor;
-import org.openide.util.Exceptions;
 
 /**
  *

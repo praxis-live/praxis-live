@@ -22,6 +22,8 @@
 package net.neilcsmith.praxis.live.pxr;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -48,6 +50,8 @@ public class PXRContainerProxy extends PXRComponentProxy implements ContainerPro
 
     private Map<String, PXRComponentProxy> children;
     private List<Connection> connections;
+    
+    boolean ignore;
 
     PXRContainerProxy(PXRContainerProxy parent, ComponentType type,
             ComponentInfo info) {
@@ -73,7 +77,6 @@ public class PXRContainerProxy extends PXRComponentProxy implements ContainerPro
 
         ComponentAddress childAddress = ComponentAddress.create(getAddress(), id);
         PXRHelper.getDefault().createComponentAndGetInfo(childAddress, type, new Callback() {
-
             @Override
             public void onReturn(CallArguments args) {
                 try {
@@ -117,7 +120,6 @@ public class PXRContainerProxy extends PXRComponentProxy implements ContainerPro
     public void removeChild(final String id, final Callback callback) throws ProxyException {
         ComponentAddress childAddress = ComponentAddress.create(getAddress(), id);
         PXRHelper.getDefault().removeComponent(childAddress, new Callback() {
-
             @Override
             public void onReturn(CallArguments args) {
 
@@ -156,7 +158,6 @@ public class PXRContainerProxy extends PXRComponentProxy implements ContainerPro
     public void connect(final Connection connection, final Callback callback) throws ProxyException {
 
         PXRHelper.getDefault().connect(getAddress(), connection, new Callback() {
-
             @Override
             public void onReturn(CallArguments args) {
                 connections.add(connection);
@@ -179,7 +180,6 @@ public class PXRContainerProxy extends PXRComponentProxy implements ContainerPro
     public void disconnect(final Connection connection, final Callback callback) throws ProxyException {
 
         PXRHelper.getDefault().disconnect(getAddress(), connection, new Callback() {
-
             @Override
             public void onReturn(CallArguments args) {
                 connections.remove(connection);
@@ -235,6 +235,50 @@ public class PXRContainerProxy extends PXRComponentProxy implements ContainerPro
         return super.isIgnoredProperty(id)
                 || ContainerInterface.CHILDREN.equals(id)
                 || ContainerInterface.CONNECTIONS.equals(id);
+
+    }
+
+    void revalidate(PXRComponentProxy child) {
+        String id = getChildID(child);
+        if (id == null) {
+            return;
+        }
+        
+        ignore = true;
+
+        // remove all connections temporarily
+        List<Connection> tmpCons = connections;
+        connections = Collections.emptyList();
+        if (!tmpCons.isEmpty()) {
+            firePropertyChange(PROP_CONNECTIONS, null, null);
+        }
+
+        // temporarily remove child
+        Map<String, PXRComponentProxy> tmpChildren = children;
+        children = new LinkedHashMap<String, PXRComponentProxy>(tmpChildren);
+        children.remove(id);
+        firePropertyChange(PROP_CHILDREN, null, null);
+
+        // re-add child
+        children.clear();
+        children = tmpChildren;
+        firePropertyChange(PROP_CHILDREN, null, null);
+
+        // re-add and validate connections
+        connections = tmpCons;
+        List<String> ports = Arrays.asList(child.getInfo().getPorts());
+        Iterator<Connection> itr = connections.iterator();
+        while (itr.hasNext()) {
+            Connection con = itr.next();
+            if ((con.getChild1().equals(id) && !ports.contains(con.getPort1()))
+                    || (con.getChild2().equals(id) && !ports.contains(con.getPort2()))) {
+                itr.remove();
+            }
+        }
+        firePropertyChange(ContainerProxy.PROP_CONNECTIONS, null, null);
+
+        ignore = false;
+        
 
     }
 }

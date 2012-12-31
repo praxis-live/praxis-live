@@ -41,6 +41,7 @@ import net.neilcsmith.praxis.live.pxr.PXRParser.*;
 import net.neilcsmith.praxis.live.pxr.api.RootEditor;
 import net.neilcsmith.praxis.live.pxr.api.RootProxy;
 import net.neilcsmith.praxis.live.pxr.api.RootRegistry;
+import net.neilcsmith.praxis.live.pxr.graph.GraphEditor;
 import org.netbeans.api.project.Project;
 import org.openide.awt.Actions;
 import org.openide.util.ContextAwareAction;
@@ -237,7 +238,12 @@ public class RootEditorTopComponent extends CloneableTopComponent {
                 return ed;
             }
         }
-        return new DebugRootEditor(root);
+        String type = root.getType().toString();
+        if (type.startsWith("root:")) {
+            return new GraphEditor(root, type.substring(5));
+        } else {
+            return new DebugRootEditor(root);
+        }
     }
 
     private class BlankEditor extends RootEditor {

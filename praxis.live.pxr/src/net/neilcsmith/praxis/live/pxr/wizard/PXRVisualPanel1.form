@@ -1,4 +1,4 @@
-<?xml version="1.1" encoding="UTF-8" ?>
+<?xml version="1.0" encoding="UTF-8" ?>
 
 <Form version="1.4" maxVersion="1.7" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <AuxValues>
@@ -36,7 +36,7 @@
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="browseButton" max="32767" attributes="0"/>
                       </Group>
-                      <Component id="idField" alignment="0" pref="361" max="32767" attributes="1"/>
+                      <Component id="idField" alignment="0" max="32767" attributes="1"/>
                   </Group>
               </Group>
               <EmptySpace max="-2" attributes="0"/>

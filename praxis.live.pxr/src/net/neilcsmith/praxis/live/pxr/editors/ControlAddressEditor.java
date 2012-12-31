@@ -37,13 +37,13 @@ import org.openide.explorer.propertysheet.PropertyEnv;
  */
 public class ControlAddressEditor extends PraxisPropertyEditorSupport 
     implements ExPropertyEditor {
-
+    
     private PropertyEnv env;
     private boolean allowEmpty;
     
     ControlAddressEditor(PraxisProperty property, ArgumentInfo info) {
         allowEmpty = info.getProperties().getBoolean(ArgumentInfo.KEY_ALLOW_EMPTY, false);
-//        property.setValue("canEditAsText", Boolean.FALSE);
+        property.setValue("canEditAsText", Boolean.FALSE);
     }
 
     @Override

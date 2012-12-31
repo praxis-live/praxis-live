@@ -29,7 +29,6 @@ import java.util.logging.Logger;
 import net.neilcsmith.praxis.core.Argument;
 import net.neilcsmith.praxis.core.CallArguments;
 import net.neilcsmith.praxis.core.ControlAddress;
-import net.neilcsmith.praxis.core.info.ArgumentInfo;
 import net.neilcsmith.praxis.core.info.ControlInfo;
 import net.neilcsmith.praxis.core.types.PString;
 import net.neilcsmith.praxis.gui.ControlBinding;
@@ -90,6 +89,9 @@ public final class BoundArgumentProperty extends ArgumentProperty
     public void setValue(Argument value) {
         if (!writable) {
             throw new UnsupportedOperationException("Read only property");
+        }
+        if (this.value.equals(value)) {
+            return;
         }
         setValueImpl(value, true, null);
     }

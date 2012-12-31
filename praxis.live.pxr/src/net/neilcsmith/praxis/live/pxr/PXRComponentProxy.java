@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Neil C Smith.
+ * Copyright 2012 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -23,7 +23,6 @@ package net.neilcsmith.praxis.live.pxr;
 
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
-import net.neilcsmith.praxis.live.pxr.api.PraxisProperty;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -46,9 +45,12 @@ import net.neilcsmith.praxis.core.info.ArgumentInfo;
 import net.neilcsmith.praxis.core.info.ComponentInfo;
 import net.neilcsmith.praxis.core.info.ControlInfo;
 import net.neilcsmith.praxis.core.interfaces.ComponentInterface;
+import net.neilcsmith.praxis.gui.ControlBinding;
 import net.neilcsmith.praxis.live.core.api.Callback;
 import net.neilcsmith.praxis.live.pxr.api.ComponentProxy;
+import net.neilcsmith.praxis.live.pxr.api.PraxisProperty;
 import net.neilcsmith.praxis.live.pxr.api.ProxyException;
+import net.neilcsmith.praxis.live.util.ArgumentPropertyAdaptor;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.windows.TopComponent;
@@ -68,11 +70,15 @@ public class PXRComponentProxy implements ComponentProxy {
     private PropertyChangeSupport pcs;
     private PXRProxyNode delegate;
     private Map<String, PraxisProperty<?>> properties;
+    private PropPropListener propertyListener;
     private List<Action> triggers;
     private Action editorAction;
     private boolean syncing;
     private int listenerCount = 0;
     private boolean nodeSyncing;
+    private boolean dynamic;
+    private boolean parentSyncing;
+    private ArgumentPropertyAdaptor.ReadOnly dynInfoAdaptor;
 
     PXRComponentProxy(PXRContainerProxy parent, ComponentType type,
             ComponentInfo info) {
@@ -81,6 +87,87 @@ public class PXRComponentProxy implements ComponentProxy {
         this.info = info;
         attributes = new LinkedHashMap<String, String>();
         pcs = new PropertyChangeSupport(this);
+        dynamic = info.getProperties().getBoolean(ComponentInfo.KEY_DYNAMIC, false);
+    }
+
+    private void initProperties() {
+        assert EventQueue.isDispatchThread();
+        if (propertyListener == null) {
+            propertyListener = new PropPropListener();
+        }
+        ComponentAddress cmpAd = getAddress();
+        Map<String, PraxisProperty<?>> oldProps;
+        // properties might not be null if called from dynamic listener
+        if (properties == null) {
+            oldProps = Collections.emptyMap();
+        } else {
+            oldProps = properties;
+        }
+        properties = new LinkedHashMap<String, PraxisProperty<?>>();
+        File workingDir = getRoot().getWorkingDirectory();
+        for (String ctlID : info.getControls()) {
+            PraxisProperty<?> prop = oldProps.remove(ctlID);
+            if (prop != null) {
+                // existing
+                properties.put(ctlID, prop);
+                continue;
+            }
+            ControlInfo ctl = info.getControlInfo(ctlID);
+            ControlAddress address = ControlAddress.create(cmpAd, ctlID);
+            prop = createPropertyForControl(address, ctl);
+            if (prop != null) {
+                ((BoundArgumentProperty) prop).addPropertyChangeListener(propertyListener);
+                prop.setValue("address", address);
+                prop.setValue("workingDir", workingDir);
+                prop.setValue("componentInfo", info);
+                properties.put(ctlID, prop);
+            }
+        }
+
+        if (!oldProps.isEmpty()) {
+            for (PraxisProperty<?> prop : oldProps.values()) {
+                ((BoundArgumentProperty) prop).dispose();
+            }
+            oldProps.clear();
+        }
+
+        if (syncing) {
+            setPropertiesSyncing(true);
+        }
+    }
+
+    private void initDynamic() {
+        LOG.finest("Setting up dynamic component adaptor");
+        dynInfoAdaptor = new ArgumentPropertyAdaptor.ReadOnly(this, "info", true, ControlBinding.SyncRate.None);
+        dynInfoAdaptor.addPropertyChangeListener(new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                refreshInfo((ComponentInfo) evt.getNewValue());
+            }
+        });
+        PXRHelper.getDefault().bind(ControlAddress.create(getAddress(), ComponentInterface.INFO), dynInfoAdaptor);
+    }
+
+    void refreshInfo(ComponentInfo info) {
+        if (this.info.equals(info)) {
+            // should happen once on first sync?
+            LOG.finest("Info is current");
+            return;
+        }
+        LOG.finest("Info changed - revalidating");
+        this.info = info;
+        initProperties();
+        triggers = null;
+        if (delegate != null) {
+            delegate.refreshProperties();
+        }
+        if (parent != null) {
+            parent.revalidate(this);
+        }
+    }
+
+    boolean isDynamic() {
+        return dynamic;
     }
 
     @Override
@@ -113,7 +200,11 @@ public class PXRComponentProxy implements ComponentProxy {
 
     @Override
     public void setAttribute(String key, String value) {
-        attributes.put(key, value);
+        if (value == null) {
+            attributes.remove(key);
+        } else {
+            attributes.put(key, value);
+        }      
     }
 
     @Override
@@ -158,7 +249,7 @@ public class PXRComponentProxy implements ComponentProxy {
             throw new ProxyException(ex);
         }
     }
-    
+
     List<Action> getTriggerActions() {
         if (triggers == null) {
             initTriggerActions();
@@ -176,7 +267,7 @@ public class PXRComponentProxy implements ComponentProxy {
         }
         triggers = Collections.unmodifiableList(triggers);
     }
-    
+
     Action getEditorAction() {
         if (editorAction == null) {
             editorAction = new EditorAction();
@@ -196,29 +287,6 @@ public class PXRComponentProxy implements ComponentProxy {
             initProperties();
         }
         return properties.get(id);
-    }
-
-    private void initProperties() {
-        assert EventQueue.isDispatchThread();
-        PropertyChangeListener lst = new PropPropListener();
-        ComponentAddress cmpAd = getAddress();
-        properties = new LinkedHashMap<String, PraxisProperty<?>>();
-        File workingDir = getRoot().getWorkingDirectory();
-        for (String ctlID : info.getControls()) {
-            ControlInfo ctl = info.getControlInfo(ctlID);
-            ControlAddress address = ControlAddress.create(cmpAd, ctlID);
-            PraxisProperty<?> prop = createPropertyForControl(address, ctl);
-            if (prop != null) {
-                ((BoundArgumentProperty) prop).addPropertyChangeListener(lst);
-                prop.setValue("address", address);
-                prop.setValue("workingDir", workingDir);
-                prop.setValue("componentInfo", info);
-                properties.put(ctlID, prop);
-            }
-        }
-        if (syncing) {
-            setPropertiesSyncing(true);
-        }
     }
 
     protected PraxisProperty<?> createPropertyForControl(ControlAddress address, ControlInfo info) {
@@ -244,15 +312,20 @@ public class PXRComponentProxy implements ComponentProxy {
     PXRRootProxy getRoot() {
         return parent.getRoot();
     }
-    
+
     void dispose() {
         parent = null;
+
+        if (dynInfoAdaptor != null) {
+            PXRHelper.getDefault().unbind(dynInfoAdaptor);
+        }
+
         if (properties == null) {
             return;
         }
         for (PraxisProperty<?> prop : properties.values()) {
             if (prop instanceof BoundArgumentProperty) {
-                ((BoundArgumentProperty)prop).dispose();
+                ((BoundArgumentProperty) prop).dispose();
             }
         }
         properties = null;
@@ -267,6 +340,13 @@ public class PXRComponentProxy implements ComponentProxy {
         checkSyncing();
     }
 
+    void setParentSyncing(boolean sync) {
+        if (parentSyncing != sync) {
+            parentSyncing = sync;
+            checkSyncing();
+        }
+    }
+
     private void checkSyncing() {
         boolean toSync = nodeSyncing || (listenerCount > 0);
         if (toSync != syncing) {
@@ -275,6 +355,22 @@ public class PXRComponentProxy implements ComponentProxy {
                 LOG.log(Level.FINE, "Setting properties syncing {0} on {1}", new Object[]{toSync, getAddress()});
             }
             setPropertiesSyncing(toSync);
+        }
+        if (dynamic) {
+            if (dynInfoAdaptor == null) {
+                initDynamic();
+            }
+            if (syncing || parentSyncing) {
+                dynInfoAdaptor.setSyncRate(ControlBinding.SyncRate.Low);
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.log(Level.FINE, "Setting info syncing {0} on {1}", new Object[]{true, getAddress()});
+                }
+            } else {
+                dynInfoAdaptor.setSyncRate(ControlBinding.SyncRate.None);
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.log(Level.FINE, "Setting info syncing {0} on {1}", new Object[]{false, getAddress()});
+                }
+            }
         }
     }
 
@@ -297,6 +393,17 @@ public class PXRComponentProxy implements ComponentProxy {
         }
     }
 
+    private class DynPropListener implements PropertyChangeListener {
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            // info changed
+            LOG.finest("Info changed event");
+
+
+        }
+    }
+
     private class TriggerAction extends AbstractAction {
 
         private String control;
@@ -310,7 +417,6 @@ public class PXRComponentProxy implements ComponentProxy {
         public void actionPerformed(ActionEvent ae) {
             try {
                 call(control, CallArguments.EMPTY, new Callback() {
-
                     @Override
                     public void onReturn(CallArguments args) {
                         // do nothing
@@ -326,9 +432,9 @@ public class PXRComponentProxy implements ComponentProxy {
             }
         }
     }
-    
+
     private class EditorAction extends AbstractAction {
-        
+
         private PXRComponentEditor editor;
 
         EditorAction() {
@@ -356,8 +462,8 @@ public class PXRComponentProxy implements ComponentProxy {
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
             try {
-            assert EventQueue.isDispatchThread();
-            
+                assert EventQueue.isDispatchThread();
+
                 if (TopComponent.Registry.PROP_ACTIVATED_NODES.equals(evt.getPropertyName())) {
                     ArrayList<PXRComponentProxy> tmp = new ArrayList<PXRComponentProxy>();
                     Node[] nodes = TopComponent.getRegistry().getActivatedNodes();

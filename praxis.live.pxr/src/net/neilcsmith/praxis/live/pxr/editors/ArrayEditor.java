@@ -68,7 +68,7 @@ public class ArrayEditor extends PraxisPropertyEditorSupport
         if (text != null) {
             return text;
         } else {
-            return buildValueText();
+            return buildValueText(false);
         }
     }
 
@@ -110,7 +110,8 @@ public class ArrayEditor extends PraxisPropertyEditorSupport
 
     @Override
     public String getPraxisInitializationString() {
-        return super.getPraxisInitializationString();
+//        return super.getPraxisInitializationString();
+        return buildValueText(true);
     }
 
 
@@ -135,6 +136,7 @@ public class ArrayEditor extends PraxisPropertyEditorSupport
                     args.add(PString.valueOf(tk.getText()));
                     break;
                 case SUBCOMMAND:
+                    // @TODO allow [array subcommands
                     throw new IllegalArgumentException("SubCommand token not allowed in array");
                 case EOL:
                     EOLreached = true;
@@ -172,10 +174,13 @@ public class ArrayEditor extends PraxisPropertyEditorSupport
         }
     }
 
-    private String buildValueText() {
+    private String buildValueText(boolean asCommand) {
         try {
             PArray array = PArray.coerce((Argument) getValue());
             StringBuilder sb = new StringBuilder();
+            if (asCommand) {
+                sb.append("[array ");
+            }
             Argument arg;
             for (int i = 0, total = array.getSize(); i < total; i++) {
                 arg = array.get(i);
@@ -183,6 +188,9 @@ public class ArrayEditor extends PraxisPropertyEditorSupport
                     sb.append(' ');
                 }
                 sb.append(SyntaxUtils.escape(arg.toString()));
+            }
+            if (asCommand) {
+                sb.append("]");
             }
             return sb.toString();
         } catch (ArgumentFormatException ex) {

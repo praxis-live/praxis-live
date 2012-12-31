@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Neil C Smith.
+ * Copyright 2012 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -22,7 +22,6 @@
 
 package net.neilcsmith.praxis.live.pxr.editors;
 
-import net.neilcsmith.praxis.live.pxr.SyntaxUtils;
 import java.beans.PropertyEditorSupport;
 import java.util.ArrayList;
 import java.util.List;
@@ -31,6 +30,7 @@ import net.neilcsmith.praxis.core.ArgumentFormatException;
 import net.neilcsmith.praxis.core.info.ArgumentInfo;
 import net.neilcsmith.praxis.core.types.PArray;
 import net.neilcsmith.praxis.core.types.PString;
+import net.neilcsmith.praxis.live.pxr.SyntaxUtils;
 import net.neilcsmith.praxis.live.pxr.api.PraxisProperty;
 import net.neilcsmith.praxis.live.pxr.api.PraxisPropertyEditor;
 

@@ -10,16 +10,13 @@ import java.awt.Image;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.logging.Logger;
 import javax.swing.Action;
-import net.neilcsmith.praxis.core.ComponentAddress;
 import net.neilcsmith.praxis.live.components.api.Components;
 import net.neilcsmith.praxis.live.pxr.api.ComponentProxy;
 import net.neilcsmith.praxis.live.pxr.api.ContainerProxy;
 import net.neilcsmith.praxis.live.pxr.api.ProxyException;
-import net.neilcsmith.praxis.live.pxr.api.RootProxy;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -39,19 +36,25 @@ class PXRProxyNode extends AbstractNode {
 
     private PXRComponentProxy component;
     private Image icon;
+    
+    boolean ignore;
 
     PXRProxyNode(PXRComponentProxy component, PXRDataObject dob) {
         super(component instanceof PXRContainerProxy ?
             new ContainerChildren((PXRContainerProxy) component) : Children.LEAF,
                 new ProxyLookup(Lookups.singleton(component), dob.getLookup()));
         this.component = component;
+        setName(component.getAddress().getID());
         component.addPropertyChangeListener(new ComponentPropListener());
+        refreshProperties();
+    }
+    
+    final void refreshProperties() {
+        setSheet(createSheetOnEQ());
     }
 
     @Override
     public String getDisplayName() {
-//        ComponentAddress address = component.getAddress();
-//        return address.getComponentID(address.getDepth() - 1) + " " + component.getType();
         return component.getAddress().getID();
     }
 
@@ -135,37 +138,44 @@ class PXRProxyNode extends AbstractNode {
         }
         return icon;
     }
-    
-    @Override
-    protected Sheet createSheet() {
-        // this gets called outside of EQ by propertysheet!
-        if (EventQueue.isDispatchThread()) {
-            return createSheetOnEQ();
-        } else {
-//            final Sheet[] holder = new Sheet[1];
-//            try {
-//                EventQueue.invokeAndWait(new Runnable() {
-//
-//                    @Override
-//                    public void run() {
-//                        holder[0] = createSheetOnEQ();
-//                    }
-//                });
-//            } catch (Exception ex) {
-//                Exceptions.printStackTrace(ex);
-//                return super.createSheet();
-//            }
-//            return holder[0];
-            EventQueue.invokeLater(new Runnable() {
 
-                @Override
-                public void run() {
-                    setSheet(createSheetOnEQ());
-                }
-            });
-            return super.createSheet();
-        }
+    @Override
+    public Image getOpenedIcon(int type) {
+        return getIcon(type);
     }
+    
+    
+    
+//    @Override
+//    protected Sheet createSheet() {
+//        // this gets called outside of EQ by propertysheet!
+//        if (EventQueue.isDispatchThread()) {
+//            return createSheetOnEQ();
+//        } else {
+////            final Sheet[] holder = new Sheet[1];
+////            try {
+////                EventQueue.invokeAndWait(new Runnable() {
+////
+////                    @Override
+////                    public void run() {
+////                        holder[0] = createSheetOnEQ();
+////                    }
+////                });
+////            } catch (Exception ex) {
+////                Exceptions.printStackTrace(ex);
+////                return super.createSheet();
+////            }
+////            return holder[0];
+//            EventQueue.invokeLater(new Runnable() {
+//
+//                @Override
+//                public void run() {
+//                    setSheet(createSheetOnEQ());
+//                }
+//            });
+//            return super.createSheet();
+//        }
+//    }
 
     private Sheet createSheetOnEQ() {
         Sheet sheet = Sheet.createDefault();
@@ -224,6 +234,9 @@ class PXRProxyNode extends AbstractNode {
 
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
+            if (container.ignore) {
+                return;
+            }
             if (ContainerProxy.PROP_CHILDREN.equals(evt.getPropertyName())) {
                 setKeys(container.getChildIDs());
             }

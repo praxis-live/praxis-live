@@ -72,9 +72,9 @@ class PXRComponentEditor {
             dialog.toFront();
             return;
         }
-        if (editor == null) {
+//        if (editor == null) {
             initEditor();
-        }
+//        }
         if (listener == null) {
             listener = new Listener();
         }
@@ -102,7 +102,8 @@ class PXRComponentEditor {
         PropertySheet propertyPanel = new PropertySheet();
         propertyPanel.setNodes(new Node[]{component.getNodeDelegate()});
         propertyPanel.setDescriptionAreaVisible(false);
-        propertyPanel.setPreferredSize(new Dimension(250,(component.getPropertyIDs().length * 20) + 20));
+        // SheetTable row height is 16, but 16 isn't enough on Windows.
+        propertyPanel.setPreferredSize(new Dimension(250,(component.getPropertyIDs().length * 17) + 20));
         
         // triggers
         List<Action> triggers = component.getTriggerActions();

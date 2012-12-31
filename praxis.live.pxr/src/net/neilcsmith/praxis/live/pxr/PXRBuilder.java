@@ -36,6 +36,7 @@ import net.neilcsmith.praxis.core.info.ComponentInfo;
 import net.neilcsmith.praxis.live.project.api.PraxisProject;
 import static net.neilcsmith.praxis.live.pxr.PXRParser.*;
 import net.neilcsmith.praxis.live.pxr.api.Connection;
+import net.neilcsmith.praxis.live.pxr.api.ProxyException;
 import net.neilcsmith.praxis.live.pxr.api.RootRegistry;
 import org.netbeans.api.project.Project;
 import org.openide.util.Exceptions;
@@ -118,7 +119,7 @@ class PXRBuilder {
 
     private boolean processProperty(final PropertyElement prop) {
         LOG.fine("Processing Property Element : " + prop.property);
-        PXRComponentProxy cmp = findComponent(prop.component.address);
+        final PXRComponentProxy cmp = findComponent(prop.component.address);
         if (cmp == null) {
             propertyError(prop, CallArguments.EMPTY);            
             return true;
@@ -130,6 +131,26 @@ class PXRBuilder {
 
                     @Override
                     public void onReturn(CallArguments args) {
+                        if (cmp.isDynamic()) {
+                            try {
+                                cmp.call("info", CallArguments.EMPTY, new Callback() {
+
+                                    @Override
+                                    public void onReturn(CallArguments args) {
+                                        cmp.refreshInfo((ComponentInfo) args.get(0));
+                                        process();
+                                    }
+
+                                    @Override
+                                    public void onError(CallArguments args) {
+                                        process();
+                                    }
+                                });
+                                return;
+                            } catch (ProxyException ex) {
+                                Exceptions.printStackTrace(ex);
+                            }
+                        }
                         process();
                     }
 
