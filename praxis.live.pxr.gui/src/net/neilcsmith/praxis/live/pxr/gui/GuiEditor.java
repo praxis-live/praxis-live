@@ -42,6 +42,7 @@ import net.neilcsmith.praxis.live.components.api.Components;
 import net.neilcsmith.praxis.live.pxr.api.ContainerProxy;
 import net.neilcsmith.praxis.live.pxr.api.RootEditor;
 import net.neilcsmith.praxis.live.pxr.api.RootProxy;
+import static net.neilcsmith.praxis.live.pxr.gui.LayoutAction.Type.*;
 import org.openide.actions.DeleteAction;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerUtils;
@@ -53,7 +54,6 @@ import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
-import static net.neilcsmith.praxis.live.pxr.gui.LayoutAction.Type.*;
 
 /**
  *

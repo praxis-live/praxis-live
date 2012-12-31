@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 2011 Neil C Smith.
+ * Copyright 2012 Neil C Smith.
  * 
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -22,7 +22,6 @@
 package net.neilcsmith.praxis.live.pxr.gui;
 
 import java.awt.Dimension;
-import net.neilcsmith.praxis.core.Lookup;
 import java.awt.LayoutManager;
 import java.awt.event.ContainerEvent;
 import java.awt.event.ContainerListener;
@@ -41,10 +40,11 @@ import javax.swing.JScrollPane;
 import net.miginfocom.swing.MigLayout;
 import net.neilcsmith.praxis.core.ControlAddress;
 import net.neilcsmith.praxis.core.IllegalRootStateException;
-import net.neilcsmith.praxis.gui.Keys;
-import net.neilcsmith.praxis.gui.ControlBinding.Adaptor;
+import net.neilcsmith.praxis.core.Lookup;
 import net.neilcsmith.praxis.gui.BindingContext;
+import net.neilcsmith.praxis.gui.ControlBinding.Adaptor;
 import net.neilcsmith.praxis.gui.GuiContext;
+import net.neilcsmith.praxis.gui.Keys;
 import net.neilcsmith.praxis.impl.AbstractSwingRoot;
 import net.neilcsmith.praxis.impl.InstanceLookup;
 import net.neilcsmith.praxis.impl.RootState;
@@ -160,6 +160,9 @@ public class DockableGuiRoot extends AbstractSwingRoot {
         }
         activeEditor = editor;
         editor.addRootPanel(container);
+        if (getState() != RootState.ACTIVE_RUNNING) {
+            Utils.disableAll(container);
+        }
     }
 
     void requestDisconnect(GuiEditor editor) {
@@ -211,6 +214,7 @@ public class DockableGuiRoot extends AbstractSwingRoot {
 
     private class ChildrenListener implements ContainerListener {
 
+        @Override
         public void componentAdded(ContainerEvent e) {
             if (e.getChild() instanceof JComponent) {
                 JComponent child = (JComponent) e.getChild();
@@ -220,6 +224,7 @@ public class DockableGuiRoot extends AbstractSwingRoot {
             }
         }
 
+        @Override
         public void componentRemoved(ContainerEvent e) {
             if (e.getChild() instanceof JComponent) {
                 ((JComponent) e.getChild()).removePropertyChangeListener(
