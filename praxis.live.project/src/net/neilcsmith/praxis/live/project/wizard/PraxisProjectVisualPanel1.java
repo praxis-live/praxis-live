@@ -133,6 +133,7 @@ final class PraxisProjectVisualPanel1 extends JPanel implements DocumentListener
         if (loc != null) {
             location = loc;
             locationField.setText(location.toString()) ;
+            update();
         }
     }//GEN-LAST:event_browseButtonActionPerformed
 
