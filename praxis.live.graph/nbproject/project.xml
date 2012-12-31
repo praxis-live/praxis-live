@@ -24,6 +24,7 @@
                 </dependency>
             </module-dependencies>
             <friend-packages>
+                <friend>net.neilcsmith.praxis.live.pxr</friend>
                 <friend>net.neilcsmith.praxis.live.pxr.graph</friend>
                 <package>net.neilcsmith.praxis.live.graph</package>
             </friend-packages>

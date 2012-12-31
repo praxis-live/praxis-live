@@ -198,6 +198,8 @@ public class DefaultLAFScheme extends LAFScheme {
             widget.setStroke(new BasicStroke());
         }
 
+        widget.setControlPointCutDistance(5);
+        
     }
 
     @Override

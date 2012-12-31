@@ -416,7 +416,7 @@ public class NodeWidget extends Widget implements StateModel.Listener, MinimizeA
         public State mousePressed (Widget widget, WidgetMouseEvent event) {
             if (event.getButton () == MouseEvent.BUTTON1 || event.getButton () == MouseEvent.BUTTON2) {
                 stateModel.toggleBooleanState ();
-                return State.CONSUMED;
+//                return State.CONSUMED; // temporary fix - minimized state saved on de-selection
             }
             return State.REJECTED;
         }
