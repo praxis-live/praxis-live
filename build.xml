@@ -12,6 +12,7 @@
         <copy file="${build.launcher.dir}/bin/${app.name}" tofile="${build.launcher.dir}/bin/praxis"/>
         <copy file="praxis.conf" todir="${build.launcher.dir}/etc/"/>
         <copy file="praxis.clusters" todir="${build.launcher.dir}/etc/"/>
+        <copy file="uninstaller.conf" todir="${build.launcher.dir}/etc/"/>
     </target>
     
     <target name="build-zip" depends="build,build-launchers" description="Builds a ZIP distribution of the suite, launchers, and selected modules from the platform.">
@@ -33,6 +34,7 @@
             <zipfileset dir="${temp.dir.rest}" prefix="${app.name}">
                 <exclude name="platform/**/org-netbeans-libs-jna*"/>
                 <exclude name="platform/**/jna-3.2.7.jar"/>
+                <exclude name="platform/**/jna-3.4.0.jar"/>
                 <exclude name="platform/**/*jnidispatch*"/>
             </zipfileset>
 
