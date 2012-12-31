@@ -2,7 +2,7 @@
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
 <filesystem>
 
-<folder name="Editors">
+<!--<folder name="Editors">
     <folder name="text">
         <folder name="plain">                    
             <file name="EditorKit.instance">
@@ -11,7 +11,7 @@
             </file>
         </folder>
     </folder>
-</folder>
+</folder>-->
 
 
 
