@@ -31,6 +31,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import net.neilcsmith.praxis.core.Component;
+import net.neilcsmith.praxis.core.ComponentFactory;
 import net.neilcsmith.praxis.core.IllegalRootStateException;
 import net.neilcsmith.praxis.hub.DefaultHub;
 import net.neilcsmith.praxis.hub.TaskServiceImpl;
@@ -194,9 +195,9 @@ public class DefaultHubManager {
         Component[] extensions = Utils.findExtensions();
         container = new ExtensionContainer(extensions);
         rootManager = new RootManagerOverride();
+        ComponentFactory factory = Utils.findCoreFactory();
         hub = new DefaultHub(
-                LookupBridge.getInstance(),
-                NbLookupComponentFactory.getInstance(),
+                factory,
                 rootManager,
                 new ScriptServiceImpl(),
                 new TaskServiceImpl(),

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Neil C Smith.
+ * Copyright 2013 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -22,17 +22,25 @@
 
 package net.neilcsmith.praxis.live.components.api;
 
-import java.awt.Image;
+import net.neilcsmith.praxis.core.ComponentFactory;
 import net.neilcsmith.praxis.core.ComponentType;
 
 /**
- *
- * @author Neil C Smith (http://neilcsmith.net)
+ * Service interface that allows the extension of ComponentFactory.MetaData attached
+ * to a component type. Implementation should be registered as service providers.
+ * @author Neil C Smith
  */
-
-@Deprecated
-public interface ComponentIconProvider {
-
-    public Image getIcon(ComponentType type);
-
+public interface MetaDataRewriter {
+    
+    /**
+     * Creates a ComponentFactory.MetaData instance that extends the passed in 
+     * data. The implementation should return the passed in data unchanged if it
+     * does not want to extend the data for the passed in type.
+     * 
+     * @param type ComponentType the MetaData is for
+     * @param data Existing MetaData
+     * @return Extended MetaData or the passed in data
+     */
+    public <T> ComponentFactory.MetaData<T> rewrite(ComponentType type, ComponentFactory.MetaData<T> data);
+    
 }

@@ -19,10 +19,11 @@
  * Please visit http://neilcsmith.net if you need additional information or
  * have any questions.
  */
-
 package net.neilcsmith.praxis.live.components;
 
 import java.awt.Image;
+import net.neilcsmith.praxis.core.Component;
+import net.neilcsmith.praxis.core.ComponentFactory.MetaData;
 import net.neilcsmith.praxis.core.ComponentType;
 import net.neilcsmith.praxis.live.components.api.Components;
 import org.openide.nodes.AbstractNode;
@@ -36,29 +37,39 @@ import org.openide.util.lookup.Lookups;
  */
 public class TypeNode extends AbstractNode {
 
-    private ComponentType componentType;
+    private ComponentType type;
     private Image icon;
+    private MetaData<? extends Component> data;
 
-    public TypeNode(ComponentType type) {
+    TypeNode(ComponentType type, MetaData<? extends Component> data) {
         super(Children.LEAF, Lookups.singleton(type));
         setName(type.toString());
-        componentType = type;
+        this.type = type;
+        this.data = data;
     }
 
     @Override
     public Image getIcon(int type) {
         if (icon == null) {
-            icon = Components.getIcon(componentType);
+            icon = Components.getIcon(this.type);
         }
         return icon;
     }
 
     @Override
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(componentType.toString());
+        return new HelpCtx(type.toString());
     }
 
-
-
-
+    @Override
+    public String getHtmlDisplayName() {
+        if (data != null) {
+            if (data.isDeprecated()) {
+                return "<s>" + type.toString() + "</s>";
+            } else if (data.isTest()) {
+                return "<i>" + type.toString() + "</i>";
+            }
+        }
+        return super.getHtmlDisplayName();
+    }
 }

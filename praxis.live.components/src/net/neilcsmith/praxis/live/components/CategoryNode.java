@@ -23,6 +23,9 @@
 package net.neilcsmith.praxis.live.components;
 
 import java.util.Set;
+import java.util.TreeMap;
+import net.neilcsmith.praxis.core.Component;
+import net.neilcsmith.praxis.core.ComponentFactory.MetaData;
 import net.neilcsmith.praxis.core.ComponentType;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -34,21 +37,24 @@ import org.openide.nodes.Node;
  */
 public class CategoryNode extends AbstractNode {
 
-    CategoryNode(String category, Set<ComponentType> types) {
+    CategoryNode(String category, TreeMap<ComponentType, MetaData<? extends Component>> types) {
         super(new TypeChildren(types));
         setName(category);
     }
 
 
     private static class TypeChildren extends Children.Keys<ComponentType> {
+        
+        private TreeMap<ComponentType, MetaData<? extends Component>> types;
 
-        private TypeChildren(Set<ComponentType> types) {
-            setKeys(types);
+        private TypeChildren(TreeMap<ComponentType, MetaData<? extends Component>> components) {
+            setKeys(components.keySet());
+            this.types = components;
         }
 
         @Override
         protected Node[] createNodes(ComponentType type) {
-            return new Node[]{new TypeNode(type)};
+            return new Node[]{new TypeNode(type, types.get(type))};
         }
 
     }

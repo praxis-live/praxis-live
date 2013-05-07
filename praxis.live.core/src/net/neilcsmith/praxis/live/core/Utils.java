@@ -26,6 +26,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import net.neilcsmith.praxis.core.Component;
+import net.neilcsmith.praxis.core.ComponentFactory;
 import net.neilcsmith.praxis.live.core.api.ExtensionProvider;
 import net.neilcsmith.praxis.live.core.api.RootLifecycleHandler;
 import net.neilcsmith.praxis.live.core.api.Task;
@@ -62,4 +63,8 @@ class Utils {
         return list.toArray(new Component[list.size()]);
     }
     
+    static ComponentFactory findCoreFactory() {
+        CoreFactoryProvider provider = Lookup.getDefault().lookup(CoreFactoryProvider.class);
+        return provider == null ? null : provider.getFactory();
+    }
 }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Neil C Smith.
+ * Copyright 2013 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -19,20 +19,16 @@
  * Please visit http://neilcsmith.net if you need additional information or
  * have any questions.
  */
+package net.neilcsmith.praxis.live.core;
 
-package net.neilcsmith.praxis.live.components.api;
-
-import java.awt.Image;
-import net.neilcsmith.praxis.core.ComponentType;
+import net.neilcsmith.praxis.core.ComponentFactory;
 
 /**
  *
- * @author Neil C Smith (http://neilcsmith.net)
+ * @author Neil C Smith
  */
-
-@Deprecated
-public interface ComponentIconProvider {
-
-    public Image getIcon(ComponentType type);
-
+public interface CoreFactoryProvider {
+    
+    public ComponentFactory getFactory();
+    
 }
