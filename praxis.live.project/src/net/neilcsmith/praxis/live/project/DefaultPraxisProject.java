@@ -186,7 +186,8 @@ public class DefaultPraxisProject extends PraxisProject {
         @Override
         public String[] getPrivilegedTemplates() {
             return new String[]{
-                        "Templates/Other/Folder"
+                        "Templates/Other/Folder",
+                        "Templates/Other/org-netbeans-modules-project-ui-NewFileIterator-folderIterator"
                     };
         }
     }
