@@ -81,4 +81,11 @@ public final class Connection {
         return port2;
     }
 
+    @Override
+    public String toString() {
+        return "~ " + child1 + "!" + port1 + " " + child2 + "!" + port2;
+    }
+    
+    
+
 }

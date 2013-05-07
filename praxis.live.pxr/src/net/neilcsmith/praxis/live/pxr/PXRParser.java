@@ -21,24 +21,23 @@
  */
 package net.neilcsmith.praxis.live.pxr;
 
-import net.neilcsmith.praxis.core.types.PString;
 import java.util.ArrayList;
-import net.neilcsmith.praxis.core.Argument;
 import java.util.Iterator;
 import java.util.List;
+import net.neilcsmith.praxis.core.Argument;
 import net.neilcsmith.praxis.core.ComponentAddress;
 import net.neilcsmith.praxis.core.ComponentType;
 import net.neilcsmith.praxis.core.PortAddress;
 import net.neilcsmith.praxis.core.syntax.Token;
-import net.neilcsmith.praxis.core.syntax.Tokenizer;
-
 import static net.neilcsmith.praxis.core.syntax.Token.Type.*;
+import net.neilcsmith.praxis.core.syntax.Tokenizer;
+import net.neilcsmith.praxis.core.types.PString;
 
 /**
  *
  * @author Neil C Smith (http://neilcsmith.net)
  */
-public class PXRParser {
+class PXRParser {
 
     private final static String AT = "@";
     private final static String CONNECT = "~";
@@ -50,13 +49,27 @@ public class PXRParser {
     private final static ComponentElement[] EMPTY_COMPS = new ComponentElement[0];
     private final static ConnectionElement[] EMPTY_CONS = new ConnectionElement[0];
 //    private final static Argument[] EMPTY_ARGS = new Argument[0];
-    private String script;
+    private final String script;
+    private final ComponentAddress context;
 
     private PXRParser(String script) {
+        this(null, script);
+    }
+    
+    private PXRParser(ComponentAddress context, String script) {
         this.script = script;
+        this.context = context;
+    }
+    
+    private RootElement doParse() throws ParseException {
+        if (context == null) {
+            return parseFullGraph();
+        } else {
+            return parseSubGraph();
+        }
     }
 
-    private RootElement doParse() throws ParseException {
+    private RootElement parseFullGraph() throws ParseException {
         try {
             Iterator<Token> tokens = new Tokenizer(script).iterator();
             RootElement root = null;
@@ -83,14 +96,25 @@ public class PXRParser {
 
             return root;
 
-
-
         } catch (Exception ex) {
             throw new ParseException(ex);
         }
-
-
     }
+    
+    private RootElement parseSubGraph() throws ParseException {
+        
+        try {
+            RootElement root = new RootElement();
+            root.address = context;
+            parseComponentBody(root, script);
+            return root;
+            
+        } catch (Exception ex) {
+            throw new ParseException(ex);
+        }
+        
+    }
+    
 
     private static Token nextNonCommentOrWhiteSpace(Iterator<Token> tokens) {
         while (tokens.hasNext()) {
@@ -228,37 +252,6 @@ public class PXRParser {
         }
     }
 
-//    private void parseProperty(List<PropertyElement> props, ComponentAddress component,
-//            String property, Iterator<Token> tokens) throws Exception {
-//        PropertyElement p = new PropertyElement();
-//        p.address = ControlAddress.create(component, property);
-//        List<Argument> args = new ArrayList<Argument>(1);
-//        LOOP:
-//        while (tokens.hasNext()) {
-//            Token t = tokens.next();
-//            String txt = t.getText();
-//            switch (t.getType()) {
-//                case EOL:
-//                    break LOOP;
-//                case PLAIN:
-//                case QUOTED:
-//                case BRACED:
-//                    // do proper evaluation of plain tokens for numbers, etc.
-//                    args.add(PString.valueOf(txt));
-//                    break;
-//                case SUBCOMMAND:
-//                    args.add(new SubCommandArgument(txt));
-//                    break;
-//            }
-//        }
-//        if (args.isEmpty()) {
-//            throw new IllegalArgumentException("Empty property line at : " + p.address);
-//        }
-//        p.args = args.toArray(EMPTY_ARGS);
-//        props.add(p);
-//    }
-//    private void parseProperty(List<PropertyElement> props, ComponentAddress component,
-//            String property, Token[] tokens) throws Exception {
     private void parseProperty(List<PropertyElement> props, ComponentElement component,
             String property, Token[] tokens) throws Exception {
         if (tokens.length == 0) {
@@ -293,40 +286,6 @@ public class PXRParser {
         props.add(p);
     }
 
-//    private void parseComponent(ComponentElement parent, List<ComponentElement> comps, Iterator<Token> tokens) throws Exception {
-//        // next token should be relative component address
-//        ComponentAddress address = null;
-//        ComponentType type = null;
-//        Token t;
-//        if (tokens.hasNext()) {
-//            t = tokens.next();
-//            if (t.getType() == PLAIN && t.getText().startsWith(RELATIVE_ADDRESS_PREFIX)) {
-//                address = ComponentAddress.create(parent.address,
-//                        t.getText().substring(RELATIVE_ADDRESS_PREFIX.length()));
-//            }
-//        }
-//        if (tokens.hasNext()) {
-//            t = tokens.next();
-//            if (t.getType() == PLAIN) {
-//                type = ComponentType.create(t.getText());
-//            }
-//        }
-//        if (address == null || type == null) {
-//            throw new IllegalArgumentException("Invalid component creation line : " + address);
-//        }
-//        ComponentElement comp = new ComponentElement();
-//        if (tokens.hasNext()) {
-//            t = tokens.next();
-//            if (t.getType() == BRACED) {
-//                parseComponentBody(parent, t.getText());
-//            } else if (t.getType() == EOL) {
-//                parseComponentBody(parent, null);
-//            } else {
-//                throw new IllegalArgumentException("Invalid token at end of component line : " + address);
-//            }
-//        }
-//        comps.add(comp);
-//    }
     private void parseComponent(ComponentElement parent, List<ComponentElement> comps, Token[] tokens) throws Exception {
         if (tokens.length < 2 || tokens.length > 3) {
             throw new IllegalArgumentException("Unexpected number of tokens in parseComponent child of " + parent.address);
@@ -363,10 +322,6 @@ public class PXRParser {
         if (tokens.length != 2) {
             throw new IllegalArgumentException("Unexpected number of tokens in parseConnection of " + parent.address);
         }
-//        ConnectionElement con = new ConnectionElement();
-//        con.port1 = parsePortAddress(parent.address, tokens[0]);
-//        con.port2 = parsePortAddress(parent.address, tokens[1]);
-//        cons.add(con);
         PortAddress p1 = parsePortAddress(parent.address, tokens[0]);
         PortAddress p2 = parsePortAddress(parent.address, tokens[1]);
         ConnectionElement con = new ConnectionElement();
@@ -395,6 +350,14 @@ public class PXRParser {
         return new PXRParser(script).doParse();
 
     }
+    
+    public static RootElement parseInContext(ComponentAddress context, String script) throws ParseException {
+        if (context == null || script == null) {
+            throw new NullPointerException();
+        }
+        return new PXRParser(context, script).doParse();
+        
+    }
 
     public static class ParseException extends Exception {
 
@@ -416,18 +379,12 @@ public class PXRParser {
         public ConnectionElement[] connections;
     }
 
-//    public static class ContainerElement extends ComponentElement {
-//
-//        public ComponentElement[] children;
-//        public ConnectionElement[] connections;
-//    }
     public static class RootElement extends ComponentElement {
     }
 
     public static class AttributeElement extends Element {
 
         public ComponentElement component;
-//        public ComponentAddress component;
         public String key;
         public String value;
     }
@@ -436,14 +393,11 @@ public class PXRParser {
 
         public ComponentElement component;
         public String property;
-//        public ControlAddress address;
         public Argument[] args;
     }
 
     public static class ConnectionElement extends Element {
 
-//        public PortAddress port1;
-//        public PortAddress port2;
         public ComponentElement container;
         public String component1;
         public String port1;

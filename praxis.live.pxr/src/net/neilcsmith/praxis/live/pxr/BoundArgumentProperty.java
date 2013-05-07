@@ -164,6 +164,9 @@ public final class BoundArgumentProperty extends ArgumentProperty
         PXRHelper.getDefault().unbind(adaptor);
     }
     
+    Class<? extends Argument> getArgumentType() {
+        return info.getOutputsInfo()[0].getType();
+    }
 
     private void setValueImpl(Argument value, boolean send, Callback callback) {
         if (value == null) {

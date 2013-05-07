@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Neil C Smith.
+ * Copyright 2013 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -23,6 +23,9 @@ package net.neilcsmith.praxis.live.pxr.graph;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
+import java.awt.EventQueue;
+import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -30,20 +33,22 @@ import java.awt.Insets;
 import java.awt.Point;
 import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.*;
 import javax.swing.border.LineBorder;
+import javax.swing.text.DefaultEditorKit;
 import net.neilcsmith.praxis.core.CallArguments;
 import net.neilcsmith.praxis.core.ComponentType;
 import net.neilcsmith.praxis.core.info.ComponentInfo;
@@ -58,9 +63,11 @@ import net.neilcsmith.praxis.live.graph.ObjectSceneAdaptor;
 import net.neilcsmith.praxis.live.graph.PinID;
 import net.neilcsmith.praxis.live.graph.PinWidget;
 import net.neilcsmith.praxis.live.graph.PraxisGraphScene;
+import net.neilcsmith.praxis.live.pxr.api.ActionSupport;
 import net.neilcsmith.praxis.live.pxr.api.ComponentProxy;
 import net.neilcsmith.praxis.live.pxr.api.Connection;
 import net.neilcsmith.praxis.live.pxr.api.ContainerProxy;
+import net.neilcsmith.praxis.live.pxr.api.EditorUtils;
 import net.neilcsmith.praxis.live.pxr.api.ProxyException;
 import net.neilcsmith.praxis.live.pxr.api.RootEditor;
 import net.neilcsmith.praxis.live.pxr.api.RootProxy;
@@ -76,12 +83,16 @@ import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.awt.StatusDisplayer;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerUtils;
+import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeTransfer;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
+import org.openide.util.actions.Presenter;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 
@@ -98,8 +109,6 @@ public class GraphEditor extends RootEditor {
     private final RootProxy root;
     private final Set<String> knownChildren;
     private final Set<Connection> knownConnections;
-    private final Map<String, Point> pointMap;
-//    private final Map<EdgeID<String>, Connection> edgeToConnection;
     private Action deleteAction;
     private JComponent panel;
     private PraxisGraphScene<String> scene;
@@ -108,13 +117,16 @@ public class GraphEditor extends RootEditor {
     private Lookup lookup;
     private int lastX;
     private ContainerListener containerListener;
+    private ActionSupport actionSupport;
+    private Point activePoint = new Point();
+    private boolean sync;
+    private LocationAction location;
+    private Action goUpAction;
 
     public GraphEditor(RootProxy root, String category) {
         this.root = root;
         knownChildren = new LinkedHashSet<String>();
         knownConnections = new LinkedHashSet<Connection>();
-        pointMap = new HashMap<String, Point>(1);
-//        edgeToConnection = new HashMap<EdgeID<String>, Connection>();
 
         scene = new PraxisGraphScene<String>(new ConnectProviderImpl(), new MenuProviderImpl());
         manager = new ExplorerManager();
@@ -122,30 +134,36 @@ public class GraphEditor extends RootEditor {
         if (root instanceof ContainerProxy) {
             container = (ContainerProxy) root;
         }
-        if (container != null) {
-            buildScene();
-        }
+//        if (container != null) {
+//            buildScene();
+//        }
 
-
-        lookup = new ProxyLookup(ExplorerUtils.createLookup(manager, new ActionMap()),
+        lookup = new ProxyLookup(ExplorerUtils.createLookup(manager, buildActionMap(manager)),
                 Lookups.fixed(
-                /*GraphNavigator.HINT,
-                 new NavigatorBridge(),*/
                 Components.getPalette("core", category)));
         scene.addObjectSceneListener(new SelectionListener(),
                 ObjectSceneEventType.OBJECT_SELECTION_CHANGED);
+        goUpAction = new GoUpAction();
+        location = new LocationAction();
         setupSceneActions();
     }
 
-    private void setupSceneActions() {
+    private ActionMap buildActionMap(ExplorerManager em) {
+        ActionMap am = new ActionMap();
         deleteAction = new DeleteAction();
         deleteAction.setEnabled(false);
-        InputMap im = new InputMap();
-        im.put(KeyStroke.getKeyStroke("DELETE"), "DELETE");
-        ActionMap am = new ActionMap();
-        am.put("DELETE", deleteAction);
-        scene.getActions().addAction(ActionFactory.createActionMapAction(im, am));
-        scene.getActions().addAction(ActionFactory.createAcceptAction(new TypeAcceptProvider()));
+        am.put("delete", deleteAction);
+
+        CopyActionPerformer copyAction = new CopyActionPerformer(this, em);
+        am.put(DefaultEditorKit.copyAction, copyAction);
+        PasteActionPerformer pasteAction = new PasteActionPerformer(this, em);
+        am.put(DefaultEditorKit.pasteAction, pasteAction);
+
+        return am;
+    }
+
+    private void setupSceneActions() {
+        scene.getActions().addAction(ActionFactory.createAcceptAction(new AcceptProviderImpl()));
     }
 
     private JPopupMenu getComponentPopup(NodeWidget widget) {
@@ -153,6 +171,10 @@ public class GraphEditor extends RootEditor {
         Object obj = scene.findObject(widget);
         if (obj instanceof String) {
             ComponentProxy cmp = container.getChild(obj.toString());
+            if (cmp instanceof ContainerProxy) {
+                menu.add(new ContainerOpenAction((ContainerProxy) cmp));
+                menu.add(new JSeparator());
+            }
             if (cmp != null) {
                 boolean addSep = false;
                 for (Action a : cmp.getNodeDelegate().getActions(false)) {
@@ -183,6 +205,21 @@ public class GraphEditor extends RootEditor {
         return menu;
     }
 
+    ActionSupport getActionSupport() {
+        if (actionSupport == null) {
+            actionSupport = new ActionSupport(this);
+        }
+        return actionSupport;
+    }
+
+    ContainerProxy getContainer() {
+        return container;
+    }
+
+    Point getActivePoint() {
+        return new Point(activePoint);
+    }
+
     @Override
     public void componentActivated() {
         if (panel == null) {
@@ -195,8 +232,10 @@ public class GraphEditor extends RootEditor {
     public JComponent getEditorComponent() {
         if (panel == null) {
             JPanel viewPanel = new JPanel(new BorderLayout());
+            JComponent view = scene.createView();
+            view.addMouseListener(new ActivePointListener());
             JScrollPane scroll = new JScrollPane(
-                    scene.createView(),
+                    view,
                     JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
                     JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
             viewPanel.add(scroll, BorderLayout.CENTER);
@@ -208,18 +247,24 @@ public class GraphEditor extends RootEditor {
             gbc.weighty = 1;
             gbc.insets = new Insets(0, 0, 25, 25);
             gbc.anchor = GridBagConstraints.SOUTHEAST;
-            JComponent view = scene.createSatelliteView();
+            view = scene.createSatelliteView();
             JPanel holder = new JPanel(new BorderLayout());
             holder.setBorder(new LineBorder(Color.LIGHT_GRAY, 1));
             holder.add(view);
             satellitePanel.add(holder, gbc);
             satellitePanel.setOpaque(false);
 
-            panel = new JLayeredPane();
-            panel.setLayout(new OverlayLayout(panel));
-            panel.add(viewPanel, JLayeredPane.DEFAULT_LAYER);
-            panel.add(satellitePanel, JLayeredPane.PALETTE_LAYER);
+            JLayeredPane layered = new JLayeredPane();
+            layered.setLayout(new OverlayLayout(layered));
+            layered.add(viewPanel, JLayeredPane.DEFAULT_LAYER);
+            layered.add(satellitePanel, JLayeredPane.PALETTE_LAYER);
 
+            panel = new JPanel(new BorderLayout());
+            panel.add(layered, BorderLayout.CENTER);
+
+            if (container != null) {
+                buildScene();
+            }
         }
         return panel;
     }
@@ -229,15 +274,21 @@ public class GraphEditor extends RootEditor {
         return lookup;
     }
 
+    @Override
+    public Action[] getActions() {
+        return new Action[]{goUpAction, location};
+    }
+
     private void clearScene() {
         container.removePropertyChangeListener(containerListener);
         containerListener = null;
-        for (String id : scene.getNodes()) {
-            scene.removeNodeWithEdges(id);
+        for (String id : container.getChildIDs()) {
+            removeChild(id);
         }
-        lastX = 0;
+        activePoint.setLocation(0, 0);
         knownChildren.clear();
         knownConnections.clear();
+        location.address.setText("");
     }
 
     private void buildScene() {
@@ -247,9 +298,11 @@ public class GraphEditor extends RootEditor {
 
         container.getNodeDelegate().getChildren().getNodes();
 
-        syncChildren();
-        syncConnections();
+        sync(true);
 
+        goUpAction.setEnabled(container.getParent() != null);
+        location.address.setText(container.getAddress().toString());
+        
     }
 
     private void buildChild(String id, final ComponentProxy cmp) {
@@ -267,7 +320,7 @@ public class GraphEditor extends RootEditor {
         widget.getActions().addAction(ActionFactory.createEditAction(new EditProvider() {
             @Override
             public void edit(Widget widget) {
-                cmp.getNodeDelegate().getPreferredAction().actionPerformed(new ActionEvent(this, 0, ""));
+                cmp.getNodeDelegate().getPreferredAction().actionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, "edit"));
             }
         }));
         ComponentInfo info = cmp.getInfo();
@@ -285,27 +338,24 @@ public class GraphEditor extends RootEditor {
     }
 
     private Point resolveLocation(String id, ComponentProxy cmp) {
-        Point res = pointMap.remove(id);
-        if (res != null) {
-            cmp.setAttribute(ATTR_GRAPH_X, String.valueOf(res.x));
-            cmp.setAttribute(ATTR_GRAPH_Y, String.valueOf(res.y));
-            return res;
-        }
-        int x, y;
-        x = lastX == 0 ? 20 : lastX + 200;
-        y = 150;
+        int x = activePoint.x;
+        int y = activePoint.y;
         try {
             String xStr = cmp.getAttribute(ATTR_GRAPH_X);
             String yStr = cmp.getAttribute(ATTR_GRAPH_Y);
             if (xStr != null) {
-                x = Integer.parseInt(xStr);
+                x = Integer.parseInt(xStr) + x;
             }
             if (yStr != null) {
-                y = Integer.parseInt(yStr);
+                y = Integer.parseInt(yStr) + y;
             }
+            LOG.log(Level.FINEST, "Resolved location for {0} : {1} x {2}", new Object[]{id, x, y});
         } catch (Exception ex) {
+            LOG.log(Level.FINEST, "Cannot resolve location for " + id, ex);
+
         }
-        lastX = x;
+        // @TODO what to do about importing components without positions?
+        // if point not set, check for widget at point?
         return new Point(x, y);
     }
 
@@ -393,15 +443,28 @@ public class GraphEditor extends RootEditor {
         scene.validate();
     }
 
+    void sync(boolean sync) {
+        if (sync) {
+            this.sync = true;
+            syncChildren();
+            syncConnections();
+        } else {
+            this.sync = false;
+        }
+    }
+
     private class ContainerListener implements PropertyChangeListener {
 
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
-            if (ContainerProxy.PROP_CHILDREN.equals(evt.getPropertyName())) {
-                syncChildren();
-            } else if (ContainerProxy.PROP_CONNECTIONS.equals(evt.getPropertyName())) {
-                syncConnections();
+            if (sync) {
+                if (ContainerProxy.PROP_CHILDREN.equals(evt.getPropertyName())) {
+                    syncChildren();
+                } else if (ContainerProxy.PROP_CONNECTIONS.equals(evt.getPropertyName())) {
+                    syncConnections();
+                }
             }
+
         }
     }
 
@@ -468,6 +531,29 @@ public class GraphEditor extends RootEditor {
         }
     }
 
+    private class ActivePointListener extends MouseAdapter {
+
+        @Override
+        public void mouseClicked(MouseEvent e) {
+            updateActivePoint(e);
+        }
+
+        @Override
+        public void mousePressed(MouseEvent e) {
+            updateActivePoint(e);
+        }
+
+        @Override
+        public void mouseReleased(MouseEvent e) {
+            updateActivePoint(e);
+        }
+
+        private void updateActivePoint(MouseEvent e) {
+            activePoint.setLocation(scene.convertViewToScene(e.getPoint()));
+            LOG.log(Level.FINEST, "Updated active point : {0}", activePoint);
+        }
+    }
+
     private class SelectionListener extends ObjectSceneAdaptor {
 
         @Override
@@ -488,7 +574,11 @@ public class GraphEditor extends RootEditor {
                 //inSelection = true; // not needed now not listening to EM?
                 if (newSelection.isEmpty()) {
                     LOG.log(Level.FINEST, "newSelection is empty");
-                    manager.setSelectedNodes(new Node[]{manager.getRootContext()});
+                    if (container != null) {
+                        manager.setSelectedNodes(new Node[]{container.getNodeDelegate()});
+                    } else {
+                        manager.setSelectedNodes(new Node[]{manager.getRootContext()});
+                    }               
                     deleteAction.setEnabled(false);
                 } else {
                     ArrayList<Node> sel = new ArrayList<Node>();
@@ -546,9 +636,23 @@ public class GraphEditor extends RootEditor {
         }
 
         @Override
-        public void actionPerformed(ActionEvent e) {
+        public void actionPerformed(final ActionEvent e) {
+            // GRRR! Built in delete action is asynchronous - replace?
+            if (!EventQueue.isDispatchThread()) {
+                EventQueue.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        actionPerformed(e);
+                    }
+                });
+                return;
+            }
+            assert EventQueue.isDispatchThread();
             Set<?> sel = scene.getSelectedObjects();
             if (sel.isEmpty()) {
+                return;
+            }
+            if (!checkDeletion(sel)) {
                 return;
             }
             for (Object obj : sel) {
@@ -588,55 +692,159 @@ public class GraphEditor extends RootEditor {
                 }
             }
         }
+        
+        private boolean checkDeletion(Set<?> selected) {
+            List<String> components = new ArrayList<String>();
+            for (Object o : selected) {
+                if (o instanceof String) {
+                    components.add((String) o);
+                }
+            }
+            if (components.isEmpty()) {
+                return true;
+            }
+            int count = components.size();
+            String msg = count > 1 ?
+                    "Delete " + count + " components?" :
+                    "Delete " + components.get(0) + "?";
+            String title = "Confirm deletion";
+            NotifyDescriptor desc = new NotifyDescriptor.Confirmation(msg, title, NotifyDescriptor.YES_NO_OPTION);
+
+            return NotifyDescriptor.YES_OPTION.equals(DialogDisplayer.getDefault().notify(desc));
+        }
+        
+        
     }
 
-    private class TypeAcceptProvider implements AcceptProvider {
+    private class GoUpAction extends AbstractAction {
+
+        private GoUpAction() {
+            super("Go Up",
+                    ImageUtilities.loadImageIcon(
+                    "net/neilcsmith/praxis/live/pxr/graph/resources/go-up.png",
+                    true));
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            ContainerProxy parent = container.getParent();
+            if (parent != null) {
+                clearScene();
+                container = parent;
+                buildScene();
+            }
+        }
+    }
+
+    private class LocationAction extends AbstractAction implements Presenter.Toolbar {
+        
+        private final JLabel address = new JLabel();
+  
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            
+        }
+
+        @Override
+        public Component getToolbarPresenter() {
+            return address;
+        }
+    }
+
+    private class ContainerOpenAction extends AbstractAction {
+
+        private final ContainerProxy container;
+
+        private ContainerOpenAction(ContainerProxy container) {
+            super("Open");
+            this.container = container;
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            clearScene();
+            GraphEditor.this.container = container;
+            buildScene();
+        }
+    }
+
+    private class AcceptProviderImpl implements AcceptProvider {
 
         @Override
         public ConnectorState isAcceptable(Widget widget, Point point, Transferable transferable) {
-            return extractType(transferable) == null ? ConnectorState.REJECT : ConnectorState.ACCEPT;
+            if (extractType(transferable) != null || extractFile(transferable) != null) {
+                return ConnectorState.ACCEPT;
+            } else {
+                return ConnectorState.REJECT;
+            }
         }
 
         @Override
         public void accept(Widget widget, final Point point, Transferable transferable) {
-            final ComponentType type = extractType(transferable);
+            activePoint.setLocation(point);
+            ComponentType type = extractType(transferable);
             if (type != null) {
-                Runnable runnable = new Runnable() {
-                    @Override
-                    public void run() {
-                        NotifyDescriptor.InputLine dlg = new NotifyDescriptor.InputLine(
-                                "ID:", "Enter an ID for " + type);
-                        dlg.setInputText(getFreeID(type));
-                        Object retval = DialogDisplayer.getDefault().notify(dlg);
-                        if (retval == NotifyDescriptor.OK_OPTION) {
-                            final String id = dlg.getInputText();
-                            try {
-                                container.addChild(id, type, new Callback() {
-                                    @Override
-                                    public void onReturn(CallArguments args) {
-                                        // nothing wait for sync
-                                    }
-
-                                    @Override
-                                    public void onError(CallArguments args) {
-                                        pointMap.remove(id);
-                                        DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message("Error creating component", NotifyDescriptor.ERROR_MESSAGE));
-                                    }
-                                });
-                            } catch (ProxyException ex) {
-                                Exceptions.printStackTrace(ex);
-                            }
-                            pointMap.put(id, point);
-                        }
-                    }
-                };
-                SwingUtilities.invokeLater(runnable);
+                acceptComponentType(type);
+                return;
             }
+            FileObject file = extractFile(transferable);
+            if (file != null) {
+                acceptImport(file);
+            }
+        }
 
+        private void acceptComponentType(final ComponentType type) {
+            Runnable runnable = new Runnable() {
+                @Override
+                public void run() {
+                    NotifyDescriptor.InputLine dlg = new NotifyDescriptor.InputLine(
+                            "ID:", "Enter an ID for " + type);
+                    dlg.setInputText(getFreeID(type));
+                    Object retval = DialogDisplayer.getDefault().notify(dlg);
+                    if (retval == NotifyDescriptor.OK_OPTION) {
+                        final String id = dlg.getInputText();
+                        try {
+                            container.addChild(id, type, new Callback() {
+                                @Override
+                                public void onReturn(CallArguments args) {
+                                    // nothing wait for sync
+                                }
+
+                                @Override
+                                public void onError(CallArguments args) {
+//                                        pointMap.remove(id);
+                                    DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message("Error creating component", NotifyDescriptor.ERROR_MESSAGE));
+                                }
+                            });
+                        } catch (ProxyException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+//                            pointMap.put(id, point);
+
+                    }
+                }
+            };
+            SwingUtilities.invokeLater(runnable);
+        }
+
+        private void acceptImport(FileObject file) {
+            if (getActionSupport().importSubgraph(container, file, new Callback() {
+                @Override
+                public void onReturn(CallArguments args) {
+                    sync(true);
+                }
+
+                @Override
+                public void onError(CallArguments args) {
+                    sync(true);
+                }
+            })) {
+                sync(false);
+            }
         }
 
         private ComponentType extractType(Transferable transferable) {
-            Node n = NodeTransfer.node(transferable, NodeTransfer.DND_COPY);
+            Node n = NodeTransfer.node(transferable, NodeTransfer.DND_COPY_OR_MOVE);
             if (n != null) {
                 ComponentType t = n.getLookup().lookup(ComponentType.class);
                 if (t != null) {
@@ -646,15 +854,30 @@ public class GraphEditor extends RootEditor {
             return null;
         }
 
-        private String getFreeID(ComponentType type) {
-            String base = type.toString();
-            base = base.substring(base.lastIndexOf(":") + 1);
-            for (int i = 1; i < 100; i++) {
-                if (container.getChild(base + i) == null) {
-                    return base + i;
+        private FileObject extractFile(Transferable transferable) {
+            Node n = NodeTransfer.node(transferable, NodeTransfer.DND_COPY_OR_MOVE);
+            if (n != null) {
+                FileObject dob = n.getLookup().lookup(FileObject.class);
+                if (dob != null) {
+                    return dob;
                 }
             }
-            return "";
+            return null;
+        }
+
+        private String getFreeID(ComponentType type) {
+//            String base = type.toString();
+//            base = base.substring(base.lastIndexOf(":") + 1);
+//            for (int i = 1; i < 100; i++) {
+//                if (container.getChild(base + i) == null) {
+//                    return base + i;
+//                }
+//            }
+//            return "";
+
+            Set<String> existing = new HashSet<String>(Arrays.asList(container.getChildIDs()));
+            return EditorUtils.findFreeID(existing, EditorUtils.extractBaseID(type), true);
+
         }
     }
 }

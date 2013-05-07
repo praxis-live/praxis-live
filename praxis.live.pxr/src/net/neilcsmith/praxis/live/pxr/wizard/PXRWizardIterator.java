@@ -32,6 +32,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import net.neilcsmith.praxis.core.CallArguments;
@@ -51,6 +52,8 @@ import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
 
 public final class PXRWizardIterator implements WizardDescriptor.InstantiatingIterator {
+    
+    final static Logger LOG = Logger.getLogger(PXRWizardIterator.class.getName());
 
     public final static String PROP_PXR_ID = "PXR.id";
     public final static String PROP_PXR_FILE = "PXR.file";
@@ -62,6 +65,11 @@ public final class PXRWizardIterator implements WizardDescriptor.InstantiatingIt
     private WizardDescriptor.Panel[] panels;
     private ComponentType rootType;
 
+    
+    public PXRWizardIterator() {
+        LOG.fine("Creating PXRWizardIterator");
+    }
+    
     /**
      * Initialize panels representing individual wizard's steps and sets
      * various properties for them influencing wizard appearance.
@@ -160,6 +168,8 @@ public final class PXRWizardIterator implements WizardDescriptor.InstantiatingIt
                 buildFile(project, fileObj);
             }
 
+        } else {
+            LOG.warning("No project found for wizard");
         }
 
 

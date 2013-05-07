@@ -1,6 +1,23 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright 2013 Neil C Smith.
+ *
+ * This code is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License version 3 only, as
+ * published by the Free Software Foundation.
+ *
+ * This code is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ * version 3 for more details.
+ *
+ * You should have received a copy of the GNU General Public License version 3
+ * along with this work; if not, see http://www.gnu.org/licenses/
+ *
+ *
+ * Please visit http://neilcsmith.net if you need additional information or
+ * have any questions.
  */
 
 package net.neilcsmith.praxis.live.pxr;
@@ -10,12 +27,18 @@ import java.awt.Image;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.logging.Logger;
 import javax.swing.Action;
+import net.neilcsmith.praxis.core.ArgumentFormatException;
+import net.neilcsmith.praxis.core.info.ComponentInfo;
+import net.neilcsmith.praxis.core.types.PBoolean;
 import net.neilcsmith.praxis.live.components.api.Components;
 import net.neilcsmith.praxis.live.pxr.api.ComponentProxy;
 import net.neilcsmith.praxis.live.pxr.api.ContainerProxy;
+import net.neilcsmith.praxis.live.pxr.api.PraxisProperty;
+import net.neilcsmith.praxis.live.pxr.api.PraxisPropertyEditor;
 import net.neilcsmith.praxis.live.pxr.api.ProxyException;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -182,7 +205,15 @@ class PXRProxyNode extends AbstractNode {
         Sheet.Set props = Sheet.createPropertiesSet();
         sheet.put(props);
         for (String id : component.getPropertyIDs()) {
-            props.put(component.getProperty(id));
+            Node.Property<?> prop = component.getProperty(id);
+            if (prop.canWrite() && prop instanceof BoundArgumentProperty) {
+                BoundArgumentProperty bap = (BoundArgumentProperty) prop;
+                if (bap.getArgumentType()
+                        == PBoolean.class) {
+                    prop = new BooleanWrapper(bap);
+                }
+            }
+            props.put(prop);
         }
         return sheet;
     }
@@ -208,7 +239,67 @@ class PXRProxyNode extends AbstractNode {
 
     }
 
+    private static class BooleanWrapper extends Node.Property<Boolean> {
 
+        private final BoundArgumentProperty wrapped;
+        
+        private BooleanWrapper(BoundArgumentProperty wrapped) {
+            super(Boolean.class);
+            this.wrapped = wrapped;
+        }
+        
+        @Override
+        public boolean canRead() {
+            return wrapped.canRead();
+        }
+
+        @Override
+        public Boolean getValue() throws IllegalAccessException, InvocationTargetException {
+            try {
+                return PBoolean.coerce(wrapped.getValue()).value();
+            } catch (ArgumentFormatException ex) {
+                return false;
+            }
+        }
+
+        @Override
+        public boolean canWrite() {
+            return wrapped.canWrite();
+        }
+
+        @Override
+        public void setValue(Boolean val) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+            wrapped.setValue(val ? PBoolean.TRUE : PBoolean.FALSE);
+        }
+
+        @Override
+        public String getName() {
+            return wrapped.getName();
+        }
+
+        @Override
+        public boolean supportsDefaultValue() {
+            return wrapped.supportsDefaultValue();
+        }
+
+        @Override
+        public void restoreDefaultValue() {
+            wrapped.restoreDefaultValue();
+        }
+
+        @Override
+        public String getHtmlDisplayName() {
+            return wrapped.getHtmlDisplayName();
+        }
+
+        @Override
+        public String getDisplayName() {
+            return wrapped.getDisplayName();
+        }
+        
+        
+        
+    }
 
     private static class ContainerChildren extends Children.Keys<String>
             implements PropertyChangeListener {

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Neil C Smith.
+ * Copyright 2013 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -22,23 +22,27 @@
 package net.neilcsmith.praxis.live.pxr;
 
 import java.util.ArrayList;
-import net.neilcsmith.praxis.live.pxr.api.PraxisProperty;
-import net.neilcsmith.praxis.core.ComponentType;
-import net.neilcsmith.praxis.core.CallArguments;
-import net.neilcsmith.praxis.live.core.api.Callback;
-import java.util.Iterator;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
+import net.neilcsmith.praxis.core.CallArguments;
 import net.neilcsmith.praxis.core.ComponentAddress;
+import net.neilcsmith.praxis.core.ComponentType;
 import net.neilcsmith.praxis.core.info.ComponentInfo;
+import net.neilcsmith.praxis.live.core.api.Callback;
 import net.neilcsmith.praxis.live.project.api.PraxisProject;
-import static net.neilcsmith.praxis.live.pxr.PXRParser.*;
+import net.neilcsmith.praxis.live.pxr.PXRParser.AttributeElement;
+import net.neilcsmith.praxis.live.pxr.PXRParser.ComponentElement;
+import net.neilcsmith.praxis.live.pxr.PXRParser.ConnectionElement;
+import net.neilcsmith.praxis.live.pxr.PXRParser.Element;
+import net.neilcsmith.praxis.live.pxr.PXRParser.PropertyElement;
+import net.neilcsmith.praxis.live.pxr.PXRParser.RootElement;
 import net.neilcsmith.praxis.live.pxr.api.Connection;
+import net.neilcsmith.praxis.live.pxr.api.PraxisProperty;
 import net.neilcsmith.praxis.live.pxr.api.ProxyException;
-import net.neilcsmith.praxis.live.pxr.api.RootRegistry;
-import org.netbeans.api.project.Project;
 import org.openide.util.Exceptions;
 
 /**
@@ -48,19 +52,28 @@ import org.openide.util.Exceptions;
 class PXRBuilder {
 
     private final static Logger LOG = Logger.getLogger(PXRBuilder.class.getName());
-    private final Project project;
-    private final PXRDataObject source;
-    private final RootElement root;
+    private PraxisProject project;
+    private PXRDataObject source;
+    private RootElement root;
     private Iterator<Element> iterator;
     private Callback processCallback;
     private PXRRootProxy rootProxy;
     private boolean processed;
+    private boolean registerRoot;
     private List<String> warnings;
 
-    private PXRBuilder(Project project, PXRDataObject source, RootElement root) {
+    private PXRBuilder(PraxisProject project, PXRDataObject source, RootElement root) {
         this.project = project;
         this.source = source;
         this.root = root;
+        registerRoot = true;
+        warnings = new ArrayList<String>();
+    }
+
+    private PXRBuilder(PXRRootProxy rootProxy, RootElement root) {
+        this.rootProxy = rootProxy;
+        this.root = root;
+        registerRoot = false;
         warnings = new ArrayList<String>();
     }
 
@@ -72,7 +85,7 @@ class PXRBuilder {
         buildElementIterator();
         process();
     }
-    
+
     List<String> getErrors() {
         return warnings;
     }
@@ -86,13 +99,11 @@ class PXRBuilder {
         }
         if (!processed && !iterator.hasNext()) {
             processed = true;
-            DefaultRootRegistry.getDefault().register(rootProxy);
-//            if (warnings.isEmpty()) {
-                processCallback.onReturn(CallArguments.EMPTY);
-//            } else {
-//                processCallback.onError(CallArguments.EMPTY);
-//            }
-            
+            if (registerRoot) {
+                DefaultRootRegistry.getDefault().register(rootProxy);
+            }
+            processCallback.onReturn(CallArguments.EMPTY);
+
         }
     }
 
@@ -118,23 +129,21 @@ class PXRBuilder {
     }
 
     private boolean processProperty(final PropertyElement prop) {
-        LOG.fine("Processing Property Element : " + prop.property);
+        LOG.log(Level.FINE, "Processing Property Element : {0}", prop.property);
         final PXRComponentProxy cmp = findComponent(prop.component.address);
         if (cmp == null) {
-            propertyError(prop, CallArguments.EMPTY);            
+            propertyError(prop, CallArguments.EMPTY);
             return true;
         }
         PraxisProperty<?> p = cmp.getProperty(prop.property);
         if (p instanceof BoundArgumentProperty) {
             try {
                 ((BoundArgumentProperty) p).setValue(prop.args[0], new Callback() {
-
                     @Override
                     public void onReturn(CallArguments args) {
                         if (cmp.isDynamic()) {
                             try {
                                 cmp.call("info", CallArguments.EMPTY, new Callback() {
-
                                     @Override
                                     public void onReturn(CallArguments args) {
                                         cmp.refreshInfo((ComponentInfo) args.get(0));
@@ -190,7 +199,6 @@ class PXRBuilder {
                 ((PXRContainerProxy) parent).connect(
                         new Connection(con.component1, con.port1, con.component2, con.port2),
                         new Callback() {
-
                             @Override
                             public void onReturn(CallArguments args) {
                                 process();
@@ -219,16 +227,21 @@ class PXRBuilder {
     }
 
     private boolean processRoot(RootElement root) {
-        LOG.fine("Processing Root Element : " + root.address + ", Type : " + root.type);
+        if (rootProxy != null) {
+            LOG.log(Level.FINE, "Root already exists - ignoring Root Element : {0}, Type : {1}",
+                    new Object[]{root.address, root.type});
+            return true;
+        }
+        LOG.log(Level.FINE, "Processing Root Element : {0}, Type : {1}", new Object[]{root.address, root.type});
         try {
             final ComponentAddress ad = root.address;
             final ComponentType type = root.type;
             PXRHelper.getDefault().createComponentAndGetInfo(ad, type, new Callback() {
-
                 @Override
                 public void onReturn(CallArguments args) {
                     try {
                         rootProxy = new PXRRootProxy(
+                                project,
                                 source,
                                 ad.getRootID(),
                                 type,
@@ -254,16 +267,34 @@ class PXRBuilder {
     }
 
     private boolean processComponent(final ComponentElement cmp) {
-        LOG.fine("Processing Component Element : " + cmp.address + ", Type : " + cmp.type);
+        LOG.log(Level.FINE, "Processing Component Element : {0}, Type : {1}", new Object[]{cmp.address, cmp.type});
         try {
             ComponentAddress address = cmp.address;
-            PXRComponentProxy parent = findComponent(address.getParentAddress());
+            final PXRComponentProxy parent = findComponent(address.getParentAddress());
             if (parent instanceof PXRContainerProxy) {
                 String id = address.getComponentID(address.getDepth() - 1);
                 ((PXRContainerProxy) parent).addChild(id, cmp.type, new Callback() {
-
                     @Override
                     public void onReturn(CallArguments args) {
+                        if (parent.isDynamic()) {
+                            try {
+                                parent.call("info", CallArguments.EMPTY, new Callback() {
+                                    @Override
+                                    public void onReturn(CallArguments args) {
+                                        parent.refreshInfo((ComponentInfo) args.get(0));
+                                        process();
+                                    }
+
+                                    @Override
+                                    public void onError(CallArguments args) {
+                                        process();
+                                    }
+                                });
+                                return;
+                            } catch (ProxyException ex) {
+                                Exceptions.printStackTrace(ex);
+                            }
+                        }
                         process();
                     }
 
@@ -281,7 +312,7 @@ class PXRBuilder {
         componentError(cmp, CallArguments.EMPTY);
         return true;
     }
-    
+
     private void componentError(ComponentElement cmp, CallArguments args) {
         String err = "Couldn't create component " + cmp.address;
         warnings.add(err);
@@ -334,4 +365,9 @@ class PXRBuilder {
     static PXRBuilder getBuilder(PraxisProject project, PXRDataObject source, PXRParser.RootElement root) {
         return new PXRBuilder(project, source, root);
     }
+    
+    static PXRBuilder getBuilder(PXRRootProxy rootProxy, PXRParser.RootElement parseRoot) {
+        return new PXRBuilder(rootProxy, parseRoot);
+    }
+    
 }

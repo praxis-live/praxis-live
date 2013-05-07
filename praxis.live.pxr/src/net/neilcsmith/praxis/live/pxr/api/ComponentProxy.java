@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Neil C Smith.
+ * Copyright 2013 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -22,11 +22,11 @@
 
 package net.neilcsmith.praxis.live.pxr.api;
 
-import net.neilcsmith.praxis.live.core.api.Callback;
 import net.neilcsmith.praxis.core.CallArguments;
 import net.neilcsmith.praxis.core.ComponentAddress;
 import net.neilcsmith.praxis.core.ComponentType;
 import net.neilcsmith.praxis.core.info.ComponentInfo;
+import net.neilcsmith.praxis.live.core.api.Callback;
 import org.openide.nodes.Node;
 
 /**
@@ -47,5 +47,9 @@ public interface ComponentProxy extends Proxy {
     public ComponentInfo getInfo();
 
     public Node getNodeDelegate();
+
+    public PraxisProperty getProperty(String id);
+
+    public String[] getPropertyIDs();
 
 }
