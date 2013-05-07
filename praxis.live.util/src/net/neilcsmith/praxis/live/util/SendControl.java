@@ -21,7 +21,6 @@
  */
 package net.neilcsmith.praxis.live.util;
 
-import net.neilcsmith.praxis.live.core.api.Callback;
 import java.util.HashMap;
 import java.util.Map;
 import net.neilcsmith.praxis.core.Call;
@@ -32,6 +31,7 @@ import net.neilcsmith.praxis.core.PacketRouter;
 import net.neilcsmith.praxis.core.info.ControlInfo;
 import net.neilcsmith.praxis.core.interfaces.ServiceUnavailableException;
 import net.neilcsmith.praxis.impl.AbstractControl;
+import net.neilcsmith.praxis.live.core.api.Callback;
 import net.neilcsmith.praxis.live.core.api.HubUnavailableException;
 
 /**
