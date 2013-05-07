@@ -169,7 +169,9 @@ public final class PraxisLFCustoms extends LFCustoms {
             "nbProgressBar.popupText.selectForeground", UIManager.getColor("List.selectionForeground"),
             "nb.errorForeground", Color.RED,
             "nb.warningForeground", UIManager.getColor("Label.foreground"),
-            "NbMainWindow.showCustomBackground", true
+            "NbMainWindow.showCustomBackground", true,
+                               
+             "Table.selectionBackground", PraxisLookAndFeel.getControlDarkShadow()   
         }; //NOI18N
 
 
