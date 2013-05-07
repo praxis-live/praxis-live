@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Neil C Smith.
+ * Copyright 2013 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -21,29 +21,30 @@
  */
 package net.neilcsmith.praxis.live.audio;
 
-import java.awt.Image;
+import net.neilcsmith.praxis.core.ComponentFactory.MetaData;
 import net.neilcsmith.praxis.core.ComponentType;
-import net.neilcsmith.praxis.live.components.api.ComponentIconProvider;
-import org.openide.util.ImageUtilities;
+import net.neilcsmith.praxis.live.components.api.MetaDataDecorator;
+import net.neilcsmith.praxis.live.components.api.MetaDataRewriter;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author Neil C Smith <http://neilcsmith.net>
+ * @author Neil C Smith
  */
-@ServiceProvider(service=ComponentIconProvider.class)
-public class AudioIconProvider implements ComponentIconProvider {
+@ServiceProvider(service=MetaDataRewriter.class)
+public class AudioMetaDataExtender implements MetaDataRewriter {
     
-    private final static Image AUDIO_ICON = ImageUtilities.loadImage(
-            "net/neilcsmith/praxis/live/audio/resources/audio.png", true);
+    private final static String AUDIO_ICON = 
+            "net/neilcsmith/praxis/live/audio/resources/audio.png";
 
     @Override
-    public Image getIcon(ComponentType type) {
+    public <T> MetaData<T> rewrite(ComponentType type, MetaData<T> data) {
         if ("root:audio".equals(type.toString()) ||
                 type.toString().startsWith("audio:")) {
-            return AUDIO_ICON;
+            return new MetaDataDecorator<T>(data, new MetaDataDecorator.Icon(AUDIO_ICON));
+        } else {
+            return data;
         }
-        return null;
     }
     
 }
