@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Neil C Smith.
+ * Copyright 2013 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -43,7 +43,7 @@ public class ControlAddressEditor extends PraxisPropertyEditorSupport
     
     ControlAddressEditor(PraxisProperty property, ArgumentInfo info) {
         allowEmpty = info.getProperties().getBoolean(ArgumentInfo.KEY_ALLOW_EMPTY, false);
-        property.setValue("canEditAsText", Boolean.FALSE);
+//        property.setValue("canEditAsText", Boolean.FALSE);
     }
 
     @Override
