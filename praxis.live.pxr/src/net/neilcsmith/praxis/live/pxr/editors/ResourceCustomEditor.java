@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Neil C Smith.
+ * Copyright 2013 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -28,11 +28,9 @@ import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
 import java.io.File;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.JFileChooser;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
@@ -46,7 +44,6 @@ import org.openide.explorer.view.ListView;
 import org.openide.filesystems.FileChooserBuilder;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataNode;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.FilterNode;
@@ -144,6 +141,8 @@ class ResourceCustomEditor extends javax.swing.JPanel
                     
                 }
 
+            } else {
+                em.setExploredContext(em.getRootContext(),new Node[0]);
             }
         } catch (Exception ex) {
             Exceptions.printStackTrace(ex);
@@ -308,21 +307,21 @@ class ResourceCustomEditor extends javax.swing.JPanel
             if (ignoreChanges) {
                 return;
             }
+            ignoreChanges = true;
             String txt = uriField.getText();
             if (txt.isEmpty()) {
                 current = null;
                 env.setState(PropertyEnv.STATE_NEEDS_VALIDATION);
-//                editor.setValue(PString.EMPTY);
             } else {
                 try {
                     current = PResource.valueOf(uriField.getText()).value();
                     env.setState(PropertyEnv.STATE_NEEDS_VALIDATION);
-                    syncEM();
                 } catch (Exception ex) {
                     env.setState(PropertyEnv.STATE_INVALID);
                 }
             }
-
+            syncEM();
+            ignoreChanges = false;
 
         }
 
@@ -343,11 +342,15 @@ class ResourceCustomEditor extends javax.swing.JPanel
         // called from EM
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
+            if (ignoreChanges) {
+                return;
+            }
             if (ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())) {
                 Node[] nodes = em.getSelectedNodes();
                 if (nodes.length == 1) {
                     FileObject fob = nodes[0].getLookup().lookup(FileObject.class);
                     current = fob.toURI();
+                    env.setState(PropertyEnv.STATE_NEEDS_VALIDATION);
                     ignoreChanges = true;
                     uriField.setText(current.toString());
                     ignoreChanges = false;
