@@ -30,6 +30,7 @@ import net.neilcsmith.praxis.core.Lookup;
  *
  * @author Neil C Smith (http://neilcsmith.net)
  */
+@Deprecated
 public class LookupBridge implements Lookup {
 
     private final static LookupBridge INSTANCE = new LookupBridge();
