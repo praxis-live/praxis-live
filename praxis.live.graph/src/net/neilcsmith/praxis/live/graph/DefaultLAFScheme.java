@@ -86,109 +86,120 @@ import org.netbeans.api.visual.anchor.PointShapeFactory;
 import org.openide.util.ImageUtilities;
 
 import java.awt.*;
+import org.netbeans.api.visual.widget.Scene;
 
 public class DefaultLAFScheme extends LAFScheme {
 
-    static final Color COLOR_NORMAL = new Color (0xBACDF0);
+    static final Color COLOR_NORMAL = new Color(0xBACDF0);
     private static final Color COLOR_HOVERED = Color.WHITE;
-    private static final Color COLOR_SELECTED = new Color (0x748CC0);
-    static final Color COLOR_HIGHLIGHTED = new Color (0x316AC5);
-
+    private static final Color COLOR_SELECTED = new Color(0x748CC0);
+    static final Color COLOR_HIGHLIGHTED = new Color(0x316AC5);
 //    private static final Color COLOR0 = new Color (169, 197, 235);
-    static final Color COLOR1 = new Color (221, 235, 246);
-    static final Color COLOR2 = new Color (255, 255, 255);
-    static final Color COLOR3 = new Color (214, 235, 255);
-    static final Color COLOR4 = new Color (241, 249, 253);
-    static final Color COLOR5 = new Color (255, 255, 255);
-
-    public static final Border BORDER_NODE = new NodeBorder(COLOR_NORMAL, 1, COLOR1, COLOR2, COLOR3, COLOR4, COLOR5);
-
-    static final Color BORDER_CATEGORY_BACKGROUND = new Color (0xCDDDF8);
-    static final Border BORDER_MINIMIZE = BorderFactory.createRoundedBorder (2, 2, null, COLOR_NORMAL);
-    static final Border BORDER_PIN = BorderFactory.createOpaqueBorder (2, 8, 2, 8);
-    private static final Border BORDER_PIN_HOVERED = BorderFactory.createLineBorder (2, 8, 2, 8, Color.BLACK);
-
+    static final Color COLOR1 = new Color(221, 235, 246);
+    static final Color COLOR2 = new Color(255, 255, 255);
+    static final Color COLOR3 = new Color(214, 235, 255);
+    static final Color COLOR4 = new Color(241, 249, 253);
+    static final Color COLOR5 = new Color(255, 255, 255);
+//    public static final Border BORDER_NODE = new NodeBorder(COLOR_NORMAL, 1, COLOR1, COLOR2, COLOR3, COLOR4, COLOR5);
+    static final Border BORDER_NODE = BorderFactory.createRoundedBorder(8, 8, 0, 0, COLOR4, null);
+    static final Border BORDER_NODE_SELECTED = BorderFactory.createRoundedBorder(8, 8, 0, 0, COLOR_SELECTED, null);
+    static final Color BORDER_CATEGORY_BACKGROUND = new Color(0xCDDDF8);
+    static final Border BORDER_MINIMIZE = BorderFactory.createRoundedBorder(2, 2, null, COLOR_NORMAL);
+//    static final Border BORDER_HEADER = BorderFactory.createOpaqueBorder (2, 8, 2, 8);
+    static final Border BORDER_HEADER = BorderFactory.createRoundedBorder(8, 8, 8, 2, COLOR_NORMAL, null);
+    static final Border BORDER_HEADER_SELECTED = BorderFactory.createRoundedBorder(8, 8, 8, 2, COLOR_SELECTED, null);
+    static final Border BORDER_PIN = BorderFactory.createOpaqueBorder(1, 4, 1, 4);
+    private static final Border BORDER_PIN_HOVERED = BorderFactory.createLineBorder(1, 4, 1, 4, Color.DARK_GRAY);
     static final PointShape POINT_SHAPE_IMAGE = PointShapeFactory.createImagePointShape(
-            ImageUtilities.loadImage ("net/neilcsmith/praxis/live/graph/resources/vmd-pin.png")); // NOI18N
+            ImageUtilities.loadImage("net/neilcsmith/praxis/live/graph/resources/vmd-pin.png")); // NOI18N
 
-    public DefaultLAFScheme () {
+    public DefaultLAFScheme() {
     }
 
-    public void installUI (NodeWidget widget) {
-//        widget.setBorder (BORDER_NODE);
-        widget.setOpaque (true);
+    public void installUI(NodeWidget widget) {
+        widget.setBorder(BORDER_NODE);
+        widget.setOpaque(false);
 
-        Widget header = widget.getHeader ();
-        header.setBorder (BORDER_PIN);
+        Widget header = widget.getHeader();
+        header.setBorder(BORDER_HEADER);
 //        header.setBackground (COLOR_SELECTED);
 //        header.setOpaque (false);
 
-        header.setBackground(COLOR_NORMAL);
-        header.setOpaque(true);
+//        header.setBackground(COLOR_NORMAL);
+        header.setOpaque(false);
 
-        Widget minimize = widget.getMinimizeButton ();
-        minimize.setBorder (BORDER_MINIMIZE);
+        Widget minimize = widget.getMinimizeButton();
+        minimize.setBorder(BORDER_MINIMIZE);
 
-        Widget pinsSeparator = widget.getPinsSeparator ();
-        pinsSeparator.setForeground (BORDER_CATEGORY_BACKGROUND);
+        Widget pinsSeparator = widget.getPinsSeparator();
+        pinsSeparator.setForeground(BORDER_CATEGORY_BACKGROUND);
     }
 
     @Override
-    public void updateUI (NodeWidget widget, ObjectState previousState, ObjectState state) {
-        if (! previousState.isSelected ()  &&  state.isSelected ())
-            widget.bringToFront ();
-        else if (! previousState.isHovered ()  &&  state.isHovered ())
-            widget.bringToFront ();
+    public void updateUI(NodeWidget widget, ObjectState previousState, ObjectState state) {
+        if (!previousState.isSelected() && state.isSelected()) {
+            widget.bringToFront();
+        } else if (!previousState.isHovered() && state.isHovered()) {
+            widget.bringToFront();
+        }
 
-        Widget header = widget.getHeader ();
+        Widget header = widget.getHeader();
 //        header.setOpaque (state.isSelected ());
-        header.setBackground(state.isSelected() ? COLOR_SELECTED : COLOR_NORMAL);
-        header.setBorder (state.isFocused () || state.isHovered () ? BORDER_PIN_HOVERED : BORDER_PIN);
+//        header.setBackground(state.isSelected() ? COLOR_SELECTED : COLOR_NORMAL);
+        header.setBorder(state.isSelected() || state.isHovered() ? BORDER_HEADER_SELECTED : BORDER_HEADER);
+    }
+
+    void updateOnRevalidate(NodeWidget widget, boolean belowLOD) {
+        if (belowLOD) {
+            widget.setBorder(widget.isSelected() ? BORDER_NODE_SELECTED : BORDER_NODE);         
+        } else {
+            widget.setBorder(BORDER_NODE);
+        }
     }
 
     @Override
-    public boolean isNodeMinimizeButtonOnRight (NodeWidget widget) {
+    public boolean isNodeMinimizeButtonOnRight(NodeWidget widget) {
         return false;
     }
 
     @Override
-    public Image getMinimizeWidgetImage (NodeWidget widget) {
-        return widget.isMinimized ()
-                ? ImageUtilities.loadImage ("net/neilcsmith/praxis/live/graph/resources/vmd-expand.png") // NOI18N
-                : ImageUtilities.loadImage ("net/neilcsmith/praxis/live/graph/resources/vmd-collapse.png"); // NOI18N
+    public Image getMinimizeWidgetImage(NodeWidget widget) {
+        return widget.isMinimized()
+                ? ImageUtilities.loadImage("net/neilcsmith/praxis/live/graph/resources/vmd-expand.png") // NOI18N
+                : ImageUtilities.loadImage("net/neilcsmith/praxis/live/graph/resources/vmd-collapse.png"); // NOI18N
     }
 
 //    @Override
 //    public Widget createPinCategoryWidget (NodeWidget widget, String categoryDisplayName) {
 //        return createPinCategoryWidgetCore (widget, categoryDisplayName, true);
 //    }
-
     @Override
-    public void installUI (EdgeWidget widget) {
-        widget.setSourceAnchorShape (AnchorShape.NONE);
-        widget.setTargetAnchorShape (AnchorShape.NONE);
-        widget.setPaintControlPoints (true);
+    public void installUI(EdgeWidget widget) {
+        widget.setSourceAnchorShape(AnchorShape.NONE);
+        widget.setTargetAnchorShape(AnchorShape.NONE);
+        widget.setPaintControlPoints(true);
     }
 
     @Override
-    public void updateUI (EdgeWidget widget, ObjectState previousState, ObjectState state) {
-        if (state.isHovered ())
-            widget.setForeground (COLOR_HOVERED);
-        else if (state.isSelected ())
-            widget.setForeground (COLOR_SELECTED);
-        else if (state.isHighlighted ())
-            widget.setForeground (COLOR_HIGHLIGHTED);
-        else if (state.isFocused ())
-            widget.setForeground (COLOR_HOVERED);
-        else
-            widget.setForeground (COLOR_NORMAL);
-
-        if (state.isSelected ()) {
-//            widget.setControlPointShape (PointShape.SQUARE_FILLED_SMALL);
-            widget.setEndPointShape (PointShape.SQUARE_FILLED_BIG);
+    public void updateUI(EdgeWidget widget, ObjectState previousState, ObjectState state) {
+        if (state.isHovered()) {
+            widget.setForeground(COLOR_HOVERED);
+        } else if (state.isSelected()) {
+            widget.setForeground(COLOR_SELECTED);
+        } else if (state.isHighlighted()) {
+            widget.setForeground(COLOR_HIGHLIGHTED);
+        } else if (state.isFocused()) {
+            widget.setForeground(COLOR_HOVERED);
         } else {
-            widget.setControlPointShape (PointShape.NONE);
-            widget.setEndPointShape (POINT_SHAPE_IMAGE);
+            widget.setForeground(COLOR_NORMAL);
+        }
+
+        if (state.isSelected()) {
+//            widget.setControlPointShape (PointShape.SQUARE_FILLED_SMALL);
+            widget.setEndPointShape(PointShape.SQUARE_FILLED_BIG);
+        } else {
+            widget.setControlPointShape(PointShape.NONE);
+            widget.setEndPointShape(POINT_SHAPE_IMAGE);
         }
 
         if (state.isHovered() || state.isSelected()) {
@@ -199,32 +210,29 @@ public class DefaultLAFScheme extends LAFScheme {
         }
 
         widget.setControlPointCutDistance(5);
-        
+
     }
 
     @Override
-    public void installUI (PinWidget widget) {
-        widget.setBorder (BORDER_PIN);
-        widget.setBackground (COLOR_SELECTED);
-        widget.setOpaque (false);
+    public void installUI(PinWidget widget) {
+        widget.setBorder(BORDER_PIN);
+//        widget.setBackground (COLOR_SELECTED);
+        widget.setOpaque(false);
     }
 
     @Override
-    public void updateUI (PinWidget widget, ObjectState previousState, ObjectState state) {
+    public void updateUI(PinWidget widget, ObjectState previousState, ObjectState state) {
 //        widget.setOpaque (state.isSelected ());
-        widget.setBorder (state.isFocused () || state.isHovered () ? BORDER_PIN_HOVERED : BORDER_PIN);
+        widget.setBorder(state.isFocused() || state.isHovered() ? BORDER_PIN_HOVERED : BORDER_PIN);
 //        LookFeel lookFeel = getScene ().getLookFeel ();
 //        setBorder (BorderFactory.createCompositeBorder (BorderFactory.createEmptyBorder (8, 2), lookFeel.getMiniBorder (state)));
 //        setForeground (lookFeel.getForeground (state));
     }
 
     @Override
-    public int getAnchorGap () {
+    public int getAnchorGap() {
         return 8;
     }
-
-    
-
 //    static Widget createPinCategoryWidgetCore (NodeWidget widget, String categoryDisplayName, boolean changeFont) {
 //        Scene scene = widget.getScene ();
 //        LabelWidget label = new LabelWidget (scene, categoryDisplayName);
@@ -239,7 +247,4 @@ public class DefaultLAFScheme extends LAFScheme {
 //        label.setCheckClipping (true);
 //        return label;
 //    }
-
-
-
 }

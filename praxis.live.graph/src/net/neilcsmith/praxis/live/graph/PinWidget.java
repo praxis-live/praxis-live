@@ -94,6 +94,7 @@ import org.netbeans.api.visual.anchor.Anchor;
 public class PinWidget extends Widget {
 
     public final static String DEFAULT_CATEGORY = "";
+    private final PraxisGraphScene scene;
     private LAFScheme scheme;
     private LabelWidget nameWidget;
     private GlyphSetWidget glyphsWidget;
@@ -107,6 +108,7 @@ public class PinWidget extends Widget {
      */
     public PinWidget(PraxisGraphScene scene, String name) {
         super(scene);
+        this.scene = scene;
         this.scheme = scene.getColorScheme();
 //        setLayout (LayoutFactory.createHorizontalFlowLayout (LayoutFactory.SerialAlignment.CENTER, 8));
         this.alignment = Alignment.Center;
@@ -200,6 +202,17 @@ public class PinWidget extends Widget {
     public Anchor createAnchor() {
         return new AlignedAnchor();
     }
+
+    @Override
+    public boolean isHitAt(Point localLocation) {
+        if (scene.isBelowLODThreshold()) {
+            return false;
+        } else {
+            return super.isHitAt(localLocation);
+        }   
+    }
+    
+    
 
     private class AlignedAnchor extends Anchor {
 

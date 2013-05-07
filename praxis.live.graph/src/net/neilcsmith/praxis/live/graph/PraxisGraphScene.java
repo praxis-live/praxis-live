@@ -76,10 +76,17 @@
  */
 package net.neilcsmith.praxis.live.graph;
 
+import java.awt.Point;
 import java.awt.Rectangle;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.action.ConnectProvider;
+import org.netbeans.api.visual.action.MoveProvider;
 import org.netbeans.api.visual.action.PopupMenuProvider;
 import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.anchor.Anchor;
@@ -95,12 +102,14 @@ import org.netbeans.api.visual.widget.Widget;
 
 public class PraxisGraphScene<N> extends GraphPinScene<N, EdgeID<N>, PinID<N>> {
 
-    private LayerWidget backgroundLayer = new LayerWidget(this);
-    private LayerWidget mainLayer = new LayerWidget(this);
-    private LayerWidget connectionLayer = new LayerWidget(this);
-    private LayerWidget upperLayer = new LayerWidget(this);
+    private final static double LOD_ZOOM = 0.5;
+    
+    private final LayerWidget backgroundLayer = new LayerWidget(this);
+    private final LayerWidget mainLayer = new LayerWidget(this);
+    private final LayerWidget connectionLayer = new LayerWidget(this);
+    private final LayerWidget upperLayer = new LayerWidget(this);
     private Router router;
-    private WidgetAction moveAction = ActionFactory.createMoveAction();
+    private WidgetAction moveAction = ActionFactory.createMoveAction(null, new MoveProviderImpl());
 //    private WidgetAction moveAction = ActionFactory.createAlignWithMoveAction(mainLayer, upperLayer, null);
     private SceneLayout sceneLayout;
     private LAFScheme scheme;
@@ -117,6 +126,7 @@ public class PraxisGraphScene<N> extends GraphPinScene<N, EdgeID<N>, PinID<N>> {
 
     /**
      * Creates a VMD graph scene with a specific color scheme.
+     *
      * @param scheme the color scheme
      */
     public PraxisGraphScene(LAFScheme scheme) {
@@ -158,8 +168,10 @@ public class PraxisGraphScene<N> extends GraphPinScene<N, EdgeID<N>, PinID<N>> {
             menuAction = ActionFactory.createPopupMenuAction(popupProvider);
             getActions().addAction(menuAction);
         }
-        // @TODO pins should be non-selectable
+        
         getActions().addAction(ActionFactory.createRectangularSelectAction(this, backgroundLayer));
+        
+        addSceneListener(new ZoomCorrector());
 
     }
 
@@ -170,12 +182,12 @@ public class PraxisGraphScene<N> extends GraphPinScene<N, EdgeID<N>, PinID<N>> {
     }
 
     public PinWidget addPin(N node, String name) {
-        return addPin(new PinID(node, name), PinWidget.DEFAULT_CATEGORY,
+        return addPin(new PinID<N>(node, name), PinWidget.DEFAULT_CATEGORY,
                 Alignment.Center);
     }
 
     public PinWidget addPin(N node, String name, String category, Alignment alignment) {
-        return addPin(new PinID(node, name), category, alignment);
+        return addPin(new PinID<N>(node, name), category, alignment);
     }
 
     public PinWidget addPin(PinID<N> pin, String category, Alignment alignment) {
@@ -194,7 +206,7 @@ public class PraxisGraphScene<N> extends GraphPinScene<N, EdgeID<N>, PinID<N>> {
     }
 
     public EdgeWidget connect(PinID<N> p1, PinID<N> p2) {
-        EdgeID d = new EdgeID(p1, p2);
+        EdgeID<N> d = new EdgeID<N>(p1, p2);
         EdgeWidget e = (EdgeWidget) addEdge(d);
         setEdgeSource(d, p1);
         setEdgeTarget(d, p2);
@@ -204,7 +216,7 @@ public class PraxisGraphScene<N> extends GraphPinScene<N, EdgeID<N>, PinID<N>> {
     public void disconnect(N node1, String pin1, N node2, String pin2) {
         PinID<N> p1 = new PinID<N>(node1, pin1);
         PinID<N> p2 = new PinID<N>(node2, pin2);
-        EdgeID d = new EdgeID(p1, p2);
+        EdgeID<N> d = new EdgeID<N>(p1, p2);
         removeEdge(d);
     }
 
@@ -212,8 +224,30 @@ public class PraxisGraphScene<N> extends GraphPinScene<N, EdgeID<N>, PinID<N>> {
         return scheme;
     }
 
+    @Override
+    public void userSelectionSuggested(Set<?> suggestedSelectedObjects, boolean invertSelection) {
+
+        if (suggestedSelectedObjects.size() == 1 && isPin(suggestedSelectedObjects.iterator().next())) {
+            suggestedSelectedObjects = Collections.emptySet();
+        } else if (!suggestedSelectedObjects.isEmpty()) {
+            Set<Object> selection = new LinkedHashSet<Object>(suggestedSelectedObjects.size());
+            for (Object obj : suggestedSelectedObjects) {
+                if (isPin(obj)) {
+                    continue;
+                }
+                selection.add(obj);
+            }
+            suggestedSelectedObjects = selection;
+        }
+        super.userSelectionSuggested(suggestedSelectedObjects, invertSelection);
+    }
+    
+    
+
     /**
-     * Implements attaching a widget to a node. The widget is NodeWidget and has object-hover, select, popup-menu and move actions.
+     * Implements attaching a widget to a node. The widget is NodeWidget and has
+     * object-hover, select, popup-menu and move actions.
+     *
      * @param node the node
      * @return the widget attached to the node
      */
@@ -233,8 +267,10 @@ public class PraxisGraphScene<N> extends GraphPinScene<N, EdgeID<N>, PinID<N>> {
     }
 
     /**
-     * Implements attaching a widget to a pin. The widget is PinWidget and has object-hover and select action.
-     * The the node id ends with "#default" then the pin is the default pin of a node and therefore it is non-visual.
+     * Implements attaching a widget to a pin. The widget is PinWidget and has
+     * object-hover and select action. The the node id ends with "#default" then
+     * the pin is the default pin of a node and therefore it is non-visual.
+     *
      * @param node the node
      * @param pin the pin
      * @return the widget attached to the pin, null, if it is a default pin
@@ -254,7 +290,9 @@ public class PraxisGraphScene<N> extends GraphPinScene<N, EdgeID<N>, PinID<N>> {
     }
 
     /**
-     * Implements attaching a widget to an edge. the widget is EdgeWidget and has object-hover, select and move-control-point actions.
+     * Implements attaching a widget to an edge. the widget is EdgeWidget and
+     * has object-hover, select and move-control-point actions.
+     *
      * @param edge the edge
      * @return the widget attached to the edge
      */
@@ -272,9 +310,11 @@ public class PraxisGraphScene<N> extends GraphPinScene<N, EdgeID<N>, PinID<N>> {
     }
 
     /**
-     * Attaches an anchor of a source pin an edge.
-     * The anchor is a ProxyAnchor that switches between the anchor attached to the pin widget directly and
-     * the anchor attached to the pin node widget based on the minimize-state of the node.
+     * Attaches an anchor of a source pin an edge. The anchor is a ProxyAnchor
+     * that switches between the anchor attached to the pin widget directly and
+     * the anchor attached to the pin node widget based on the minimize-state of
+     * the node.
+     *
      * @param edge the edge
      * @param oldSourcePin the old source pin
      * @param sourcePin the new source pin
@@ -285,9 +325,11 @@ public class PraxisGraphScene<N> extends GraphPinScene<N, EdgeID<N>, PinID<N>> {
     }
 
     /**
-     * Attaches an anchor of a target pin an edge.
-     * The anchor is a ProxyAnchor that switches between the anchor attached to the pin widget directly and
-     * the anchor attached to the pin node widget based on the minimize-state of the node.
+     * Attaches an anchor of a target pin an edge. The anchor is a ProxyAnchor
+     * that switches between the anchor attached to the pin widget directly and
+     * the anchor attached to the pin node widget based on the minimize-state of
+     * the node.
+     *
      * @param edge the edge
      * @param oldTargetPin the old target pin
      * @param targetPin the new target pin
@@ -304,13 +346,105 @@ public class PraxisGraphScene<N> extends GraphPinScene<N, EdgeID<N>, PinID<N>> {
         PinWidget p = (PinWidget) findWidget(pin);
         return p.createAnchor();
     }
+    
+    boolean isBelowLODThreshold() {
+        return getZoomFactor() < LOD_ZOOM;
+    }
+    
+    
+//
+//    /**
+//     * Invokes layout of the scene.
+//     */
+//    public void layoutScene() {
+//        sceneLayout.invokeLayout();
+//    }  
+    
+    private class ZoomCorrector implements SceneListener {
+        
+        private final double minZoom = 0.2;
+        private final double maxZoom = 2;
 
-    /**
-     * Invokes layout of the scene.
-     */
-    public void layoutScene() {
-        sceneLayout.invokeLayout();
-    }  
+        @Override
+        public void sceneRepaint() {
+            // no op
+        }
+
+        @Override
+        public void sceneValidating() {
+            double zoom = getZoomFactor();
+            if (zoom < minZoom) {
+                setZoomFactor(minZoom);
+            } else if (zoom > maxZoom) {
+                setZoomFactor(maxZoom);
+            }
+        }
+
+        @Override
+        public void sceneValidated() {
+            // no op
+        }
+        
+    }
+
+    private class MoveProviderImpl implements MoveProvider {
+        
+        private final Map<Widget, Point> locations;
+        private final MoveProvider defaultProvider;
+        
+        private MoveProviderImpl() {
+            locations = new HashMap<Widget, Point>();
+            defaultProvider = ActionFactory.createDefaultMoveProvider();
+        }
+
+        @Override
+        public void movementStarted(Widget widget) {
+            // no op?    
+        }
+
+        @Override
+        public void movementFinished(Widget widget) {
+            locations.clear();
+        }
+
+        @Override
+        public Point getOriginalLocation(Widget widget) {
+            locations.put(widget, defaultProvider.getOriginalLocation(widget));
+            for (Object obj : getSelectedObjects()) {
+                if (!isNode(obj)) {
+                    continue;
+                }
+                Widget additional = findWidget(obj);
+                if (additional == widget) {
+                    continue;
+                }
+                locations.put(additional, defaultProvider.getOriginalLocation(additional));
+            }
+            return defaultProvider.getOriginalLocation(widget);
+        }
+
+        @Override
+        public void setNewLocation(Widget widget, Point location) {
+            defaultProvider.setNewLocation(widget, location);
+            Point primary = locations.get(widget);
+            if (primary == null || locations.size() == 1) {
+                return;
+            }
+            int dx = location.x - primary.x;
+            int dy = location.y - primary.y;
+            for (Map.Entry<Widget, Point> loc : locations.entrySet()) {
+                Widget additional = loc.getKey();
+                if (additional == widget) {
+                    continue;
+                }
+                Point pt = new Point(loc.getValue());
+                pt.translate(dx, dy);
+                defaultProvider.setNewLocation(additional, pt);
+            }
+        }
+        
+    }
+    
     
     private static class WidgetCollector implements ConnectionWidgetCollisionsCollector {
 
@@ -320,20 +454,18 @@ public class PraxisGraphScene<N> extends GraphPinScene<N, EdgeID<N>, PinID<N>> {
             Widget w1 = connectionWidget.getSourceAnchor().getRelatedWidget().getParentWidget();
             Widget w2 = connectionWidget.getTargetAnchor().getRelatedWidget().getParentWidget();
             Rectangle rect;
-            
+
             rect = w1.getBounds();
             rect = w1.convertLocalToScene(rect);
             rect.grow(10, 10);
             verticalCollisions.add(rect);
             horizontalCollisions.add(rect);
-            
+
             rect = w2.getBounds();
             rect = w2.convertLocalToScene(rect);
             rect.grow(10, 10);
             verticalCollisions.add(rect);
             horizontalCollisions.add(rect);
         }
-        
     }
-    
 }

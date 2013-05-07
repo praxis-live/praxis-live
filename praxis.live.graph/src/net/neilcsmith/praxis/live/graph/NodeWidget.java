@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Neil C Smith.
+ * Copyright 2013 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 2 only, as
@@ -109,11 +109,13 @@ public class NodeWidget extends Widget implements StateModel.Listener, MinimizeA
 
     private SeparatorWidget pinsSeparator;
 
-    private HashMap<String, Widget> pinCategoryWidgets = new HashMap<String, Widget> ();
+//    private HashMap<String, Widget> pinCategoryWidgets = new HashMap<String, Widget> ();
 
     private StateModel stateModel = new StateModel (2);
 //    private Anchor nodeAnchor;
     private LAFScheme scheme;
+    private PraxisGraphScene scene;
+    private boolean selected;
 
 
 
@@ -124,6 +126,8 @@ public class NodeWidget extends Widget implements StateModel.Listener, MinimizeA
      */
     public NodeWidget (PraxisGraphScene scene) {
         super (scene);
+        this.scene = scene;
+        scene.addSceneListener(new SceneListenerImpl());
         this.scheme = scene.getColorScheme();
         
         setLayout (LayoutFactory.createVerticalFlowLayout ());
@@ -164,7 +168,7 @@ public class NodeWidget extends Widget implements StateModel.Listener, MinimizeA
         }
 
         pinsSeparator = new SeparatorWidget (scene, SeparatorWidget.Orientation.HORIZONTAL);
-        addChild (pinsSeparator);
+//        addChild (pinsSeparator);
 
         Widget topLayer = new Widget (scene);
         addChild (topLayer);
@@ -233,6 +237,11 @@ public class NodeWidget extends Widget implements StateModel.Listener, MinimizeA
      */
     protected void notifyStateChanged (ObjectState previousState, ObjectState state) {
         scheme.updateUI (this, previousState, state);
+        selected = state.isSelected();
+    }
+    
+    boolean isSelected() {
+        return selected;
     }
 
     /**
@@ -410,8 +419,37 @@ public class NodeWidget extends Widget implements StateModel.Listener, MinimizeA
     public Widget getPinsSeparator () {
         return pinsSeparator;
     }
+   
+    
+    @Override
+    protected void paintChildren() {
+        if (scene.isBelowLODThreshold()) {
+            return;
+        }
+        super.paintChildren();
+    }
+    
+    private class SceneListenerImpl implements Scene.SceneListener {
 
-    private final class ToggleMinimizedAction extends WidgetAction.Adapter {
+        @Override
+        public void sceneRepaint() {
+            // no op
+        }
+
+        @Override
+        public void sceneValidating() {
+            if (scheme instanceof DefaultLAFScheme) {
+                ((DefaultLAFScheme) scheme).updateOnRevalidate(NodeWidget.this, scene.isBelowLODThreshold());
+            }
+        }
+
+        @Override
+        public void sceneValidated() {
+        }
+        
+    }
+
+    private class ToggleMinimizedAction extends WidgetAction.Adapter {
 
         public State mousePressed (Widget widget, WidgetMouseEvent event) {
             if (event.getButton () == MouseEvent.BUTTON1 || event.getButton () == MouseEvent.BUTTON2) {
