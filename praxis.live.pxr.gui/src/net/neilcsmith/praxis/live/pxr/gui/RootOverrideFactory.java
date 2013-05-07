@@ -22,53 +22,58 @@
 
 package net.neilcsmith.praxis.live.pxr.gui;
 
-import net.neilcsmith.praxis.core.Component;
 import net.neilcsmith.praxis.core.ComponentFactory;
 import net.neilcsmith.praxis.core.ComponentFactoryProvider;
-import net.neilcsmith.praxis.core.ComponentInstantiationException;
 import net.neilcsmith.praxis.core.ComponentType;
-import net.neilcsmith.praxis.core.ComponentTypeNotFoundException;
-import net.neilcsmith.praxis.core.Root;
+import net.neilcsmith.praxis.impl.AbstractComponentFactory;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author Neil C Smith (http://neilcsmith.net)
  */
-public class RootOverrideFactory implements ComponentFactory {
+public class RootOverrideFactory extends AbstractComponentFactory {
 
     private final static ComponentType root = ComponentType.create("root:gui");
     private final static RootOverrideFactory factory = new RootOverrideFactory();
 
-    private RootOverrideFactory() {}
-
-    @Override
-    public ComponentType[] getComponentTypes() {
-        return new ComponentType[0];
+    private RootOverrideFactory() {
+        addRoot("root:gui", DockableGuiRoot.class);
+    
     }
 
-    @Override
-    public ComponentType[] getRootComponentTypes() {
-        return new ComponentType[]{root};
-    }
-
-    @Override
-    public Component createComponent(ComponentType type) throws ComponentTypeNotFoundException, ComponentInstantiationException {
-        throw new ComponentTypeNotFoundException("This factory cannot create any components");
-    }
-
-    @Override
-    public Root createRootComponent(ComponentType type) throws ComponentTypeNotFoundException, ComponentInstantiationException {
-        if (root.equals(type)) {
-            return new DockableGuiRoot();
-        }
-        throw new ComponentTypeNotFoundException("Root type " + type + " not found in this factory");
-    }
-
-    @Override
-    public ComponentType getTypeForClass(Class<? extends Component> clazz) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
+//    @Override
+//    public ComponentType[] getComponentTypes() {
+//        return new ComponentType[0];
+//    }
+//
+//    @Override
+//    public ComponentType[] getRootComponentTypes() {
+//        return new ComponentType[]{root};
+//    }
+//    
+//    @Override
+//    public MetaData<? extends Component> getMetaData(ComponentType type) {
+//        throw new IllegalArgumentException("This factory cannot create any components");
+//    }
+//
+//    @Override
+//    public MetaData<? extends Root> getRootMetaData(ComponentType type) {
+//        
+//    }
+//
+//    @Override
+//    public Component createComponent(ComponentType type) throws ComponentInstantiationException {
+//        throw new IllegalArgumentException("This factory cannot create any components");
+//    }
+//
+//    @Override
+//    public Root createRootComponent(ComponentType type) throws ComponentInstantiationException {
+//        if (root.equals(type)) {
+//            return new DockableGuiRoot();
+//        }
+//        throw new IllegalArgumentException("Root type " + type + " not found in this factory");
+//    }
 
 
     @ServiceProvider(service=ComponentFactoryProvider.class, position=0)
