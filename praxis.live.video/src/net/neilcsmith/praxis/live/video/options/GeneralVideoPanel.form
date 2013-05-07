@@ -83,7 +83,7 @@
                       <Group type="102" attributes="0">
                           <Component id="rendererLbl" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
-                          <Component id="rendererChooser" max="32767" attributes="1"/>
+                          <Component id="rendererChooser" pref="521" max="32767" attributes="1"/>
                       </Group>
                       <Component id="defaultConfigDescription" alignment="1" min="-2" max="-2" attributes="1"/>
                   </Group>
@@ -99,7 +99,7 @@
                       <Component id="rendererChooser" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="rendererLbl" alignment="3" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <EmptySpace pref="311" max="32767" attributes="0"/>
+                  <EmptySpace pref="317" max="32767" attributes="0"/>
                   <Component id="defaultConfigDescription" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
               </Group>

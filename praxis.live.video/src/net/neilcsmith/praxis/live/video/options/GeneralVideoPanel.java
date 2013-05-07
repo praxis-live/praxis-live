@@ -13,7 +13,7 @@ final class GeneralVideoPanel extends javax.swing.JPanel {
     };
     
     private final static String[] rendererDisplay = new String[] {
-        "Software Renderer", "OpenGL Renderer (beta)"
+        "Software Renderer", "OpenGL Renderer"
     };
 
     private final GeneralVideoOptionsPanelController controller;
