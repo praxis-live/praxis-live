@@ -2,4 +2,5 @@ Manifest-Version: 1.0
 OpenIDE-Module: net.neilcsmith.praxis.live.pxr.osc
 OpenIDE-Module-Localizing-Bundle: net/neilcsmith/praxis/live/pxr/osc/Bundle.properties
 OpenIDE-Module-Specification-Version: 1.0
-
+AutoUpdate-Essential-Module: true
+AutoUpdate-Show-In-Client: false
