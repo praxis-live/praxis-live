@@ -21,10 +21,10 @@ final class GeneralAudioPanel extends javax.swing.JPanel {
         "22050", "32000", "44100", "48000", "88200", "96000"
     };
     private final static int[] buffersizes = new int[]{
-        32, 64, 128, 256, 512, 1024
+        32, 64, 128, 256, 512, 1024, 2048, 4096
     };
     private final static String[] buffersizeDisplay = new String[]{
-        "32", "64", "128", "256", "512", "1024"
+        "32", "64", "128", "256", "512", "1024", "2048", "4096"
     };
     private final GeneralAudioOptionsPanelController controller;
 
