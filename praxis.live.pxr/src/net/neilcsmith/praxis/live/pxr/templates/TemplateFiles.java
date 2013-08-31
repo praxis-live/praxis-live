@@ -41,6 +41,8 @@ class TemplateFiles {
         display.put("root:video", "Video Patch");
         display.put("root:midi", "MIDI Bindings");
         display.put("root:gui", "Control Panel (GUI)");
+        display.put("root:tinkerforge", "TinkerForge Patch");
+        display.put("root:osc", "OSC Bindings");
     }
     private final static String templateFolder = "Templates/Praxis/";
     private final static TemplateFiles INSTANCE = new TemplateFiles();
