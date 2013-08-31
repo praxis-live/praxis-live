@@ -335,6 +335,9 @@ public class GraphEditor extends RootEditor {
 
     private void removeChild(String id) {
         scene.removeNodeWithEdges(id);
+        // @TODO temporary fix for moving dynamic components?
+        activePoint.x = 0;
+        activePoint.y = 0;
     }
 
     private Point resolveLocation(String id, ComponentProxy cmp) {

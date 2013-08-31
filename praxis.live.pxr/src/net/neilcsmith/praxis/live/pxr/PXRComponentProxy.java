@@ -103,18 +103,24 @@ public class PXRComponentProxy implements ComponentProxy {
         } else {
             oldProps = properties;
         }
+        if (!oldProps.isEmpty()) {
+            for (PraxisProperty<?> prop : oldProps.values()) {
+                ((BoundArgumentProperty) prop).dispose();
+            }
+            oldProps.clear();
+        }
         properties = new LinkedHashMap<String, PraxisProperty<?>>();
         File workingDir = getRoot().getWorkingDirectory();
         for (String ctlID : info.getControls()) {
-            PraxisProperty<?> prop = oldProps.remove(ctlID);
-            if (prop != null) {
-                // existing
-                properties.put(ctlID, prop);
-                continue;
-            }
+//            PraxisProperty<?> prop = oldProps.remove(ctlID);
+//            if (prop != null) {
+//                // existing
+//                properties.put(ctlID, prop);
+//                continue;
+//            }
             ControlInfo ctl = info.getControlInfo(ctlID);
             ControlAddress address = ControlAddress.create(cmpAd, ctlID);
-            prop = createPropertyForControl(address, ctl);
+            PraxisProperty<?> prop = createPropertyForControl(address, ctl);
             if (prop != null) {
                 ((BoundArgumentProperty) prop).addPropertyChangeListener(propertyListener);
                 prop.setValue("address", address);
@@ -124,12 +130,12 @@ public class PXRComponentProxy implements ComponentProxy {
             }
         }
 
-        if (!oldProps.isEmpty()) {
-            for (PraxisProperty<?> prop : oldProps.values()) {
-                ((BoundArgumentProperty) prop).dispose();
-            }
-            oldProps.clear();
-        }
+//        if (!oldProps.isEmpty()) {
+//            for (PraxisProperty<?> prop : oldProps.values()) {
+//                ((BoundArgumentProperty) prop).dispose();
+//            }
+//            oldProps.clear();
+//        }
 
         if (syncing) {
             setPropertiesSyncing(true);
