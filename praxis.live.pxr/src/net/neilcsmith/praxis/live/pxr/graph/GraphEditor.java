@@ -40,6 +40,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -310,10 +311,11 @@ public class GraphEditor extends RootEditor {
         if (LOG.isLoggable(Level.FINEST)) {
             LOG.finest("Adding " + cmp.getAddress() + " to graph.");
         }
-        NodeWidget widget = scene.addNode(id, id);
+        String name = cmp instanceof ContainerProxy ? id + "/.." : id;
+        NodeWidget widget = scene.addNode(id, name);
 //        widget.setNodeType(cmp.getType().toString());
         widget.setToolTipText(cmp.getType().toString());
-        widget.setPreferredLocation(resolveLocation(id, cmp));
+        widget.setPreferredLocation(resolveLocation(id, cmp));       
         if ("true".equals(cmp.getAttribute(ATTR_GRAPH_MINIMIZED))) {
             widget.setMinimized(true);
         }
