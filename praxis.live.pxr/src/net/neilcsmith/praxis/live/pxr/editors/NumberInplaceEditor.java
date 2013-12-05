@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Neil C Smith.
+ * Copyright 2013 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -21,6 +21,7 @@
  */
 package net.neilcsmith.praxis.live.pxr.editors;
 
+import java.awt.AWTEvent;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.EventQueue;
@@ -30,6 +31,7 @@ import java.awt.GridLayout;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyEditor;
@@ -59,7 +61,6 @@ class NumberInplaceEditor extends JComponent implements InplaceEditor {
     private static final Color INACTIVE_COLOR = Color.GRAY;
     private static final DecimalFormat FORMATTER = new DecimalFormat("####0.0####");
     private static final long IGNORE_CLICK_TIME = 500 * 1000000;
-    
     private PropertyEditor propertyEditor;
     private PropertyModel propertyModel;
     private List<ActionListener> listeners;
@@ -129,27 +130,36 @@ class NumberInplaceEditor extends JComponent implements InplaceEditor {
 
     }
 
+//    @Override
+//    public void addNotify() {
+//        super.addNotify();
+//        if (EventQueue.getCurrentEvent() instanceof MouseEvent) {
+//            textField.setVisible(false);
+//        } else {
+//            EventQueue.invokeLater(new Runnable() {
+//
+//                @Override
+//                public void run() {
+//                    focusTextField();
+//                }
+//            });
+//        }
+//    }
     @Override
-    public void addNotify() {
-        super.addNotify();
-        if (EventQueue.getCurrentEvent() instanceof MouseEvent) {
-            textField.setVisible(false);
-        } else {
+    public void connect(PropertyEditor pe, PropertyEnv env) {
+        this.propertyEditor = pe;
+        initialValue = pe.getValue();
+        textField.setVisible(false);
+        AWTEvent event = EventQueue.getCurrentEvent();
+        LOG.log(Level.FINE, "Invoking Event: {0}", event);
+        if (event instanceof KeyEvent) {
             EventQueue.invokeLater(new Runnable() {
-
                 @Override
                 public void run() {
                     focusTextField();
                 }
             });
         }
-    }
-
-    @Override
-    public void connect(PropertyEditor pe, PropertyEnv env) {
-        this.propertyEditor = pe;
-        initialValue = pe.getValue();
-        textField.setVisible(false);
         reset();
     }
 
@@ -258,6 +268,8 @@ class NumberInplaceEditor extends JComponent implements InplaceEditor {
         textField.setVisible(true);
         textField.selectAll();
         textField.requestFocusInWindow();
+
+
     }
 
     private class MouseHandler extends MouseAdapter {
