@@ -21,7 +21,6 @@
  */
 package net.neilcsmith.praxis.live.pxr.editors;
 
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
 import java.awt.FontMetrics;
@@ -33,8 +32,8 @@ import net.neilcsmith.praxis.core.Argument;
 import net.neilcsmith.praxis.core.ArgumentFormatException;
 import net.neilcsmith.praxis.core.info.ArgumentInfo;
 import net.neilcsmith.praxis.core.types.PArray;
-import net.neilcsmith.praxis.core.types.PMap;
-import net.neilcsmith.praxis.live.pxr.api.PraxisProperty;
+import net.neilcsmith.praxis.live.properties.EditorSupport;
+import net.neilcsmith.praxis.live.properties.PraxisProperty;
 import org.openide.awt.HtmlRenderer;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
@@ -43,8 +42,9 @@ import org.openide.explorer.propertysheet.PropertyEnv;
  *
  * @author Neil C Smith (http://neilcsmith.net)
  */
-public class StringEditor extends PraxisPropertyEditorSupport
-        implements ExPropertyEditor {
+@SuppressWarnings("deprecation")
+public class StringEditor extends EditorSupport
+        implements ExPropertyEditor, net.neilcsmith.praxis.live.pxr.api.PraxisPropertyEditor {
 
     private PropertyEnv env;
     private PraxisProperty<?> property;

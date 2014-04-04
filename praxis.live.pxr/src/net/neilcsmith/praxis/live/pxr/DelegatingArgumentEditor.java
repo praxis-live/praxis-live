@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Neil C Smith.
+ * Copyright 2014 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -27,12 +27,11 @@ import java.awt.Graphics;
 import java.awt.Rectangle;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.beans.PropertyEditorSupport;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.JLabel;
 import net.neilcsmith.praxis.core.info.ControlInfo;
-import net.neilcsmith.praxis.core.types.PString;
+import net.neilcsmith.praxis.live.properties.EditorSupport;
+import net.neilcsmith.praxis.live.properties.PraxisProperty;
 import net.neilcsmith.praxis.live.pxr.api.PraxisPropertyEditor;
 import net.neilcsmith.praxis.live.pxr.editors.SubCommandEditor;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
@@ -42,19 +41,19 @@ import org.openide.explorer.propertysheet.PropertyEnv;
  *
  * @author Neil C Smith (http://neilcsmith.net)
  */
-class DelegatingArgumentEditor extends PropertyEditorSupport
-        implements PraxisPropertyEditor, ExPropertyEditor {
+class DelegatingArgumentEditor extends EditorSupport
+        implements PraxisPropertyEditor, ExPropertyEditor, PraxisProperty.DelegateEditor {
 
     private final static Logger LOG = Logger.getLogger(DelegatingArgumentEditor.class.getName());
-    private PraxisPropertyEditor defaultEditor;
-    private PraxisPropertyEditor currentEditor;
-    private PraxisPropertyEditor[] allEditors;
+    private PraxisProperty.Editor defaultEditor;
+    private PraxisProperty.Editor currentEditor;
+    private PraxisProperty.Editor[] allEditors;
     private DelegateListener dl;
-    private ArgumentProperty property;
+    private BoundArgumentProperty property;
     private ControlInfo info;
     private PropertyEnv env;
 
-    DelegatingArgumentEditor(ArgumentProperty property, ControlInfo info) {
+    DelegatingArgumentEditor(BoundArgumentProperty property, ControlInfo info) {
         this.property = property;
         this.info = info;
         defaultEditor = EditorManager.getDefaultEditor(property, info); // must never be null
@@ -62,7 +61,6 @@ class DelegatingArgumentEditor extends PropertyEditorSupport
         property.setValue("editor", currentEditor);
         dl = new DelegateListener();
         currentEditor.addPropertyChangeListener(dl);
-
 
     }
 
@@ -73,7 +71,12 @@ class DelegatingArgumentEditor extends PropertyEditorSupport
 
     @Override
     public String getDisplayName() {
-        return currentEditor.getDisplayName();
+        if (currentEditor instanceof PraxisPropertyEditor) {
+            return ((PraxisPropertyEditor) currentEditor).getDisplayName();
+        } else {
+            return currentEditor.getClass().getSimpleName();
+        }
+
     }
 
     @Override
@@ -109,7 +112,7 @@ class DelegatingArgumentEditor extends PropertyEditorSupport
                 }
             }
         }
-        for (PraxisPropertyEditor ed : getAllEditors()) {
+        for (PraxisProperty.Editor ed : getAllEditors()) {
             if (ed == currentEditor) {
                 continue;
             }
@@ -185,14 +188,13 @@ class DelegatingArgumentEditor extends PropertyEditorSupport
 
     @Override
     public Component getCustomEditor() {
-        if ( (allEditors != null && allEditors.length > 1) ||
-                EditorManager.hasAdditionalEditors(property, info)) {
+        if ((allEditors != null && allEditors.length > 1)
+                || EditorManager.hasAdditionalEditors(property, info)) {
             return new DelegatingArgumentCustomEditor(this, env);
         } else {
             return currentEditor.getCustomEditor();
         }
-        
-        
+
     }
 
     @Override
@@ -207,25 +209,28 @@ class DelegatingArgumentEditor extends PropertyEditorSupport
 
     }
 
-    void setCurrentEditor(PraxisPropertyEditor editor) {
+    void setCurrentEditor(PraxisProperty.Editor editor) {
         if (currentEditor != editor) {
             currentEditor.removePropertyChangeListener(dl);
+            currentEditor.reset();
             currentEditor = editor;
             property.setValue("editor", editor);
             currentEditor.addPropertyChangeListener(dl);
-            LOG.fine("Setting current editor to " + editor.getDisplayName());
+            LOG.fine("Setting current editor to " + editor.getClass().getSimpleName());
         }
     }
-    
+
     void restoreDefaultEditor() {
+//        currentEditor.reset();
         setCurrentEditor(defaultEditor);
     }
 
-    PraxisPropertyEditor getCurrentEditor() {
+    @Override
+    public PraxisProperty.Editor getCurrentEditor() {
         return currentEditor;
     }
 
-    PraxisPropertyEditor[] getAllEditors() {
+    PraxisProperty.Editor[] getAllEditors() {
         if (allEditors == null) {
             initializeAllEditors();
         }
@@ -234,13 +239,13 @@ class DelegatingArgumentEditor extends PropertyEditorSupport
 
     private void initializeAllEditors() {
         if (EditorManager.hasAdditionalEditors(property, info)) {
-            PraxisPropertyEditor[] additional = EditorManager.getAdditionalEditors(property, info);
-            PraxisPropertyEditor[] all = new PraxisPropertyEditor[additional.length + 1];
+            PraxisProperty.Editor[] additional = EditorManager.getAdditionalEditors(property, info);
+            PraxisProperty.Editor[] all = new PraxisProperty.Editor[additional.length + 1];
             all[0] = defaultEditor;
             System.arraycopy(additional, 0, all, 1, additional.length);
             allEditors = all;
         } else {
-            allEditors = new PraxisPropertyEditor[]{defaultEditor};
+            allEditors = new PraxisProperty.Editor[]{defaultEditor};
         }
     }
 
@@ -250,6 +255,21 @@ class DelegatingArgumentEditor extends PropertyEditorSupport
             ((ExPropertyEditor) currentEditor).attachEnv(env);
         }
         this.env = env;
+    }
+
+    @Override
+    public Object getAttribute(String key) {
+        return currentEditor.getAttribute(key);
+    }
+
+    @Override
+    public String[] getAttributeKeys() {
+        return currentEditor.getAttributeKeys();
+    }
+
+    @Override
+    public void reset() {
+        currentEditor.reset();
     }
 
     private class DelegateListener implements PropertyChangeListener {

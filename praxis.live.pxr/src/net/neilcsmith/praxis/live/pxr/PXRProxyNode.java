@@ -65,7 +65,7 @@ class PXRProxyNode extends AbstractNode {
     PXRProxyNode(PXRComponentProxy component, PXRDataObject dob) {
         super(component instanceof PXRContainerProxy ?
             new ContainerChildren((PXRContainerProxy) component) : Children.LEAF,
-                new ProxyLookup(Lookups.singleton(component), dob.getLookup()));
+                /*new ProxyLookup(*/Lookups.singleton(component)/*, dob.getLookup())*/);
         this.component = component;
         setName(component.getAddress().getID());
         component.addPropertyChangeListener(new ComponentPropListener());
@@ -78,7 +78,7 @@ class PXRProxyNode extends AbstractNode {
 
     @Override
     public String getDisplayName() {
-        return component.getAddress().getID();
+        return getName();
     }
 
     @Override
@@ -148,7 +148,7 @@ class PXRProxyNode extends AbstractNode {
         try {
             PXRContainerProxy container = component.getParent();
             container.removeChild(container.getChildID(component), null);
-            component.dispose(); //@TODO should be done from container callback?
+//            component.dispose(); //@TODO should be done from container callback?
         } catch (ProxyException ex) {
             Exceptions.printStackTrace(ex);
         }

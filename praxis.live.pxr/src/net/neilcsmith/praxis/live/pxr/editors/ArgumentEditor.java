@@ -23,7 +23,7 @@
 package net.neilcsmith.praxis.live.pxr.editors;
 
 import net.neilcsmith.praxis.core.info.ArgumentInfo;
-import net.neilcsmith.praxis.live.pxr.api.PraxisProperty;
+import net.neilcsmith.praxis.live.properties.PraxisProperty;
 
 /**
  *

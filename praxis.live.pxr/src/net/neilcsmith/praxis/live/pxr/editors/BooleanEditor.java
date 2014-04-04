@@ -19,20 +19,20 @@
  * Please visit http://neilcsmith.net if you need additional information or
  * have any questions.
  */
-
 package net.neilcsmith.praxis.live.pxr.editors;
 
-import java.beans.PropertyEditorSupport;
 import net.neilcsmith.praxis.core.Argument;
 import net.neilcsmith.praxis.core.ArgumentFormatException;
 import net.neilcsmith.praxis.core.types.PBoolean;
-import net.neilcsmith.praxis.live.pxr.api.PraxisPropertyEditor;
+import net.neilcsmith.praxis.live.properties.EditorSupport;
 
 /**
  *
  * @author Neil C Smith (http://neilcsmith.net)
  */
-public class BooleanEditor extends PropertyEditorSupport implements PraxisPropertyEditor {
+@SuppressWarnings("deprecation")
+public class BooleanEditor extends EditorSupport
+        implements net.neilcsmith.praxis.live.pxr.api.PraxisPropertyEditor {
 
     @Override
     public void setValue(Object value) {
@@ -43,8 +43,6 @@ public class BooleanEditor extends PropertyEditorSupport implements PraxisProper
             throw new IllegalArgumentException(ex);
         }
     }
-
-
 
     @Override
     public void setAsText(String text) throws IllegalArgumentException {
@@ -60,14 +58,10 @@ public class BooleanEditor extends PropertyEditorSupport implements PraxisProper
         return new String[]{"true", "false"};
     }
 
-
-
-
-
     @Override
     public String getPraxisInitializationString() {
         try {
-            return PBoolean.coerce((Argument)getValue()).toString();
+            return PBoolean.coerce((Argument) getValue()).toString();
         } catch (Exception ex) {
             return null;
         }

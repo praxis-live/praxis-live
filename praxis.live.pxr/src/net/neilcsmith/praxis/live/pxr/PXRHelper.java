@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Neil C Smith.
+ * Copyright 2014 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -26,7 +26,6 @@ import net.neilcsmith.praxis.core.Component;
 import net.neilcsmith.praxis.core.ComponentAddress;
 import net.neilcsmith.praxis.core.ComponentType;
 import net.neilcsmith.praxis.core.ControlAddress;
-import net.neilcsmith.praxis.core.PortAddress;
 import net.neilcsmith.praxis.core.interfaces.ComponentInterface;
 import net.neilcsmith.praxis.core.interfaces.ContainerInterface;
 import net.neilcsmith.praxis.core.interfaces.RootManagerService;
@@ -34,8 +33,7 @@ import net.neilcsmith.praxis.core.types.PString;
 import net.neilcsmith.praxis.live.core.api.Callback;
 import net.neilcsmith.praxis.live.core.api.ExtensionProvider;
 import net.neilcsmith.praxis.live.core.api.HubUnavailableException;
-import net.neilcsmith.praxis.live.pxr.api.Connection;
-import net.neilcsmith.praxis.live.pxr.api.ContainerProxy;
+import net.neilcsmith.praxis.live.model.Connection;
 import net.neilcsmith.praxis.live.pxr.api.ProxyException;
 import net.neilcsmith.praxis.live.util.AbstractHelperComponent;
 import org.openide.util.Exceptions;
@@ -47,7 +45,7 @@ import org.openide.util.lookup.ServiceProvider;
  */
 public class PXRHelper extends AbstractHelperComponent {
 
-    private static PXRHelper INSTANCE = new PXRHelper();
+    private static final PXRHelper INSTANCE = new PXRHelper();
 
     private PXRHelper() {
     }

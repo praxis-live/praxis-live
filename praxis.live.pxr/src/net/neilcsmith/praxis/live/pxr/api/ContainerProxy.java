@@ -19,7 +19,6 @@
  * Please visit http://neilcsmith.net if you need additional information or
  * have any questions.
  */
-
 package net.neilcsmith.praxis.live.pxr.api;
 
 import net.neilcsmith.praxis.live.core.api.Callback;

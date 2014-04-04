@@ -48,7 +48,7 @@ public interface ComponentProxy extends Proxy {
 
     public Node getNodeDelegate();
 
-    public PraxisProperty getProperty(String id);
+    public PraxisProperty<?> getProperty(String id);
 
     public String[] getPropertyIDs();
 

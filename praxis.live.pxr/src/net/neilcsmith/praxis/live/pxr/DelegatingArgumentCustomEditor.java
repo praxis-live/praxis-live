@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Neil C Smith.
+ * Copyright 2014 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -29,7 +29,7 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import javax.swing.JPanel;
-import net.neilcsmith.praxis.live.pxr.api.PraxisPropertyEditor;
+import net.neilcsmith.praxis.live.properties.PraxisProperty;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
 
@@ -37,12 +37,13 @@ import org.openide.explorer.propertysheet.PropertyEnv;
  *
  * @author Neil C Smith (http://neilcsmith.net)
  */
+@SuppressWarnings("deprecation")
 class DelegatingArgumentCustomEditor extends javax.swing.JPanel {
 
     private DelegatingArgumentEditor delegateEditor;
     private PropertyEnv env;
-    private PraxisPropertyEditor[] allEditors;
-    private PraxisPropertyEditor currentEditor;
+    private PraxisProperty.Editor[] allEditors;
+    private PraxisProperty.Editor currentEditor;
 
     /** Creates new form DelegatingArgumentCustomEditor */
     DelegatingArgumentCustomEditor(DelegatingArgumentEditor delegateEditor, PropertyEnv env) {
@@ -65,7 +66,7 @@ class DelegatingArgumentCustomEditor extends javax.swing.JPanel {
     private void initComponents() {
 
         chooserLabel = new javax.swing.JLabel();
-        chooser = new javax.swing.JComboBox();
+        chooser = new javax.swing.JComboBox<String>();
         editors = new javax.swing.JPanel();
 
         chooserLabel.setLabelFor(chooser);
@@ -98,7 +99,7 @@ class DelegatingArgumentCustomEditor extends javax.swing.JPanel {
         );
     }// </editor-fold>//GEN-END:initComponents
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JComboBox chooser;
+    private javax.swing.JComboBox<String> chooser;
     private javax.swing.JLabel chooserLabel;
     private javax.swing.JPanel editors;
     // End of variables declaration//GEN-END:variables
@@ -106,7 +107,7 @@ class DelegatingArgumentCustomEditor extends javax.swing.JPanel {
     private void installEditors() {
         Object value = delegateEditor.getValue();
         for (int i = 0; i < allEditors.length; i++) {
-            PraxisPropertyEditor ed = allEditors[i];
+            PraxisProperty.Editor ed = allEditors[i];
             if (ed != currentEditor) {
                 try {
                     ed.setValue(value);
@@ -126,7 +127,11 @@ class DelegatingArgumentCustomEditor extends javax.swing.JPanel {
                 // @TODO NO editor component
             }
             editors.add(custEd, "" + i);
-            chooser.addItem(ed.getDisplayName());
+            if (ed instanceof net.neilcsmith.praxis.live.pxr.api.PraxisPropertyEditor) {
+                chooser.addItem(((net.neilcsmith.praxis.live.pxr.api.PraxisPropertyEditor)ed).getDisplayName());
+            } else {
+                chooser.addItem(ed.getClass().getSimpleName());
+            }
             if (ed == currentEditor) {
                 chooser.setSelectedIndex(i);
             }
@@ -136,7 +141,7 @@ class DelegatingArgumentCustomEditor extends javax.swing.JPanel {
 
     private void setupCurrentEditor() {
         int selected = chooser.getSelectedIndex();
-        PraxisPropertyEditor ed = allEditors[selected];
+        PraxisProperty.Editor ed = allEditors[selected];
         CardLayout cards = (CardLayout) editors.getLayout();
         cards.show(editors, "" + selected);
         if (ed != currentEditor) {

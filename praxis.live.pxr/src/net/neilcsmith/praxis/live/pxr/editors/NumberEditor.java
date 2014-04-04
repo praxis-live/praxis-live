@@ -24,14 +24,13 @@ package net.neilcsmith.praxis.live.pxr.editors;
 import java.awt.Component;
 import java.awt.Graphics;
 import java.awt.Rectangle;
-import java.beans.PropertyEditorSupport;
 import net.neilcsmith.praxis.core.Argument;
 import net.neilcsmith.praxis.core.ArgumentFormatException;
 import net.neilcsmith.praxis.core.info.ArgumentInfo;
 import net.neilcsmith.praxis.core.types.PMap;
 import net.neilcsmith.praxis.core.types.PNumber;
-import net.neilcsmith.praxis.live.pxr.api.PraxisProperty;
-import net.neilcsmith.praxis.live.pxr.api.PraxisPropertyEditor;
+import net.neilcsmith.praxis.live.properties.EditorSupport;
+import net.neilcsmith.praxis.live.properties.PraxisProperty;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.InplaceEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
@@ -40,8 +39,10 @@ import org.openide.explorer.propertysheet.PropertyEnv;
  *
  * @author Neil C Smith (http://neilcsmith.net)
  */
-public class NumberEditor extends PropertyEditorSupport implements 
-        PraxisPropertyEditor, ExPropertyEditor, InplaceEditor.Factory {
+@SuppressWarnings("deprecation")
+public class NumberEditor extends EditorSupport implements 
+        net.neilcsmith.praxis.live.pxr.api.PraxisPropertyEditor,
+        ExPropertyEditor, InplaceEditor.Factory {
 
     private ArgumentInfo info;
     private NumberInplaceEditor inplace;

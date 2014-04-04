@@ -48,11 +48,11 @@ public class DefaultRootRegistry extends RootRegistry {
 
     private final static DefaultRootRegistry INSTANCE = new DefaultRootRegistry();
     private PropertyChangeSupport pcs;
-    private final Set<RootProxy> roots;
+    private final Set<PXRRootProxy> roots;
     private ArgumentPropertyAdaptor.ReadOnly rootsAdaptor;
 
     private DefaultRootRegistry() {
-        roots = new LinkedHashSet<RootProxy>();
+        roots = new LinkedHashSet<PXRRootProxy>();
         pcs = new PropertyChangeSupport(this);
         PXRHelper.getDefault().addPropertyChangeListener(new HubListener());
         rootsAdaptor = new ArgumentPropertyAdaptor.ReadOnly(this, "roots", false, SyncRate.Medium);
@@ -66,7 +66,7 @@ public class DefaultRootRegistry extends RootRegistry {
         bindRootsAdaptor();
     }
 
-    public synchronized void register(RootProxy root) {
+    public synchronized void register(PXRRootProxy root) {
         if (root == null) {
             throw new NullPointerException();
         }
@@ -77,8 +77,9 @@ public class DefaultRootRegistry extends RootRegistry {
         fireRootsChange();
     }
 
-    public synchronized void unregister(RootProxy root) {
+    public synchronized void unregister(PXRRootProxy root) {
         if (roots.remove(root)) {
+            root.dispose();
             fireRootsChange();
         }
         
@@ -87,6 +88,9 @@ public class DefaultRootRegistry extends RootRegistry {
     private synchronized void unregisterAll() {
         if (roots.isEmpty()) {
             return;
+        }
+        for (PXRRootProxy root : roots) {
+            root.dispose();
         }
         roots.clear();
         fireRootsChange();
@@ -99,11 +103,13 @@ public class DefaultRootRegistry extends RootRegistry {
             for (Argument id : rts) {
                 ids.add(id.toString());
             }
-            Iterator<RootProxy> itr = roots.iterator();
+            Iterator<PXRRootProxy> itr = roots.iterator();
             boolean removed = false;
             while (itr.hasNext()) {
-                if (!ids.contains(itr.next().getAddress().getRootID())) {
+                PXRRootProxy root = itr.next();
+                if (!ids.contains(root.getAddress().getRootID())) {
                     itr.remove();
+                    root.dispose();
                     removed = true;
                 }
             }
@@ -142,8 +148,8 @@ public class DefaultRootRegistry extends RootRegistry {
     }
 
     @Override
-    public synchronized RootProxy[] getRoots() {
-        return roots.toArray(new RootProxy[roots.size()]);
+    public synchronized PXRRootProxy[] getRoots() {
+        return roots.toArray(new PXRRootProxy[roots.size()]);
     }
 
     private class HubListener implements PropertyChangeListener {

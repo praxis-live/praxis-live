@@ -21,6 +21,7 @@
  */
 package net.neilcsmith.praxis.live.pxr;
 
+import net.neilcsmith.praxis.live.properties.SyntaxUtils;
 import java.io.IOException;
 import java.util.Set;
 import java.util.logging.Level;
@@ -29,8 +30,6 @@ import net.neilcsmith.praxis.core.ComponentAddress;
 import net.neilcsmith.praxis.live.pxr.api.ComponentProxy;
 import net.neilcsmith.praxis.live.pxr.api.Connection;
 import net.neilcsmith.praxis.live.pxr.api.ContainerProxy;
-import net.neilcsmith.praxis.live.pxr.api.PraxisProperty;
-import net.neilcsmith.praxis.live.pxr.api.PraxisPropertyEditor;
 import net.neilcsmith.praxis.live.pxr.api.RootProxy;
 //import org.openide.util.RequestProcessor;
 
@@ -38,6 +37,7 @@ import net.neilcsmith.praxis.live.pxr.api.RootProxy;
  *
  * @author Neil C Smith (http://neilcsmith.net)
  */
+@SuppressWarnings("deprecation")
 class PXRWriter {
 
     private final static Logger LOG = Logger.getLogger(PXRWriter.class.getName());
@@ -118,7 +118,7 @@ class PXRWriter {
         for (String id : propIDs) {
             try {
                 LOG.log(Level.FINEST, "Checking property {0}", id);
-                PraxisProperty prop = cmp.getProperty(id);
+                net.neilcsmith.praxis.live.pxr.api.PraxisProperty prop = cmp.getProperty(id);
                 if (!prop.canWrite()) {
                     continue;
                 }
@@ -130,7 +130,7 @@ class PXRWriter {
                     continue;
                 }
                 LOG.log(Level.FINEST, "Writing property {0}", id);
-                PraxisPropertyEditor editor = prop.getPropertyEditor();
+                net.neilcsmith.praxis.live.pxr.api.PraxisPropertyEditor editor = prop.getPropertyEditor();
                 String code = editor.getPraxisInitializationString();
                 if (code == null || code.isEmpty()) {
                     LOG.log(Level.FINEST, "No code returned from editor for {0}", id);

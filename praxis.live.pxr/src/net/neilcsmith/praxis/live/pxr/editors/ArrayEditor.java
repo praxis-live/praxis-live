@@ -32,7 +32,8 @@ import net.neilcsmith.praxis.core.syntax.Tokenizer;
 import net.neilcsmith.praxis.core.types.PArray;
 import net.neilcsmith.praxis.core.types.PNumber;
 import net.neilcsmith.praxis.core.types.PString;
-import net.neilcsmith.praxis.live.pxr.SyntaxUtils;
+import net.neilcsmith.praxis.live.properties.EditorSupport;
+import net.neilcsmith.praxis.live.properties.SyntaxUtils;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
 
@@ -40,7 +41,7 @@ import org.openide.explorer.propertysheet.PropertyEnv;
  *
  * @author Neil C Smith (http://neilcsmith.net)
  */
-public class ArrayEditor extends PraxisPropertyEditorSupport
+public class ArrayEditor extends EditorSupport
         implements SubCommandEditor, ExPropertyEditor {
 
     private String text;

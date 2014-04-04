@@ -97,6 +97,13 @@ class PXRComponentEditor {
         
     }
     
+    void dispose() {
+        if (dialog != null) {
+            dialog.setVisible(false);
+            dialog = null;
+        }
+    }
+    
     private void initEditor() {
         // properties       
         PropertySheet propertyPanel = new PropertySheet();

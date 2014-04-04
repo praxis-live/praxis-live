@@ -34,6 +34,7 @@ import net.neilcsmith.praxis.core.ComponentType;
 import net.neilcsmith.praxis.core.info.ComponentInfo;
 import net.neilcsmith.praxis.live.core.api.Callback;
 import net.neilcsmith.praxis.live.project.api.PraxisProject;
+import net.neilcsmith.praxis.live.properties.PraxisProperty;
 import net.neilcsmith.praxis.live.pxr.PXRParser.AttributeElement;
 import net.neilcsmith.praxis.live.pxr.PXRParser.ComponentElement;
 import net.neilcsmith.praxis.live.pxr.PXRParser.ConnectionElement;
@@ -41,7 +42,7 @@ import net.neilcsmith.praxis.live.pxr.PXRParser.Element;
 import net.neilcsmith.praxis.live.pxr.PXRParser.PropertyElement;
 import net.neilcsmith.praxis.live.pxr.PXRParser.RootElement;
 import net.neilcsmith.praxis.live.pxr.api.Connection;
-import net.neilcsmith.praxis.live.pxr.api.PraxisProperty;
+
 import net.neilcsmith.praxis.live.pxr.api.ProxyException;
 import org.openide.util.Exceptions;
 

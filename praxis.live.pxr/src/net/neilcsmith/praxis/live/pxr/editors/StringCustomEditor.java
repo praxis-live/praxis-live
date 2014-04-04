@@ -30,7 +30,7 @@ package net.neilcsmith.praxis.live.pxr.editors;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import net.neilcsmith.praxis.live.pxr.api.PraxisPropertyEditor;
+import java.beans.PropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
 
 /**
@@ -39,11 +39,11 @@ import org.openide.explorer.propertysheet.PropertyEnv;
  */
 class StringCustomEditor extends javax.swing.JPanel implements PropertyChangeListener {
 
-    private final PraxisPropertyEditor editor;
+    private final PropertyEditor editor;
     private final PropertyEnv env;
 
     /** Creates new form StringCustomEditor */
-    StringCustomEditor(PraxisPropertyEditor editor, PropertyEnv env) {
+    StringCustomEditor(PropertyEditor editor, PropertyEnv env) {
         this.editor = editor;
         this.env = env;
         initComponents();

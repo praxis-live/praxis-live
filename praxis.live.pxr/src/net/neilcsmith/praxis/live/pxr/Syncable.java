@@ -26,6 +26,7 @@ package net.neilcsmith.praxis.live.pxr;
  *
  * @author Neil C Smith (http://neilcsmith.net)
  */
+@Deprecated
 public interface Syncable {
 
     public void setSyncing(boolean sync);

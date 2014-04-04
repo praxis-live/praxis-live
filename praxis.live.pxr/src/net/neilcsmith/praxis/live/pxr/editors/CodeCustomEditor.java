@@ -35,8 +35,8 @@ import javax.swing.KeyStroke;
 import net.neilcsmith.praxis.core.CallArguments;
 import net.neilcsmith.praxis.core.types.PString;
 import net.neilcsmith.praxis.live.core.api.Callback;
+import net.neilcsmith.praxis.live.properties.PraxisProperty;
 import net.neilcsmith.praxis.live.pxr.BoundArgumentProperty;
-import net.neilcsmith.praxis.live.pxr.api.PraxisProperty;
 import net.neilcsmith.praxis.texteditor.TextEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
 

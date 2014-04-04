@@ -27,7 +27,9 @@ import net.neilcsmith.praxis.core.ArgumentFormatException;
 import net.neilcsmith.praxis.core.ControlAddress;
 import net.neilcsmith.praxis.core.info.ArgumentInfo;
 import net.neilcsmith.praxis.core.types.PString;
-import net.neilcsmith.praxis.live.pxr.api.PraxisProperty;
+import net.neilcsmith.praxis.live.properties.EditorSupport;
+import net.neilcsmith.praxis.live.properties.PraxisProperty;
+import net.neilcsmith.praxis.live.pxr.api.PraxisPropertyEditor;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
 
@@ -35,8 +37,8 @@ import org.openide.explorer.propertysheet.PropertyEnv;
  *
  * @author Neil C Smith <http://neilcsmith.net>
  */
-public class ControlAddressEditor extends PraxisPropertyEditorSupport 
-    implements ExPropertyEditor {
+public class ControlAddressEditor extends EditorSupport 
+    implements ExPropertyEditor, PraxisPropertyEditor {
     
     private PropertyEnv env;
     private boolean allowEmpty;

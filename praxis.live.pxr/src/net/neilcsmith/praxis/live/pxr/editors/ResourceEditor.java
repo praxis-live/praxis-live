@@ -32,24 +32,23 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import net.neilcsmith.praxis.core.Argument;
-import net.neilcsmith.praxis.core.ArgumentFormatException;
 import net.neilcsmith.praxis.core.info.ArgumentInfo;
 import net.neilcsmith.praxis.core.syntax.Token;
 import net.neilcsmith.praxis.core.syntax.Tokenizer;
 import net.neilcsmith.praxis.core.types.*;
-import net.neilcsmith.praxis.live.pxr.SyntaxUtils;
-import net.neilcsmith.praxis.live.pxr.api.PraxisProperty;
+import net.neilcsmith.praxis.live.properties.EditorSupport;
+import net.neilcsmith.praxis.live.properties.PraxisProperty;
+import net.neilcsmith.praxis.live.properties.SyntaxUtils;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 
 /**
  *
  * @author Neil C Smith (http://neilcsmith.net)
  */
-public class ResourceEditor extends PraxisPropertyEditorSupport
+public class ResourceEditor extends EditorSupport
         implements SubCommandEditor, ExPropertyEditor {
 
     private final static Logger LOG = Logger.getLogger(ResourceEditor.class.getName());

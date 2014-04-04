@@ -59,7 +59,9 @@ import org.openide.windows.TopComponent;
  *
  * @author Neil C Smith (http://neilcsmith.net)
  */
-public class PXRComponentProxy implements ComponentProxy {
+@SuppressWarnings("deprecation")
+public class PXRComponentProxy implements ComponentProxy,
+        net.neilcsmith.praxis.live.model.ComponentProxy {
 
     private final static Logger LOG = Logger.getLogger(PXRComponentProxy.class.getName());
     private final static Registry registry = new Registry();
@@ -72,7 +74,7 @@ public class PXRComponentProxy implements ComponentProxy {
     private Map<String, PraxisProperty<?>> properties;
     private PropPropListener propertyListener;
     private List<Action> triggers;
-    private Action editorAction;
+    private EditorAction editorAction;
     private boolean syncing;
     private int listenerCount = 0;
     private boolean nodeSyncing;
@@ -178,7 +180,7 @@ public class PXRComponentProxy implements ComponentProxy {
 
     @Override
     public ComponentAddress getAddress() {
-        return parent.getAddress(this);
+        return parent == null ? null : parent.getAddress(this);
     }
 
     @Override
@@ -320,17 +322,24 @@ public class PXRComponentProxy implements ComponentProxy {
     }
 
     void dispose() {
+        
+        LOG.log(Level.FINE, "Dispose called on {0}", getAddress());
         parent = null;
 
         if (dynInfoAdaptor != null) {
             PXRHelper.getDefault().unbind(dynInfoAdaptor);
         }
 
+        if (editorAction != null && editorAction.editor != null) {
+            editorAction.editor.dispose();
+        }
+        
         if (properties == null) {
             return;
         }
         for (PraxisProperty<?> prop : properties.values()) {
             if (prop instanceof BoundArgumentProperty) {
+                LOG.log(Level.FINE, "Calling dispose on {0} property", prop.getName());
                 ((BoundArgumentProperty) prop).dispose();
             }
         }

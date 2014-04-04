@@ -28,6 +28,7 @@ import java.beans.PropertyEditor;
  *
  * @author Neil C Smith (http://neilcsmith.net)
  */
+@Deprecated
 public interface PraxisPropertyEditor extends PropertyEditor {
 
     public String getPraxisInitializationString();

@@ -37,8 +37,10 @@ import net.neilcsmith.praxis.core.syntax.Token;
 import net.neilcsmith.praxis.core.syntax.Tokenizer;
 import net.neilcsmith.praxis.core.types.PArray;
 import net.neilcsmith.praxis.core.types.PResource;
-import net.neilcsmith.praxis.live.pxr.SyntaxUtils;
-import net.neilcsmith.praxis.live.pxr.api.PraxisProperty;
+import net.neilcsmith.praxis.live.properties.EditorSupport;
+import net.neilcsmith.praxis.live.properties.PraxisProperty;
+import net.neilcsmith.praxis.live.properties.SyntaxUtils;
+import net.neilcsmith.praxis.live.pxr.api.PraxisPropertyEditor;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
 
@@ -46,8 +48,8 @@ import org.openide.explorer.propertysheet.PropertyEnv;
  *
  * @author Neil C Smith (http://neilcsmith.net)
  */
-public class FileListEditor extends PraxisPropertyEditorSupport
-        implements SubCommandEditor, ExPropertyEditor {
+public class FileListEditor extends EditorSupport
+        implements SubCommandEditor, ExPropertyEditor, PraxisPropertyEditor {
 
     private URI base;
     private File directory;
@@ -210,5 +212,10 @@ public class FileListEditor extends PraxisPropertyEditorSupport
     private File resolveDirectory(Token file) throws Exception {
         URI path = base.resolve(new URI(null, null, file.getText(), null));
         return new File(path);
+    }
+
+    @Override
+    public String getDisplayName() {
+        return "File List";
     }
 }

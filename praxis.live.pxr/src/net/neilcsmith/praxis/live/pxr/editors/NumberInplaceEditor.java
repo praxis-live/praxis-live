@@ -93,6 +93,13 @@ class NumberInplaceEditor extends JComponent implements InplaceEditor {
     private void initComponents() {
         textField = new JTextField();
         textField.setVisible(false);
+        textField.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                fireActionEvent(true);
+            }
+        });
         add(textField);
     }
 
@@ -268,7 +275,6 @@ class NumberInplaceEditor extends JComponent implements InplaceEditor {
         textField.setVisible(true);
         textField.selectAll();
         textField.requestFocusInWindow();
-
 
     }
 

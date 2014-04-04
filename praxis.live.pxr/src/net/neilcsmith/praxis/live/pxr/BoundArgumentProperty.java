@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Neil C Smith.
+ * Copyright 2014 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -33,14 +33,15 @@ import net.neilcsmith.praxis.core.info.ControlInfo;
 import net.neilcsmith.praxis.core.types.PString;
 import net.neilcsmith.praxis.gui.ControlBinding;
 import net.neilcsmith.praxis.live.core.api.Callback;
-import net.neilcsmith.praxis.live.pxr.api.PraxisPropertyEditor;
 
 /**
  *
  * @author Neil C Smith (http://neilcsmith.net)
  */
-public final class BoundArgumentProperty extends ArgumentProperty
-    implements Syncable {
+@SuppressWarnings("deprecation")
+public final class BoundArgumentProperty extends
+        net.neilcsmith.praxis.live.pxr.api.PraxisProperty<Argument>
+        implements Syncable {
 
     private final static Logger LOG = Logger.getLogger(BoundArgumentProperty.class.getName());
 
@@ -55,9 +56,9 @@ public final class BoundArgumentProperty extends ArgumentProperty
     private Argument value;
     private Argument def;
 
-
     private BoundArgumentProperty(ControlAddress address, ControlInfo info,
             Argument def, boolean writable, boolean isTransient) {
+        super(Argument.class);
         this.address = address;
         this.def = def;
         this.info = info;
@@ -71,13 +72,13 @@ public final class BoundArgumentProperty extends ArgumentProperty
     }
 
     @Override
-    public PraxisPropertyEditor getPropertyEditor() {
+    protected Editor createEditor() {
         if (editor == null) {
-//            editor = new ArgumentEditor();
             editor = new DelegatingArgumentEditor(this, info);
         }
         editor.setValue(value);
         return editor;
+
     }
 
     @Override
@@ -140,16 +141,13 @@ public final class BoundArgumentProperty extends ArgumentProperty
         }
     }
 
-    
-
-
     @Override
     public void setSyncing(boolean sync) {
         if (LOG.isLoggable(Level.FINE)) {
             if (sync) {
-                LOG.fine("Activating binding for : " + address);
+                LOG.log(Level.FINE, "Activating binding for : {0}", address);
             } else {
-                LOG.fine("Deactivating binding for : " + address);
+                LOG.log(Level.FINE, "Deactivating binding for : {0}", address);
             }
         }
         adaptor.setActive(sync);
@@ -160,10 +158,12 @@ public final class BoundArgumentProperty extends ArgumentProperty
         return adaptor.isActive();
     }
 
-    void dispose() {
+    @Override
+    public void dispose() {
+        super.dispose();
         PXRHelper.getDefault().unbind(adaptor);
     }
-    
+
     Class<? extends Argument> getArgumentType() {
         return info.getOutputsInfo()[0].getType();
     }
@@ -198,7 +198,6 @@ public final class BoundArgumentProperty extends ArgumentProperty
         return writable;
     }
 
-
     static BoundArgumentProperty create(ControlAddress address, ControlInfo info) {
         if (address == null || info == null) {
             throw new NullPointerException();
@@ -228,7 +227,6 @@ public final class BoundArgumentProperty extends ArgumentProperty
         boolean isTransient = info.getProperties().getBoolean(ControlInfo.KEY_TRANSIENT, false);
         return new BoundArgumentProperty(address, info, def, writable, isTransient);
     }
-
 
     private class Adaptor extends ControlBinding.Adaptor {
 
@@ -282,14 +280,10 @@ public final class BoundArgumentProperty extends ArgumentProperty
             }
         }
 
-
-
         @Override
         public void updateBindingConfiguration() {
             // no op?
         }
     }
-
-    
 
 }

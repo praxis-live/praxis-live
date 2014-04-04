@@ -19,10 +19,8 @@
  * Please visit http://neilcsmith.net if you need additional information or
  * have any questions.
  */
-
 package net.neilcsmith.praxis.live.pxr.editors;
 
-import java.beans.PropertyEditorSupport;
 import java.util.ArrayList;
 import java.util.List;
 import net.neilcsmith.praxis.core.Argument;
@@ -30,16 +28,18 @@ import net.neilcsmith.praxis.core.ArgumentFormatException;
 import net.neilcsmith.praxis.core.info.ArgumentInfo;
 import net.neilcsmith.praxis.core.types.PArray;
 import net.neilcsmith.praxis.core.types.PString;
-import net.neilcsmith.praxis.live.pxr.SyntaxUtils;
-import net.neilcsmith.praxis.live.pxr.api.PraxisProperty;
-import net.neilcsmith.praxis.live.pxr.api.PraxisPropertyEditor;
+import net.neilcsmith.praxis.live.properties.EditorSupport;
+import net.neilcsmith.praxis.live.properties.PraxisProperty;
+import net.neilcsmith.praxis.live.properties.SyntaxUtils;
 
 /**
  *
  * @author Neil C Smith (http://neilcsmith.net)
  */
-public class EnumEditor extends PropertyEditorSupport implements PraxisPropertyEditor {
-    
+@SuppressWarnings("deprecation")
+public class EnumEditor extends EditorSupport
+        implements net.neilcsmith.praxis.live.pxr.api.PraxisPropertyEditor {
+
     private List<String> tags;
 
     public EnumEditor(PraxisProperty property, ArgumentInfo info) {
@@ -67,14 +67,10 @@ public class EnumEditor extends PropertyEditorSupport implements PraxisPropertyE
         setValue(PString.valueOf(text));
     }
 
-
-
     @Override
     public String[] getTags() {
         return tags.toArray(new String[tags.size()]);
     }
-
-
 
     @Override
     public String getPraxisInitializationString() {

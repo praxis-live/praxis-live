@@ -46,11 +46,12 @@ import org.openide.util.Exceptions;
  *
  * @author Neil C Smith (http://neilcsmith.net)
  */
-public class PXRContainerProxy extends PXRComponentProxy implements ContainerProxy {
+public class PXRContainerProxy extends PXRComponentProxy implements ContainerProxy,
+        net.neilcsmith.praxis.live.model.ContainerProxy {
 
     private Map<String, PXRComponentProxy> children;
     private List<Connection> connections;
-    
+
     boolean ignore;
 
     PXRContainerProxy(PXRContainerProxy parent, ComponentType type,
@@ -122,8 +123,10 @@ public class PXRContainerProxy extends PXRComponentProxy implements ContainerPro
         PXRHelper.getDefault().removeComponent(childAddress, new Callback() {
             @Override
             public void onReturn(CallArguments args) {
-
-                children.remove(id);
+                PXRComponentProxy child = children.remove(id);
+                if (child != null) {
+                    child.dispose();
+                }             
                 Iterator<Connection> itr = connections.iterator();
                 boolean conChanged = false;
                 while (itr.hasNext()) {
@@ -142,7 +145,6 @@ public class PXRContainerProxy extends PXRComponentProxy implements ContainerPro
                     callback.onReturn(args);
                 }
 
-
             }
 
             @Override
@@ -152,6 +154,16 @@ public class PXRContainerProxy extends PXRComponentProxy implements ContainerPro
                 }
             }
         });
+    }
+
+    @Override
+    public void connect(net.neilcsmith.praxis.live.model.Connection connection, Callback callback) throws net.neilcsmith.praxis.live.model.ProxyException {
+        if (connection instanceof Connection) {
+            connect((Connection) connection, callback);
+        } else {
+            Connection c = new Connection(connection.getChild1(), connection.getPort1(), connection.getChild2(), connection.getPort2());
+            connect(c, callback);
+        }
     }
 
     @Override
@@ -174,6 +186,16 @@ public class PXRContainerProxy extends PXRComponentProxy implements ContainerPro
                 }
             }
         });
+    }
+
+    @Override
+    public void disconnect(net.neilcsmith.praxis.live.model.Connection connection, Callback callback) throws net.neilcsmith.praxis.live.model.ProxyException {
+        if (connection instanceof Connection) {
+            disconnect((Connection) connection, callback);
+        } else {
+            Connection c = new Connection(connection.getChild1(), connection.getPort1(), connection.getChild2(), connection.getPort2());
+            disconnect(c, callback);
+        }
     }
 
     @Override
@@ -243,7 +265,7 @@ public class PXRContainerProxy extends PXRComponentProxy implements ContainerPro
         if (id == null) {
             return;
         }
-        
+
         ignore = true;
 
         // remove all connections temporarily
@@ -278,7 +300,17 @@ public class PXRContainerProxy extends PXRComponentProxy implements ContainerPro
         firePropertyChange(ContainerProxy.PROP_CONNECTIONS, null, null);
 
         ignore = false;
-        
 
     }
+
+    @Override
+    void dispose() {
+        for (PXRComponentProxy child : children.values()) {
+            child.dispose();
+        }
+        super.dispose();
+    }
+    
+    
+    
 }

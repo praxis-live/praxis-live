@@ -21,21 +21,30 @@
  */
 package net.neilcsmith.praxis.live.pxr.api;
 
+import java.beans.PropertyEditor;
 import org.openide.nodes.Node;
 
 /**
  *
  * @author Neil C Smith (http://neilcsmith.net)
  */
-public abstract class PraxisProperty<T> extends Node.Property<T> {
+@Deprecated
+public abstract class PraxisProperty<T> extends net.neilcsmith.praxis.live.properties.PraxisProperty<T> {
 
     public PraxisProperty(Class<T> type) {
         super(type);
     }
 
     @Override
-    public abstract PraxisPropertyEditor getPropertyEditor();
-
+    public PraxisPropertyEditor getPropertyEditor() {
+        PropertyEditor ed = super.getPropertyEditor();
+        if (ed instanceof PraxisPropertyEditor) {
+            return (PraxisPropertyEditor) ed;
+        } else {
+            return null;
+        }
+    }
+ 
     public boolean isTransient() {
         return false;
     }

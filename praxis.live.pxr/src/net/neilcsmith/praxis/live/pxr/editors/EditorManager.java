@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Neil C Smith.
+ * Copyright 2014 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -30,8 +30,7 @@ import net.neilcsmith.praxis.core.types.PBoolean;
 import net.neilcsmith.praxis.core.types.PNumber;
 import net.neilcsmith.praxis.core.types.PResource;
 import net.neilcsmith.praxis.core.types.PString;
-import net.neilcsmith.praxis.live.pxr.api.PraxisProperty;
-import net.neilcsmith.praxis.live.pxr.api.PraxisPropertyEditor;
+import net.neilcsmith.praxis.live.properties.PraxisProperty;
 
 /**
  *
@@ -39,7 +38,7 @@ import net.neilcsmith.praxis.live.pxr.api.PraxisPropertyEditor;
  */
 public class EditorManager {
 
-    public static PraxisPropertyEditor getDefaultEditor(
+    public static PraxisProperty.Editor getDefaultEditor(
             PraxisProperty property, ControlInfo info) {
 
         if (info.getOutputsInfo().length == 1) {
@@ -52,7 +51,7 @@ public class EditorManager {
 
     }
 
-    private static PraxisPropertyEditor getDefaultEditor(
+    private static PraxisProperty.Editor getDefaultEditor(
             PraxisProperty property, ArgumentInfo info) {
         Class<?> type = info.getType();
         if (PString.class.isAssignableFrom(type)) {
@@ -78,7 +77,7 @@ public class EditorManager {
 
     }
 
-    private static PraxisPropertyEditor findStringEditor(PraxisProperty property,
+    private static PraxisProperty.Editor findStringEditor(PraxisProperty property,
             ArgumentInfo info) {
         if (info.getProperties().get(PString.KEY_ALLOWED_VALUES) != null) {
             return new EnumEditor(property, info);
@@ -88,8 +87,9 @@ public class EditorManager {
             String mimetype = mime.toString();
 //              if ("text/x-praxis-java".equals(mimetype) ||
 //                      "text/x-praxis-script".equals(mimetype)) {
-            return new CodeEditor(property, info, mimetype);
+//            return new CodeEditor(property, info, mimetype);
 //              }
+            return new MimeTextEditor(property, info, mimetype);
         }
         return new StringEditor(property, info);
     }
@@ -115,7 +115,7 @@ public class EditorManager {
         return false;
     }
 
-    public static PraxisPropertyEditor[] getAdditionalEditors(
+    public static PraxisProperty.Editor[] getAdditionalEditors(
             PraxisProperty property, ControlInfo info) {
         if (info.getOutputsInfo().length == 1) {
             return getAdditionalEditors(property, info.getOutputsInfo()[0]);
@@ -125,19 +125,19 @@ public class EditorManager {
         }
     }
 
-    private static PraxisPropertyEditor[] getAdditionalEditors(
+    private static PraxisProperty.Editor[] getAdditionalEditors(
             PraxisProperty<?> property, ArgumentInfo info) {
         Class<? extends Argument> type = info.getType();
         if (PArray.class.isAssignableFrom(type)) {
-            return new PraxisPropertyEditor[]{
+            return new PraxisProperty.Editor[]{
                         new FileListEditor(property, info)
                     };
         } else if (type.equals(Argument.class)) {
-            return new PraxisPropertyEditor[]{
+            return new PraxisProperty.Editor[]{
                         new ResourceEditor(property, info),
                         new FileListEditor(property, info)
                     };
         }
-        return new PraxisPropertyEditor[0];
+        return new PraxisProperty.Editor[0];
     }
 }
