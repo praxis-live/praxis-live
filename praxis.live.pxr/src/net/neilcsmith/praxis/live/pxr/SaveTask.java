@@ -246,6 +246,7 @@ abstract class SaveTask implements Task {
         void updateState(State state) {
             if (state != State.RUNNING) {
                 activeTasks.remove(dob);
+                unsyncComponents();
                 ph.finish();
                 ph = null;
             }
@@ -257,7 +258,6 @@ abstract class SaveTask implements Task {
         @Override
         public boolean cancel() {
             if (getState() == State.RUNNING) {
-                unsyncComponents();
                 updateState(State.CANCELLED);
                 return true;
             } else {
