@@ -59,6 +59,7 @@ public class Installer extends ModuleInstall {
     public void restored() {
         
         System.setProperty("netbeans.ps.hideSingleExpansion", "true");
+        System.setProperty("ps.quickSearch.disabled.global", "true");
         
         try {
             EventQueue.invokeAndWait(new Runnable() {
