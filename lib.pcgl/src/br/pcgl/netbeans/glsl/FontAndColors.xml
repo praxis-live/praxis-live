@@ -1,0 +1,17 @@
+<!DOCTYPE fontscolors PUBLIC
+    "-//NetBeans//DTD Editor Fonts and Colors settings 1.1//EN"
+    "http://www.netbeans.org/dtds/EditorFontsColors-1_1.dtd">
+<fontscolors>
+    <fontcolor name="basictype"    default="basictype"    foreColor="408080"/>    <!-- keywords2 -->
+    <fontcolor name="builtinfunc"  default="builtinfunc"  foreColor="FF8040"/>    <!-- keywords6 -->
+    <fontcolor name="builtinvar"   default="builtinvar"   foreColor="8080FF"/>    <!-- keywords4 & keywords5 -->
+    <fontcolor name="comment"      default="comment"      foreColor="008040"/>    <!-- 969696 gray 008040 -->
+    <fontcolor name="error"        default="error"        foreColor="660000" bgColor="orange"/>
+    <fontcolor name="identifier"   default="identifier"   foreColor="black"/>
+    <fontcolor name="keyword"      default="keyword"      foreColor="0080FF"/>    <!-- keywords1 -->
+    <fontcolor name="number"       default="number"       foreColor="8000FF"/>
+    <fontcolor name="operator"     default="operator"     foreColor="black"/>     <!-- 242424 black -->
+    <fontcolor name="preprocessor" default="preprocessor" foreColor="C46200"/>    <!-- keywords3 -->
+    <fontcolor name="string"       default="string"       foreColor="808000"/>    <!-- inside delimiters " " -->
+    <fontcolor name="whitespace"   default="whitespace"   foreColor="black"/>
+</fontscolors>
