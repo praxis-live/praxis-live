@@ -351,11 +351,15 @@ public final class StartTopComponent extends TopComponent {
 
     @Override
     public void componentOpened() {
-        updateLabel.setText(UPDATE_CHECKING);
         updatePanel.add(updateLabel);
-        updatePanel.add(updateProgress);
-        updatePanel.revalidate();
-        RP.execute(new UpdateCheck());
+        if (Boolean.getBoolean("praxislive.start.suppresscheck")) {
+            updateLabel.setText(UPDATE_OK);
+        } else {
+            updateLabel.setText(UPDATE_CHECKING);
+            updatePanel.add(updateProgress);
+            RP.execute(new UpdateCheck());
+        } 
+        updatePanel.revalidate();           
     }
 
     @Override
