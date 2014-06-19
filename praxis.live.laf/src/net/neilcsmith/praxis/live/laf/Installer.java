@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Neil C Smith.
+ * Copyright 2014 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 2 only, as
@@ -35,17 +35,11 @@
  */
 package net.neilcsmith.praxis.live.laf;
 
-import java.awt.EventQueue;
-import java.lang.reflect.InvocationTargetException;
-import javax.swing.LookAndFeel;
-import javax.swing.SwingUtilities;
+import java.util.prefs.Preferences;
 import javax.swing.UIManager;
-import javax.swing.UnsupportedLookAndFeelException;
-import net.neilcsmith.praxis.laf.PraxisLookAndFeel;
 import org.openide.modules.ModuleInstall;
-import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
-import org.openide.util.Lookup;
+import org.openide.util.NbPreferences;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
@@ -54,39 +48,21 @@ import org.openide.windows.WindowManager;
  * often not needed at all.
  */
 public class Installer extends ModuleInstall {
-    
+
+    @Override
+    public void validate() throws IllegalStateException {
+        Preferences prefs = getPreferences();
+        prefs.put("laf", PraxisLiveLookAndFeel.class.getName());
+        prefs.putBoolean("dark.themes.installed", true); //NOI18N
+        UIManager.installLookAndFeel(new UIManager.LookAndFeelInfo("Praxis LIVE", PraxisLiveLookAndFeel.class.getName()));
+    }
+
     @Override
     public void restored() {
-        
+
         System.setProperty("netbeans.ps.hideSingleExpansion", "true");
         System.setProperty("ps.quickSearch.disabled.global", "true");
-        
-        try {
-            EventQueue.invokeAndWait(new Runnable() {
 
-                @Override
-                public void run() {
-                    UIManager.getDefaults().clear();
-                    ClassLoader cl = Lookup.getDefault().lookup(ClassLoader.class);
-                    UIManager.put("ClassLoader", cl);
-
-                    UIManager.put("Nb.PraxisLFCustoms", new PraxisLFCustoms());                 
-
-                    try {
-                        LookAndFeel laf = new PraxisLookAndFeel();
-                        UIManager.setLookAndFeel(laf);
-                    } catch (UnsupportedLookAndFeelException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
-                    
-                }
-            });
-        } catch (InterruptedException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (InvocationTargetException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        
         WindowManager.getDefault().invokeWhenUIReady(new Runnable() {
 
             @Override
@@ -98,5 +74,10 @@ public class Installer extends ModuleInstall {
                 tc.setIcon(ImageUtilities.loadImage("org/netbeans/modules/palette/resources/palette.png", true));
             }
         });
+
+    }
+
+    private Preferences getPreferences() {
+        return NbPreferences.root().node("laf");
     }
 }
