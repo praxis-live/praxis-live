@@ -44,6 +44,7 @@ import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
+import javax.swing.border.EmptyBorder;
 import net.neilcsmith.praxis.core.Argument;
 import net.neilcsmith.praxis.core.types.PNumber;
 import org.openide.explorer.propertysheet.InplaceEditor;
@@ -93,6 +94,7 @@ class NumberInplaceEditor extends JComponent implements InplaceEditor {
     private void initComponents() {
         textField = new JTextField();
         textField.setVisible(false);
+        textField.setBorder(new EmptyBorder(0,0,0,0));
         textField.addActionListener(new ActionListener() {
 
             @Override

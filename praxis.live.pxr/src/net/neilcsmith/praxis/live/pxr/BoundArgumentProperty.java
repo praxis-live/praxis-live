@@ -69,6 +69,9 @@ public final class BoundArgumentProperty extends
         value = def;
         PXRHelper.getDefault().bind(address, adaptor);
         setName(address.getID());
+        
+        setValue("canAutoComplete", Boolean.FALSE);
+        
     }
 
     @Override
