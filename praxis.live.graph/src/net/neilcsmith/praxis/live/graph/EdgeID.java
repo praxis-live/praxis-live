@@ -50,6 +50,11 @@ public final class EdgeID<N> {
         return pin1.hashCode() ^ pin2.hashCode();
     }
 
+    @Override
+    public String toString() {
+        return pin1.toString() + " --> " + pin2.toString();
+    }
 
+    
 
 }

@@ -54,6 +54,11 @@ public class PinID<N> {
         return hash;
     }
 
+    @Override
+    public String toString() {
+        return "Pin : " + parent.toString() + ">" + name;
+    }
+
 
 
 
