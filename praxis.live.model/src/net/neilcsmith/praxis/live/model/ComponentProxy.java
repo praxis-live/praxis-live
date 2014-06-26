@@ -29,11 +29,14 @@ import net.neilcsmith.praxis.core.info.ComponentInfo;
  *
  * @author Neil C Smith (http://neilcsmith.net)
  */
-public interface ComponentProxy {
+public interface ComponentProxy extends Proxy {
 
     public ComponentAddress getAddress();
 
     public ComponentType getType();
 
     public ComponentInfo getInfo();
+    
+    public ContainerProxy getParent();
+    
 }

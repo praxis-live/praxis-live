@@ -19,30 +19,23 @@
  * Please visit http://neilcsmith.net if you need additional information or
  * have any questions.
  */
+
 package net.neilcsmith.praxis.live.model;
 
-import net.neilcsmith.praxis.live.core.api.Callback;
-import net.neilcsmith.praxis.core.ComponentType;
+import java.beans.PropertyChangeListener;
+import org.openide.nodes.Node;
+import org.openide.util.Lookup;
 
 /**
  *
  * @author Neil C Smith (http://neilcsmith.net)
  */
-public interface ContainerProxy extends ComponentProxy {
+public interface Proxy extends Lookup.Provider {
 
-    public void addChild(String id, ComponentType type, Callback callback)
-            throws ProxyException;
+    public Node getNodeDelegate();
 
-    public void removeChild(String id, Callback callback) throws ProxyException;
-    
-    public ComponentProxy getChild(String id);
+    public void addPropertyChangeListener(PropertyChangeListener listener);
 
-    public String[] getChildIDs();
-
-    public void connect(Connection connection, Callback callback) throws ProxyException;
-
-    public void disconnect(Connection connection, Callback callback) throws ProxyException;
-
-    public Connection[] getConnections();
+    public void removePropertyChangeListener(PropertyChangeListener listener);
 
 }

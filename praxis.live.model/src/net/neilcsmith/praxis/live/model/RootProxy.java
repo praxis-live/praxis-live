@@ -21,28 +21,10 @@
  */
 package net.neilcsmith.praxis.live.model;
 
-import net.neilcsmith.praxis.live.core.api.Callback;
-import net.neilcsmith.praxis.core.ComponentType;
-
 /**
  *
  * @author Neil C Smith (http://neilcsmith.net)
  */
-public interface ContainerProxy extends ComponentProxy {
-
-    public void addChild(String id, ComponentType type, Callback callback)
-            throws ProxyException;
-
-    public void removeChild(String id, Callback callback) throws ProxyException;
-    
-    public ComponentProxy getChild(String id);
-
-    public String[] getChildIDs();
-
-    public void connect(Connection connection, Callback callback) throws ProxyException;
-
-    public void disconnect(Connection connection, Callback callback) throws ProxyException;
-
-    public Connection[] getConnections();
+public interface RootProxy extends ComponentProxy {
 
 }
