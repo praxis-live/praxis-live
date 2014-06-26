@@ -22,11 +22,9 @@
 package net.neilcsmith.praxis.live.properties;
 
 import java.beans.PropertyEditor;
-import java.lang.reflect.InvocationTargetException;
 import java.util.Enumeration;
 import net.neilcsmith.praxis.live.core.api.Callback;
 import net.neilcsmith.praxis.live.core.api.Disposable;
-import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.nodes.Node;
 
 /**
@@ -74,9 +72,18 @@ public abstract class PraxisProperty<T> extends Node.Property<T>
     }
 
     @Override
-    public abstract void setValue(T val);
+    public void setValue(T val) {
+        throw new UnsupportedOperationException();
+    }
    
-    public abstract void setValue(T value, Callback callback);
+    public void setValue(T value, Callback callback) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public boolean canWrite() {
+        return false;
+    }
     
     @Override
     public abstract T getValue(); // override without Exceptions.
