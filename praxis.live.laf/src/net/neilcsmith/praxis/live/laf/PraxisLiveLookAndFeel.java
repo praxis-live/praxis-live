@@ -1,5 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ * 
+ * Copyright 2014 Neil C Smith
  *
  * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
@@ -43,10 +45,8 @@ package net.neilcsmith.praxis.live.laf;
 
 import java.awt.Color;
 import java.awt.Font;
-import java.awt.Graphics2D;
 import java.util.concurrent.Callable;
 import javax.swing.JLabel;
-import javax.swing.Painter;
 import javax.swing.UIDefaults;
 import javax.swing.plaf.ColorUIResource;
 import javax.swing.plaf.nimbus.NimbusLookAndFeel;
@@ -136,6 +136,7 @@ public class PraxisLiveLookAndFeel extends NimbusLookAndFeel {
         res.put("Tree[Enabled].collapsedIconPainter", res.get("Tree[Enabled+Selected].collapsedIconPainter"));
         res.put("Tree[Enabled].expandedIconPainter", res.get("Tree[Enabled+Selected].expandedIconPainter"));
 
+        res.put("Table[Enabled].textForeground", OFF_WHITE);
         res.put("Table[Enabled+Selected].textForeground", OFF_WHITE);
 
         res.put("TabbedPane:TabbedPaneTab[Enabled].backgroundPainter", null);
@@ -163,8 +164,8 @@ public class PraxisLiveLookAndFeel extends NimbusLookAndFeel {
         //
         //
         //
-        // fix combo box highlighting in property sheet
-        res.put("ComboBox.selectionBackground", PRIMARY);
+        // fix combo box highlighting in property sheet - must NOT be UIResource
+        res.put("ComboBox.selectionBackground", new Color(PRIMARY.getRGB()));
         //        res.put("nb.errorForeground", new Color(127, 0, 0)); //NOI18N
 //        res.put("nb.warningForeground", new Color(255, 216, 0)); //NOI18N
 
