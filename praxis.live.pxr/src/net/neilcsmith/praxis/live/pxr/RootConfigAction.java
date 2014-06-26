@@ -25,7 +25,6 @@ import java.awt.event.ActionEvent;
 import java.util.Collection;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import net.neilcsmith.praxis.live.pxr.api.RootProxy;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
@@ -43,7 +42,7 @@ class RootConfigAction extends AbstractAction
     private final static String RESOURCE_DIR = "net/neilcsmith/praxis/live/pxr/resources/";
     
     private Lookup.Result<PXRRootContext> result;
-    private RootProxy root;
+    private PXRRootProxy root;
    
     RootConfigAction() {
         this(Utilities.actionsGlobalContext());
@@ -87,7 +86,7 @@ class RootConfigAction extends AbstractAction
         setEnabled(false);
     }
     
-    private void setup(RootProxy root) {
+    private void setup(PXRRootProxy root) {
         this.root = root;
         setEnabled(true);
     }

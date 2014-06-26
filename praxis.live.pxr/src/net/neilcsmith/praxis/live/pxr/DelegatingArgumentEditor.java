@@ -32,7 +32,6 @@ import java.util.logging.Logger;
 import net.neilcsmith.praxis.core.info.ControlInfo;
 import net.neilcsmith.praxis.live.properties.EditorSupport;
 import net.neilcsmith.praxis.live.properties.PraxisProperty;
-import net.neilcsmith.praxis.live.pxr.api.PraxisPropertyEditor;
 import net.neilcsmith.praxis.live.pxr.editors.SubCommandEditor;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
@@ -42,7 +41,7 @@ import org.openide.explorer.propertysheet.PropertyEnv;
  * @author Neil C Smith (http://neilcsmith.net)
  */
 class DelegatingArgumentEditor extends EditorSupport
-        implements PraxisPropertyEditor, ExPropertyEditor, PraxisProperty.DelegateEditor {
+        implements ExPropertyEditor, PraxisProperty.DelegateEditor {
 
     private final static Logger LOG = Logger.getLogger(DelegatingArgumentEditor.class.getName());
     private PraxisProperty.Editor defaultEditor;
@@ -69,13 +68,12 @@ class DelegatingArgumentEditor extends EditorSupport
         return currentEditor.getPraxisInitializationString();
     }
 
-    @Override
     public String getDisplayName() {
-        if (currentEditor instanceof PraxisPropertyEditor) {
-            return ((PraxisPropertyEditor) currentEditor).getDisplayName();
-        } else {
+//        if (currentEditor instanceof PraxisPropertyEditor) {
+//            return ((PraxisPropertyEditor) currentEditor).getDisplayName();
+//        } else {
             return currentEditor.getClass().getSimpleName();
-        }
+//        }
 
     }
 

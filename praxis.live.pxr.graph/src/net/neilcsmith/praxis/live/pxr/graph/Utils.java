@@ -23,7 +23,8 @@ package net.neilcsmith.praxis.live.pxr.graph;
 
 import java.awt.Point;
 import java.util.List;
-import net.neilcsmith.praxis.live.pxr.api.ComponentProxy;
+import net.neilcsmith.praxis.live.model.ComponentProxy;
+import net.neilcsmith.praxis.live.pxr.api.Attributes;
 
 /**
  *
@@ -57,23 +58,43 @@ class Utils {
             getPosition(cmp, loc);
             int x = replace ? loc.x + offset.x : loc.x - offset.x;
             int y = replace ? loc.y + offset.y : loc.y - offset.y;
-            cmp.setAttribute(GraphEditor.ATTR_GRAPH_X, Integer.toString(x));
-            cmp.setAttribute(GraphEditor.ATTR_GRAPH_Y, Integer.toString(y));
+//            ((PXRComponentProxy)cmp).setAttribute(GraphEditor.ATTR_GRAPH_X, Integer.toString(x));
+//            ((PXRComponentProxy)cmp).setAttribute(GraphEditor.ATTR_GRAPH_Y, Integer.toString(y));
+            setAttr(cmp, GraphEditor.ATTR_GRAPH_X, Integer.toString(x));
+            setAttr(cmp, GraphEditor.ATTR_GRAPH_Y, Integer.toString(y));
         }
     }
 
     static void getPosition(ComponentProxy cmp, Point pt) {
         int x, y;
-        String attrX = cmp.getAttribute(GraphEditor.ATTR_GRAPH_X);
-        String attrY = cmp.getAttribute(GraphEditor.ATTR_GRAPH_Y);
+//        String attrX = ((PXRComponentProxy)cmp).getAttribute(GraphEditor.ATTR_GRAPH_X);
+//        String attrY = ((PXRComponentProxy)cmp).getAttribute(GraphEditor.ATTR_GRAPH_Y);
+        String attrX = getAttr(cmp, GraphEditor.ATTR_GRAPH_X);
+        String attrY = getAttr(cmp, GraphEditor.ATTR_GRAPH_Y);
         try {
             x = attrX == null ? 0 : Integer.parseInt(attrX);
             y = attrY == null ? 0 : Integer.parseInt(attrY);
-        } catch (NumberFormatException numberFormatException) {
+        } catch (NumberFormatException nfe) {
             x = y = 0;
         }
         pt.x = x;
         pt.y = y;
+    }
+    
+    static void setAttr(ComponentProxy cmp, String key, String value) {
+        Attributes attrs = cmp.getLookup().lookup(Attributes.class);
+        if (attrs == null) {
+            return;
+        }
+        attrs.setAttribute(key, value);
+    }
+    
+    static String getAttr(ComponentProxy cmp, String key) {
+        Attributes attrs = cmp.getLookup().lookup(Attributes.class);
+        if (attrs == null) {
+            return null;
+        }
+        return attrs.getAttribute(key);
     }
     
 }

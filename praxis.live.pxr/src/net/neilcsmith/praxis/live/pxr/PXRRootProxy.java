@@ -26,7 +26,7 @@ import net.neilcsmith.praxis.core.ComponentAddress;
 import net.neilcsmith.praxis.core.ComponentType;
 import net.neilcsmith.praxis.core.info.ComponentInfo;
 import net.neilcsmith.praxis.live.project.api.PraxisProject;
-import net.neilcsmith.praxis.live.pxr.api.RootProxy;
+import net.neilcsmith.praxis.live.model.RootProxy;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -59,7 +59,6 @@ public class PXRRootProxy extends PXRContainerProxy implements RootProxy {
         return address;
     }
 
-    @Override
     public FileObject getSourceFile() {
         return source.getPrimaryFile();
     }

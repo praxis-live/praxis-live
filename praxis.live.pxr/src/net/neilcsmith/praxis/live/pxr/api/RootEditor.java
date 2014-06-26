@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Neil C Smith.
+ * Copyright 2014 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -25,6 +25,7 @@ package net.neilcsmith.praxis.live.pxr.api;
 //import javax.swing.Action;
 import javax.swing.Action;
 import javax.swing.JComponent;
+import net.neilcsmith.praxis.live.model.RootProxy;
 import org.openide.awt.UndoRedo;
 import org.openide.util.Lookup;
 
@@ -72,9 +73,11 @@ public abstract class RootEditor {
 
     public abstract JComponent getEditorComponent();
 
+ 
     public static interface Provider {
 
         public RootEditor createEditor(RootProxy model);
     }
 
+    
 }

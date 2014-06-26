@@ -37,7 +37,7 @@ import net.neilcsmith.praxis.core.interfaces.StartableInterface;
 import net.neilcsmith.praxis.core.types.PBoolean;
 import net.neilcsmith.praxis.gui.ControlBinding.SyncRate;
 import net.neilcsmith.praxis.live.core.api.HubUnavailableException;
-import net.neilcsmith.praxis.live.pxr.api.RootProxy;
+import net.neilcsmith.praxis.live.model.RootProxy;
 import net.neilcsmith.praxis.live.util.ArgumentPropertyAdaptor;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Exceptions;
@@ -129,7 +129,7 @@ class StartableRootAction extends AbstractAction
         runningAdaptor = null;
     }
     
-    private void setup(RootProxy root) {
+    private void setup(PXRRootProxy root) {
         this.root = root;
         if (!isStartable(root)) {
             return;
@@ -156,7 +156,7 @@ class StartableRootAction extends AbstractAction
     
 
     
-    private boolean isStartable(RootProxy root) {
+    private boolean isStartable(PXRRootProxy root) {
         for (InterfaceDefinition i : root.getInfo().getInterfaces()) {
             if (StartableInterface.INSTANCE.equals(i)) {
                 return true;

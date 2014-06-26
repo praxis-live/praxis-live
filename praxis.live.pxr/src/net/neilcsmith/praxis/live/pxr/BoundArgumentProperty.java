@@ -33,6 +33,7 @@ import net.neilcsmith.praxis.core.info.ControlInfo;
 import net.neilcsmith.praxis.core.types.PString;
 import net.neilcsmith.praxis.gui.ControlBinding;
 import net.neilcsmith.praxis.live.core.api.Callback;
+import net.neilcsmith.praxis.live.properties.PraxisProperty;
 
 /**
  *
@@ -40,8 +41,7 @@ import net.neilcsmith.praxis.live.core.api.Callback;
  */
 @SuppressWarnings("deprecation")
 public final class BoundArgumentProperty extends
-        net.neilcsmith.praxis.live.pxr.api.PraxisProperty<Argument>
-        implements Syncable {
+        PraxisProperty<Argument> {
 
     private final static Logger LOG = Logger.getLogger(BoundArgumentProperty.class.getName());
 
@@ -130,7 +130,6 @@ public final class BoundArgumentProperty extends
         setValue(def);
     }
 
-    @Override
     public boolean isTransient() {
         return isTransient;
     }
@@ -144,7 +143,6 @@ public final class BoundArgumentProperty extends
         }
     }
 
-    @Override
     public void setSyncing(boolean sync) {
         if (LOG.isLoggable(Level.FINE)) {
             if (sync) {
@@ -156,7 +154,6 @@ public final class BoundArgumentProperty extends
         adaptor.setActive(sync);
     }
 
-    @Override
     public boolean isSyncing() {
         return adaptor.isActive();
     }

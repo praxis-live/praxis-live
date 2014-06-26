@@ -26,7 +26,6 @@ import java.awt.Component;
 import net.neilcsmith.praxis.core.info.ArgumentInfo;
 import net.neilcsmith.praxis.live.properties.EditorSupport;
 import net.neilcsmith.praxis.live.properties.PraxisProperty;
-import net.neilcsmith.praxis.live.pxr.api.PraxisPropertyEditor;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
 
@@ -35,7 +34,7 @@ import org.openide.explorer.propertysheet.PropertyEnv;
  * @author Neil C Smith (http://neilcsmith.net)
  */
 public class CodeEditor extends EditorSupport
-        implements ExPropertyEditor, PraxisPropertyEditor {
+        implements ExPropertyEditor {
 
     private final PraxisProperty property;
     private final String mime;
@@ -50,7 +49,6 @@ public class CodeEditor extends EditorSupport
     }
     
 
-    @Override
     public String getDisplayName() {
         return "Code Editor (" + mime + ")";
     }

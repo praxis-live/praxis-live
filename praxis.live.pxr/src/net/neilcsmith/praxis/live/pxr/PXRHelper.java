@@ -34,7 +34,7 @@ import net.neilcsmith.praxis.live.core.api.Callback;
 import net.neilcsmith.praxis.live.core.api.ExtensionProvider;
 import net.neilcsmith.praxis.live.core.api.HubUnavailableException;
 import net.neilcsmith.praxis.live.model.Connection;
-import net.neilcsmith.praxis.live.pxr.api.ProxyException;
+import net.neilcsmith.praxis.live.model.ProxyException;
 import net.neilcsmith.praxis.live.util.AbstractHelperComponent;
 import org.openide.util.Exceptions;
 import org.openide.util.lookup.ServiceProvider;

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Neil C Smith.
+ * Copyright 2014 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -19,7 +19,6 @@
  * Please visit http://neilcsmith.net if you need additional information or
  * have any questions.
  */
-
 package net.neilcsmith.praxis.live.pxr;
 
 import java.awt.EventQueue;
@@ -32,20 +31,20 @@ import java.util.List;
 import java.util.logging.Logger;
 import javax.swing.Action;
 import net.neilcsmith.praxis.core.ArgumentFormatException;
-import net.neilcsmith.praxis.core.info.ComponentInfo;
+import net.neilcsmith.praxis.core.interfaces.ContainerInterface;
 import net.neilcsmith.praxis.core.types.PBoolean;
 import net.neilcsmith.praxis.live.components.api.Components;
-import net.neilcsmith.praxis.live.pxr.api.ComponentProxy;
-import net.neilcsmith.praxis.live.pxr.api.ContainerProxy;
-import net.neilcsmith.praxis.live.pxr.api.PraxisProperty;
-import net.neilcsmith.praxis.live.pxr.api.PraxisPropertyEditor;
-import net.neilcsmith.praxis.live.pxr.api.ProxyException;
+import net.neilcsmith.praxis.live.properties.PraxisProperty;
+import net.neilcsmith.praxis.live.model.ComponentProxy;
+import net.neilcsmith.praxis.live.model.ContainerProxy;
+import net.neilcsmith.praxis.live.model.ProxyException;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.nodes.Sheet;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 
@@ -55,27 +54,52 @@ import org.openide.util.lookup.ProxyLookup;
  */
 class PXRProxyNode extends AbstractNode {
 
-    private final static Logger LOG = Logger.getLogger(PXRProxyNode.class.getName());
+//    private final static Logger LOG = Logger.getLogger(PXRProxyNode.class.getName());
+    private final PXRComponentProxy component;
 
-    private PXRComponentProxy component;
+    private Action[] actions;
     private Image icon;
-    
     boolean ignore;
 
-    PXRProxyNode(PXRComponentProxy component, PXRDataObject dob) {
-        super(component instanceof PXRContainerProxy ?
-            new ContainerChildren((PXRContainerProxy) component) : Children.LEAF,
-                /*new ProxyLookup(*/Lookups.singleton(component)/*, dob.getLookup())*/);
+    PXRProxyNode(final PXRComponentProxy component) {
+        this(component,
+                component instanceof PXRContainerProxy
+                ? new ContainerChildren((PXRContainerProxy) component) : Children.LEAF,
+                new ProxyLookup(Lookups.singleton(component), component.getLookup()));
+
+    }
+
+    private PXRProxyNode(PXRComponentProxy component, Children children, Lookup lookup) {
+        super(children, lookup);
         this.component = component;
         setName(component.getAddress().getID());
-        component.addPropertyChangeListener(new ComponentPropListener());
         refreshProperties();
+        refreshActions();
     }
-    
+
     final void refreshProperties() {
         setSheet(createSheetOnEQ());
     }
 
+    final void refreshActions() {
+        List<Action> triggers = component.getTriggerActions();
+        if (triggers.isEmpty()) {
+            actions = new Action[]{component.getEditorAction()};
+        } else {
+            int size = triggers.size() + 2;
+            actions = triggers.toArray(new Action[size]);
+            actions[size - 1] = component.getEditorAction();
+        }
+    }
+
+    final void refreshChildren() {
+        Children chs = getChildren();
+        assert chs instanceof ContainerChildren;
+        if (chs instanceof ContainerChildren) {
+            ((ContainerChildren) chs).update();
+        }
+    }
+    
     @Override
     public String getDisplayName() {
         return getName();
@@ -83,17 +107,7 @@ class PXRProxyNode extends AbstractNode {
 
     @Override
     public Action[] getActions(boolean context) {
-        List<Action> triggers = component.getTriggerActions();
-        Action[] actions;
-        if (triggers.isEmpty()) {
-            actions = new Action[]{component.getEditorAction()};
-        } else {
-            int size = triggers.size() + 2;
-            actions = triggers.toArray(new Action[size]);
-            actions[size - 1] = component.getEditorAction();
-            return actions;
-        }
-        return actions;
+        return actions.clone();
     }
 
     @Override
@@ -103,26 +117,9 @@ class PXRProxyNode extends AbstractNode {
 
     @Override
     public boolean canDestroy() {
-//        if (EventQueue.isDispatchThread()) {
-            return canDestroyImpl();
-//        } else {
-//            try {
-//                final boolean[] res = new boolean[0];
-//                EventQueue.invokeAndWait(new Runnable() {
-//
-//                    @Override
-//                    public void run() {
-//                        res[0] = canDestroyImpl();
-//                    }
-//                });
-//                return res[0];
-//            } catch (Exception ex) {
-//                Exceptions.printStackTrace(ex);
-//            }
-//        }
-//        return false;
+        return canDestroyImpl();
     }
-    
+
     private boolean canDestroyImpl() {
 //        assert EventQueue.isDispatchThread();
         return component.getParent() != null;
@@ -140,9 +137,9 @@ class PXRProxyNode extends AbstractNode {
                     destroyImpl();
                 }
             });
-        }      
+        }
     }
-    
+
     private void destroyImpl() {
         assert EventQueue.isDispatchThread();
         try {
@@ -166,51 +163,23 @@ class PXRProxyNode extends AbstractNode {
     public Image getOpenedIcon(int type) {
         return getIcon(type);
     }
-    
-    
-    
-//    @Override
-//    protected Sheet createSheet() {
-//        // this gets called outside of EQ by propertysheet!
-//        if (EventQueue.isDispatchThread()) {
-//            return createSheetOnEQ();
-//        } else {
-////            final Sheet[] holder = new Sheet[1];
-////            try {
-////                EventQueue.invokeAndWait(new Runnable() {
-////
-////                    @Override
-////                    public void run() {
-////                        holder[0] = createSheetOnEQ();
-////                    }
-////                });
-////            } catch (Exception ex) {
-////                Exceptions.printStackTrace(ex);
-////                return super.createSheet();
-////            }
-////            return holder[0];
-//            EventQueue.invokeLater(new Runnable() {
-//
-//                @Override
-//                public void run() {
-//                    setSheet(createSheetOnEQ());
-//                }
-//            });
-//            return super.createSheet();
-//        }
-//    }
 
     private Sheet createSheetOnEQ() {
         Sheet sheet = Sheet.createDefault();
         Sheet.Set props = Sheet.createPropertiesSet();
         sheet.put(props);
+        for (PraxisProperty<?> proxyProp : component.getProxyProperties()) {
+            proxyProp.setHidden(true);
+            props.put(proxyProp);
+        }
+
         for (String id : component.getPropertyIDs()) {
             Node.Property<?> prop = component.getProperty(id);
             if (prop.canWrite() && prop instanceof BoundArgumentProperty) {
                 BoundArgumentProperty bap = (BoundArgumentProperty) prop;
                 if (bap.getArgumentType()
                         == PBoolean.class) {
-                    prop = new BooleanWrapper(bap);
+                    prop = new BooleanPropertyWrapper(bap);
                 }
             }
             props.put(prop);
@@ -222,96 +191,31 @@ class PXRProxyNode extends AbstractNode {
     public HelpCtx getHelpCtx() {
         return new HelpCtx(component.getType().toString());
     }
-
-
-
-
-    class ComponentPropListener implements PropertyChangeListener {
-
-        @Override
-        public void propertyChange(PropertyChangeEvent evt) {
-            String property = evt.getPropertyName();
-            if (!component.isIgnoredProperty(property)) {
-                firePropertyChange(property, null, null);
-            }
-            
-        }
-
+    
+    void propertyChange(String property, Object oldValue, Object newValue) {
+        firePropertyChange(property, oldValue, newValue);
     }
 
-    private static class BooleanWrapper extends Node.Property<Boolean> {
+//    class ComponentPropListener implements PropertyChangeListener {
+//
+//        @Override
+//        public void propertyChange(PropertyChangeEvent evt) {
+//            String property = evt.getPropertyName();
+////            if (!component.isProxiedProperty(property)) {
+//                firePropertyChange(property, null, null);
+////            }
+//            
+//        }
+//
+//    }
+    static class ContainerChildren extends Children.Keys<String> {
 
-        private final BoundArgumentProperty wrapped;
-        
-        private BooleanWrapper(BoundArgumentProperty wrapped) {
-            super(Boolean.class);
-            this.wrapped = wrapped;
-        }
-        
-        @Override
-        public boolean canRead() {
-            return wrapped.canRead();
-        }
-
-        @Override
-        public Boolean getValue() throws IllegalAccessException, InvocationTargetException {
-            try {
-                return PBoolean.coerce(wrapped.getValue()).value();
-            } catch (ArgumentFormatException ex) {
-                return false;
-            }
-        }
-
-        @Override
-        public boolean canWrite() {
-            return wrapped.canWrite();
-        }
-
-        @Override
-        public void setValue(Boolean val) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-            wrapped.setValue(val ? PBoolean.TRUE : PBoolean.FALSE);
-        }
-
-        @Override
-        public String getName() {
-            return wrapped.getName();
-        }
-
-        @Override
-        public boolean supportsDefaultValue() {
-            return wrapped.supportsDefaultValue();
-        }
-
-        @Override
-        public void restoreDefaultValue() {
-            wrapped.restoreDefaultValue();
-        }
-
-        @Override
-        public String getHtmlDisplayName() {
-            return wrapped.getHtmlDisplayName();
-        }
-
-        @Override
-        public String getDisplayName() {
-            return wrapped.getDisplayName();
-        }
-        
-        
-        
-    }
-
-    private static class ContainerChildren extends Children.Keys<String>
-            implements PropertyChangeListener {
-
-        PXRContainerProxy container;
+        final PXRContainerProxy container;
 
         private ContainerChildren(PXRContainerProxy container) {
             this.container = container;
             setKeys(container.getChildIDs());
-            container.addPropertyChangeListener(this);
         }
-
 
         @Override
         protected Node[] createNodes(String key) {
@@ -323,17 +227,10 @@ class PXRProxyNode extends AbstractNode {
             }
         }
 
-        @Override
-        public void propertyChange(PropertyChangeEvent evt) {
-            if (container.ignore) {
-                return;
-            }
-            if (ContainerProxy.PROP_CHILDREN.equals(evt.getPropertyName())) {
-                setKeys(container.getChildIDs());
-            }
+        private void update() {
+            setKeys(container.getChildIDs());
         }
 
     }
-
 
 }

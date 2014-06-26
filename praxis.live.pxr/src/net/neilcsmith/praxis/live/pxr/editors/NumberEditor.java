@@ -40,8 +40,7 @@ import org.openide.explorer.propertysheet.PropertyEnv;
  * @author Neil C Smith (http://neilcsmith.net)
  */
 @SuppressWarnings("deprecation")
-public class NumberEditor extends EditorSupport implements 
-        net.neilcsmith.praxis.live.pxr.api.PraxisPropertyEditor,
+public class NumberEditor extends EditorSupport implements
         ExPropertyEditor, InplaceEditor.Factory {
 
     private ArgumentInfo info;
@@ -92,7 +91,7 @@ public class NumberEditor extends EditorSupport implements
         }
     }
 
-    @Override
+
     public String getDisplayName() {
         return "Number Editor";
     }

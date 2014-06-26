@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Neil C Smith.
+ * Copyright 2014 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -25,7 +25,6 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.EventQueue;
-import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -35,15 +34,19 @@ import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.peer.ComponentPeer;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
+import java.util.Collection;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -54,8 +57,11 @@ import net.neilcsmith.praxis.core.CallArguments;
 import net.neilcsmith.praxis.core.ComponentType;
 import net.neilcsmith.praxis.core.info.ComponentInfo;
 import net.neilcsmith.praxis.core.info.PortInfo;
+import net.neilcsmith.praxis.core.interfaces.ComponentInterface;
+import net.neilcsmith.praxis.core.interfaces.ContainerInterface;
 import net.neilcsmith.praxis.live.components.api.Components;
 import net.neilcsmith.praxis.live.core.api.Callback;
+import net.neilcsmith.praxis.live.core.api.Syncable;
 import net.neilcsmith.praxis.live.graph.Alignment;
 import net.neilcsmith.praxis.live.graph.EdgeID;
 import net.neilcsmith.praxis.live.graph.EdgeWidget;
@@ -64,14 +70,14 @@ import net.neilcsmith.praxis.live.graph.ObjectSceneAdaptor;
 import net.neilcsmith.praxis.live.graph.PinID;
 import net.neilcsmith.praxis.live.graph.PinWidget;
 import net.neilcsmith.praxis.live.graph.PraxisGraphScene;
+import net.neilcsmith.praxis.live.model.ComponentProxy;
+import net.neilcsmith.praxis.live.model.Connection;
+import net.neilcsmith.praxis.live.model.ContainerProxy;
+import net.neilcsmith.praxis.live.model.ProxyException;
+import net.neilcsmith.praxis.live.model.RootProxy;
 import net.neilcsmith.praxis.live.pxr.api.ActionSupport;
-import net.neilcsmith.praxis.live.pxr.api.ComponentProxy;
-import net.neilcsmith.praxis.live.pxr.api.Connection;
-import net.neilcsmith.praxis.live.pxr.api.ContainerProxy;
 import net.neilcsmith.praxis.live.pxr.api.EditorUtils;
-import net.neilcsmith.praxis.live.pxr.api.ProxyException;
 import net.neilcsmith.praxis.live.pxr.api.RootEditor;
-import net.neilcsmith.praxis.live.pxr.api.RootProxy;
 import org.netbeans.api.visual.action.AcceptProvider;
 import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.action.ConnectProvider;
@@ -84,7 +90,6 @@ import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.awt.StatusDisplayer;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerUtils;
 import org.openide.filesystems.FileObject;
@@ -108,8 +113,11 @@ public class GraphEditor extends RootEditor {
     final static String ATTR_GRAPH_Y = "graph.y";
     final static String ATTR_GRAPH_MINIMIZED = "graph.minimized";
     private final RootProxy root;
-    private final Set<String> knownChildren;
+    private final Map<String, ComponentProxy> knownChildren;
     private final Set<Connection> knownConnections;
+    private final ContainerListener containerListener;
+    private final InfoListener infoListener;
+
     private Action deleteAction;
     private JComponent panel;
     private PraxisGraphScene<String> scene;
@@ -117,7 +125,7 @@ public class GraphEditor extends RootEditor {
     private ContainerProxy container;
     private Lookup lookup;
     private int lastX;
-    private ContainerListener containerListener;
+
     private ActionSupport actionSupport;
     private Point activePoint = new Point();
     private boolean sync;
@@ -126,8 +134,8 @@ public class GraphEditor extends RootEditor {
 
     public GraphEditor(RootProxy root, String category) {
         this.root = root;
-        knownChildren = new LinkedHashSet<String>();
-        knownConnections = new LinkedHashSet<Connection>();
+        knownChildren = new LinkedHashMap<>();
+        knownConnections = new LinkedHashSet<>();
 
         scene = new PraxisGraphScene<String>(new ConnectProviderImpl(), new MenuProviderImpl());
         manager = new ExplorerManager();
@@ -141,11 +149,13 @@ public class GraphEditor extends RootEditor {
 
         lookup = new ProxyLookup(ExplorerUtils.createLookup(manager, buildActionMap(manager)),
                 Lookups.fixed(
-                Components.getPalette("core", category)));
+                        Components.getPalette("core", category)));
         scene.addObjectSceneListener(new SelectionListener(),
                 ObjectSceneEventType.OBJECT_SELECTION_CHANGED);
         goUpAction = new GoUpAction();
         location = new LocationAction();
+        containerListener = new ContainerListener();
+        infoListener = new InfoListener();
         setupSceneActions();
     }
 
@@ -282,9 +292,12 @@ public class GraphEditor extends RootEditor {
 
     private void clearScene() {
         container.removePropertyChangeListener(containerListener);
-        containerListener = null;
-        for (String id : container.getChildIDs()) {
-            removeChild(id);
+        Syncable syncable = container.getLookup().lookup(Syncable.class);
+        if (syncable != null) {
+            syncable.removeKey(this);
+        }
+        for (Map.Entry<String, ComponentProxy> child : knownChildren.entrySet()) {
+            removeChild(child.getKey(), child.getValue());
         }
         activePoint.setLocation(0, 0);
         knownChildren.clear();
@@ -294,8 +307,11 @@ public class GraphEditor extends RootEditor {
 
     private void buildScene() {
 
-        containerListener = new ContainerListener();
         container.addPropertyChangeListener(containerListener);
+        Syncable syncable = container.getLookup().lookup(Syncable.class);
+        if (syncable != null) {
+            syncable.addKey(this);
+        }
 
         container.getNodeDelegate().getChildren().getNodes();
 
@@ -303,7 +319,7 @@ public class GraphEditor extends RootEditor {
 
         goUpAction.setEnabled(container.getParent() != null);
         location.address.setText(container.getAddress().toString());
-        
+
     }
 
     private void buildChild(String id, final ComponentProxy cmp) {
@@ -315,8 +331,8 @@ public class GraphEditor extends RootEditor {
         NodeWidget widget = scene.addNode(id, name);
 //        widget.setNodeType(cmp.getType().toString());
         widget.setToolTipText(cmp.getType().toString());
-        widget.setPreferredLocation(resolveLocation(id, cmp));       
-        if ("true".equals(cmp.getAttribute(ATTR_GRAPH_MINIMIZED))) {
+        widget.setPreferredLocation(resolveLocation(id, cmp));
+        if ("true".equals(Utils.getAttr(cmp, ATTR_GRAPH_MINIMIZED))) {
             widget.setMinimized(true);
         }
         widget.getActions().addAction(ActionFactory.createEditAction(new EditProvider() {
@@ -333,9 +349,42 @@ public class GraphEditor extends RootEditor {
             }
             buildPin(id, portID, pi);
         }
+        cmp.addPropertyChangeListener(infoListener);
     }
 
-    private void removeChild(String id) {
+    private void rebuildChild(String id, ComponentProxy cmp) {
+        if (LOG.isLoggable(Level.FINEST)) {
+            LOG.finest("Rebuilding " + cmp.getAddress() + " in graph.");
+        }
+        // remove all connections to this component from known connections list
+        Iterator<Connection> itr = knownConnections.iterator();
+        while (itr.hasNext()) {
+            Connection con = itr.next();
+            if (con.getChild1().equals(id) || con.getChild2().equals(id)) {
+                LOG.finest("Removing connection : " + con);
+                itr.remove();
+            }
+        }
+        // match visual state by removing all pins and edges from graph node
+        List<PinID<String>> pins = new ArrayList<>(scene.getNodePins(id));
+        LOG.finest(pins.toString());
+        for (PinID<String> pin : pins) {
+            LOG.finest("Removing pin : " + pin);
+            scene.removePinWithEdges(pin);
+        }
+        ComponentInfo info = cmp.getInfo();
+        for (String portID : info.getPorts()) {
+            PortInfo pi = info.getPortInfo(portID);
+            if (LOG.isLoggable(Level.FINEST)) {
+                LOG.finest("Building port " + portID);
+            }
+            buildPin(id, portID, pi);
+        }
+        syncConnections();
+    }
+
+    private void removeChild(String id, ComponentProxy cmp) {
+        cmp.removePropertyChangeListener(infoListener);
         scene.removeNodeWithEdges(id);
         // @TODO temporary fix for moving dynamic components?
         activePoint.x = 0;
@@ -346,8 +395,8 @@ public class GraphEditor extends RootEditor {
         int x = activePoint.x;
         int y = activePoint.y;
         try {
-            String xStr = cmp.getAttribute(ATTR_GRAPH_X);
-            String yStr = cmp.getAttribute(ATTR_GRAPH_Y);
+            String xStr = Utils.getAttr(cmp, ATTR_GRAPH_X);
+            String yStr = Utils.getAttr(cmp, ATTR_GRAPH_Y);
             if (xStr != null) {
                 x = Integer.parseInt(xStr) + x;
             }
@@ -387,16 +436,32 @@ public class GraphEditor extends RootEditor {
         }
     }
 
-    private void buildConnection(Connection connection) {
-        EdgeWidget widget = scene.connect(connection.getChild1(), connection.getPort1(),
-                connection.getChild2(), connection.getPort2());
-        widget.setToolTipText(connection.getChild1() + "!" + connection.getPort1() + " -> "
-                + connection.getChild2() + "!" + connection.getPort2());
+    private boolean buildConnection(Connection connection) {
+        PinID<String> p1 = new PinID<>(connection.getChild1(), connection.getPort1());
+        PinID<String> p2 = new PinID<>(connection.getChild2(), connection.getPort2());
+        if (scene.isPin(p1) && scene.isPin(p2)) {
+            EdgeWidget widget = scene.connect(connection.getChild1(), connection.getPort1(),
+                    connection.getChild2(), connection.getPort2());
+            widget.setToolTipText(connection.getChild1() + "!" + connection.getPort1() + " -> "
+                    + connection.getChild2() + "!" + connection.getPort2());
+            return true;
+        } else {
+            return false;
+        }
+
     }
 
-    private void removeConnection(Connection connection) {
-        scene.disconnect(connection.getChild1(), connection.getPort1(),
-                connection.getChild2(), connection.getPort2());
+    private boolean removeConnection(Connection connection) {
+        EdgeID<String> edge = new EdgeID<>(new PinID<>(connection.getChild1(), connection.getPort1()),
+                new PinID<>(connection.getChild2(), connection.getPort2()));
+        if (scene.isEdge(edge)) {
+            scene.disconnect(connection.getChild1(), connection.getPort1(),
+                    connection.getChild2(), connection.getPort2());
+            return true;
+        } else {
+            return false;
+        }
+
     }
 
     private void syncChildren() {
@@ -404,22 +469,23 @@ public class GraphEditor extends RootEditor {
             return;
         }
         List<String> ch = Arrays.asList(container.getChildIDs());
-        Set<String> tmp = new LinkedHashSet<String>(knownChildren);
+        Set<String> tmp = new LinkedHashSet<String>(knownChildren.keySet());
         tmp.removeAll(ch);
         // tmp now contains children that have been removed from model
         for (String id : tmp) {
-            removeChild(id);
-            knownChildren.remove(id);
+            ComponentProxy cmp = knownChildren.remove(id);
+            removeChild(id, cmp);
+
         }
         tmp.clear();
         tmp.addAll(ch);
-        tmp.removeAll(knownChildren);
+        tmp.removeAll(knownChildren.keySet());
         // tmp now contains children that have been added to model
         for (String id : tmp) {
             ComponentProxy cmp = container.getChild(id);
             if (cmp != null) {
                 buildChild(id, cmp);
-                knownChildren.add(id);
+                knownChildren.put(id, cmp);
             }
         }
         scene.validate();
@@ -442,8 +508,12 @@ public class GraphEditor extends RootEditor {
         tmp.removeAll(knownConnections);
         // tmp now contains connections that have been added to model
         for (Connection con : tmp) {
-            buildConnection(con);
-            knownConnections.add(con);
+            if (buildConnection(con)) {
+                knownConnections.add(con);
+            } else {
+                // leave for later?
+            }
+
         }
         scene.validate();
     }
@@ -463,14 +533,31 @@ public class GraphEditor extends RootEditor {
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
             if (sync) {
-                if (ContainerProxy.PROP_CHILDREN.equals(evt.getPropertyName())) {
+                if (ContainerInterface.CHILDREN.equals(evt.getPropertyName())) {
                     syncChildren();
-                } else if (ContainerProxy.PROP_CONNECTIONS.equals(evt.getPropertyName())) {
+                } else if (ContainerInterface.CONNECTIONS.equals(evt.getPropertyName())) {
                     syncConnections();
                 }
             }
 
         }
+    }
+
+    private class InfoListener implements PropertyChangeListener {
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (ComponentInterface.INFO.equals(evt.getPropertyName())) {
+                Object src = evt.getSource();
+                assert src instanceof ComponentProxy;
+                if (src instanceof ComponentProxy) {
+                    ComponentProxy cmp = (ComponentProxy) src;
+                    String id = cmp.getAddress().getID();
+                    rebuildChild(id, cmp);
+                }
+            }
+        }
+
     }
 
     private class ConnectProviderImpl implements ConnectProvider {
@@ -583,7 +670,7 @@ public class GraphEditor extends RootEditor {
                         manager.setSelectedNodes(new Node[]{container.getNodeDelegate()});
                     } else {
                         manager.setSelectedNodes(new Node[]{manager.getRootContext()});
-                    }               
+                    }
                     deleteAction.setEnabled(false);
                 } else {
                     ArrayList<Node> sel = new ArrayList<Node>();
@@ -626,9 +713,9 @@ public class GraphEditor extends RootEditor {
                     LOG.log(Level.FINE, "Setting position attributes of {0} to x:{1} y:{2}",
                             new Object[]{cmp.getAddress(), x, y});
                 }
-                cmp.setAttribute(ATTR_GRAPH_X, x);
-                cmp.setAttribute(ATTR_GRAPH_Y, y);
-                cmp.setAttribute(ATTR_GRAPH_MINIMIZED,
+                Utils.setAttr(cmp, ATTR_GRAPH_X, x);
+                Utils.setAttr(cmp, ATTR_GRAPH_Y, y);
+                Utils.setAttr(cmp, ATTR_GRAPH_MINIMIZED,
                         nodeWidget.isMinimized() ? "true" : null);
             }
         }
@@ -697,7 +784,7 @@ public class GraphEditor extends RootEditor {
                 }
             }
         }
-        
+
         private boolean checkDeletion(Set<?> selected) {
             List<String> components = new ArrayList<String>();
             for (Object o : selected) {
@@ -709,16 +796,15 @@ public class GraphEditor extends RootEditor {
                 return true;
             }
             int count = components.size();
-            String msg = count > 1 ?
-                    "Delete " + count + " components?" :
-                    "Delete " + components.get(0) + "?";
+            String msg = count > 1
+                    ? "Delete " + count + " components?"
+                    : "Delete " + components.get(0) + "?";
             String title = "Confirm deletion";
             NotifyDescriptor desc = new NotifyDescriptor.Confirmation(msg, title, NotifyDescriptor.YES_NO_OPTION);
 
             return NotifyDescriptor.YES_OPTION.equals(DialogDisplayer.getDefault().notify(desc));
         }
-        
-        
+
     }
 
     private class GoUpAction extends AbstractAction {
@@ -726,8 +812,8 @@ public class GraphEditor extends RootEditor {
         private GoUpAction() {
             super("Go Up",
                     ImageUtilities.loadImageIcon(
-                    "net/neilcsmith/praxis/live/pxr/graph/resources/go-up.png",
-                    true));
+                            "net/neilcsmith/praxis/live/pxr/graph/resources/go-up.png",
+                            true));
         }
 
         @Override
@@ -742,12 +828,12 @@ public class GraphEditor extends RootEditor {
     }
 
     private class LocationAction extends AbstractAction implements Presenter.Toolbar {
-        
+
         private final JLabel address = new JLabel();
-  
+
         @Override
         public void actionPerformed(ActionEvent e) {
-            
+
         }
 
         @Override

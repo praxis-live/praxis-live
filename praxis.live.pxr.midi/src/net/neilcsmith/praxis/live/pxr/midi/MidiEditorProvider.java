@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Neil C Smith.
+ * Copyright 2014 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -23,14 +23,14 @@ package net.neilcsmith.praxis.live.pxr.midi;
 
 import net.neilcsmith.praxis.core.ComponentType;
 import net.neilcsmith.praxis.live.pxr.api.RootEditor;
-import net.neilcsmith.praxis.live.pxr.api.RootProxy;
+import net.neilcsmith.praxis.live.model.RootProxy;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author Neil C Smith <http://neilcsmith.net>
  */
-@ServiceProvider(service=RootEditor.Provider.class)
+@ServiceProvider(service=RootEditor.Provider.class, position = 20)
 public class MidiEditorProvider implements RootEditor.Provider {
 
     @Override

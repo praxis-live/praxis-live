@@ -29,7 +29,6 @@ import net.neilcsmith.praxis.core.info.ArgumentInfo;
 import net.neilcsmith.praxis.core.types.PString;
 import net.neilcsmith.praxis.live.properties.EditorSupport;
 import net.neilcsmith.praxis.live.properties.PraxisProperty;
-import net.neilcsmith.praxis.live.pxr.api.PraxisPropertyEditor;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
 
@@ -38,7 +37,7 @@ import org.openide.explorer.propertysheet.PropertyEnv;
  * @author Neil C Smith <http://neilcsmith.net>
  */
 public class ControlAddressEditor extends EditorSupport 
-    implements ExPropertyEditor, PraxisPropertyEditor {
+    implements ExPropertyEditor {
     
     private PropertyEnv env;
     private boolean allowEmpty;
@@ -104,9 +103,7 @@ public class ControlAddressEditor extends EditorSupport
         return new ControlAddressCustomEditor(this, getAddress(), env);
     }
     
-    
-    
-    @Override
+
     public String getDisplayName() {
         return "Control Address Editor";
     }

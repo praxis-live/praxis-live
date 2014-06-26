@@ -24,12 +24,12 @@ package net.neilcsmith.praxis.live.pxr.api;
 
 /**
  *
- * @author Neil C Smith (http://neilcsmith.net)
+ * @author Neil C Smith <http://neilcsmith.net>
  */
-public final class Connection extends net.neilcsmith.praxis.live.model.Connection {
-
-    public Connection(String child1, String port1, String child2, String port2) {
-        super(child1, port1, child2, port2);
-    }
+public interface Attributes {
+    
+    public void setAttribute(String key, String value);
+    
+    public String getAttribute(String key);
     
 }

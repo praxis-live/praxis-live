@@ -61,7 +61,7 @@ import org.openide.util.Exceptions;
  */
 @SuppressWarnings("deprecation")
 class MimeTextEditor extends EditorSupport
-        implements ExPropertyEditor, net.neilcsmith.praxis.live.pxr.api.PraxisPropertyEditor, InplaceEditor.Factory {
+        implements ExPropertyEditor, InplaceEditor.Factory {
 
     private final PraxisProperty property;
     private final String mime;
@@ -100,8 +100,6 @@ class MimeTextEditor extends EditorSupport
         return editInit;
     }
 
-    @Override
-    @Deprecated
     public String getDisplayName() {
         return getClass().getSimpleName();
     }

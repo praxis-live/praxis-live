@@ -37,12 +37,8 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JToolBar;
-import net.neilcsmith.praxis.live.pxr.PXRParser.*;
 import net.neilcsmith.praxis.live.pxr.api.RootEditor;
-import net.neilcsmith.praxis.live.pxr.api.RootProxy;
 import net.neilcsmith.praxis.live.pxr.api.RootRegistry;
-import net.neilcsmith.praxis.live.pxr.graph.GraphEditor;
-import org.netbeans.api.project.Project;
 import org.openide.awt.Actions;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
@@ -63,7 +59,7 @@ public class RootEditorTopComponent extends CloneableTopComponent {
     private RootEditor editor;
     private JComponent editorPanel;
     private EditorLookup lookup;
-    private RootProxy root;
+    private PXRRootProxy root;
     private PropertyChangeListener registryListener;
     private JToolBar toolBar;
 
@@ -88,7 +84,7 @@ public class RootEditorTopComponent extends CloneableTopComponent {
     @Override
     protected void componentOpened() {
         assert EventQueue.isDispatchThread();
-        root = RootRegistry.getDefault().findRootForFile(dob.getPrimaryFile());
+        root = PXRRootRegistry.getDefault().findRootForFile(dob.getPrimaryFile());
         install(root);
         RootRegistry.getDefault().addPropertyChangeListener(registryListener);
     }
@@ -152,7 +148,7 @@ public class RootEditorTopComponent extends CloneableTopComponent {
     }
 
     private void checkRoot() {
-        RootProxy root = RootRegistry.getDefault().findRootForFile(dob.getPrimaryFile());
+        PXRRootProxy root = PXRRootRegistry.getDefault().findRootForFile(dob.getPrimaryFile());
         if (root == this.root) {
             return;
         }
@@ -161,7 +157,7 @@ public class RootEditorTopComponent extends CloneableTopComponent {
         install(root);
     }
 
-    private void install(RootProxy root) {
+    private void install(PXRRootProxy root) {
         if (root == null) {
             editor = new BlankEditor();
             lookup.setAdditional(editor.getLookup());
@@ -195,7 +191,7 @@ public class RootEditorTopComponent extends CloneableTopComponent {
         return actions.toArray(new Action[actions.size()]);
     }
 
-    private void uninstall(RootProxy root) {
+    private void uninstall(PXRRootProxy root) {
         remove(editorPanel);
         editorPanel = null;
         editor.dispose();
@@ -231,19 +227,19 @@ public class RootEditorTopComponent extends CloneableTopComponent {
         return PERSISTENCE_NEVER;
     }
 
-    private RootEditor findEditor(RootProxy root) {
+    private RootEditor findEditor(PXRRootProxy root) {
         for (RootEditor.Provider provider : Lookup.getDefault().lookupAll(RootEditor.Provider.class)) {
             RootEditor ed = provider.createEditor(root);
             if (ed != null) {
                 return ed;
             }
         }
-        String type = root.getType().toString();
-        if (type.startsWith("root:")) {
-            return new GraphEditor(root, type.substring(5));
-        } else {
+//        String type = root.getType().toString();
+//        if (type.startsWith("root:")) {
+//            return new GraphEditor(root, type.substring(5));
+//        } else {
             return new DebugRootEditor(root);
-        }
+//        }
     }
 
     private class BlankEditor extends RootEditor {

@@ -40,11 +40,10 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import net.neilcsmith.praxis.live.core.api.Syncable;
 import net.neilcsmith.praxis.live.core.api.Task;
-import net.neilcsmith.praxis.live.pxr.api.ComponentProxy;
-import net.neilcsmith.praxis.live.pxr.api.ContainerProxy;
-import net.neilcsmith.praxis.live.pxr.api.RootProxy;
-import net.neilcsmith.praxis.live.pxr.api.RootRegistry;
+import net.neilcsmith.praxis.live.model.ComponentProxy;
+import net.neilcsmith.praxis.live.model.ContainerProxy;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.openide.filesystems.FileObject;
@@ -110,7 +109,7 @@ abstract class SaveTask implements Task {
         }
     }
 
-    private static class Single extends SaveTask implements PropertyChangeListener, ActionListener {
+    private static class Single extends SaveTask implements ActionListener {
 
         private PXRDataObject dob;
         private PXRRootProxy root;
@@ -128,43 +127,42 @@ abstract class SaveTask implements Task {
             if (getState() != State.NEW) {
                 throw new IllegalStateException();
             }
-            RootProxy r = RootRegistry.getDefault().findRootForFile(dob.getPrimaryFile());
-            if (r instanceof PXRRootProxy) {
-                activeTasks.put(dob, this);
-                updateState(State.RUNNING);
-                LOG.log(Level.FINE, "Starting sync for save on {0}", r.getAddress());       
-                root = (PXRRootProxy) r;
-                ph = ProgressHandleFactory.createHandle("Saving " + root.getAddress(), this);
-                ph.setInitialDelay(0);
-                ph.start();
-                ph.progress("Syncing.");
-                syncComponents();
-                RP.schedule(new Runnable() {
+            PXRRootProxy root = PXRRootRegistry.getDefault().findRootForFile(dob.getPrimaryFile());
 
-                    @Override
-                    public void run() {
-                        EventQueue.invokeLater(new Runnable() {
+            activeTasks.put(dob, this);
+            updateState(State.RUNNING);
+            LOG.log(Level.FINE, "Starting sync for save on {0}", root.getAddress());
+            ph = ProgressHandleFactory.createHandle("Saving " + root.getAddress(), this);
+            ph.setInitialDelay(0);
+            ph.start();
+            ph.progress("Syncing.");
+            syncComponents();
+            RP.schedule(new Runnable() {
 
-                            @Override
-                            public void run() {
-                                doSave();
-                            }
-                        });
-                    }
-                }, 1000, TimeUnit.MILLISECONDS);
-            } else {
-                LOG.log(Level.FINE, "Unable to find RootProxy for {0}", dob.getPrimaryFile().getPath());
-                updateState(State.ERROR);
-            }
+                @Override
+                public void run() {
+                    EventQueue.invokeLater(new Runnable() {
+
+                        @Override
+                        public void run() {
+                            doSave();
+                        }
+                    });
+                }
+            }, 1000, TimeUnit.MILLISECONDS);
+
             return getState();
         }
 
         private void syncComponents() {
             components = new ArrayList<ComponentProxy>();
             addComponentAndChildren(components, root);
-            for (ComponentProxy component : components) {
-                LOG.log(Level.FINE, "Adding SaveTask listener to {0}", component.getAddress());
-                component.addPropertyChangeListener(this);
+            for (ComponentProxy component : components) {    
+                Syncable sync = component.getLookup().lookup(Syncable.class);
+                if (sync != null) {
+                    LOG.log(Level.FINE, "Adding SaveTask listener to {0}", component.getAddress());
+                    sync.addKey(this);
+                }
             }
         }
 
@@ -183,8 +181,11 @@ abstract class SaveTask implements Task {
                 return;
             }
             for (ComponentProxy component : components) {
-                LOG.log(Level.FINE, "Removing SaveTask listener from {0}", component.getAddress());
-                component.removePropertyChangeListener(this);
+                Syncable sync = component.getLookup().lookup(Syncable.class);
+                if (sync != null) {
+                    LOG.log(Level.FINE, "Removing SaveTask listener to {0}", component.getAddress());
+                    sync.removeKey(this);
+                }
             }
             components.clear();
             components = null;
@@ -252,8 +253,6 @@ abstract class SaveTask implements Task {
             }
             super.updateState(state);
         }
-        
-        
 
         @Override
         public boolean cancel() {
@@ -265,10 +264,6 @@ abstract class SaveTask implements Task {
             }
         }
 
-        @Override
-        public void propertyChange(PropertyChangeEvent pce) {
-            // no op, used to force sync
-        }
     }
 
     private static class Compound extends SaveTask implements PropertyChangeListener {
@@ -293,7 +288,7 @@ abstract class SaveTask implements Task {
                 // iterate array copy of set as initChildTask() might remove elements
                 initChildTask(dob);
             }
-            
+
             return getState();
         }
 

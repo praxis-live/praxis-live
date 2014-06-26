@@ -28,8 +28,6 @@ import java.util.HashSet;
 import java.util.Set;
 import net.neilcsmith.praxis.live.core.api.RootLifecycleHandler;
 import net.neilcsmith.praxis.live.core.api.Task;
-import net.neilcsmith.praxis.live.pxr.api.RootProxy;
-import net.neilcsmith.praxis.live.pxr.api.RootRegistry;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.lookup.ServiceProvider;
@@ -45,7 +43,7 @@ public class RootLifecycleHandlerImpl extends RootLifecycleHandler {
     public Task getDeletionTask(String description, Set<String> rootIDs) {
         Set<PXRDataObject> dobs = new HashSet<PXRDataObject>();
         for (String rootID : rootIDs) {
-            RootProxy root = RootRegistry.getDefault().getRootByID(rootID);
+            PXRRootProxy root = PXRRootRegistry.getDefault().getRootByID(rootID);
             if (root instanceof PXRRootProxy) {
                 dobs.add( ((PXRRootProxy) root).getSource());
             }

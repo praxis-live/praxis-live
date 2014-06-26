@@ -26,14 +26,14 @@ package net.neilcsmith.praxis.live.pxr.gui;
 
 import net.neilcsmith.praxis.core.ComponentType;
 import net.neilcsmith.praxis.live.pxr.api.RootEditor;
-import net.neilcsmith.praxis.live.pxr.api.RootProxy;
+import net.neilcsmith.praxis.live.model.RootProxy;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author Neil C Smith (http://neilcsmith.net)
  */
-@ServiceProvider(service=RootEditor.Provider.class)
+@ServiceProvider(service=RootEditor.Provider.class, position=10)
 public class GuiEditorProvider implements RootEditor.Provider {
 
     @Override

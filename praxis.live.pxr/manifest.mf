@@ -1,5 +1,5 @@
 Manifest-Version: 1.0
-OpenIDE-Module: net.neilcsmith.praxis.live.pxr
+OpenIDE-Module: net.neilcsmith.praxis.live.pxr/2
 OpenIDE-Module-Layer: net/neilcsmith/praxis/live/pxr/resources/layer.xml
 OpenIDE-Module-Localizing-Bundle: net/neilcsmith/praxis/live/pxr/resources/Bundle.properties
 OpenIDE-Module-Requires: org.openide.windows.WindowManager

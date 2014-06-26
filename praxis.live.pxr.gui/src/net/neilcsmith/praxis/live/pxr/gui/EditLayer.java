@@ -47,12 +47,13 @@ import javax.swing.event.ChangeListener;
 import net.miginfocom.swing.MigLayout;
 import net.neilcsmith.praxis.core.CallArguments;
 import net.neilcsmith.praxis.core.ComponentType;
+import net.neilcsmith.praxis.core.ControlAddress;
 import net.neilcsmith.praxis.core.types.PString;
 import net.neilcsmith.praxis.live.core.api.Callback;
-import net.neilcsmith.praxis.live.pxr.api.ComponentProxy;
-import net.neilcsmith.praxis.live.pxr.api.ContainerProxy;
-import net.neilcsmith.praxis.live.pxr.api.ProxyException;
-import net.neilcsmith.praxis.live.pxr.api.RootProxy;
+import net.neilcsmith.praxis.live.model.ComponentProxy;
+import net.neilcsmith.praxis.live.model.ContainerProxy;
+import net.neilcsmith.praxis.live.model.ProxyException;
+import net.neilcsmith.praxis.live.model.RootProxy;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
@@ -93,7 +94,7 @@ class EditLayer extends JComponent {
         super.setVisible(false);
 
     }
-    
+
     void addChangeListener(ChangeListener listener) {
         cs.addChangeListener(listener);
     }
@@ -287,19 +288,21 @@ class EditLayer extends JComponent {
 
             @Override
             public void onReturn(CallArguments args) {
+
                 try {
-                    pxy.getChild(id).call("layout", CallArguments.create(layout), new Callback() {
+                    GuiHelper.getDefault().send(ControlAddress.create(pxy.getChild(id).getAddress(), "layout"),
+                            CallArguments.create(layout), new Callback() {
 
-                        @Override
-                        public void onReturn(CallArguments args) {
-                            Utils.compactGrid(container);
-                        }
+                                @Override
+                                public void onReturn(CallArguments args) {
+                                    Utils.compactGrid(container);
+                                }
 
-                        @Override
-                        public void onError(CallArguments args) {
-                        }
-                    });
-                } catch (ProxyException ex) {
+                                @Override
+                                public void onError(CallArguments args) {
+                                }
+                            });
+                } catch (Exception ex) {
                     Logger.getLogger(EditLayer.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
@@ -327,11 +330,12 @@ class EditLayer extends JComponent {
         Component cmp = SwingUtilities.getDeepestComponentAt(rootPanel, x, y);
         return Utils.findAddressedComponent(cmp);
     }
-    
+
     private class SelectedListener implements AncestorListener {
 
         @Override
-        public void ancestorAdded(AncestorEvent ae) {}
+        public void ancestorAdded(AncestorEvent ae) {
+        }
 
         @Override
         public void ancestorRemoved(AncestorEvent ae) {
@@ -339,8 +343,9 @@ class EditLayer extends JComponent {
         }
 
         @Override
-        public void ancestorMoved(AncestorEvent ae) {}
-        
+        public void ancestorMoved(AncestorEvent ae) {
+        }
+
     }
 
     private class MouseController extends MouseAdapter {
@@ -371,7 +376,6 @@ class EditLayer extends JComponent {
             }
         }
 
-        
     }
 
     private class DnDController extends DropTargetAdapter {

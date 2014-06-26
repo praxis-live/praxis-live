@@ -44,7 +44,7 @@ import org.openide.explorer.propertysheet.PropertyEnv;
  */
 @SuppressWarnings("deprecation")
 public class StringEditor extends EditorSupport
-        implements ExPropertyEditor, net.neilcsmith.praxis.live.pxr.api.PraxisPropertyEditor {
+        implements ExPropertyEditor {
 
     private PropertyEnv env;
     private PraxisProperty<?> property;
@@ -91,7 +91,6 @@ public class StringEditor extends EditorSupport
                 HtmlRenderer.STYLE_TRUNCATE, true);
     }
 
-    @Override
     public String getDisplayName() {
         return "String Editor";
     }

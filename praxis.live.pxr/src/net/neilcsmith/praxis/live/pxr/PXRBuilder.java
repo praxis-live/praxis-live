@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Neil C Smith.
+ * Copyright 2014 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -41,9 +41,9 @@ import net.neilcsmith.praxis.live.pxr.PXRParser.ConnectionElement;
 import net.neilcsmith.praxis.live.pxr.PXRParser.Element;
 import net.neilcsmith.praxis.live.pxr.PXRParser.PropertyElement;
 import net.neilcsmith.praxis.live.pxr.PXRParser.RootElement;
-import net.neilcsmith.praxis.live.pxr.api.Connection;
+import net.neilcsmith.praxis.live.model.Connection;
 
-import net.neilcsmith.praxis.live.pxr.api.ProxyException;
+import net.neilcsmith.praxis.live.model.ProxyException;
 import org.openide.util.Exceptions;
 
 /**
@@ -101,7 +101,7 @@ class PXRBuilder {
         if (!processed && !iterator.hasNext()) {
             processed = true;
             if (registerRoot) {
-                DefaultRootRegistry.getDefault().register(rootProxy);
+                PXRRootRegistry.getDefault().register(rootProxy);
             }
             processCallback.onReturn(CallArguments.EMPTY);
 
@@ -187,7 +187,7 @@ class PXRBuilder {
     private boolean processAttribute(AttributeElement attr) {
         PXRComponentProxy cmp = findComponent(attr.component.address);
         if (cmp != null) {
-            cmp.setAttribute(attr.key, attr.value);
+            cmp.setAttr(attr.key, attr.value);
         }
         return true;
     }

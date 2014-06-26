@@ -33,8 +33,7 @@ import javax.swing.SwingUtilities;
 import net.neilcsmith.praxis.core.CallArguments;
 import net.neilcsmith.praxis.core.ComponentAddress;
 import net.neilcsmith.praxis.live.core.api.Callback;
-import net.neilcsmith.praxis.live.pxr.api.ComponentProxy;
-import net.neilcsmith.praxis.live.pxr.api.ContainerProxy;
+import net.neilcsmith.praxis.live.model.ContainerProxy;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
@@ -55,7 +54,7 @@ public class ActionBridge {
     public static void copyToClipboard(ContainerProxy container, Set<String> children) {
         StringBuilder sb = new StringBuilder();
         try {
-            PXRWriter.writeSubGraph(container, children, sb);
+            PXRWriter.writeSubGraph((PXRContainerProxy) container, children, sb);
             SubGraphTransferable tf = new SubGraphTransferable(sb.toString());
             getClipboard().setContents(tf, tf);
         } catch (Exception ex) {

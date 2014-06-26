@@ -36,9 +36,9 @@ import net.miginfocom.layout.CC;
 import net.miginfocom.layout.IDEUtil;
 import net.neilcsmith.praxis.core.ComponentAddress;
 import net.neilcsmith.praxis.gui.Keys;
-import net.neilcsmith.praxis.live.pxr.api.ComponentProxy;
-import net.neilcsmith.praxis.live.pxr.api.ContainerProxy;
-import net.neilcsmith.praxis.live.pxr.api.RootProxy;
+import net.neilcsmith.praxis.live.model.ComponentProxy;
+import net.neilcsmith.praxis.live.model.ContainerProxy;
+import net.neilcsmith.praxis.live.model.RootProxy;
 
 /**
  *

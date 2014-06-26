@@ -73,7 +73,6 @@ public class ArrayEditor extends EditorSupport
         }
     }
 
-    @Override
     public String getDisplayName() {
         return "Array Editor";
     }

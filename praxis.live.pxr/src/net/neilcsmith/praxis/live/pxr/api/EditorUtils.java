@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Neil C Smith.
+ * Copyright 2014 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -63,7 +63,7 @@ public class EditorUtils {
             }
         }
         
-        for (int i=1; i<1000; i++) {
+        for (int i=1, max=existing.size(); i<max; i++) {
             String id = baseID + i;
             if (!existing.contains(id)) {
                 return id;

@@ -22,16 +22,16 @@
 
 package net.neilcsmith.praxis.live.pxr.editors;
 
-import net.neilcsmith.praxis.live.pxr.api.PraxisPropertyEditor;
+import net.neilcsmith.praxis.live.properties.PraxisProperty;
+
 
 /**
  *
  * @author Neil C Smith (http://neilcsmith.net)
  */
-public interface SubCommandEditor extends PraxisPropertyEditor {
+@Deprecated
+public interface SubCommandEditor extends PraxisProperty.SubCommandEditor {
 
-    public void setFromCommand(String command) throws Exception;
 
-    public String[] getSupportedCommands();
 
 }

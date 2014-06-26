@@ -40,7 +40,6 @@ import net.neilcsmith.praxis.core.types.PResource;
 import net.neilcsmith.praxis.live.properties.EditorSupport;
 import net.neilcsmith.praxis.live.properties.PraxisProperty;
 import net.neilcsmith.praxis.live.properties.SyntaxUtils;
-import net.neilcsmith.praxis.live.pxr.api.PraxisPropertyEditor;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
 
@@ -49,7 +48,7 @@ import org.openide.explorer.propertysheet.PropertyEnv;
  * @author Neil C Smith (http://neilcsmith.net)
  */
 public class FileListEditor extends EditorSupport
-        implements SubCommandEditor, ExPropertyEditor, PraxisPropertyEditor {
+        implements SubCommandEditor, ExPropertyEditor {
 
     private URI base;
     private File directory;
@@ -214,7 +213,6 @@ public class FileListEditor extends EditorSupport
         return new File(path);
     }
 
-    @Override
     public String getDisplayName() {
         return "File List";
     }

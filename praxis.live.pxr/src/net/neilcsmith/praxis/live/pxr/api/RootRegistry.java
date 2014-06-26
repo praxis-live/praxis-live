@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Neil C Smith.
+ * Copyright 2014 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -19,11 +19,11 @@
  * Please visit http://neilcsmith.net if you need additional information or
  * have any questions.
  */
-
 package net.neilcsmith.praxis.live.pxr.api;
 
 import java.beans.PropertyChangeListener;
-import net.neilcsmith.praxis.live.pxr.DefaultRootRegistry;
+import net.neilcsmith.praxis.live.model.RootProxy;
+import net.neilcsmith.praxis.live.pxr.PXRRootRegistry;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -40,26 +40,12 @@ public abstract class RootRegistry {
 
     public abstract RootProxy[] getRoots();
 
-    public RootProxy getRootByID(String id) {
-        for (RootProxy root : getRoots()) {
-            if (root.getAddress().getRootID().equals(id)) {
-                return root;
-            }
-        }
-        return null;
-    }
+    public abstract RootProxy getRootByID(String id);
     
-    public RootProxy findRootForFile(FileObject file) {
-        for (RootProxy root : getRoots()) {
-            if (root.getSourceFile().equals(file)) {
-                return root;
-            }
-        }
-        return null;
-    }
-
+    public abstract RootProxy findRootForFile(FileObject file);
+    
     public static RootRegistry getDefault() {
-        return DefaultRootRegistry.getDefault();
+        return PXRRootRegistry.getDefault();
     }
 
 }

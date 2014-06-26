@@ -29,14 +29,10 @@ import net.neilcsmith.praxis.live.core.api.Callback;
 import net.neilcsmith.praxis.live.project.api.ExecutionLevel;
 import net.neilcsmith.praxis.live.project.api.FileHandler;
 import net.neilcsmith.praxis.live.project.api.PraxisProject;
-import net.neilcsmith.praxis.live.pxr.api.ProxyException;
-import net.neilcsmith.praxis.live.pxr.api.RootProxy;
-import net.neilcsmith.praxis.live.pxr.api.RootRegistry;
+import net.neilcsmith.praxis.live.model.ProxyException;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.ServiceProvider;
@@ -89,7 +85,7 @@ public class AutostartFileHandler extends FileHandler {
                         @Override
                         public void run() {
                             // @TODO check root file is owned by project?
-                            RootProxy root = RootRegistry.getDefault().getRootByID(rootID);
+                            PXRRootProxy root = PXRRootRegistry.getDefault().getRootByID(rootID);
                             Project owner = root != null ? FileOwnerQuery.getOwner(root.getSourceFile()) : null;
                             if (root != null && owner != null &&
                                     project.getProjectDirectory().equals(owner.getProjectDirectory())) {

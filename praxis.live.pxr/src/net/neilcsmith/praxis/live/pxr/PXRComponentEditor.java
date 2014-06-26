@@ -40,6 +40,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import net.miginfocom.swing.MigLayout;
 import net.neilcsmith.praxis.gui.ControlBinding;
+import net.neilcsmith.praxis.live.core.api.Syncable;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.explorer.propertysheet.PropertyPanel;
@@ -92,14 +93,30 @@ class PXRComponentEditor {
         
         dialog = DialogDisplayer.getDefault().createDialog(descriptor);
         dialog.addWindowListener(listener);
-        component.addPropertyChangeListener(listener);
+//        component.addPropertyChangeListener(listener);
+        Syncable sync = component.getLookup().lookup(Syncable.class);
+        assert sync != null;
+        if (sync != null) {
+            sync.addKey(this);
+        }
         dialog.setVisible(true);
         
     }
     
     void dispose() {
+        dispose(true);
+    }
+    
+    private void dispose(boolean closeDialog) {
         if (dialog != null) {
-            dialog.setVisible(false);
+            Syncable sync = component.getLookup().lookup(Syncable.class);
+            assert sync != null;
+            if (sync != null) {
+                sync.removeKey(this);
+            }
+            if (closeDialog) {
+               dialog.setVisible(false); 
+            }
             dialog = null;
         }
     }
@@ -142,20 +159,19 @@ class PXRComponentEditor {
     }
     
     
-    private class Listener extends WindowAdapter implements PropertyChangeListener {
+    private class Listener extends WindowAdapter { //implements PropertyChangeListener {
 
-        @Override
-        public void propertyChange(PropertyChangeEvent pce) {
-            if (LOG.isLoggable(Level.FINEST)) {
-                LOG.log(Level.FINE, "Syncing {0} on {1}", new Object[]{pce.getPropertyName(), component.getAddress()});
-            }
-        }
+//        @Override
+//        public void propertyChange(PropertyChangeEvent pce) {
+//            if (LOG.isLoggable(Level.FINEST)) {
+//                LOG.log(Level.FINE, "Syncing {0} on {1}", new Object[]{pce.getPropertyName(), component.getAddress()});
+//            }
+//        }
 
         @Override
         public void windowClosed(WindowEvent we) {
             dialog.removeWindowListener(this);
-            component.removePropertyChangeListener(this);
-            dialog = null;
+          dispose(false);
         }
         
         

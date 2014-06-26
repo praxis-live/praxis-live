@@ -36,22 +36,22 @@ import net.neilcsmith.praxis.core.interfaces.RootManagerService;
 import net.neilcsmith.praxis.core.interfaces.ServiceUnavailableException;
 import net.neilcsmith.praxis.core.types.PArray;
 import net.neilcsmith.praxis.gui.ControlBinding.SyncRate;
-import net.neilcsmith.praxis.live.pxr.api.RootProxy;
 import net.neilcsmith.praxis.live.pxr.api.RootRegistry;
 import net.neilcsmith.praxis.live.util.ArgumentPropertyAdaptor;
+import org.openide.filesystems.FileObject;
 
 /**
  *
  * @author Neil C Smith (http://neilcsmith.net)
  */
-public class DefaultRootRegistry extends RootRegistry {
+public class PXRRootRegistry extends RootRegistry {
 
-    private final static DefaultRootRegistry INSTANCE = new DefaultRootRegistry();
+    private final static PXRRootRegistry INSTANCE = new PXRRootRegistry();
     private PropertyChangeSupport pcs;
     private final Set<PXRRootProxy> roots;
     private ArgumentPropertyAdaptor.ReadOnly rootsAdaptor;
 
-    private DefaultRootRegistry() {
+    private PXRRootRegistry() {
         roots = new LinkedHashSet<PXRRootProxy>();
         pcs = new PropertyChangeSupport(this);
         PXRHelper.getDefault().addPropertyChangeListener(new HubListener());
@@ -151,6 +151,24 @@ public class DefaultRootRegistry extends RootRegistry {
     public synchronized PXRRootProxy[] getRoots() {
         return roots.toArray(new PXRRootProxy[roots.size()]);
     }
+    
+    public PXRRootProxy getRootByID(String id) {
+        for (PXRRootProxy root : getRoots()) {
+            if (root.getAddress().getRootID().equals(id)) {
+                return root;
+            }
+        }
+        return null;
+    }
+    
+    public PXRRootProxy findRootForFile(FileObject file) {
+        for (PXRRootProxy root : getRoots()) {
+            if (root.getSourceFile().equals(file)) {
+                return root;
+            }
+        }
+        return null;
+    }
 
     private class HubListener implements PropertyChangeListener {
 
@@ -170,7 +188,7 @@ public class DefaultRootRegistry extends RootRegistry {
 
 
 
-    public static DefaultRootRegistry getDefault() {
+    public static PXRRootRegistry getDefault() {
         return INSTANCE;
     }
 

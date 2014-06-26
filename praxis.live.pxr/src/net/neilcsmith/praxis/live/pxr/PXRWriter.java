@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Neil C Smith.
+ * Copyright 2014 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -27,10 +27,8 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import net.neilcsmith.praxis.core.ComponentAddress;
-import net.neilcsmith.praxis.live.pxr.api.ComponentProxy;
-import net.neilcsmith.praxis.live.pxr.api.Connection;
-import net.neilcsmith.praxis.live.pxr.api.ContainerProxy;
-import net.neilcsmith.praxis.live.pxr.api.RootProxy;
+import net.neilcsmith.praxis.live.model.Connection;
+import net.neilcsmith.praxis.live.properties.PraxisProperty;
 //import org.openide.util.RequestProcessor;
 
 /**
@@ -44,17 +42,17 @@ class PXRWriter {
     final static String INDENT = "  ";
     final static String AT = "@";
     final static String CONNECT = "~";
-    private final RootProxy root;
-    private final ContainerProxy container;
+    private final PXRRootProxy root;
+    private final PXRContainerProxy container;
     private final Set<String> children;
 
-    private PXRWriter(RootProxy root) {
+    private PXRWriter(PXRRootProxy root) {
         this.root = root;
         container = null;
         children = null;
     }
 
-    private PXRWriter(ContainerProxy container, Set<String> children) {
+    private PXRWriter(PXRContainerProxy container, Set<String> children) {
         this.container = container;
         this.children = children;
         this.root = null;
@@ -72,7 +70,7 @@ class PXRWriter {
         }
     }
 
-    private void writeComponent(Appendable sb, ComponentProxy cmp, int level) throws IOException {
+    private void writeComponent(Appendable sb, PXRComponentProxy cmp, int level) throws IOException {
         LOG.finest("Writing component " + cmp.getAddress());
         writeIndent(sb, level);
         sb.append(AT).append(' ');
@@ -88,8 +86,8 @@ class PXRWriter {
         sb.append("}\n");
     }
 
-    private void writeComponentID(Appendable sb, ComponentProxy cmp) throws IOException {
-        if (cmp instanceof RootProxy) {
+    private void writeComponentID(Appendable sb, PXRComponentProxy cmp) throws IOException {
+        if (cmp instanceof PXRRootProxy) {
             sb.append(cmp.getAddress().toString());
         } else {
             ComponentAddress ad = cmp.getAddress();
@@ -99,11 +97,11 @@ class PXRWriter {
         }
     }
 
-    private void writeAttributes(Appendable sb, ComponentProxy cmp, int level) throws IOException {
-        String[] keys = cmp.getAttributeKeys();
+    private void writeAttributes(Appendable sb, PXRComponentProxy cmp, int level) throws IOException {
+        String[] keys = cmp.getAttrKeys();
         for (String key : keys) {
             writeIndent(sb, level);
-            writeAttribute(sb, key, cmp.getAttribute(key));
+            writeAttribute(sb, key, cmp.getAttr(key));
         }
     }
 
@@ -113,12 +111,12 @@ class PXRWriter {
         sb.append(SyntaxUtils.escape(value)).append('\n');
     }
 
-    private void writeProperties(Appendable sb, ComponentProxy cmp, int level) {
+    private void writeProperties(Appendable sb, PXRComponentProxy cmp, int level) {
         String[] propIDs = cmp.getPropertyIDs();
         for (String id : propIDs) {
             try {
                 LOG.log(Level.FINEST, "Checking property {0}", id);
-                net.neilcsmith.praxis.live.pxr.api.PraxisProperty prop = cmp.getProperty(id);
+                BoundArgumentProperty prop = cmp.getProperty(id);
                 if (!prop.canWrite()) {
                     continue;
                 }
@@ -130,7 +128,7 @@ class PXRWriter {
                     continue;
                 }
                 LOG.log(Level.FINEST, "Writing property {0}", id);
-                net.neilcsmith.praxis.live.pxr.api.PraxisPropertyEditor editor = prop.getPropertyEditor();
+                PraxisProperty.Editor editor = (PraxisProperty.Editor) prop.getPropertyEditor();
                 String code = editor.getPraxisInitializationString();
                 if (code == null || code.isEmpty()) {
                     LOG.log(Level.FINEST, "No code returned from editor for {0}", id);
@@ -149,7 +147,7 @@ class PXRWriter {
         sb.append('.').append(id).append(' ').append(code).append('\n');
     }
 
-    private void writeChildren(Appendable sb, ContainerProxy container, int level) throws IOException {
+    private void writeChildren(Appendable sb, PXRContainerProxy container, int level) throws IOException {
         String[] childIDs = container.getChildIDs();
         for (String id : childIDs) {
             if (level == 0 && children != null && !children.contains(id)) {
@@ -160,7 +158,7 @@ class PXRWriter {
         }
     }
 
-    private void writeConnections(Appendable sb, ContainerProxy container, int level) throws IOException {
+    private void writeConnections(Appendable sb, PXRContainerProxy container, int level) throws IOException {
         Connection[] connections = container.getConnections();
         for (Connection connection : connections) {
             String c1 = connection.getChild1();
@@ -190,11 +188,11 @@ class PXRWriter {
         }
     }
 
-    static void write(RootProxy root, Appendable target) throws IOException {
+    static void write(PXRRootProxy root, Appendable target) throws IOException {
         new PXRWriter(root).doWrite(target);
     }
 
-    static void writeSubGraph(ContainerProxy container, 
+    static void writeSubGraph(PXRContainerProxy container, 
             Set<String> children,
             Appendable target) throws IOException {
         if (children.isEmpty()) {

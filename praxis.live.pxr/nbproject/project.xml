@@ -55,14 +55,6 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>net.neilcsmith.praxis.live.graph</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>1.0</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
                     <code-name-base>net.neilcsmith.praxis.live.model</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -112,14 +104,6 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.api.visual</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>2.32.1</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
                     <code-name-base>org.netbeans.modules.projectapi</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -152,7 +136,7 @@
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.22.1</specification-version>
+                        <specification-version>1.41.1</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -245,9 +229,13 @@
                     </test-dependency>
                 </test-type>
             </test-dependencies>
-            <public-packages>
+            <friend-packages>
+                <friend>net.neilcsmith.praxis.live.pxr.graph</friend>
+                <friend>net.neilcsmith.praxis.live.pxr.gui</friend>
+                <friend>net.neilcsmith.praxis.live.pxr.midi</friend>
+                <friend>net.neilcsmith.praxis.live.pxr.osc</friend>
                 <package>net.neilcsmith.praxis.live.pxr.api</package>
-            </public-packages>
+            </friend-packages>
         </data>
     </configuration>
 </project>

@@ -21,7 +21,7 @@
  */
 package net.neilcsmith.praxis.live.pxr;
 
-import net.neilcsmith.praxis.live.pxr.api.RootProxy;
+
 
 /**
  *
@@ -29,13 +29,13 @@ import net.neilcsmith.praxis.live.pxr.api.RootProxy;
  */
 class PXRRootContext {
     
-    private RootProxy root;
+    private PXRRootProxy root;
 
-    PXRRootContext(RootProxy root) {
+    PXRRootContext(PXRRootProxy root) {
         this.root = root;
     }
     
-    RootProxy getRoot() {
+    PXRRootProxy getRoot() {
         return root;
     }
     

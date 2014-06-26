@@ -31,8 +31,7 @@ import net.neilcsmith.praxis.live.properties.EditorSupport;
  * @author Neil C Smith (http://neilcsmith.net)
  */
 @SuppressWarnings("deprecation")
-public class BooleanEditor extends EditorSupport
-        implements net.neilcsmith.praxis.live.pxr.api.PraxisPropertyEditor {
+public class BooleanEditor extends EditorSupport {
 
     @Override
     public void setValue(Object value) {
@@ -67,7 +66,6 @@ public class BooleanEditor extends EditorSupport
         }
     }
 
-    @Override
     public String getDisplayName() {
         return "Boolean Editor";
     }

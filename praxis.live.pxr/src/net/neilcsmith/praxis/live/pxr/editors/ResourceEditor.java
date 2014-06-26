@@ -114,7 +114,7 @@ public class ResourceEditor extends EditorSupport
         }
     }
 
-    @Override
+
     public String getDisplayName() {
         return "Resource Editor";
     }

@@ -127,11 +127,11 @@ class DelegatingArgumentCustomEditor extends javax.swing.JPanel {
                 // @TODO NO editor component
             }
             editors.add(custEd, "" + i);
-            if (ed instanceof net.neilcsmith.praxis.live.pxr.api.PraxisPropertyEditor) {
-                chooser.addItem(((net.neilcsmith.praxis.live.pxr.api.PraxisPropertyEditor)ed).getDisplayName());
-            } else {
+//            if (ed instanceof net.neilcsmith.praxis.live.pxr.api.PraxisPropertyEditor) {
+//                chooser.addItem(((net.neilcsmith.praxis.live.pxr.api.PraxisPropertyEditor)ed).getDisplayName());
+//            } else {
                 chooser.addItem(ed.getClass().getSimpleName());
-            }
+//            }
             if (ed == currentEditor) {
                 chooser.setSelectedIndex(i);
             }

@@ -30,7 +30,7 @@ import net.neilcsmith.praxis.live.core.api.Callback;
 import net.neilcsmith.praxis.live.project.api.ExecutionLevel;
 import net.neilcsmith.praxis.live.project.api.FileHandler;
 import net.neilcsmith.praxis.live.project.api.PraxisProject;
-import net.neilcsmith.praxis.live.pxr.api.RootProxy;
+import net.neilcsmith.praxis.live.model.RootProxy;
 import net.neilcsmith.praxis.live.pxr.api.RootRegistry;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;

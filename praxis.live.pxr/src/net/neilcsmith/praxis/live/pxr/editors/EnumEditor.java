@@ -37,8 +37,7 @@ import net.neilcsmith.praxis.live.properties.SyntaxUtils;
  * @author Neil C Smith (http://neilcsmith.net)
  */
 @SuppressWarnings("deprecation")
-public class EnumEditor extends EditorSupport
-        implements net.neilcsmith.praxis.live.pxr.api.PraxisPropertyEditor {
+public class EnumEditor extends EditorSupport {
 
     private List<String> tags;
 
@@ -77,7 +76,7 @@ public class EnumEditor extends EditorSupport
         return SyntaxUtils.escape(getValue().toString());
     }
 
-    @Override
+
     public String getDisplayName() {
         return "Enum Editor (default)";
     }
