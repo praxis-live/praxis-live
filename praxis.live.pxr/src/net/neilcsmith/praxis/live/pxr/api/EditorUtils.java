@@ -63,7 +63,7 @@ public class EditorUtils {
             }
         }
         
-        for (int i=1, max=existing.size(); i<max; i++) {
+        for (int i=1, max=existing.size() + 1; i <= max; i++) {
             String id = baseID + i;
             if (!existing.contains(id)) {
                 return id;
