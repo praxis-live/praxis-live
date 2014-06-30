@@ -127,8 +127,7 @@ abstract class SaveTask implements Task {
             if (getState() != State.NEW) {
                 throw new IllegalStateException();
             }
-            PXRRootProxy root = PXRRootRegistry.getDefault().findRootForFile(dob.getPrimaryFile());
-
+            root = PXRRootRegistry.getDefault().findRootForFile(dob.getPrimaryFile());
             activeTasks.put(dob, this);
             updateState(State.RUNNING);
             LOG.log(Level.FINE, "Starting sync for save on {0}", root.getAddress());
@@ -157,7 +156,7 @@ abstract class SaveTask implements Task {
         private void syncComponents() {
             components = new ArrayList<ComponentProxy>();
             addComponentAndChildren(components, root);
-            for (ComponentProxy component : components) {    
+            for (ComponentProxy component : components) {
                 Syncable sync = component.getLookup().lookup(Syncable.class);
                 if (sync != null) {
                     LOG.log(Level.FINE, "Adding SaveTask listener to {0}", component.getAddress());
