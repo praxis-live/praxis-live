@@ -21,17 +21,17 @@
  */
 package net.neilcsmith.praxis.live.pxj;
 
+import net.neilcsmith.praxis.compiler.ClassBodyContext;
 import net.neilcsmith.praxis.video.java.VideoCodeDelegate;
 
 /**
  *
  * @author Neil C Smith
  */
-class VideoClassBodyContext extends ClassBodyContext {
-
-    @Override
-    public Class<?> getExtendedClass() {
-        return VideoCodeDelegate.class;
+class VideoClassBodyContext extends ClassBodyContext<VideoCodeDelegate> {
+    
+    VideoClassBodyContext() {
+        super(VideoCodeDelegate.class);
     }
 
     @Override

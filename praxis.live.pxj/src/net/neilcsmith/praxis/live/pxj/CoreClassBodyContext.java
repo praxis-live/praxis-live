@@ -21,17 +21,17 @@
  */
 package net.neilcsmith.praxis.live.pxj;
 
+import net.neilcsmith.praxis.compiler.ClassBodyContext;
 import net.neilcsmith.praxis.java.CodeDelegate;
 
 /**
  *
  * @author Neil C Smith
  */
-class CoreClassBodyContext extends ClassBodyContext {
+class CoreClassBodyContext extends ClassBodyContext<CodeDelegate> {
 
-    @Override
-    public Class<?> getExtendedClass() {
-        return CodeDelegate.class;
+    CoreClassBodyContext() {
+        super(CodeDelegate.class);
     }
 
     @Override

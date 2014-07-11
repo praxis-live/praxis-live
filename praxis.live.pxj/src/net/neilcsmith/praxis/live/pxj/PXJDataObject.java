@@ -23,6 +23,10 @@ package net.neilcsmith.praxis.live.pxj;
 
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import net.neilcsmith.praxis.compiler.ClassBodyContext;
+import net.neilcsmith.praxis.core.info.ArgumentInfo;
 import org.netbeans.api.actions.Openable;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
@@ -73,19 +77,43 @@ import org.openide.util.NbBundle.Messages;
  separatorAfter=800
  ),*/})
 public class PXJDataObject extends MultiDataObject {
+    
+    private final static Logger LOG = Logger.getLogger(PXJDataObject.class.getName());
 
     final static String PXJ_DOB_KEY = "PXJ_DOB";
 
     private final FileObject pxjFile;
+    private final ClassBodyContext<?> classBodyContext;
     private FileObject javaProxy;
     private String defaultImports;
     private String classDeclaration;
     private String classEnding;
+    
 
     public PXJDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException, IOException {
         super(pf, loader);
         this.pxjFile = pf;
+        classBodyContext = findClassBodyContext(pf);
         getCookieSet().add(new Open());
+    }
+    
+    private ClassBodyContext<?> findClassBodyContext(FileObject f) {
+        try {
+            Object o = f.getAttribute("argumentInfo");
+            if (o instanceof ArgumentInfo) {
+                o = ((ArgumentInfo) o).getProperties().get(ClassBodyContext.KEY);
+                if (o != null) {
+                    Class<?> cls = Class.forName(o.toString(), true, Thread.currentThread().getContextClassLoader());
+                    if (cls != null && ClassBodyContext.class.isAssignableFrom(cls)) {
+                        o = cls.newInstance();
+                        return (ClassBodyContext<?>) o;
+                    }
+                }
+            }
+        } catch (Exception ex) {
+            LOG.log(Level.WARNING, "", ex);
+        }
+        return null;
     }
 
     @Override
@@ -170,9 +198,12 @@ public class PXJDataObject extends MultiDataObject {
     private String constructProxyContent() {
         try {
             String fileContents = pxjFile.asText();
-            boolean video = fileContents.contains("draw()");
-            ClassBodyContext context = video ? new VideoClassBodyContext()
-                    : new CoreClassBodyContext();
+            ClassBodyContext<?> context = classBodyContext;
+            if (context == null) {
+                boolean video = fileContents.contains("draw()");
+                context = video ? new VideoClassBodyContext()
+                        : new CoreClassBodyContext();
+            }
             StringBuilder sb = new StringBuilder();
             sb.append(getDefaultImports(context));
             sb.append("\n");
@@ -189,7 +220,7 @@ public class PXJDataObject extends MultiDataObject {
 
     }
 
-    private String getDefaultImports(ClassBodyContext context) {
+    private String getDefaultImports(ClassBodyContext<?> context) {
         if (defaultImports == null) {
             StringBuilder sb = new StringBuilder();
             sb.append("//<editor-fold defaultstate=\"collapsed\" desc=\"Default Imports\">");
@@ -206,7 +237,7 @@ public class PXJDataObject extends MultiDataObject {
         return defaultImports;
     }
 
-    private String getClassDeclaration(ClassBodyContext context) {
+    private String getClassDeclaration(ClassBodyContext<?> context) {
         if (classDeclaration == null) {
             StringBuilder sb = new StringBuilder();
             sb.append("//<editor-fold defaultstate=\"collapsed\" desc=\"Class Declaration\">");
@@ -222,7 +253,7 @@ public class PXJDataObject extends MultiDataObject {
         return classDeclaration;
     }
 
-    private String getClassEnding(ClassBodyContext context) {
+    private String getClassEnding(ClassBodyContext<?> context) {
         if (classEnding == null) {
             StringBuilder sb = new StringBuilder();
             sb.append("//<editor-fold defaultstate=\"collapsed\" desc=\"Class Ending\">");
