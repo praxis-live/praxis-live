@@ -69,6 +69,7 @@ class MimeTextEditor extends EditorSupport
     private final EditInitializer editInit;
     private final FileListener fileListener;
     private final String fileName;
+    private final ArgumentInfo info;
 
     private PropertyEnv env;
     private FileObject file;
@@ -79,6 +80,7 @@ class MimeTextEditor extends EditorSupport
         this.template = info.getProperties().getString(ArgumentInfo.KEY_TEMPLATE, "");
         this.editInit = new EditInitializer();
         this.fileListener = new FileListener();
+        this.info = info;
         Object obj = property.getValue("address");
         if (obj instanceof ControlAddress) {
             ControlAddress ad = (ControlAddress) obj;
@@ -145,6 +147,7 @@ class MimeTextEditor extends EditorSupport
                 writer.close();
             }
         }
+        f.setAttribute("argumentInfo", info);
         f.addFileChangeListener(fileListener);
         return f;
     }
