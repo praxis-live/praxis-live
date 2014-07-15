@@ -2,4 +2,5 @@ Manifest-Version: 1.0
 OpenIDE-Module: br.pcgl.netbeans
 OpenIDE-Module-Localizing-Bundle: br/pcgl/netbeans/Bundle.properties
 OpenIDE-Module-Specification-Version: 1.0
-
+AutoUpdate-Essential-Module: true
+AutoUpdate-Show-In-Client: false
