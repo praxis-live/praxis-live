@@ -25,7 +25,7 @@
               <Group type="102" alignment="0" attributes="0">
                   <EmptySpace max="-2" attributes="0"/>
                   <Component id="jPanel1" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace pref="631" max="32767" attributes="0"/>
+                  <EmptySpace pref="668" max="32767" attributes="0"/>
               </Group>
           </Group>
       </Group>
@@ -83,7 +83,7 @@
                       <Group type="102" attributes="0">
                           <Component id="rendererLbl" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
-                          <Component id="rendererChooser" pref="521" max="32767" attributes="1"/>
+                          <Component id="rendererChooser" max="32767" attributes="1"/>
                       </Group>
                       <Component id="defaultConfigDescription" alignment="1" min="-2" max="-2" attributes="1"/>
                   </Group>
@@ -130,6 +130,7 @@
             <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
               <StringArray count="0"/>
             </Property>
+            <Property name="enabled" type="boolean" value="false"/>
           </Properties>
         </Component>
       </SubComponents>
