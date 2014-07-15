@@ -28,23 +28,7 @@
             </file>
         </folder>
     </folder>
-    <folder name="Editors">
-        <folder name="FontsColors">
-            <folder name="NetBeans">
-                
-                <folder name="Defaults">
-                    
-                    <file name="org-netbeans-modules-editor-settings-CustomFontsColors-highlights.xml" url="highlights.xml">
-                        <attr name="nbeditor-settings-ColoringType" stringvalue="highlight"/>
-                    </file>
-                    <file name="org-netbeans-modules-editor-settings-CustomFontsColors-tokenColorings.xml" url="tokenColorings.xml">
-                        <attr name="nbeditor-settings-ColoringType" stringvalue="token"/>
-                    </file>
-                </folder>
-            </folder>
-            
-        </folder>
-    </folder>
+    
     <folder name="Menu">
         <folder name="BuildProject">
             <file name="org-netbeans-modules-project-ui-BuildMainProject.shadow_hidden"/>
@@ -174,10 +158,14 @@
             <file name="org-netbeans-modules-versioning-util-VcsAdvancedOptions.instance_hidden"/>
         </folder>
         <file name="Advanced.instance_hidden"/>
+        <file name="Appearance.instance_hidden"/>
         <file name="Editor.instance_hidden"/>
         <file name="FontsAndColors.instance_hidden"/>
         <file name="General.instance_hidden"/>
+        <file name="Java.instance_hidden"/>
         <file name="Keymaps.instance_hidden"/>
+        <file name="PreviewExamples_hidden"/>
+        <file name="Team_hidden"/>
     </folder>
     <file name="OptionsExport_hidden"/>
     <folder name="Templates">
