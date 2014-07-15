@@ -77,9 +77,9 @@ public final class StartTopComponent extends TopComponent {
     private final static URI KB_LINK = URI.create("http://www.praxislive.org/resources/kb");
     private final static URI TWITTER_LINK = URI.create("http://twitter.com/PraxisLIVE");
     private final static String UPDATE_CHECKING = "Checking for updates ...";
-    private final static String UPDATE_OK = "Praxis LIVE is up to date.";
+    private final static String UPDATE_OK = "Praxis LIVE (testing) is up to date.";
     private final static String UPDATE_ERROR = "Unable to check for updates.";
-    private final static String UPDATE_AVAILABLE = "New version of Praxis LIVE available.";
+    private final static String UPDATE_AVAILABLE = "New version of Praxis LIVE (testing) available.";
     private final static RequestProcessor RP = new RequestProcessor(StartTopComponent.class);
     private final JLabel updateLabel;
     private final JProgressBar updateProgress;
@@ -393,7 +393,7 @@ public final class StartTopComponent extends TopComponent {
             boolean current = true;
             if (!error) {
                 XPath xpath = XPathFactory.newInstance().newXPath();
-                InputSource source = new InputSource("http://www.praxislive.org/release-check/" + version);
+                InputSource source = new InputSource("http://www.praxislive.org/release-check/testing/" + version);
                 try {
                     String result = xpath.evaluate("//build-version", source);
                     current = version.equals(result);
