@@ -51,17 +51,17 @@
             <file name="SeparatorAfterFindPrevious.instance_hidden"/>
             <file name="SeparatorAfterProjectsSearch.instance_hidden"/>
             <file name="WhereUsedAction.shadow_hidden"/>
+            <file name="clipboard-history.shadow_hidden"/>
             <file name="org-netbeans-modules-editor-MainMenuAction$FindNextAction.instance_hidden"/>
             <file name="org-netbeans-modules-editor-MainMenuAction$FindPreviousAction.instance_hidden"/>
             <file name="org-netbeans-modules-editor-MainMenuAction$FindSelectionAction.instance_hidden"/>
+            <file name="org-netbeans-modules-editor-MainMenuAction$PasteFormattedAction.instance_hidden"/>
             <file name="org-netbeans-modules-editor-MainMenuAction$SelectAllAction.instance_hidden"/>
             <file name="org-netbeans-modules-editor-MainMenuAction$SelectIdentifierAction.instance_hidden"/>
             <file name="org-netbeans-modules-editor-MainMenuAction$StartMacroRecordingAction.instance_hidden"/>
             <file name="org-netbeans-modules-editor-MainMenuAction$StopMacroRecordingAction.instance_hidden"/>
             <file name="org-netbeans-modules-search-FindInFilesAction.shadow_hidden"/>
             <file name="org-netbeans-modules-search-ReplaceInFilesAction.shadow_hidden"/>
-            <file name="org-openide-actions-FindAction.shadow_hidden"/>
-            <file name="org-openide-actions-ReplaceAction.shadow_hidden"/>
             <file name="sep-before-reposearch.instance_hidden"/>
         </folder>
         <folder name="File">
@@ -100,6 +100,7 @@
             </file>-->
 <!--            <file name="org-netbeans-modules-autoupdate-ui-actions-PluginManagerAction.shadow_hidden"/>-->
             <file name="org-netbeans-modules-favorites-templates-TemplatesAction.shadow_hidden"/>
+            <file name="org-netbeans-modules-templates-actions-TemplatesAction.shadow_hidden"/>
             <file name="org-netbeans-modules-xml-catalog-CatalogAction.shadow_hidden"/>
             <file name="org-openide-actions-ToolsAction.shadow_hidden"/>
         </folder>
@@ -130,16 +131,27 @@
                 <attr name="position" intvalue="500"/>
             </file>
             <file name="Output_hidden"/>
+            <file name="ShowPaletteAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-palette-ShowPaletteAction.instance"/>
+                <attr name="position" intvalue="450"/>
+            </file>
+            <file name="Tools_hidden"/>
             <file name="Versioning_hidden">
                 <attr name="position" intvalue="700"/>
             </file>
             <file name="ViewFavoritesTabAction.shadow_hidden"/>
+            <file name="Web_hidden"/>
             <file name="org-netbeans-core-ide-ServicesTabAction.shadow_hidden">
                 <attr name="position" intvalue="800"/>
+            </file>
+            <file name="org-netbeans-core-windows-actions-GlobalPropertiesAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-GlobalPropertiesAction.instance"/>
+                <attr name="position" intvalue="550"/>
             </file>
             <file name="org-netbeans-modules-kenai-collab-chat-ChatAction.shadow_hidden">
                 <attr name="position" intvalue="900"/>
             </file>
+            <file name="org-netbeans-modules-navigator-ShowNavigatorAction.shadow_hidden"/>
             <file name="org-netbeans-modules-project-ui-physical-tab-action.shadow_hidden">
                 <attr name="position" intvalue="1200"/>
             </file>
@@ -168,6 +180,10 @@
         <file name="Team_hidden"/>
     </folder>
     <file name="OptionsExport_hidden"/>
+    <folder name="ProjectsTabActions">
+        <file name="org-netbeans-modules-java-project-ChangePackageViewTypeAction.shadow_hidden"/>
+        <file name="org-netbeans-modules-project-ui-NodeSelectionProjectAction.shadow_hidden"/>
+    </folder>
     <folder name="Templates">
         <file name="AWTForms_hidden"/>
         <file name="Beans_hidden"/>
@@ -234,6 +250,8 @@
     
     <folder name="Shortcuts">
     
+        <file name="D-F11.shadow_hidden"/>
+        <file name="D-F6.shadow_hidden"/>
         <file name="D-S.shadow">
             <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-SaveAction.instance"/>
         </file>
@@ -252,6 +270,9 @@
         <file name="F1.shadow">
             <attr name="originalFile" stringvalue="Actions/Help/org-netbeans-modules-javahelp-HelpAction.instance"/>
         </file> 
+        <file name="F9.shadow_hidden"/>
+        <file name="O-F6.shadow_hidden"/>
+        <file name="S-F11.shadow_hidden"/>
     </folder>
     
     
@@ -260,6 +281,7 @@
     <folder name="Windows2">
         <folder name="Components">
             <file name="HubUITopComponent.settings" url="HubUITopComponentSettings.xml"/>
+            <file name="navigatorTC.settings_hidden"/>
         </folder>
         
         <folder name="Groups">
