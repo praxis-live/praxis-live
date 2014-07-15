@@ -210,7 +210,9 @@ public class PXJDataObject extends MultiDataObject {
             sb.append(getClassDeclaration(context));
 //            sb.append("\n");
             sb.append(fileContents);
-//            sb.append("\n");
+            if (sb.charAt(sb.length() - 1) != '\n') {
+                sb.append('\n');
+            }
             sb.append(getClassEnding(context));
 
             return sb.toString();
