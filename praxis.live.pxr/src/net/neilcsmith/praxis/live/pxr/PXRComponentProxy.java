@@ -188,7 +188,7 @@ public class PXRComponentProxy implements ComponentProxy {
         triggers = null;
         if (node != null) {
             node.refreshProperties();
-            node.refreshProperties();
+            node.refreshActions();
         }
 //        if (parent != null) {
 //            parent.revalidate(this);
