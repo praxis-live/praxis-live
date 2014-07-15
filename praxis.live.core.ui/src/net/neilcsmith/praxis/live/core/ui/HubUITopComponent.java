@@ -72,10 +72,11 @@ public final class HubUITopComponent extends TopComponent implements ExplorerMan
         restartButton = new javax.swing.JButton();
         systemRootToggle = new javax.swing.JToggleButton();
 
+        jToolBar1.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
         jToolBar1.setFloatable(false);
         jToolBar1.setRollover(true);
 
-        restartButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/net/neilcsmith/praxis/live/core/ui/resources/restart.png"))); // NOI18N
+        restartButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/net/neilcsmith/praxis/live/core/ui/resources/restart24.png"))); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(restartButton, org.openide.util.NbBundle.getMessage(HubUITopComponent.class, "HubUITopComponent.restartButton.text")); // NOI18N
         restartButton.setToolTipText(org.openide.util.NbBundle.getMessage(HubUITopComponent.class, "LBL_RestartHub")); // NOI18N
         restartButton.addActionListener(new java.awt.event.ActionListener() {
@@ -85,7 +86,7 @@ public final class HubUITopComponent extends TopComponent implements ExplorerMan
         });
         jToolBar1.add(restartButton);
 
-        systemRootToggle.setIcon(new javax.swing.ImageIcon(getClass().getResource("/net/neilcsmith/praxis/live/core/ui/resources/system.png"))); // NOI18N
+        systemRootToggle.setIcon(new javax.swing.ImageIcon(getClass().getResource("/net/neilcsmith/praxis/live/core/ui/resources/system24.png"))); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(systemRootToggle, org.openide.util.NbBundle.getMessage(HubUITopComponent.class, "HubUITopComponent.systemRootToggle.text")); // NOI18N
         systemRootToggle.setToolTipText(org.openide.util.NbBundle.getMessage(HubUITopComponent.class, "LBL_ShowSystemRoots")); // NOI18N
         systemRootToggle.setFocusable(false);
@@ -103,16 +104,16 @@ public final class HubUITopComponent extends TopComponent implements ExplorerMan
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addComponent(jToolBar1, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jToolBar1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
             .addComponent(rootList, javax.swing.GroupLayout.DEFAULT_SIZE, 200, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addComponent(rootList, javax.swing.GroupLayout.DEFAULT_SIZE, 218, Short.MAX_VALUE)
+                .addComponent(rootList, javax.swing.GroupLayout.DEFAULT_SIZE, 209, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jToolBar1, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addComponent(jToolBar1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
