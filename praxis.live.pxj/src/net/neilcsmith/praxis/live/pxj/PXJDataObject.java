@@ -220,7 +220,7 @@ public class PXJDataObject extends MultiDataObject {
             }
             sb.append("\n");
             sb.append(getClassDeclaration(context));
-//            sb.append("\n");
+            sb.append("\n");
             String line;
             boolean top = true;
             while ((line = r.readLine()) != null) {
