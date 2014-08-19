@@ -81,23 +81,23 @@ public class Components {
         return DEFAULT_ICON;
     }
 
-    //@Deprecated
+    @Deprecated
     public static Node createCategoryView() {
         return new AbstractNode(new CategoryChildren());
     }
 
-    //@Deprecated
+    @Deprecated
     public static Node createCategoryView(String... categories) {
         return new AbstractNode(new CategoryChildren(categories));
     }
 
-    //@Deprecated
+    @Deprecated
     public static PaletteController getPalette() {
         Node node = new AbstractNode(new CategoryChildren());
         return PaletteFactory.createPalette(new PaletteFilterNode(node), new EmptyPaletteActions());
     }
 
-    //@Deprecated
+    @Deprecated
     public static PaletteController getPalette(String... categories) {
         Node node = new AbstractNode(new CategoryChildren(categories));
         return PaletteFactory.createPalette(new PaletteFilterNode(node), new EmptyPaletteActions());
