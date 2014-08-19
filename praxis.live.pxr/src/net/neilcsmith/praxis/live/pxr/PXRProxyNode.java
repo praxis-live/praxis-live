@@ -23,20 +23,14 @@ package net.neilcsmith.praxis.live.pxr;
 
 import java.awt.EventQueue;
 import java.awt.Image;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Logger;
 import javax.swing.Action;
-import net.neilcsmith.praxis.core.ArgumentFormatException;
-import net.neilcsmith.praxis.core.interfaces.ContainerInterface;
 import net.neilcsmith.praxis.core.types.PBoolean;
 import net.neilcsmith.praxis.live.components.api.Components;
 import net.neilcsmith.praxis.live.properties.PraxisProperty;
 import net.neilcsmith.praxis.live.model.ComponentProxy;
-import net.neilcsmith.praxis.live.model.ContainerProxy;
 import net.neilcsmith.praxis.live.model.ProxyException;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -82,14 +76,19 @@ class PXRProxyNode extends AbstractNode {
     }
 
     final void refreshActions() {
+        List<Action> lst = new ArrayList<>();
         List<Action> triggers = component.getTriggerActions();
-        if (triggers.isEmpty()) {
-            actions = new Action[]{component.getEditorAction()};
-        } else {
-            int size = triggers.size() + 2;
-            actions = triggers.toArray(new Action[size]);
-            actions[size - 1] = component.getEditorAction();
+        if (!triggers.isEmpty()) {
+            lst.addAll(triggers);
+            lst.add(null);
         }
+        List<Action> prop = component.getPropertyActions();
+        if (!prop.isEmpty()) {
+            lst.addAll(prop);
+            lst.add(null);
+        }
+        lst.add(component.getEditorAction());
+        actions = lst.toArray(new Action[lst.size()]);
     }
 
     final void refreshChildren() {
@@ -99,7 +98,7 @@ class PXRProxyNode extends AbstractNode {
             ((ContainerChildren) chs).update();
         }
     }
-    
+
     @Override
     public String getDisplayName() {
         return getName();
@@ -191,7 +190,7 @@ class PXRProxyNode extends AbstractNode {
     public HelpCtx getHelpCtx() {
         return new HelpCtx(component.getType().toString());
     }
-    
+
     void propertyChange(String property, Object oldValue, Object newValue) {
         firePropertyChange(property, oldValue, newValue);
     }

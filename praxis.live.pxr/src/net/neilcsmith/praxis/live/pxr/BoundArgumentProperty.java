@@ -39,8 +39,7 @@ import net.neilcsmith.praxis.live.properties.PraxisProperty;
  *
  * @author Neil C Smith (http://neilcsmith.net)
  */
-@SuppressWarnings("deprecation")
-public final class BoundArgumentProperty extends
+public class BoundArgumentProperty extends
         PraxisProperty<Argument> {
 
     private final static Logger LOG = Logger.getLogger(BoundArgumentProperty.class.getName());
@@ -51,29 +50,66 @@ public final class BoundArgumentProperty extends
     private final ControlInfo info;
     private final boolean writable;
     private final boolean isTransient;
+    private final Argument defaultValue;
 
     private DelegatingArgumentEditor editor;
     private Argument value;
-    private Argument def;
+    
 
-    private BoundArgumentProperty(ControlAddress address, ControlInfo info,
-            Argument def, boolean writable, boolean isTransient) {
+    BoundArgumentProperty(ControlAddress address, ControlInfo info) {
         super(Argument.class);
+        if (address == null || info == null) {
+            throw new NullPointerException();
+        }
+        if (info.getOutputsInfo().length != 1) {
+            throw new IllegalArgumentException("Property doesn't accept single argument");
+        }  
         this.address = address;
-        this.def = def;
         this.info = info;
-        this.writable = writable;
-        this.isTransient = isTransient;
+        this.writable = isWritable(info);
+        this.defaultValue = getDefault(info);
+        this.isTransient = isTransient(info);
         pcs = new PropertyChangeSupport(this);
         adaptor = new Adaptor();
-        value = def;
+        value = defaultValue;
         PXRHelper.getDefault().bind(address, adaptor);
         setName(address.getID());
         
         setValue("canAutoComplete", Boolean.FALSE);
         
     }
+    
+    private boolean isWritable(ControlInfo info) {
+        boolean rw;
+        switch (info.getType()) {
+            case Property:
+                rw = true;
+                break;
+            case ReadOnlyProperty:
+                rw = false;
+                break;
+            default:
+                throw new IllegalArgumentException();
+        }
+        return rw;
+    }
 
+    private Argument getDefault(ControlInfo info) {
+        Argument[] defs = info.getDefaults();
+        Argument def = null;
+        if (defs != null && defs.length > 0) {
+            def = defs[0];
+        }
+        if (def == null) {
+            def = PString.EMPTY;
+        }
+        return def;
+    }
+    
+    private boolean isTransient(ControlInfo info) {
+        return info.getProperties().getBoolean(ControlInfo.KEY_TRANSIENT, false);
+    }
+    
     @Override
     protected Editor createEditor() {
         if (editor == null) {
@@ -119,7 +155,7 @@ public final class BoundArgumentProperty extends
 
     @Override
     public boolean isDefaultValue() {
-        return Argument.equivalent(null, def, value);
+        return Argument.equivalent(null, defaultValue, value);
     }
 
     @Override
@@ -127,7 +163,7 @@ public final class BoundArgumentProperty extends
         if (editor != null) {
             editor.restoreDefaultEditor();
         }
-        setValue(def);
+        setValue(defaultValue);
     }
 
     public boolean isTransient() {
@@ -167,6 +203,14 @@ public final class BoundArgumentProperty extends
     Class<? extends Argument> getArgumentType() {
         return info.getOutputsInfo()[0].getType();
     }
+    
+    ControlAddress getAddress() {
+        return address;
+    }
+    
+    ControlInfo getInfo() {
+        return info;
+    }
 
     private void setValueImpl(Argument value, boolean send, Callback callback) {
         if (value == null) {
@@ -198,34 +242,9 @@ public final class BoundArgumentProperty extends
         return writable;
     }
 
+    @Deprecated
     static BoundArgumentProperty create(ControlAddress address, ControlInfo info) {
-        if (address == null || info == null) {
-            throw new NullPointerException();
-        }
-        boolean writable;
-        switch (info.getType()) {
-            case Property:
-                writable = true;
-                break;
-            case ReadOnlyProperty:
-                writable = false;
-                break;
-            default:
-                throw new IllegalArgumentException();
-        }
-        if (info.getOutputsInfo().length != 1) {
-            throw new IllegalArgumentException("Property doesn't accept single argument");
-        }
-        Argument[] defs = info.getDefaults();
-        Argument def = null;
-        if (defs != null && defs.length > 0) {
-            def = defs[0];
-        }
-        if (def == null) {
-            def = PString.EMPTY;
-        }
-        boolean isTransient = info.getProperties().getBoolean(ControlInfo.KEY_TRANSIENT, false);
-        return new BoundArgumentProperty(address, info, def, writable, isTransient);
+        return new BoundArgumentProperty(address, info);
     }
 
     private class Adaptor extends ControlBinding.Adaptor {

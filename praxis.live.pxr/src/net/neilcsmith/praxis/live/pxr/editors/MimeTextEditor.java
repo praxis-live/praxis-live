@@ -74,7 +74,7 @@ class MimeTextEditor extends EditorSupport
     private PropertyEnv env;
     private FileObject file;
 
-    MimeTextEditor(PraxisProperty property, ArgumentInfo info, String mimetype) {
+    private MimeTextEditor(PraxisProperty property, ArgumentInfo info, String mimetype) {
         this.property = property;
         this.mime = mimetype;
         this.template = info.getProperties().getString(ArgumentInfo.KEY_TEMPLATE, "");

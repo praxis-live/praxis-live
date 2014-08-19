@@ -82,15 +82,15 @@ public class EditorManager {
         if (info.getProperties().get(PString.KEY_ALLOWED_VALUES) != null) {
             return new EnumEditor(property, info);
         }
-        Argument mime = info.getProperties().get(PString.KEY_MIME_TYPE);
-        if (mime != null) {
-            String mimetype = mime.toString();
-//              if ("text/x-praxis-java".equals(mimetype) ||
-//                      "text/x-praxis-script".equals(mimetype)) {
-//            return new CodeEditor(property, info, mimetype);
-//              }
-            return new MimeTextEditor(property, info, mimetype);
-        }
+//        Argument mime = info.getProperties().get(PString.KEY_MIME_TYPE);
+//        if (mime != null) {
+//            String mimetype = mime.toString();
+////              if ("text/x-praxis-java".equals(mimetype) ||
+////                      "text/x-praxis-script".equals(mimetype)) {
+////            return new CodeEditor(property, info, mimetype);
+////              }
+//            return new MimeTextEditor(property, info, mimetype);
+//        }
         return new StringEditor(property, info);
     }
 

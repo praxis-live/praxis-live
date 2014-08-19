@@ -47,6 +47,7 @@ import net.neilcsmith.praxis.core.info.ArgumentInfo;
 import net.neilcsmith.praxis.core.info.ComponentInfo;
 import net.neilcsmith.praxis.core.info.ControlInfo;
 import net.neilcsmith.praxis.core.interfaces.ComponentInterface;
+import net.neilcsmith.praxis.core.types.PString;
 import net.neilcsmith.praxis.gui.ControlBinding;
 import net.neilcsmith.praxis.live.core.api.Callback;
 import net.neilcsmith.praxis.live.core.api.Syncable;
@@ -66,10 +67,10 @@ import org.openide.windows.TopComponent;
  * @author Neil C Smith (http://neilcsmith.net)
  */
 public class PXRComponentProxy implements ComponentProxy {
-    
+
     private final static Logger LOG = Logger.getLogger(PXRComponentProxy.class.getName());
     private final static Registry registry = new Registry();
-    
+
     private final Map<String, String> attributes;
     private final Set<Object> syncKeys;
     private final PropertyChangeSupport pcs;
@@ -77,21 +78,22 @@ public class PXRComponentProxy implements ComponentProxy {
     private final boolean dynamic;
     private final InfoProperty infoProp;
     private final Lookup lookup;
-    
+
     PXRProxyNode node;
-    
+
     private PXRContainerProxy parent;
     private ComponentInfo info;
     private Map<String, BoundArgumentProperty> properties;
     private PropPropListener propertyListener;
     private List<Action> triggers;
+    private List<Action> propActions;
     private EditorAction editorAction;
     boolean syncing;
 //    private int listenerCount = 0;
-    boolean nodeSyncing;    
+    boolean nodeSyncing;
     boolean parentSyncing;
     private ArgumentPropertyAdaptor.ReadOnly dynInfoAdaptor;
-    
+
     PXRComponentProxy(PXRContainerProxy parent, ComponentType type,
             ComponentInfo info) {
         this.parent = parent;
@@ -104,15 +106,15 @@ public class PXRComponentProxy implements ComponentProxy {
         infoProp = new InfoProperty();
         lookup = createLookup();
     }
-    
+
     private Lookup createLookup() {
         return Lookups.fixed(new Sync(), new Attr());
     }
-    
+
     List<? extends PraxisProperty<?>> getProxyProperties() {
         return Collections.singletonList(infoProp);
     }
-    
+
     private void initProperties() {
         assert EventQueue.isDispatchThread();
         if (propertyListener == null) {
@@ -126,24 +128,25 @@ public class PXRComponentProxy implements ComponentProxy {
         } else {
             oldProps = properties;
         }
-        if (!oldProps.isEmpty()) {
-            for (BoundArgumentProperty prop : oldProps.values()) {
-                ((BoundArgumentProperty) prop).dispose();
-            }
-            oldProps.clear();
-        }
+//        if (!oldProps.isEmpty()) {
+//            for (BoundArgumentProperty prop : oldProps.values()) {
+//                ((BoundArgumentProperty) prop).dispose();
+//            }
+//            oldProps.clear();
+//        }
         properties = new LinkedHashMap<>();
         File workingDir = getRoot().getWorkingDirectory();
         for (String ctlID : info.getControls()) {
-//            PraxisProperty<?> prop = oldProps.remove(ctlID);
-//            if (prop != null) {
-//                // existing
-//                properties.put(ctlID, prop);
-//                continue;
-//            }
             ControlInfo ctl = info.getControlInfo(ctlID);
+            BoundArgumentProperty prop = oldProps.remove(ctlID);
+            if (prop != null && prop.getInfo().equals(ctl)) {
+                // existing
+                properties.put(ctlID, prop);
+                continue;
+            }
+
             ControlAddress address = ControlAddress.create(cmpAd, ctlID);
-            BoundArgumentProperty prop = createPropertyForControl(address, ctl);
+            prop = createPropertyForControl(address, ctl);
             if (prop != null) {
                 ((BoundArgumentProperty) prop).addPropertyChangeListener(propertyListener);
                 prop.setValue("address", address);
@@ -153,17 +156,17 @@ public class PXRComponentProxy implements ComponentProxy {
             }
         }
 
-//        if (!oldProps.isEmpty()) {
-//            for (PraxisProperty<?> prop : oldProps.values()) {
-//                ((BoundArgumentProperty) prop).dispose();
-//            }
-//            oldProps.clear();
-//        }
+        if (!oldProps.isEmpty()) {
+            for (PraxisProperty<?> prop : oldProps.values()) {
+                ((BoundArgumentProperty) prop).dispose();
+            }
+            oldProps.clear();
+        }
         if (syncing) {
             setPropertiesSyncing(true);
         }
     }
-    
+
     private void initDynamic() {
         LOG.finest("Setting up dynamic component adaptor");
         dynInfoAdaptor = new ArgumentPropertyAdaptor.ReadOnly(this, "info", true, ControlBinding.SyncRate.None);
@@ -175,7 +178,7 @@ public class PXRComponentProxy implements ComponentProxy {
         });
         PXRHelper.getDefault().bind(ControlAddress.create(getAddress(), ComponentInterface.INFO), dynInfoAdaptor);
     }
-    
+
     void refreshInfo(ComponentInfo info) {
         if (this.info.equals(info)) {
             // should happen once on first sync?
@@ -186,6 +189,7 @@ public class PXRComponentProxy implements ComponentProxy {
         this.info = info;
         initProperties();
         triggers = null;
+        
         if (node != null) {
             node.refreshProperties();
             node.refreshActions();
@@ -195,31 +199,31 @@ public class PXRComponentProxy implements ComponentProxy {
 //        }
         firePropertyChange(ComponentInterface.INFO, null, null);
     }
-    
+
     boolean isDynamic() {
         return dynamic;
     }
-    
+
     @Override
     public ComponentAddress getAddress() {
         return parent == null ? null : parent.getAddress(this);
     }
-    
+
     @Override
     public PXRContainerProxy getParent() {
         return parent;
     }
-    
+
     @Override
     public ComponentType getType() {
         return type;
     }
-    
+
     @Override
     public ComponentInfo getInfo() {
         return info;
     }
-    
+
     @Override
     public Node getNodeDelegate() {
         if (node == null) {
@@ -228,12 +232,12 @@ public class PXRComponentProxy implements ComponentProxy {
         }
         return node;
     }
-    
+
     @Deprecated
     public void setAttribute(String key, String value) {
         setAttr(key, value);
     }
-    
+
     void setAttr(String key, String value) {
         if (value == null) {
             attributes.remove(key);
@@ -241,42 +245,42 @@ public class PXRComponentProxy implements ComponentProxy {
             attributes.put(key, value);
         }
     }
-    
+
     @Deprecated
     public String getAttribute(String key) {
         return getAttr(key);
     }
-    
+
     String getAttr(String key) {
         return attributes.get(key);
     }
-    
+
     @Deprecated
     public String[] getAttributeKeys() {
         return getAttrKeys();
     }
-    
+
     String[] getAttrKeys() {
         return attributes.keySet().toArray(new String[attributes.size()]);
     }
-    
+
     @Override
     public void addPropertyChangeListener(PropertyChangeListener listener) {
         pcs.addPropertyChangeListener(listener);
     }
-    
+
     @Override
     public void removePropertyChangeListener(PropertyChangeListener listener) {
         pcs.removePropertyChangeListener(listener);
     }
-    
+
     void firePropertyChange(String property, Object oldValue, Object newValue) {
         pcs.firePropertyChange(property, oldValue, newValue);
         if (node != null) {
             node.propertyChange(property, oldValue, newValue);
         }
     }
-    
+
     public void call(String control, CallArguments args, final Callback callback) throws ProxyException {
         try {
             ControlAddress to = ControlAddress.create(getAddress(), control);
@@ -285,7 +289,7 @@ public class PXRComponentProxy implements ComponentProxy {
             throw new ProxyException(ex);
         }
     }
-    
+
     List<Action> getTriggerActions() {
         if (triggers == null) {
             initTriggerActions();
@@ -304,6 +308,27 @@ public class PXRComponentProxy implements ComponentProxy {
         triggers = Collections.unmodifiableList(triggers);
     }
     
+     List<Action> getPropertyActions() {
+        if (propActions == null) {
+            initPropertyActions();
+        }
+        return propActions;
+    }
+    
+    private void initPropertyActions() {
+        if (properties == null) {
+            initProperties();
+        }
+        propActions = new ArrayList<Action>();
+        for (BoundArgumentProperty prop : properties.values()) {
+            if (prop instanceof BoundCodeProperty) {
+                propActions.add(((BoundCodeProperty) prop).getEditAction());
+                propActions.add(((BoundCodeProperty) prop).getResetAction());
+            } 
+        }
+        propActions = Collections.unmodifiableList(propActions);
+    }
+    
     Action getEditorAction() {
         if (editorAction == null) {
             editorAction = new EditorAction();
@@ -317,14 +342,14 @@ public class PXRComponentProxy implements ComponentProxy {
         }
         return properties.keySet().toArray(new String[0]);
     }
-    
+
     public BoundArgumentProperty getProperty(String id) {
         if (properties == null) {
             initProperties();
         }
         return properties.get(id);
     }
-    
+
     protected BoundArgumentProperty createPropertyForControl(ControlAddress address, ControlInfo info) {
         if (isProxiedProperty(address.getID())) {
             return null;
@@ -337,31 +362,38 @@ public class PXRComponentProxy implements ComponentProxy {
         if (args.length != 1) {
             return null;
         }
-        return BoundArgumentProperty.create(address, info);
-        
+        if (args[0].getType() == PString.class) {
+            String mime = args[0].getProperties().getString(PString.KEY_MIME_TYPE, "unknown");
+            if (BoundCodeProperty.isSupportedMimeType(mime)) {
+                return new BoundCodeProperty(address, info, mime);
+            }
+        }
+
+        return new BoundArgumentProperty(address, info);
+
     }
-    
+
     protected boolean isProxiedProperty(String id) {
         return ComponentInterface.INFO.equals(id);
     }
-    
+
     PXRRootProxy getRoot() {
         return parent.getRoot();
     }
-    
+
     void dispose() {
-        
+
         LOG.log(Level.FINE, "Dispose called on {0}", getAddress());
         parent = null;
-        
+
         if (dynInfoAdaptor != null) {
             PXRHelper.getDefault().unbind(dynInfoAdaptor);
         }
-        
+
         if (editorAction != null && editorAction.editor != null) {
             editorAction.editor.dispose();
         }
-        
+
         if (properties == null) {
             return;
         }
@@ -373,7 +405,7 @@ public class PXRComponentProxy implements ComponentProxy {
         }
         properties = null;
     }
-    
+
     private void setNodeSyncing(boolean sync) {
         assert EventQueue.isDispatchThread();
         nodeSyncing = sync;
@@ -382,14 +414,14 @@ public class PXRComponentProxy implements ComponentProxy {
         }
         checkSyncing();
     }
-    
+
     void setParentSyncing(boolean sync) {
         if (parentSyncing != sync) {
             parentSyncing = sync;
             checkSyncing();
         }
     }
-    
+
     void checkSyncing() {
         boolean toSync = nodeSyncing || !syncKeys.isEmpty();
         if (toSync != syncing) {
@@ -416,7 +448,7 @@ public class PXRComponentProxy implements ComponentProxy {
             }
         }
     }
-    
+
     private void setPropertiesSyncing(boolean sync) {
         if (properties == null) {
             return;
@@ -427,23 +459,23 @@ public class PXRComponentProxy implements ComponentProxy {
             }
         }
     }
-    
+
     @Override
     public Lookup getLookup() {
         return lookup;
     }
-    
+
     private class PropPropListener implements PropertyChangeListener {
-        
+
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
             // dispatch to our listeners and node's listeners
             firePropertyChange(evt.getPropertyName(), null, null);
         }
     }
-    
+
     private class Sync implements Syncable {
-        
+
         @Override
         public void addKey(Object key) {
             if (key == null) {
@@ -452,28 +484,28 @@ public class PXRComponentProxy implements ComponentProxy {
             syncKeys.add(key);
             checkSyncing();
         }
-        
+
         @Override
         public void removeKey(Object key) {
             if (syncKeys.remove(key)) {
                 checkSyncing();
             }
         }
-        
+
     }
-    
+
     private class Attr implements Attributes {
-        
+
         @Override
         public void setAttribute(String key, String value) {
             setAttr(key, value);
         }
-        
+
         @Override
         public String getAttribute(String key) {
             return getAttr(key);
         }
-        
+
     }
 
 //    private class DynPropListener implements PropertyChangeListener {
@@ -487,33 +519,33 @@ public class PXRComponentProxy implements ComponentProxy {
 //        }
 //    }
     private class InfoProperty extends PraxisProperty<ComponentInfo> {
-        
+
         private InfoProperty() {
             super(ComponentInfo.class);
             setName(ComponentInterface.INFO);
         }
-        
+
         @Override
         public ComponentInfo getValue() {
             return info;
         }
-        
+
         @Override
         public boolean canRead() {
             return true;
         }
-        
+
     }
-    
+
     private class TriggerAction extends AbstractAction {
-        
+
         private String control;
-        
+
         TriggerAction(String control) {
             super(control);
             this.control = control;
         }
-        
+
         @Override
         public void actionPerformed(ActionEvent ae) {
             try {
@@ -522,7 +554,7 @@ public class PXRComponentProxy implements ComponentProxy {
                     public void onReturn(CallArguments args) {
                         // do nothing
                     }
-                    
+
                     @Override
                     public void onError(CallArguments args) {
                         // ???
@@ -533,15 +565,15 @@ public class PXRComponentProxy implements ComponentProxy {
             }
         }
     }
-    
+
     private class EditorAction extends AbstractAction {
-        
+
         private PXRComponentEditor editor;
-        
+
         EditorAction() {
             super("Edit...");
         }
-        
+
         @Override
         public void actionPerformed(ActionEvent ae) {
             if (editor == null) {
@@ -550,21 +582,21 @@ public class PXRComponentProxy implements ComponentProxy {
             editor.show();
         }
     }
-    
+
     private static class Registry implements PropertyChangeListener {
-        
+
         private List<PXRComponentProxy> syncing;
-        
+
         public Registry() {
             syncing = new ArrayList<PXRComponentProxy>();
             TopComponent.getRegistry().addPropertyChangeListener(this);
         }
-        
+
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
             try {
                 assert EventQueue.isDispatchThread();
-                
+
                 if (TopComponent.Registry.PROP_ACTIVATED_NODES.equals(evt.getPropertyName())) {
                     ArrayList<PXRComponentProxy> tmp = new ArrayList<PXRComponentProxy>();
                     Node[] nodes = TopComponent.getRegistry().getActivatedNodes();
@@ -591,7 +623,7 @@ public class PXRComponentProxy implements ComponentProxy {
             } catch (Exception e) {
                 Exceptions.printStackTrace(e);
             }
-            
+
         }
     }
 }
