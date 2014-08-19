@@ -77,6 +77,7 @@ import net.neilcsmith.praxis.live.model.ProxyException;
 import net.neilcsmith.praxis.live.model.RootProxy;
 import net.neilcsmith.praxis.live.pxr.api.ActionSupport;
 import net.neilcsmith.praxis.live.pxr.api.EditorUtils;
+import net.neilcsmith.praxis.live.pxr.api.PaletteUtils;
 import net.neilcsmith.praxis.live.pxr.api.RootEditor;
 import org.netbeans.api.visual.action.AcceptProvider;
 import org.netbeans.api.visual.action.ActionFactory;
@@ -149,7 +150,7 @@ public class GraphEditor extends RootEditor {
 
         lookup = new ProxyLookup(ExplorerUtils.createLookup(manager, buildActionMap(manager)),
                 Lookups.fixed(
-                        Components.getPalette("core", category)));
+                        PaletteUtils.getPalette("core", category)));
         scene.addObjectSceneListener(new SelectionListener(),
                 ObjectSceneEventType.OBJECT_SELECTION_CHANGED);
         goUpAction = new GoUpAction();
