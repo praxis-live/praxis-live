@@ -38,9 +38,9 @@ import javax.swing.JToggleButton;
 import javax.swing.KeyStroke;
 import javax.swing.OverlayLayout;
 import javax.swing.SwingUtilities;
-import net.neilcsmith.praxis.live.components.api.Components;
 import net.neilcsmith.praxis.live.model.ContainerProxy;
 import net.neilcsmith.praxis.live.model.RootProxy;
+import net.neilcsmith.praxis.live.pxr.api.PaletteUtils;
 import net.neilcsmith.praxis.live.pxr.api.RootEditor;
 import static net.neilcsmith.praxis.live.pxr.gui.LayoutAction.Type.*;
 import org.openide.actions.DeleteAction;
@@ -87,7 +87,7 @@ public class GuiEditor extends RootEditor {
         content = new InstanceContent();
         lookup = new ProxyLookup(
                 ExplorerUtils.createLookup(em, layeredPane.getActionMap()),
-                Lookups.fixed(Components.getPalette("gui")),
+                Lookups.fixed(PaletteUtils.getPalette("gui")),
                 new AbstractLookup(content));
     }
 
