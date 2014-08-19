@@ -21,10 +21,18 @@
  */
 package net.neilcsmith.praxis.live.pxj;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.io.Reader;
+import java.io.StringReader;
+import java.nio.CharBuffer;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import net.neilcsmith.praxis.compiler.ClassBodyContext;
 import net.neilcsmith.praxis.core.info.ArgumentInfo;
 import org.netbeans.api.actions.Openable;
@@ -77,7 +85,7 @@ import org.openide.util.NbBundle.Messages;
  separatorAfter=800
  ),*/})
 public class PXJDataObject extends MultiDataObject {
-    
+
     private final static Logger LOG = Logger.getLogger(PXJDataObject.class.getName());
 
     final static String PXJ_DOB_KEY = "PXJ_DOB";
@@ -88,7 +96,6 @@ public class PXJDataObject extends MultiDataObject {
     private String defaultImports;
     private String classDeclaration;
     private String classEnding;
-    
 
     public PXJDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException, IOException {
         super(pf, loader);
@@ -96,7 +103,7 @@ public class PXJDataObject extends MultiDataObject {
         classBodyContext = findClassBodyContext(pf);
         getCookieSet().add(new Open());
     }
-    
+
     private ClassBodyContext<?> findClassBodyContext(FileObject f) {
         try {
             Object o = f.getAttribute("argumentInfo");
@@ -159,7 +166,7 @@ public class PXJDataObject extends MultiDataObject {
                 return;
             }
             String data = javaProxy.asText();
-            if (defaultImports != null) {
+            if (defaultImports != null && !defaultImports.isEmpty()) {
                 data = data.replace(defaultImports, "");
             }
             if (classDeclaration != null) {
@@ -198,18 +205,34 @@ public class PXJDataObject extends MultiDataObject {
     private String constructProxyContent() {
         try {
             String fileContents = pxjFile.asText();
+            BufferedReader r = new BufferedReader(new StringReader(fileContents));
             ClassBodyContext<?> context = classBodyContext;
             if (context == null) {
                 boolean video = fileContents.contains("draw()");
                 context = video ? new VideoClassBodyContext()
                         : new CoreClassBodyContext();
             }
+            String[] extraImports = parseImportDeclarations(r);
             StringBuilder sb = new StringBuilder();
             sb.append(getDefaultImports(context));
-//            sb.append("\n");
+            for (String extraImp : extraImports) {
+                sb.append("import ").append(extraImp).append(";\n");
+            }
+            sb.append("\n");
             sb.append(getClassDeclaration(context));
 //            sb.append("\n");
-            sb.append(fileContents);
+            String line;
+            boolean top = true;
+            while ((line = r.readLine()) != null) {
+                if (top) {
+                    if ( line.trim().isEmpty()) {
+                        continue;
+                    }
+                    top = false;
+                }
+                sb.append(line).append('\n');
+            }
+            
             if (sb.charAt(sb.length() - 1) != '\n') {
                 sb.append('\n');
             }
@@ -224,17 +247,21 @@ public class PXJDataObject extends MultiDataObject {
 
     private String getDefaultImports(ClassBodyContext<?> context) {
         if (defaultImports == null) {
-            StringBuilder sb = new StringBuilder();
-            sb.append("//<editor-fold defaultstate=\"collapsed\" desc=\"Default Imports\">");
-            sb.append("//GEN-BEGIN:imports\n");
-            for (String imp : context.getDefaultImports()) {
-                sb.append("import ");
-                sb.append(imp);
-                sb.append(";\n");
+            String[] importList = context.getDefaultImports();
+            if (importList.length > 0) {
+                StringBuilder sb = new StringBuilder();
+                sb.append("//<editor-fold defaultstate=\"collapsed\" desc=\"Default Imports\">");
+                sb.append("//GEN-BEGIN:imports");
+                for (String imp : importList) {
+                    sb.append("\nimport ");
+                    sb.append(imp);
+                    sb.append(";");
+                }
+                sb.append("//</editor-fold>//GEN-END:imports\n");
+                defaultImports = sb.toString();
+            } else {
+                defaultImports = "";
             }
-            sb.append("//</editor-fold>//GEN-END:imports\n");
-
-            defaultImports = sb.toString();
         }
         return defaultImports;
     }
@@ -248,6 +275,7 @@ public class PXJDataObject extends MultiDataObject {
             sb.append(pxjFile.getName());
             sb.append(" extends ");
             sb.append(context.getExtendedClass().getName());
+            // @TODO support interfaces
             sb.append(" {\n");
             sb.append("//</editor-fold>//GEN-END:classdec\n");
             classDeclaration = sb.toString();
@@ -266,6 +294,47 @@ public class PXJDataObject extends MultiDataObject {
         }
         return classEnding;
     }
+    
+    /**
+     * Copied from Janino ClassBodyEvaluator
+     * 
+     * Heuristically parse IMPORT declarations at the beginning of the character stream produced
+     * by the given {@link Reader}. After this method returns, all characters up to and including
+     * that last IMPORT declaration have been read from the {@link Reader}.
+     * <p>
+     * This method does not handle comments and string literals correctly, i.e. if a pattern that
+     * looks like an IMPORT declaration appears within a comment or a string literal, it will be
+     * taken as an IMPORT declaration.
+     *
+     * @param r A {@link Reader} that supports MARK, e.g. a {@link BufferedReader}
+     * @return  The parsed imports, e.g. {@code { "java.util.*", "static java.util.Map.Entry" }}
+     */
+    private static String[]
+    parseImportDeclarations(Reader r) throws IOException {
+        final CharBuffer cb = CharBuffer.allocate(10000);
+        r.mark(cb.limit());
+        r.read(cb);
+        cb.rewind();
+
+        List<String> imports         = new ArrayList<String>();
+        int          afterLastImport = 0;
+        for (Matcher matcher = IMPORT_STATEMENT_PATTERN.matcher(cb); matcher.find();) {
+            imports.add(matcher.group(1));
+            afterLastImport = matcher.end();
+        }
+        r.reset();
+        r.skip(afterLastImport);
+        return imports.toArray(new String[imports.size()]);
+    }
+    private static final Pattern IMPORT_STATEMENT_PATTERN = Pattern.compile(
+        "\\bimport\\s+"
+        + "("
+        + "(?:static\\s+)?"
+        + "[\\p{javaLowerCase}\\p{javaUpperCase}_\\$][\\p{javaLowerCase}\\p{javaUpperCase}\\d_\\$]*"
+        + "(?:\\.[\\p{javaLowerCase}\\p{javaUpperCase}_\\$][\\p{javaLowerCase}\\p{javaUpperCase}\\d_\\$]*)*"
+        + "(?:\\.\\*)?"
+        + ");"
+    );
 
     private class Open implements OpenCookie {
 
