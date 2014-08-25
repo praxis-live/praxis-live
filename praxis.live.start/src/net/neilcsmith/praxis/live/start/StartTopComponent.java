@@ -25,6 +25,7 @@ import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import javax.swing.JButton;
@@ -283,23 +284,47 @@ public final class StartTopComponent extends TopComponent {
             }
             boolean error = version == null;
             boolean current = true;
+            URI startPage = null;
             if (!error) {
                 XPath xpath = XPathFactory.newInstance().newXPath();
                 InputSource source = new InputSource("http://www.praxislive.org/release-check/testing/" + version);
                 try {
                     String result = xpath.evaluate("//build-version", source);
                     current = version.equals(result);
+//                    int curV = Integer.parseInt(version);
+//                    int resV = Integer.parseInt(result);
+//                    if (curV < resV) {
+//                        current = false;
+//                    }
                 } catch (Exception ex) {
                     Exceptions.printStackTrace(ex);
                     error = true;
                 }
+                try {
+                    String result = xpath.evaluate("//start-page", source);
+                    if (result != null && !result.isEmpty()) {
+                        startPage = new URI(result);
+                    }
+                } catch (Exception ex) {
+                    Exceptions.printStackTrace(ex);
+                }
             }
             final boolean err = error;
             final boolean cur = current;
+            final URI start = startPage;
             SwingUtilities.invokeLater(new Runnable() {
 
                 @Override
                 public void run() {
+                    if (start != null) {
+                        try {
+                            htmlPane.setPage(start.toURL());
+                        } catch (MalformedURLException ex) {
+                            Exceptions.printStackTrace(ex);
+                        } catch (IOException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
                     if (updatePanel.isShowing()) {
                         updatePanel.remove(updateProgress);
                         if (err) {
