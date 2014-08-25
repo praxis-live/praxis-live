@@ -21,7 +21,6 @@
  */
 package net.neilcsmith.praxis.live.pxr;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -32,7 +31,10 @@ import net.neilcsmith.praxis.core.CallArguments;
 import net.neilcsmith.praxis.core.ComponentAddress;
 import net.neilcsmith.praxis.core.ComponentType;
 import net.neilcsmith.praxis.core.info.ComponentInfo;
+import net.neilcsmith.praxis.live.components.api.Components;
 import net.neilcsmith.praxis.live.core.api.Callback;
+import net.neilcsmith.praxis.live.model.Connection;
+import net.neilcsmith.praxis.live.model.ProxyException;
 import net.neilcsmith.praxis.live.project.api.PraxisProject;
 import net.neilcsmith.praxis.live.properties.PraxisProperty;
 import net.neilcsmith.praxis.live.pxr.PXRParser.AttributeElement;
@@ -41,9 +43,6 @@ import net.neilcsmith.praxis.live.pxr.PXRParser.ConnectionElement;
 import net.neilcsmith.praxis.live.pxr.PXRParser.Element;
 import net.neilcsmith.praxis.live.pxr.PXRParser.PropertyElement;
 import net.neilcsmith.praxis.live.pxr.PXRParser.RootElement;
-import net.neilcsmith.praxis.live.model.Connection;
-
-import net.neilcsmith.praxis.live.model.ProxyException;
 import org.openide.util.Exceptions;
 
 /**
@@ -53,29 +52,36 @@ import org.openide.util.Exceptions;
 class PXRBuilder {
 
     private final static Logger LOG = Logger.getLogger(PXRBuilder.class.getName());
-    private PraxisProject project;
-    private PXRDataObject source;
-    private RootElement root;
+    private final PraxisProject project;
+    private final PXRDataObject source;
+    private final RootElement root;
+    private final List<String> warnings;
     private Iterator<Element> iterator;
     private Callback processCallback;
     private PXRRootProxy rootProxy;
     private boolean processed;
     private boolean registerRoot;
-    private List<String> warnings;
 
-    private PXRBuilder(PraxisProject project, PXRDataObject source, RootElement root) {
+    PXRBuilder(PraxisProject project,
+            PXRDataObject source,
+            RootElement root,
+            List<String> warnings) {
         this.project = project;
         this.source = source;
         this.root = root;
         registerRoot = true;
-        warnings = new ArrayList<String>();
+        this.warnings = warnings;
     }
 
-    private PXRBuilder(PXRRootProxy rootProxy, RootElement root) {
+    PXRBuilder(PXRRootProxy rootProxy,
+            RootElement root,
+            List<String> warnings) {
+        this.project = null;
+        this.source = null;
         this.rootProxy = rootProxy;
         this.root = root;
         registerRoot = false;
-        warnings = new ArrayList<String>();
+        this.warnings = warnings;
     }
 
     void process(Callback callback) {
@@ -83,12 +89,12 @@ class PXRBuilder {
             throw new NullPointerException();
         }
         this.processCallback = callback;
+        if (Components.getRewriteDeprecated()) {
+            ElementRewriter rewriter = new ElementRewriter(root, warnings);
+            rewriter.process();
+        }
         buildElementIterator();
         process();
-    }
-
-    List<String> getErrors() {
-        return warnings;
     }
 
     private void process() {
@@ -129,6 +135,13 @@ class PXRBuilder {
         processCallback.onError(args);
     }
 
+    private void warn(String msg) {
+        if (warnings == null) {
+            return;
+        }
+        warnings.add(msg);
+    }
+
     private boolean processProperty(final PropertyElement prop) {
         LOG.log(Level.FINE, "Processing Property Element : {0}", prop.property);
         final PXRComponentProxy cmp = findComponent(prop.component.address);
@@ -160,8 +173,9 @@ class PXRBuilder {
                             } catch (ProxyException ex) {
                                 Exceptions.printStackTrace(ex);
                             }
+                        } else {
+                            process();
                         }
-                        process();
                     }
 
                     @Override
@@ -181,7 +195,7 @@ class PXRBuilder {
 
     private void propertyError(PropertyElement prop, CallArguments args) {
         String err = "Couldn't set property " + prop.component.address + "." + prop.property;
-        warnings.add(err);
+        warn(err);
     }
 
     private boolean processAttribute(AttributeElement attr) {
@@ -224,7 +238,7 @@ class PXRBuilder {
         String p1 = connection.container.address + "/" + connection.component1 + "!" + connection.port1;
         String p2 = connection.container.address + "/" + connection.component2 + "!" + connection.port2;
         String err = "Couldn't create connection " + p1 + " -> " + p2;
-        warnings.add(err);
+        warn(err);
     }
 
     private boolean processRoot(RootElement root) {
@@ -295,8 +309,9 @@ class PXRBuilder {
                             } catch (ProxyException ex) {
                                 Exceptions.printStackTrace(ex);
                             }
+                        } else {
+                            process();
                         }
-                        process();
                     }
 
                     @Override
@@ -316,7 +331,7 @@ class PXRBuilder {
 
     private void componentError(ComponentElement cmp, CallArguments args) {
         String err = "Couldn't create component " + cmp.address;
-        warnings.add(err);
+        warn(err);
     }
 
     private PXRComponentProxy findComponent(ComponentAddress address) {
@@ -363,12 +378,4 @@ class PXRBuilder {
         elements.addAll(Arrays.asList(component.connections));
     }
 
-    static PXRBuilder getBuilder(PraxisProject project, PXRDataObject source, PXRParser.RootElement root) {
-        return new PXRBuilder(project, source, root);
-    }
-    
-    static PXRBuilder getBuilder(PXRRootProxy rootProxy, PXRParser.RootElement parseRoot) {
-        return new PXRBuilder(rootProxy, parseRoot);
-    }
-    
 }

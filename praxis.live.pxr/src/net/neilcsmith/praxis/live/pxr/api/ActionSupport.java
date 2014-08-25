@@ -45,15 +45,15 @@ public class ActionSupport {
     }
 
     public void copyToClipboard(ContainerProxy container, Set<String> children) {
-        ActionBridge.copyToClipboard(container, children);
+        ActionBridge.getDefault().copyToClipboard(container, children);
     }
     
     public boolean pasteFromClipboard(ContainerProxy container, Callback callback) {
-        return ActionBridge.pasteFromClipboard(container, callback);
+        return ActionBridge.getDefault().pasteFromClipboard(container, callback);
     }
     
     public boolean importSubgraph(ContainerProxy container, FileObject file, Callback callback) {
-        return ActionBridge.importSubgraph(container, file, callback);
+        return ActionBridge.getDefault().importSubgraph(container, file, callback);
     }
 
 }

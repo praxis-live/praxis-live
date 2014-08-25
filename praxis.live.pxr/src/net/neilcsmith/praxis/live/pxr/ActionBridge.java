@@ -45,13 +45,15 @@ import org.openide.util.RequestProcessor;
  */
 public class ActionBridge {
 
-    private final static RequestProcessor RP = new RequestProcessor(ActionBridge.class);
+    private final static ActionBridge INSTANCE = new ActionBridge();
+    
+    private final RequestProcessor RP = new RequestProcessor(ActionBridge.class);
 
     private ActionBridge() {
         // non instantiable
     }
 
-    public static void copyToClipboard(ContainerProxy container, Set<String> children) {
+    public void copyToClipboard(ContainerProxy container, Set<String> children) {
         StringBuilder sb = new StringBuilder();
         try {
             PXRWriter.writeSubGraph((PXRContainerProxy) container, children, sb);
@@ -62,14 +64,14 @@ public class ActionBridge {
         }
     }
 
-    public static boolean pasteFromClipboard(ContainerProxy container, Callback callback) {
+    public boolean pasteFromClipboard(ContainerProxy container, Callback callback) {
         Clipboard c = getClipboard();
         if (c.isDataFlavorAvailable(DataFlavor.stringFlavor)) {
             try {
                 String script = (String) c.getData(DataFlavor.stringFlavor);
                 PXRParser.RootElement fakeRoot = PXRParser.parseInContext(container.getAddress(), script);
                 if (ImportRenameSupport.prepareForPaste(container, fakeRoot)) {
-                    PXRBuilder builder = PXRBuilder.getBuilder(findRootProxy(container), fakeRoot);
+                    PXRBuilder builder = new PXRBuilder(findRootProxy(container), fakeRoot, null);
                     builder.process(callback);
                     return true;
                 }
@@ -80,7 +82,7 @@ public class ActionBridge {
         return false;
     }
 
-    public static boolean importSubgraph(final ContainerProxy container, final FileObject file, final Callback callback) {
+    public boolean importSubgraph(final ContainerProxy container, final FileObject file, final Callback callback) {
         if (!file.hasExt("pxg")) {
             return false;
         }
@@ -100,7 +102,7 @@ public class ActionBridge {
                     public void run() {
                         if (root != null) {
                             if (ImportRenameSupport.prepareForImport(container, root)) {
-                                PXRBuilder builder = PXRBuilder.getBuilder(findRootProxy(container), root);
+                                PXRBuilder builder = new PXRBuilder(findRootProxy(container), root, null);
                                 builder.process(callback);
                             } else {
                                 callback.onReturn(CallArguments.EMPTY);
@@ -115,7 +117,7 @@ public class ActionBridge {
         return true;
     }
 
-    private static Clipboard getClipboard() {
+    private Clipboard getClipboard() {
         Clipboard c = Lookup.getDefault().lookup(Clipboard.class);
         if (c == null) {
             c = Toolkit.getDefaultToolkit().getSystemClipboard();
@@ -123,7 +125,7 @@ public class ActionBridge {
         return c;
     }
 
-    private static PXRRootProxy findRootProxy(ContainerProxy container) {
+    private PXRRootProxy findRootProxy(ContainerProxy container) {
         while (container != null) {
             if (container instanceof PXRRootProxy) {
                 return (PXRRootProxy) container;
@@ -133,6 +135,11 @@ public class ActionBridge {
         throw new IllegalStateException("No root proxy found");
     }
 
+    public static ActionBridge getDefault() {
+        return INSTANCE;
+    }
+    
+    
     private static class SubGraphTransferable implements Transferable, ClipboardOwner {
 
         private String data;

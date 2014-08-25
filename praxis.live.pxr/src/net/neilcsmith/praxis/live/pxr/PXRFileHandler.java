@@ -57,6 +57,7 @@ public class PXRFileHandler extends FileHandler {
         }
         this.project = project;
         this.source = source;
+        warnings = new ArrayList<>();
     }
 
     @Override
@@ -102,26 +103,21 @@ public class PXRFileHandler extends FileHandler {
 
     @Override
     public List<String> getWarnings() {
-        if (warnings == null || warnings.isEmpty()) {
-            return Collections.EMPTY_LIST;
-        } else {
-            return new ArrayList<String>(warnings);
-        }
+        return warnings;
     }
+    
 
     private void build(PXRParser.RootElement root) {
-        final PXRBuilder builder = PXRBuilder.getBuilder(project, source, root);
+        PXRBuilder builder = new PXRBuilder(project, source, root, warnings);
         builder.process(new Callback() {
 
             @Override
             public void onReturn(CallArguments args) {
-                warnings = builder.getErrors();
                 callback.onReturn(args);
             }
 
             @Override
             public void onError(CallArguments args) {
-                warnings = builder.getErrors();
                 callback.onError(args);
             
             }
