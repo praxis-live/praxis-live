@@ -1,7 +1,4 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
+
 package net.neilcsmith.praxis.live.components.ui;
 
 import net.neilcsmith.praxis.live.components.ComponentSettings;
@@ -25,16 +22,32 @@ final class ComponentsPanel extends javax.swing.JPanel {
     private void initComponents() {
 
         defaultConfigPanel = new javax.swing.JPanel();
-        defaultConfigDescription = new javax.swing.JLabel();
+        showTestDesc = new javax.swing.JLabel();
         showTestCheckBox = new javax.swing.JCheckBox();
+        showDepCheckbox = new javax.swing.JCheckBox();
+        rwDepDesc = new javax.swing.JLabel();
+        rwDepCheckbox = new javax.swing.JCheckBox();
+        showDepDesc = new javax.swing.JLabel();
 
         defaultConfigPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(ComponentsPanel.class, "ComponentsPanel.defaultConfigPanel.border.title"))); // NOI18N
 
-        defaultConfigDescription.setForeground(javax.swing.UIManager.getDefaults().getColor("textInactiveText"));
-        defaultConfigDescription.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
-        org.openide.awt.Mnemonics.setLocalizedText(defaultConfigDescription, org.openide.util.NbBundle.getMessage(ComponentsPanel.class, "ComponentsPanel.defaultConfigDescription.text")); // NOI18N
+        showTestDesc.setForeground(javax.swing.UIManager.getDefaults().getColor("textInactiveText"));
+        showTestDesc.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        org.openide.awt.Mnemonics.setLocalizedText(showTestDesc, org.openide.util.NbBundle.getMessage(ComponentsPanel.class, "ComponentsPanel.showTestDesc.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(showTestCheckBox, org.openide.util.NbBundle.getMessage(ComponentsPanel.class, "ComponentsPanel.showTestCheckBox.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(showDepCheckbox, org.openide.util.NbBundle.getMessage(ComponentsPanel.class, "ComponentsPanel.showDepCheckbox.text")); // NOI18N
+
+        rwDepDesc.setForeground(javax.swing.UIManager.getDefaults().getColor("textInactiveText"));
+        rwDepDesc.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        org.openide.awt.Mnemonics.setLocalizedText(rwDepDesc, org.openide.util.NbBundle.getMessage(ComponentsPanel.class, "ComponentsPanel.rwDepDesc.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(rwDepCheckbox, org.openide.util.NbBundle.getMessage(ComponentsPanel.class, "ComponentsPanel.rwDepCheckbox.text")); // NOI18N
+
+        showDepDesc.setForeground(javax.swing.UIManager.getDefaults().getColor("textInactiveText"));
+        showDepDesc.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        org.openide.awt.Mnemonics.setLocalizedText(showDepDesc, org.openide.util.NbBundle.getMessage(ComponentsPanel.class, "ComponentsPanel.showDepDesc.text")); // NOI18N
 
         javax.swing.GroupLayout defaultConfigPanelLayout = new javax.swing.GroupLayout(defaultConfigPanel);
         defaultConfigPanel.setLayout(defaultConfigPanelLayout);
@@ -47,8 +60,17 @@ final class ComponentsPanel extends javax.swing.JPanel {
                         .addComponent(showTestCheckBox)
                         .addContainerGap())
                     .addGroup(defaultConfigPanelLayout.createSequentialGroup()
-                        .addComponent(defaultConfigDescription, javax.swing.GroupLayout.DEFAULT_SIZE, 555, Short.MAX_VALUE)
-                        .addGap(36, 36, 36))))
+                        .addComponent(showTestDesc, javax.swing.GroupLayout.DEFAULT_SIZE, 557, Short.MAX_VALUE)
+                        .addGap(36, 36, 36))
+                    .addComponent(rwDepDesc, javax.swing.GroupLayout.DEFAULT_SIZE, 593, Short.MAX_VALUE)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, defaultConfigPanelLayout.createSequentialGroup()
+                        .addComponent(showDepDesc, javax.swing.GroupLayout.DEFAULT_SIZE, 587, Short.MAX_VALUE)
+                        .addContainerGap())
+                    .addGroup(defaultConfigPanelLayout.createSequentialGroup()
+                        .addGroup(defaultConfigPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(showDepCheckbox)
+                            .addComponent(rwDepCheckbox))
+                        .addGap(0, 0, Short.MAX_VALUE))))
         );
         defaultConfigPanelLayout.setVerticalGroup(
             defaultConfigPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -56,15 +78,22 @@ final class ComponentsPanel extends javax.swing.JPanel {
                 .addGap(7, 7, 7)
                 .addComponent(showTestCheckBox)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(defaultConfigDescription)
-                .addContainerGap(321, Short.MAX_VALUE))
+                .addComponent(showTestDesc)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(showDepCheckbox)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(showDepDesc)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(rwDepCheckbox)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(rwDepDesc)
+                .addContainerGap(223, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 639, Short.MAX_VALUE)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(defaultConfigPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -72,7 +101,6 @@ final class ComponentsPanel extends javax.swing.JPanel {
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 424, Short.MAX_VALUE)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(defaultConfigPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -81,19 +109,27 @@ final class ComponentsPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     void load() {
-        showTestCheckBox.setSelected(ComponentSettings.getShowTestComponents());
+        showTestCheckBox.setSelected(ComponentSettings.getShowTest());
+        showDepCheckbox.setSelected(ComponentSettings.getShowDeprecated());
+        rwDepCheckbox.setSelected(ComponentSettings.getRewriteDeprecated());
     }
 
     void store() {
-        ComponentSettings.setShowTestComponents(showTestCheckBox.isSelected());
+        ComponentSettings.setShowTest(showTestCheckBox.isSelected());
+        ComponentSettings.setShowDeprecated(showDepCheckbox.isSelected());
+        ComponentSettings.setRewriteDeprecated(rwDepCheckbox.isSelected());
     }
 
     boolean valid() {
         return true;
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel defaultConfigDescription;
     private javax.swing.JPanel defaultConfigPanel;
+    private javax.swing.JCheckBox rwDepCheckbox;
+    private javax.swing.JLabel rwDepDesc;
+    private javax.swing.JCheckBox showDepCheckbox;
+    private javax.swing.JLabel showDepDesc;
     private javax.swing.JCheckBox showTestCheckBox;
+    private javax.swing.JLabel showTestDesc;
     // End of variables declaration//GEN-END:variables
 }

@@ -33,17 +33,34 @@ public class ComponentSettings {
     private final static Preferences PREFS = NbPreferences.forModule(ComponentSettings.class);
     
     private final static String KEY_SHOW_TEST = "showTest";
+    private final static String KEY_SHOW_DEPRECATED = "showDeprecated";
+    private final static String KEY_REWRITE_DEPRECATED = "rewriteDeprecated";
     
     private ComponentSettings() {}
     
     
-    public static boolean getShowTestComponents() {
+    public static boolean getShowTest() {
         return PREFS.getBoolean(KEY_SHOW_TEST, false);
     }
     
-    public static void setShowTestComponents(boolean value) {
+    public static void setShowTest(boolean value) {
         PREFS.putBoolean(KEY_SHOW_TEST, value);
     }
     
+    public static boolean getShowDeprecated() {
+        return PREFS.getBoolean(KEY_SHOW_DEPRECATED, false);
+    }
+    
+    public static void setShowDeprecated(boolean value) {
+        PREFS.putBoolean(KEY_SHOW_DEPRECATED, value);
+    }
+    
+    public static boolean getRewriteDeprecated() {
+        return PREFS.getBoolean(KEY_REWRITE_DEPRECATED, true);
+    }
+    
+    public static void setRewriteDeprecated(boolean value) {
+        PREFS.putBoolean(KEY_REWRITE_DEPRECATED, value);
+    }
     
 }

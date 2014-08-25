@@ -119,10 +119,23 @@ public class Components {
         return ComponentRegistry.getDefault().getRootMetaData(type);
     }
     
+    @Deprecated
     public static boolean getShowTestComponents() {
-        return ComponentSettings.getShowTestComponents();
+        return ComponentSettings.getShowTest();
+    }
+    
+    public static boolean getShowTest() {
+        return ComponentSettings.getShowTest();
     }
 
+    public static boolean getShowDeprecated() {
+        return ComponentSettings.getShowDeprecated();
+    }
+    
+    public static boolean getRewriteDeprecated() {
+        return ComponentSettings.getRewriteDeprecated();
+    }
+    
 //    public static ComponentFactory.MetaData<? extends Component> getComponentMetaData()
     private static class EmptyPaletteActions extends PaletteActions {
 

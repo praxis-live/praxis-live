@@ -42,7 +42,7 @@ public class CategoryChildren extends Children.Keys<String> {
     private List<String> forceTestFilters;
     private TreeMap<String, TreeMap<ComponentType, MetaData<? extends Component>>> core;
     private TreeMap<String, TreeMap<ComponentType, MetaData<? extends Component>>>  others;
-    private boolean includeTest = ComponentSettings.getShowTestComponents();
+    private boolean includeTest = ComponentSettings.getShowTest();
     
 
     public CategoryChildren() {
