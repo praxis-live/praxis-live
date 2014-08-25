@@ -24,8 +24,11 @@ package net.neilcsmith.praxis.live.start;
 import java.awt.Desktop;
 import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.util.Exceptions;
 import org.openide.util.NbPreferences;
 
 /**
@@ -36,6 +39,16 @@ class Utils {
     
     private Utils(){}
 
+    static void openExternalLink(URL link) {
+        try {
+            openExternalLink(link.toURI());
+        } catch (URISyntaxException ex) {
+            DialogDisplayer.getDefault().notify(
+                new NotifyDescriptor.Message("Unable to open link " + link,
+                NotifyDescriptor.ERROR_MESSAGE));
+        }
+    }
+    
     static void openExternalLink(URI link) {
         if (Desktop.isDesktopSupported()) {
             try {
