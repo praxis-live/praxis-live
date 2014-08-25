@@ -75,10 +75,13 @@ class ImportRenameSupport {
         existing.clear();
         existing.addAll(Arrays.asList(container.getChildIDs()));
         RenameTableModel model = new RenameTableModel(existing, Arrays.asList(cmps), names);
-        
-        NotifyDescriptor dlg = constructDialog(paste ? "Paste as ..." : "Import as ...", model);
+        JTable table = new JTable(model);
+        NotifyDescriptor dlg = constructDialog(paste ? "Paste as ..." : "Import as ...", table);
         if (DialogDisplayer.getDefault().notify(dlg) != NotifyDescriptor.OK_OPTION) {
             return false;
+        }
+        if (table.isEditing()) {
+            table.getCellEditor().stopCellEditing();
         }
         
         for (int i=0; i<cmps.length; i++) {
@@ -97,9 +100,9 @@ class ImportRenameSupport {
         
     }
     
-    private static NotifyDescriptor constructDialog(String title, RenameTableModel model) {
+    private static NotifyDescriptor constructDialog(String title, JTable table) {
         JPanel panel = new JPanel(new BorderLayout());
-        JTable table = new JTable(model);
+//        JTable table = new JTable(model);
 //        Dimension d = table.getPreferredSize();
 //        table.setPreferredScrollableViewportSize(new Dimension(
 //                Math.min(300, d.width),
