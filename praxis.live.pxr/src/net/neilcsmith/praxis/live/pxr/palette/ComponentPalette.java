@@ -1,3 +1,24 @@
+/*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright 2014 Neil C Smith.
+ *
+ * This code is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License version 3 only, as
+ * published by the Free Software Foundation.
+ *
+ * This code is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ * version 3 for more details.
+ *
+ * You should have received a copy of the GNU General Public License version 3
+ * along with this work; if not, see http://www.gnu.org/licenses/
+ *
+ *
+ * Please visit http://neilcsmith.net if you need additional information or
+ * have any questions.
+ */
 package net.neilcsmith.praxis.live.pxr.palette;
 
 import java.io.IOException;
@@ -10,10 +31,14 @@ import net.neilcsmith.praxis.core.ComponentFactory;
 import net.neilcsmith.praxis.core.ComponentType;
 import net.neilcsmith.praxis.live.components.api.Components;
 import net.neilcsmith.praxis.live.core.api.DynamicFileSystem;
+import org.netbeans.spi.palette.PaletteController;
+import org.netbeans.spi.palette.PaletteFactory;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.XMLFileSystem;
+import org.openide.loaders.DataFolder;
+import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.xml.sax.SAXException;
 
@@ -165,9 +190,16 @@ public class ComponentPalette {
         return file;
     }
 
-    public String getFolderPath() {
-        return FOLDER;
+    public PaletteController createPalette(String ... categories) {
+        DataFolder paletteFolder = 
+                DataFolder.findFolder(FileUtil.getConfigFile(FOLDER));
+        Node rootNode = new PaletteFilterNode(paletteFolder.getNodeDelegate());
+        return PaletteFactory.createPalette(rootNode,
+                new DefaultPaletteActions(),
+                new DefaultPaletteFilter(categories.clone()),
+                null);
     }
+    
 
     public static ComponentPalette getDefault() {
         return INSTANCE;

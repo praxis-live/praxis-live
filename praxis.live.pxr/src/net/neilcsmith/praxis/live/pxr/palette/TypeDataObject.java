@@ -32,19 +32,19 @@ import org.openide.util.lookup.ProxyLookup;
 )
 @DataObject.Registration(
         mimeType = "application/x-component-type",
-//        iconBase = "net/neilcsmith/praxis/live/components/resources/default-icon.png",
+        //        iconBase = "net/neilcsmith/praxis/live/components/resources/default-icon.png",
         displayName = "Type",
         position = 300
 )
 public class TypeDataObject extends MultiDataObject {
-    
+
     private final static Logger LOG = Logger.getLogger(TypeDataObject.class.getName());
-    
+
     static final String TYPE_ATTR_KEY = "componentType";
 
     private ComponentType type;
     private ComponentFactory.MetaData<?> data;
-    
+
     public TypeDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException, IOException {
         super(pf, loader);
         try {
@@ -78,9 +78,6 @@ public class TypeDataObject extends MultiDataObject {
         }
     }
 
-    
-    
-    
     @Override
     protected int associateLookup() {
         return 1;
@@ -105,9 +102,19 @@ public class TypeDataObject extends MultiDataObject {
         public Image getOpenedIcon(int size) {
             return getIcon(size);
         }
-        
-        
-        
+
+        @Override
+        public String getHtmlDisplayName() {
+            if (data != null) {
+                if (data.isDeprecated()) {
+                    return "<s>" + type.toString() + "</s>";
+                } else if (data.isTest()) {
+                    return "<i>" + type.toString() + "</i>";
+                }
+            }
+            return super.getHtmlDisplayName();
+        }
+
     }
-    
+
 }
