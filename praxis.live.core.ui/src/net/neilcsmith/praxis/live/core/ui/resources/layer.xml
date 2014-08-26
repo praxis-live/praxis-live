@@ -194,6 +194,21 @@
         <file name="JWS_hidden"/>
         <file name="Licenses_hidden"/>
         <file name="OSGI_hidden"/>
+        <folder name="Other">
+            <file name="CascadeStyleSheet.css_hidden"/>
+            <file name="CustomTask.java_hidden"/>
+            <file name="EmptyYAML.yml_hidden"/>
+            <file name="GLSLTemplate.glsl_hidden"/>
+            <file name="JnlpTemplate.jnlp_hidden"/>
+            <file name="Project.xml_hidden"/>
+            <file name="SQLTemplate.sql_hidden"/>
+            <file name="SpringXMLConfig.shadow_hidden"/>
+            <file name="html.html_hidden"/>
+            <file name="javascript.js_hidden"/>
+            <file name="json.json_hidden"/>
+            <file name="properties.properties_hidden"/>
+            <file name="xhtml.xhtml_hidden"/>
+        </folder>
         <file name="Persistence_hidden"/>
         <file name="Privileged_hidden"/>
         <folder name="Project">
