@@ -45,10 +45,11 @@ public abstract class PraxisProperty<T> extends Node.Property<T>
         if (editor == null) {
             Editor ed = createEditor();
             if (ed == null) {
-                return super.getPropertyEditor();
+                ed = new EditorSupport(); // @TODO is this right?
             }
             editor = ed;
         }
+        editor.setValue(getValue());
         return editor;
     }
 
