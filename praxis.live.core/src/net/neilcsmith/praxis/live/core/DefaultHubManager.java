@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Neil C Smith.
+ * Copyright 2014 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -25,18 +25,18 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Queue;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import net.neilcsmith.praxis.core.Component;
-import net.neilcsmith.praxis.core.ComponentFactory;
-import net.neilcsmith.praxis.core.IllegalRootStateException;
-import net.neilcsmith.praxis.hub.DefaultHub;
-import net.neilcsmith.praxis.hub.TaskServiceImpl;
+import net.neilcsmith.praxis.hub.Hub;
+import net.neilcsmith.praxis.hub.net.MasterFactory;
+import net.neilcsmith.praxis.hub.net.SlaveInfo;
 import net.neilcsmith.praxis.live.core.api.Task;
-import net.neilcsmith.praxis.script.impl.ScriptServiceImpl;
 import org.openide.util.Exceptions;
 
 /**
@@ -44,51 +44,53 @@ import org.openide.util.Exceptions;
  * @author Neil C Smith (http://neilcsmith.net)
  */
 public class DefaultHubManager {
-    
+
     private final static Logger LOG = Logger.getLogger(DefaultHubManager.class.getName());
 
     static enum State {
 
-        Stopped, /*Starting,*/ Running, Stopping
+        Stopped, Starting, Running, Stopping
     };
-    
-    
-    
+
     private final static DefaultHubManager INSTANCE = new DefaultHubManager();
-    private DefaultHub hub;
+
+    private final LocalSlaveManager localSlaves;
+    private final Queue<Task> startupTasks;
+    private final Queue<Task> shutdownTasks;
+    private final PropertyChangeSupport pcs;
+
+    private boolean distributed;
+    private List<HubSlaveInfo> slaves;
+    private Hub hub;
     private ExtensionContainer container;
     private State state;
-    private Queue<Task> shutdownTasks;
-//    private Task activeTask;
     private boolean markForRestart;
     private RootManagerOverride rootManager;
-    private PropertyChangeSupport pcs;
 
     private DefaultHubManager() {
         state = State.Stopped;
-        shutdownTasks = new LinkedList<Task>();
+        localSlaves = new LocalSlaveManager();
+        startupTasks = new LinkedList<>();
+        shutdownTasks = new LinkedList<>();
         pcs = new PropertyChangeSupport(this);
     }
 
     public synchronized void start() {
-        if (state == State.Running) {
-            LOG.fine("start() called but already running");
-            return;
-        } else if (state == State.Stopping) {
-            LOG.fine("start() called but in process of stopping. markForRestart set to true");
-            markForRestart = true;
-            return;
+        switch (state) {
+            case Stopped:
+                doStartup();
+                break;
+            case Running:
+                LOG.fine("start() called but already running");
+                return;
+            case Starting:
+                LOG.fine("start() called but already starting");
+                return;
+            case Stopping:
+                LOG.fine("start() called but in process of stopping. markForRestart set to true");
+                markForRestart = true;
+                return;
         }
-        LOG.fine("Starting hub");
-        try {
-            initHub();
-            updateState(State.Running);
-        } catch (IllegalRootStateException ex) {
-            Exceptions.printStackTrace(ex);
-            deinitHub();
-            updateState(State.Stopped);
-        }
-        markForRestart = false;
     }
 
     public synchronized void stop() {
@@ -115,8 +117,7 @@ public class DefaultHubManager {
         markForRestart = true;
         doShutdown();
     }
-    
-    
+
     State getState() {
         return state;
     }
@@ -124,14 +125,82 @@ public class DefaultHubManager {
     void addPropertyChangeListener(PropertyChangeListener pl) {
         pcs.addPropertyChangeListener(pl);
     }
-    
+
     void removePropertyChangeListener(PropertyChangeListener pl) {
         pcs.removePropertyChangeListener(pl);
     }
-    
+
+    private void doStartup() {
+        updateState(State.Starting);
+        distributed = HubSettings.getDefault().isDistributedHub();
+        if (distributed) {
+            slaves = HubSettings.getDefault().getSlaveInfo();
+        } else {
+            slaves = Collections.emptyList();
+        }
+        initStartupTasks();
+        if (startupTasks.isEmpty()) {
+            LOG.fine("No startup tasks found. Going straight to completeStartup");
+            completeStartup();
+        } else {
+            nextStartupTask();
+        }
+    }
+
+    private void completeStartup() {
+        if (state != State.Starting) {
+            LOG.fine("Unexpected state in completeStartup() - stopping");
+            updateState(State.Stopped);
+            return;
+        }
+        LOG.fine("completeStartup()");
+        try {
+            initHub();
+            updateState(State.Running);
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
+            deinitHub();
+            updateState(State.Stopped);
+        }
+        markForRestart = false;
+    }
+
+    private void nextStartupTask() {
+        Task task = startupTasks.poll();
+//        activeTask = task;
+        if (task != null) {
+            LOG.log(Level.FINE, "Executing task {0}", task.getClass());
+            Task.State st = task.execute();
+            switch (st) {
+                case CANCELLED:
+                    LOG.log(Level.FINE, "Task cancelled - {0}", task.getClass());
+                    cancelStartup();
+                    break;
+                case RUNNING:
+                    LOG.log(Level.FINE, "Task running - {0}", task.getClass());
+                    task.addPropertyChangeListener(new TaskListener(task, true));
+                    break;
+                case ERROR:
+                    LOG.log(Level.WARNING, "Task error from {0}", task.getClass());
+                // notify error.
+                // fall through
+                default:
+                    nextStartupTask();
+            }
+        } else {
+            completeStartup();
+        }
+
+    }
+
+    private void cancelStartup() {
+        startupTasks.clear();
+        updateState(State.Stopped);
+    }
+
     private void doShutdown() {
         updateState(State.Stopping);
-        checkHandlers();
+        initShutdownTasks();
         if (shutdownTasks.isEmpty()) {
             LOG.fine("No shutdown tasks found. Going straight to completeShutdown");
             completeShutdown();
@@ -139,7 +208,7 @@ public class DefaultHubManager {
             nextShutdownTask();
         }
     }
-    
+
     private void completeShutdown() {
         LOG.fine("completeShutdown()");
         deinitHub();
@@ -149,7 +218,7 @@ public class DefaultHubManager {
             start();
         }
     }
-    
+
     private void nextShutdownTask() {
         Task task = shutdownTasks.poll();
 //        activeTask = task;
@@ -163,21 +232,21 @@ public class DefaultHubManager {
                     break;
                 case RUNNING:
                     LOG.log(Level.FINE, "Task running - {0}", task.getClass());
-                    task.addPropertyChangeListener(new TaskListener(task));
+                    task.addPropertyChangeListener(new TaskListener(task, false));
                     break;
                 case ERROR:
                     LOG.log(Level.WARNING, "Task error from {0}", task.getClass());
-                    // notify error.
-                    // fall through
+                // notify error.
+                // fall through
                 default:
                     nextShutdownTask();
             }
         } else {
             completeShutdown();
         }
-        
+
     }
-    
+
     private void cancelShutdown() {
         shutdownTasks.clear();
         updateState(State.Running);
@@ -188,21 +257,20 @@ public class DefaultHubManager {
         this.state = state;
         pcs.firePropertyChange(null, old, state);
     }
-    
-    
 
-    private void initHub() throws IllegalRootStateException {
+    private void initHub() throws Exception {
         Component[] extensions = Utils.findExtensions();
         container = new ExtensionContainer(extensions);
         rootManager = new RootManagerOverride();
-        ComponentFactory factory = Utils.findCoreFactory();
-        hub = new DefaultHub(
-                factory,
-                rootManager,
-                new ScriptServiceImpl(),
-                new TaskServiceImpl(),
-                container);
-        hub.activate();
+        Hub.Builder builder = Hub.builder();
+        if (distributed) {
+            builder.setCoreRootFactory(new MasterFactory(slaves));
+        }
+        builder.replaceComponentFactoryService(new CoreComponentFactoryService())
+                .addExtension(rootManager)
+                .addExtension(container);
+        hub = builder.build();
+        hub.start();
     }
 
     private void deinitHub() {
@@ -212,49 +280,46 @@ public class DefaultHubManager {
         rootManager = null;
         hub = null;
     }
-    
-    private void checkHandlers() {
-        Set<String> roots = rootManager.getKnownUserRoots();
-        LOG.log(Level.FINE, "Looking up handlers for {0}", Arrays.toString(roots.toArray()));
-//        for (RootLifecycleHandler handler :
-//                Lookup.getDefault().lookupAll(RootLifecycleHandler.class)) {
-//            Task task = handler.getDeletionTask(roots);
-//            if (task != null) {
-//                LOG.log(Level.FINE, "Found task {0} from {1}", new Object[]{task.getClass(), handler.getClass()});
-//                shutdownTasks.add(task);
-//            }
-//        }
-        String description = markForRestart ? "Hub Restart" : "Hub Shutdown";
-        shutdownTasks.addAll(Utils.findRootDeletionTasks(description, roots));
+
+    private void initStartupTasks() {
+        startupTasks.add(localSlaves.createStartupTask(slaves));
     }
 
-//    private Component[] findExtensions() {
-//        Collection<? extends ExtensionProvider> providers =
-//                Lookup.getDefault().lookupAll(ExtensionProvider.class);
-//        List<Component> list = new ArrayList<Component>(providers.size());
-//        for (ExtensionProvider provider : providers) {
-//            list.add(provider.getExtensionComponent());
-//        }
-//        return list.toArray(new Component[list.size()]);
-//        // @TODO add own monitor component???
-//    }
+    private void initShutdownTasks() {
+        Set<String> roots = rootManager.getKnownUserRoots();
+        LOG.log(Level.FINE, "Looking up handlers for {0}", Arrays.toString(roots.toArray()));
+        String description = markForRestart ? "Hub Restart" : "Hub Shutdown";
+        shutdownTasks.addAll(Utils.findRootDeletionTasks(description, roots));
+
+    }
 
     private class TaskListener implements PropertyChangeListener {
-        
-        private Task task;
-        
-        TaskListener(Task task) {
+
+        private final boolean startup;
+        private final Task task;
+
+        TaskListener(Task task, boolean startup) {
             this.task = task;
+            this.startup = startup;
         }
 
         @Override
         public void propertyChange(PropertyChangeEvent pce) {
             task.removePropertyChangeListener(this);
-            if (task.getState() == Task.State.CANCELLED) {
-                cancelShutdown();
+            if (startup) {
+                if (task.getState() == Task.State.CANCELLED) {
+                    cancelStartup();
+                } else {
+                    nextStartupTask();
+                }
             } else {
-                nextShutdownTask();
+                if (task.getState() == Task.State.CANCELLED) {
+                    cancelShutdown();
+                } else {
+                    nextShutdownTask();
+                }
             }
+
         }
     }
 
