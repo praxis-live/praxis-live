@@ -27,6 +27,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import net.neilcsmith.praxis.core.ArgumentFormatException;
 import net.neilcsmith.praxis.core.CallArguments;
 import net.neilcsmith.praxis.core.ComponentAddress;
 import net.neilcsmith.praxis.core.ComponentType;
@@ -160,7 +161,11 @@ class PXRBuilder {
                                 cmp.call("info", CallArguments.EMPTY, new Callback() {
                                     @Override
                                     public void onReturn(CallArguments args) {
-                                        cmp.refreshInfo((ComponentInfo) args.get(0));
+                                        try {
+                                            cmp.refreshInfo(ComponentInfo.coerce(args.get(0)));
+                                        } catch (ArgumentFormatException ex) {
+                                            Exceptions.printStackTrace(ex);
+                                        }
                                         process();
                                     }
 

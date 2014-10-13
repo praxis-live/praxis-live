@@ -39,6 +39,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import net.neilcsmith.praxis.core.Argument;
+import net.neilcsmith.praxis.core.ArgumentFormatException;
 import net.neilcsmith.praxis.core.CallArguments;
 import net.neilcsmith.praxis.core.ComponentAddress;
 import net.neilcsmith.praxis.core.ComponentType;
@@ -173,7 +175,12 @@ public class PXRComponentProxy implements ComponentProxy {
         dynInfoAdaptor.addPropertyChangeListener(new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
-                refreshInfo((ComponentInfo) evt.getNewValue());
+                try {
+                    //                refreshInfo((ComponentInfo) evt.getNewValue());
+                    refreshInfo(ComponentInfo.coerce((Argument)evt.getNewValue()));
+                } catch (ArgumentFormatException ex) {
+                    LOG.log(Level.WARNING, "", ex);
+                }
             }
         });
         PXRHelper.getDefault().bind(ControlAddress.create(getAddress(), ComponentInterface.INFO), dynInfoAdaptor);
