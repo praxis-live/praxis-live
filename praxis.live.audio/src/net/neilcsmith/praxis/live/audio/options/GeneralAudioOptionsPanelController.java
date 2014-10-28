@@ -7,6 +7,7 @@ package net.neilcsmith.praxis.live.audio.options;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import javax.swing.JComponent;
+import javax.swing.SwingUtilities;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
@@ -27,8 +28,13 @@ public final class GeneralAudioOptionsPanelController extends OptionsPanelContro
     }
 
     public void applyChanges() {
-        getPanel().store();
-        changed = false;
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                getPanel().store();
+                changed = false;
+            }
+        });
     }
 
     public void cancel() {
