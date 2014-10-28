@@ -301,7 +301,11 @@ class PXRBuilder {
                                 parent.call("info", CallArguments.EMPTY, new Callback() {
                                     @Override
                                     public void onReturn(CallArguments args) {
-                                        parent.refreshInfo((ComponentInfo) args.get(0));
+                                        try {
+                                            parent.refreshInfo(ComponentInfo.coerce(args.get(0)));
+                                        } catch (ArgumentFormatException ex) {
+                                            Exceptions.printStackTrace(ex);
+                                        }
                                         process();
                                     }
 
