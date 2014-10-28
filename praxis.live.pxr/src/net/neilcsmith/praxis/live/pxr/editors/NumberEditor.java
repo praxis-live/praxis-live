@@ -24,9 +24,12 @@ package net.neilcsmith.praxis.live.pxr.editors;
 import java.awt.Component;
 import java.awt.Graphics;
 import java.awt.Rectangle;
+import java.util.ArrayList;
+import java.util.List;
 import net.neilcsmith.praxis.core.Argument;
 import net.neilcsmith.praxis.core.ArgumentFormatException;
 import net.neilcsmith.praxis.core.info.ArgumentInfo;
+import net.neilcsmith.praxis.core.types.PArray;
 import net.neilcsmith.praxis.core.types.PMap;
 import net.neilcsmith.praxis.core.types.PNumber;
 import net.neilcsmith.praxis.live.properties.EditorSupport;
@@ -42,6 +45,8 @@ import org.openide.explorer.propertysheet.PropertyEnv;
 @SuppressWarnings("deprecation")
 public class NumberEditor extends EditorSupport implements
         ExPropertyEditor, InplaceEditor.Factory {
+    
+    private final static String EDIT_AS_TEXT = "canEditAsText";
 
     private ArgumentInfo info;
     private NumberInplaceEditor inplace;
@@ -49,6 +54,7 @@ public class NumberEditor extends EditorSupport implements
     private PNumber minimum;
     private PNumber maximum;
     private boolean isInteger;
+    private List<String> suggested;
 
     public NumberEditor(PraxisProperty<?> property, ArgumentInfo info) {
         this.info = info;
@@ -56,6 +62,15 @@ public class NumberEditor extends EditorSupport implements
     }
 
     private void init() {
+        isInteger = info.getProperties().getBoolean(PNumber.KEY_IS_INTEGER, false);
+        if (isInteger) {
+            initInt();
+        } else {
+            initFP();
+        }
+    }
+
+    private void initFP() {
         PMap props = info.getProperties();
         Argument minProp = props.get(PNumber.KEY_MINIMUM);
         Argument maxProp = props.get(PNumber.KEY_MAXIMUM);
@@ -67,12 +82,41 @@ public class NumberEditor extends EditorSupport implements
                 minimum = maximum = null;
             }
         }
-        isInteger = props.getBoolean(PNumber.KEY_IS_INTEGER, false);
-        if (!isInteger && minimum != null && maximum != null) {
+        if (minimum != null && maximum != null) {
             inplace = new NumberInplaceEditor(minimum, maximum);
         }
     }
 
+    private void initInt() {
+        PMap props = info.getProperties();
+        Argument arg = props.get(ArgumentInfo.KEY_SUGGESTED_VALUES);
+        if (arg != null) {
+            try {
+                PArray arr = PArray.coerce(arg);
+                suggested = new ArrayList<>(arr.getSize());
+                for (Argument val : arr) {
+                    suggested.add(val.toString());
+                }
+            } catch (ArgumentFormatException ex) {
+                // no op
+            }
+        }
+    }
+
+    @Override
+    public Object getAttribute(String key) {
+        if (suggested != null && EDIT_AS_TEXT.equals(key)) {
+            return Boolean.TRUE;
+        } else {
+            return null;
+        }
+    }
+
+    @Override
+    public String[] getAttributeKeys() {
+        return new String[]{EDIT_AS_TEXT};
+    }
+    
     @Override
     public void setAsText(String text) throws IllegalArgumentException {
         try {
@@ -90,7 +134,6 @@ public class NumberEditor extends EditorSupport implements
             return null;
         }
     }
-
 
     public String getDisplayName() {
         return "Number Editor";
@@ -118,7 +161,7 @@ public class NumberEditor extends EditorSupport implements
         double value;
         try {
             value = PNumber.coerce((Argument) getValue()).value();
-        } catch(Exception ex) {
+        } catch (Exception ex) {
             value = minimum.value();
         }
         inplace.paintValue(g, box, value, false);
@@ -128,14 +171,21 @@ public class NumberEditor extends EditorSupport implements
     public void attachEnv(PropertyEnv env) {
         if (inplace != null) {
             env.registerInplaceEditorFactory(this);
-        }   
+        }
     }
 
     @Override
     public InplaceEditor getInplaceEditor() {
         return inplace;
     }
-    
 
-    
+    @Override
+    public String[] getTags() {
+        if (suggested != null) {
+            return suggested.toArray(new String[suggested.size()]);
+        } else {
+            return null;
+        }
+    }
+
 }
