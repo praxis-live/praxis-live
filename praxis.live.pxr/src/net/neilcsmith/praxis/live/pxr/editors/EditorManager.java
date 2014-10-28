@@ -55,7 +55,8 @@ public class EditorManager {
             PraxisProperty property, ArgumentInfo info) {
         Class<?> type = info.getType();
         if (PString.class.isAssignableFrom(type)) {
-            return findStringEditor(property, info);
+//            return findStringEditor(property, info);
+            return new StringEditor(property, info);
         }
         if (PNumber.class.isAssignableFrom(type)) {
             return new NumberEditor(property, info);
@@ -77,22 +78,22 @@ public class EditorManager {
 
     }
 
-    private static PraxisProperty.Editor findStringEditor(PraxisProperty property,
-            ArgumentInfo info) {
-        if (info.getProperties().get(PString.KEY_ALLOWED_VALUES) != null) {
-            return new EnumEditor(property, info);
-        }
-//        Argument mime = info.getProperties().get(PString.KEY_MIME_TYPE);
-//        if (mime != null) {
-//            String mimetype = mime.toString();
-////              if ("text/x-praxis-java".equals(mimetype) ||
-////                      "text/x-praxis-script".equals(mimetype)) {
-////            return new CodeEditor(property, info, mimetype);
-////              }
-//            return new MimeTextEditor(property, info, mimetype);
+//    private static PraxisProperty.Editor findStringEditor(PraxisProperty property,
+//            ArgumentInfo info) {
+//        if (info.getProperties().get(PString.KEY_ALLOWED_VALUES) != null) {
+//            return new EnumEditor(property, info);
 //        }
-        return new StringEditor(property, info);
-    }
+////        Argument mime = info.getProperties().get(PString.KEY_MIME_TYPE);
+////        if (mime != null) {
+////            String mimetype = mime.toString();
+//////              if ("text/x-praxis-java".equals(mimetype) ||
+//////                      "text/x-praxis-script".equals(mimetype)) {
+//////            return new CodeEditor(property, info, mimetype);
+//////              }
+////            return new MimeTextEditor(property, info, mimetype);
+////        }
+//        return new StringEditor(property, info);
+//    }
 
     public static boolean hasAdditionalEditors(
             PraxisProperty property, ControlInfo info) {

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Neil C Smith.
+ * Copyright 2014 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -32,6 +32,7 @@ import net.neilcsmith.praxis.core.Argument;
 import net.neilcsmith.praxis.core.ArgumentFormatException;
 import net.neilcsmith.praxis.core.info.ArgumentInfo;
 import net.neilcsmith.praxis.core.types.PArray;
+import net.neilcsmith.praxis.core.types.PMap;
 import net.neilcsmith.praxis.live.properties.EditorSupport;
 import net.neilcsmith.praxis.live.properties.PraxisProperty;
 import org.openide.awt.HtmlRenderer;
@@ -46,30 +47,62 @@ import org.openide.explorer.propertysheet.PropertyEnv;
 public class StringEditor extends EditorSupport
         implements ExPropertyEditor {
 
+    private final static String EMPTY_DEFAULT_STRING = "[default]";
+    private final static String EDIT_AS_TEXT = "canEditAsText";
+
     private PropertyEnv env;
-    private PraxisProperty<?> property;
     private boolean emptyIsDefault;
-    private List<String> suggested;
+    private boolean rewriteDefaultTag;
+    private boolean limitToTags;
+    private List<String> tags;
 
     public StringEditor(PraxisProperty<?> property, ArgumentInfo info) {
         if (property == null) {
             throw new NullPointerException();
         }
-        this.property = property;
-        emptyIsDefault = info.getProperties().getBoolean(ArgumentInfo.KEY_EMPTY_IS_DEFAULT, false);
-        Argument arg = info.getProperties().get(ArgumentInfo.KEY_SUGGESTED_VALUES);
-        if (arg != null) {
-            try {
-                PArray arr = PArray.coerce(arg);
-                suggested = new ArrayList<String>(arr.getSize());
-                for (Argument val : arr) {
-                    suggested.add(val.toString());
-                }
-                property.setValue("canEditAsText", Boolean.TRUE);
-            } catch (ArgumentFormatException ex) {
-                // no op
-            }
+        PMap props = info.getProperties();
+        emptyIsDefault = props.getBoolean(ArgumentInfo.KEY_EMPTY_IS_DEFAULT, false);
+        Argument tagArray = props.get(ArgumentInfo.KEY_ALLOWED_VALUES);
+        if (tagArray != null) {
+            limitToTags = true;
+        } else {
+            tagArray = props.get(ArgumentInfo.KEY_SUGGESTED_VALUES);
         }
+        if (tagArray != null) {
+            createTagList(tagArray);
+        }
+    }
+
+    private void createTagList(Argument tagArray) {
+        try {
+            PArray arr = PArray.coerce(tagArray);
+            tags = new ArrayList<>(arr.getSize());
+            for (Argument val : arr) {
+                tags.add(val.toString());
+            }
+            if (emptyIsDefault && tags.contains("")
+                    && !tags.contains(EMPTY_DEFAULT_STRING)) {
+                tags.remove("");
+                tags.add(0, EMPTY_DEFAULT_STRING);
+                rewriteDefaultTag = true;
+            }
+        } catch (ArgumentFormatException ex) {
+            // no op
+        }
+    }
+
+    @Override
+    public Object getAttribute(String key) {
+        if (tags != null && !limitToTags && EDIT_AS_TEXT.equals(key)) {
+            return Boolean.TRUE;
+        } else {
+            return null;
+        }
+    }
+
+    @Override
+    public String[] getAttributeKeys() {
+        return new String[]{EDIT_AS_TEXT};
     }
 
     @Override
@@ -102,7 +135,7 @@ public class StringEditor extends EditorSupport
 
     @Override
     public boolean supportsCustomEditor() {
-        return env != null;
+        return env != null && !limitToTags;
     }
 
     @Override
@@ -111,9 +144,17 @@ public class StringEditor extends EditorSupport
     }
 
     @Override
+    public void setAsText(String text) throws IllegalArgumentException {
+        if (rewriteDefaultTag && EMPTY_DEFAULT_STRING.equals(text)) {
+            text = "";
+        }
+        super.setAsText(text);
+    }
+
+    @Override
     public String[] getTags() {
-        if (suggested != null) {
-            return suggested.toArray(new String[suggested.size()]);
+        if (tags != null) {
+            return tags.toArray(new String[tags.size()]);
         } else {
             return null;
         }
