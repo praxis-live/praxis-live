@@ -76,6 +76,10 @@ class PXRWriter {
         sb.append(AT).append(' ');
         writeComponentID(sb, cmp);
         sb.append(' ').append(cmp.getType().toString()).append(" {\n");
+        if (cmp instanceof PXRRootProxy) {
+            writeIndent(sb, level + 1);
+            writeFormat(sb, 2);
+        }
         writeAttributes(sb, cmp, level + 1);
         writeProperties(sb, cmp, level + 1);
         if (cmp instanceof PXRContainerProxy) {
@@ -109,6 +113,11 @@ class PXRWriter {
         LOG.log(Level.FINEST, "Writing attribute {0} : {1}", new Object[]{key, value});
         sb.append("#%").append(key).append(' ');
         sb.append(SyntaxUtils.escape(value)).append('\n');
+    }
+    
+    private void writeFormat(Appendable sb, int format) throws IOException {
+        sb.append("#%").append(PXRParser.FORMAT_KEY).append(' ');
+        sb.append(Integer.toString(format)).append('\n');
     }
 
     private void writeProperties(Appendable sb, PXRComponentProxy cmp, int level) {

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Neil C Smith.
+ * Copyright 2014 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -39,6 +39,8 @@ import net.neilcsmith.praxis.core.types.PString;
  */
 class PXRParser {
 
+    final static String FORMAT_KEY = "pxr.format";
+    
     private final static String AT = "@";
     private final static String CONNECT = "~";
     private final static String ATTRIBUTE_PREFIX = "%";
@@ -51,6 +53,8 @@ class PXRParser {
 //    private final static Argument[] EMPTY_ARGS = new Argument[0];
     private final String script;
     private final ComponentAddress context;
+    
+    private int format = 1;
 
     private PXRParser(String script) {
         this(null, script);
@@ -250,6 +254,15 @@ class PXRParser {
         } else {/*?*/
 
         }
+        
+        if (component instanceof RootElement && FORMAT_KEY.equals(key)) {
+            try {
+                format = Integer.parseInt(value);
+            } catch (Exception ex) {
+                
+            }
+        }
+        
     }
 
     private void parseProperty(List<PropertyElement> props, ComponentElement component,
@@ -267,9 +280,11 @@ class PXRParser {
             switch (t.getType()) {
                 case PLAIN:
                 case QUOTED:
+                    args[i] = PString.valueOf(t.getText());
+                    break;
                 case BRACED:
                     // do proper evaluation of plain tokens for numbers, etc.
-                    args[i] = PString.valueOf(t.getText());
+                    args[i] = PString.valueOf(unescapeBraced(t.getText()));
                     break;
                 case SUBCOMMAND:
                     args[i] = new SubCommandArgument(t.getText());
@@ -284,6 +299,15 @@ class PXRParser {
         p.property = property;
         p.args = args;
         props.add(p);
+    }
+    
+    private String unescapeBraced(String text) {
+        if (format >= 2) {
+            return text;
+        }
+        text = text.replace("\\{", "{");
+        text = text.replace("\\}", "}");
+        return text;
     }
 
     private void parseComponent(ComponentElement parent, List<ComponentElement> comps, Token[] tokens) throws Exception {
