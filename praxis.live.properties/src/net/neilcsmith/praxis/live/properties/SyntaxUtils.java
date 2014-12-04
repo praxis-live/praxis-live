@@ -35,20 +35,21 @@ public class SyntaxUtils {
         if (res == null) {
             res = doQuoted(input);
         }
-        if (res == null) {
-            res = doBraced(input);
-        }
+//        if (res == null) {
+//            res = doBraced(input);
+//        }
         return res;
     }
 
     public static String escapeQuoted(String input) {
         String res = doQuoted(input);
-        if (res == null) {
-            res = doBraced(input);
-        }
+//        if (res == null) {
+//            res = doBraced(input);
+//        }
         return res;
     }
 
+    @Deprecated
     public static String escapeBraced(String input) {
         return doBraced(input);
     }
@@ -75,8 +76,8 @@ public class SyntaxUtils {
 
     private static String doQuoted(String input) {
         int len = input.length();
-        if (len == 0 || len > 128) {
-            return null;
+        if (len == 0) { // || len > 128) {
+            return "\"\"";
         }
         StringBuilder sb = new StringBuilder(len * 2);
         sb.append("\"");
@@ -87,16 +88,19 @@ public class SyntaxUtils {
                 case '}':
                 case '[':
                 case ']':
-                    return null;
-                case '\t':
-                    sb.append("\\t");
+//                case '\\':
+                    sb.append('\\');
+                    sb.append(c);
                     break;
-                case '\n':
-                    sb.append("\\n");
-                    break;
-                case '\r':
-                    sb.append("\\r");
-                    break;
+//                case '\t':
+//                    sb.append("\\t");
+//                    break;
+//                case '\n':
+//                    sb.append("\\n");
+//                    break;
+//                case '\r':
+//                    sb.append("\\r");
+//                    break;
                 case '\"':
                     sb.append("\\\"");
                     break;
