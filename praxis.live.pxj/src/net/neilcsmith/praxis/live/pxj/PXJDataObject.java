@@ -172,8 +172,12 @@ public class PXJDataObject extends MultiDataObject {
             if (classDeclaration != null) {
                 data = data.replace(classDeclaration, "");
             }
-            if (classEnding != null) {
-                data = data.replace(classEnding, "");
+//            if (classEnding != null) {
+//                data = data.replace(classEnding, "");
+//            }
+            int lastFold = data.lastIndexOf("}");
+            if (lastFold > 0) {
+                data = data.substring(0, lastFold);
             }
             try (OutputStreamWriter writer = new OutputStreamWriter(pxjFile.getOutputStream())) {
                 writer.append(data);
@@ -285,12 +289,13 @@ public class PXJDataObject extends MultiDataObject {
 
     private String getClassEnding(ClassBodyContext<?> context) {
         if (classEnding == null) {
-            StringBuilder sb = new StringBuilder();
-            sb.append("//<editor-fold defaultstate=\"collapsed\" desc=\"Class Ending\">");
-            sb.append("//GEN-BEGIN:classend\n");
-            sb.append("}\n");
-            sb.append("//</editor-fold>//GEN-END:classend\n");
-            classEnding = sb.toString();
+//            StringBuilder sb = new StringBuilder();
+//            sb.append("//<editor-fold defaultstate=\"collapsed\" desc=\"Class Ending\">");
+//            sb.append("//GEN-BEGIN:classend\n");
+//            sb.append("}\n");
+//            sb.append("//</editor-fold>//GEN-END:classend\n");
+//            classEnding = sb.toString();
+            classEnding = "}//GEN-BEGIN:classend\n//GEN-END:classend";
         }
         return classEnding;
     }
