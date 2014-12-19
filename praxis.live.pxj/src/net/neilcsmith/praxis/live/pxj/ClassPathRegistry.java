@@ -55,16 +55,27 @@ public class ClassPathRegistry {
         File modDir = InstalledFileLocator.getDefault()
                 .locate("modules", "net.neilcsmith.praxis.core", false);
         if (modDir != null && modDir.isDirectory()) {
-            List<URL> modules = new ArrayList<>();
-            for (File mod : modDir.listFiles()) {
-                if (mod.getName().endsWith(".jar")) {
-                    URL modURL = FileUtil.urlForArchiveOrDir(mod);
-                    LOG.log(Level.FINE, "Adding {0} to compile classpath", modURL);
-                    modules.add(modURL);
+             List<URL> jars = new ArrayList<>();
+            for (File jar : modDir.listFiles()) {
+                if (jar.getName().endsWith(".jar")) {
+                    URL jarURL = FileUtil.urlForArchiveOrDir(jar);
+                    LOG.log(Level.FINE, "Adding {0} to compile classpath", jarURL);
+                    jars.add(jarURL);
                 }
             }
-            classPath = ClassPathSupport.createClassPath(modules.toArray(
-                    new URL[modules.size()]));  
+
+            File ext = new File(modDir, "ext");
+            if (ext.isDirectory()) {
+                for (File jar : ext.listFiles()) {
+                    if (jar.getName().endsWith(".jar")) {
+                        URL jarURL = FileUtil.urlForArchiveOrDir(jar);
+                        LOG.log(Level.FINE, "Adding {0} to compile classpath", jarURL);
+                        jars.add(jarURL);
+                    }
+                }
+            }
+            classPath = ClassPathSupport.createClassPath(jars.toArray(
+                    new URL[jars.size()]));  
             GlobalPathRegistry.getDefault().register(ClassPath.COMPILE,
                     new ClassPath[]{classPath});
         } else {
