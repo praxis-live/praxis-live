@@ -28,8 +28,10 @@ import java.util.Set;
 import net.neilcsmith.praxis.core.Component;
 import net.neilcsmith.praxis.core.ComponentFactory;
 import net.neilcsmith.praxis.live.core.api.ExtensionProvider;
+import net.neilcsmith.praxis.live.core.api.LogHandler;
 import net.neilcsmith.praxis.live.core.api.RootLifecycleHandler;
 import net.neilcsmith.praxis.live.core.api.Task;
+import net.neilcsmith.praxis.logging.LogLevel;
 import org.openide.util.Lookup;
 
 /**
@@ -67,4 +69,20 @@ class Utils {
         CoreFactoryProvider provider = Lookup.getDefault().lookup(CoreFactoryProvider.class);
         return provider == null ? null : provider.getFactory();
     }
+    
+    static List<LogHandler> findLogHandlers() {
+        return new ArrayList<>(Lookup.getDefault().lookupAll(LogHandler.class));
+    }
+    
+    static LogLevel findLogLevel(List<LogHandler> handlers) {
+        LogLevel level = LogLevel.ERROR;
+        for (LogHandler handler : handlers) {
+            LogLevel l = handler.getLevel();
+            if (!level.isLoggable(l)) {
+                level = l;
+            }
+        }
+        return level;
+    }
+    
 }

@@ -36,7 +36,10 @@ import net.neilcsmith.praxis.core.Component;
 import net.neilcsmith.praxis.hub.Hub;
 import net.neilcsmith.praxis.hub.net.MasterFactory;
 import net.neilcsmith.praxis.hub.net.SlaveInfo;
+import net.neilcsmith.praxis.live.core.api.LogHandler;
 import net.neilcsmith.praxis.live.core.api.Task;
+import net.neilcsmith.praxis.logging.LogLevel;
+import net.neilcsmith.praxis.logging.LogService;
 import org.openide.util.Exceptions;
 
 /**
@@ -262,13 +265,18 @@ public class DefaultHubManager {
         Component[] extensions = Utils.findExtensions();
         container = new ExtensionContainer(extensions);
         rootManager = new RootManagerOverride();
+        List<LogHandler> logHandlers = Utils.findLogHandlers();
+        Logging log = new Logging(logHandlers);
+        LogLevel logLevel = Utils.findLogLevel(logHandlers);
         Hub.Builder builder = Hub.builder();
         if (distributed) {
             builder.setCoreRootFactory(new MasterFactory(slaves));
         }
         builder.replaceComponentFactoryService(new CoreComponentFactoryService())
                 .addExtension(rootManager)
-                .addExtension(container);
+                .addExtension(log)
+                .addExtension(container)
+                .extendLookup(logLevel);
         hub = builder.build();
         hub.start();
     }
