@@ -196,6 +196,7 @@ public class PXRComponentProxy implements ComponentProxy {
         this.info = info;
         initProperties();
         triggers = null;
+        propActions = null;
         
         if (node != null) {
             node.refreshProperties();
