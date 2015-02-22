@@ -306,7 +306,7 @@ public class PXRComponentProxy implements ComponentProxy {
     }
     
     private void initTriggerActions() {
-        triggers = new ArrayList<Action>();
+        triggers = new ArrayList<>();
         for (String ctlID : info.getControls()) {
             ControlInfo ctl = info.getControlInfo(ctlID);
             if (ctl.getType() == ControlInfo.Type.Action) {
@@ -327,12 +327,25 @@ public class PXRComponentProxy implements ComponentProxy {
         if (properties == null) {
             initProperties();
         }
-        propActions = new ArrayList<Action>();
+        propActions = new ArrayList<>();
+        BoundCodeProperty code = null;
         for (BoundArgumentProperty prop : properties.values()) {
             if (prop instanceof BoundCodeProperty) {
+                // @TODO add proper key for this
+                if ("code".equals(prop.getName())) {
+                    code = (BoundCodeProperty) prop;
+                    continue;
+                }
                 propActions.add(((BoundCodeProperty) prop).getEditAction());
                 propActions.add(((BoundCodeProperty) prop).getResetAction());
             } 
+        }
+        if (code != null) {
+            if (!propActions.isEmpty()) {
+                propActions.add(null); //separator
+            }
+            propActions.add(code.getEditAction());
+            propActions.add(code.getResetAction());
         }
         propActions = Collections.unmodifiableList(propActions);
     }

@@ -77,17 +77,17 @@ class PXRProxyNode extends AbstractNode {
 
     final void refreshActions() {
         List<Action> lst = new ArrayList<>();
+        lst.add(component.getEditorAction());
         List<Action> triggers = component.getTriggerActions();
         if (!triggers.isEmpty()) {
-            lst.addAll(triggers);
             lst.add(null);
+            lst.addAll(triggers);
         }
         List<Action> prop = component.getPropertyActions();
         if (!prop.isEmpty()) {
-            lst.addAll(prop);
             lst.add(null);
+            lst.addAll(prop);
         }
-        lst.add(component.getEditorAction());
         actions = lst.toArray(new Action[lst.size()]);
     }
 
