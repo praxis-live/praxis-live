@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 2014 Neil C Smith
+ * Copyright 2015 Neil C Smith
  *
  * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
@@ -133,6 +133,13 @@ public class PraxisLiveLookAndFeel extends NimbusLookAndFeel {
         res.put("CheckBoxMenuItem[MouseOver].backgroundPainter", primaryBG);
         res.put("CheckBoxMenuItem[MouseOver+Selected].backgroundPainter", primaryBG);
 
+        res.put("Slider:SliderThumb[Pressed].backgroundPainter",
+                res.get("Slider:SliderThumb[MouseOver].backgroundPainter"));
+        res.put("Slider:SliderThumb[Focused+Pressed].backgroundPainter",
+                res.get("Slider:SliderThumb[Focused+MouseOver].backgroundPainter"));
+        res.put("Slider:SliderThumb[MouseOver].backgroundPainter",
+                res.get("Slider:SliderThumb[Focused].backgroundPainter"));
+        
         res.put("Tree[Enabled].collapsedIconPainter", res.get("Tree[Enabled+Selected].collapsedIconPainter"));
         res.put("Tree[Enabled].expandedIconPainter", res.get("Tree[Enabled+Selected].expandedIconPainter"));
 
@@ -150,22 +157,15 @@ public class PraxisLiveLookAndFeel extends NimbusLookAndFeel {
         res.put("ToolBar:ToggleButton[MouseOver+Selected].backgroundPainter", res.get("Button[Default+MouseOver].backgroundPainter"));
         res.put("ToolBar:ToggleButton[Focused+Selected].backgroundPainter", res.get("Button[Default+Focused].backgroundPainter"));
         res.put("ToolBar:ToggleButton[Focused+MouseOver+Selected].backgroundPainter", res.get("Button[Default+Focused+MouseOver].backgroundPainter"));
-
         
-        
-//        
-//        invertIcon(res, "Tree[Enabled].openIconPainter");
-//        invertIcon(res, "Tree[Enabled].openIconPainter");
-//        invertIcon(res, "Tree[Enabled].collapsedIconPainter");
-//        invertIcon(res, "Tree[Enabled].expandedIconPainter");
-
-
-        // END :: Keep this section in sync with PraxisLookAndFeel
-        //
-        //
-        //
         // fix combo box highlighting in property sheet - must NOT be UIResource
         res.put("ComboBox.selectionBackground", new Color(PRIMARY.getRGB()));
+
+        // END :: Keep this section in sync with PraxisLookAndFeel
+
+        
+        
+        
         //        res.put("nb.errorForeground", new Color(127, 0, 0)); //NOI18N
 //        res.put("nb.warningForeground", new Color(255, 216, 0)); //NOI18N
 
