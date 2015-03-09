@@ -4,6 +4,8 @@
      
     
     <folder name="Actions">
+        <file name="Build_hidden"/>
+        <file name="CommonTestRunner_hidden"/>
         <file name="GlassFish_hidden"/>
         <folder name="Project">
             <file name="org-netbeans-modules-project-ui-CleanMainProject.instance_hidden"/>
@@ -19,6 +21,7 @@
             <file name="org-netbeans-modules-project-ui-actions-OpenSubprojects.instance_hidden"/>
             <file name="org-netbeans-modules-project-ui-actions-StopBuildingAction.instance_hidden"/>
         </folder>
+        <file name="UnitTests_hidden"/>
         <folder name="Window">
             <file name="net-neilcsmith-praxis-live-core-ui-HubUIAction.instance">
                 <attr name="component" methodvalue="net.neilcsmith.praxis.live.core.ui.HubUITopComponent.findInstance"/>
@@ -29,10 +32,35 @@
         </folder>
     </folder>
     
+    <folder name="Editors">
+        <folder name="Popup">
+            <file name="org-netbeans-modules-project-ui-SelectInProjects.shadow_hidden"/>
+        </folder>
+        <folder name="text">
+            <folder name="x-java">
+                <folder name="Popup">
+                    <file name="WhereUsedAction.shadow_hidden"/>
+                    <file name="fix-imports_hidden"/>
+                    <file name="org-netbeans-modules-debugger-ui-actions-AddWatchAction.shadow_hidden"/>
+                    <file name="org-netbeans-modules-debugger-ui-actions-DebugFileAction.shadow_hidden"/>
+                    <file name="org-netbeans-modules-debugger-ui-actions-DebugTestFileAction.shadow_hidden"/>
+                    <file name="org-netbeans-modules-debugger-ui-actions-RunIntoMethodAction.shadow_hidden"/>
+                    <file name="org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.shadow_hidden"/>
+                    <file name="org-netbeans-modules-gsf-testrunner-TestMethodDebuggerAction.shadow_hidden"/>
+                    <file name="org-netbeans-modules-gsf-testrunner-TestMethodRunnerAction.shadow_hidden"/>
+                    <file name="org-netbeans-modules-maven-customPopup.shadow_hidden"/>
+                    <file name="org-netbeans-modules-project-ui-RunSingle.shadow_hidden"/>
+                    <file name="org-netbeans-modules-project-ui-TestSingle.shadow_hidden"/>
+                    <file name="org-netbeans-modules-refactoring-api-ui-RSMEditorAction.instance_hidden"/>
+                </folder>
+            </folder>
+        </folder>
+    </folder>
     <folder name="Menu">
         <folder name="BuildProject">
             <file name="org-netbeans-modules-project-ui-BuildMainProject.shadow_hidden"/>
             <file name="org-netbeans-modules-project-ui-RunMainProject.shadow_hidden"/>
+            <file name="org-netbeans-modules-project-ui-RunSingle.shadow_hidden"/>
             <file name="org-netbeans-modules-project-ui-actions-ActiveConfigAction.shadow_hidden"/>
 
             <file name="org-netbeans-modules-project-ui-RunProject.shadow">
@@ -99,6 +127,7 @@
                 <attr name="position" intvalue="0"/>
             </file>-->
 <!--            <file name="org-netbeans-modules-autoupdate-ui-actions-PluginManagerAction.shadow_hidden"/>-->
+            <file name="org-netbeans-modules-autoupdate-ui-actions-PluginManagerAction.shadow_hidden"/>
             <file name="org-netbeans-modules-favorites-templates-TemplatesAction.shadow_hidden"/>
             <file name="org-netbeans-modules-templates-actions-TemplatesAction.shadow_hidden"/>
             <file name="org-netbeans-modules-xml-catalog-CatalogAction.shadow_hidden"/>
@@ -175,7 +204,6 @@
         <file name="FontsAndColors.instance_hidden"/>
         <file name="General.instance_hidden"/>
         <file name="Java.instance_hidden"/>
-        <file name="Keymaps.instance_hidden"/>
         <file name="PreviewExamples_hidden"/>
         <file name="Team_hidden"/>
     </folder>
