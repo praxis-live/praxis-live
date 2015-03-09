@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 2014 Neil C Smith.
+ * Copyright 2015 Neil C Smith.
  * 
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -21,6 +21,7 @@
  */
 package net.neilcsmith.praxis.live.core.api;
 
+import net.neilcsmith.praxis.core.Argument;
 import net.neilcsmith.praxis.core.ComponentAddress;
 import net.neilcsmith.praxis.logging.LogLevel;
 
@@ -33,10 +34,14 @@ public abstract class LogHandler {
     public abstract void log(ComponentAddress source,
             long time,
             LogLevel level,
-            String msg);
+            Argument arg);
     
     public LogLevel getLevel() {
         return LogLevel.ERROR;
+    }
+
+    public void close() {
+        // no op hook
     }
     
 }

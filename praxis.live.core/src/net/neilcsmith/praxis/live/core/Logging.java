@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 2014 Neil C Smith.
+ * Copyright 2015 Neil C Smith.
  * 
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -21,11 +21,11 @@
  */
 package net.neilcsmith.praxis.live.core;
 
-import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import net.neilcsmith.praxis.core.Argument;
 import net.neilcsmith.praxis.core.Call;
 import net.neilcsmith.praxis.core.CallArguments;
 import net.neilcsmith.praxis.core.ComponentAddress;
@@ -33,11 +33,9 @@ import net.neilcsmith.praxis.core.Control;
 import net.neilcsmith.praxis.core.PacketRouter;
 import net.neilcsmith.praxis.core.info.ControlInfo;
 import net.neilcsmith.praxis.impl.AbstractSwingRoot;
-import net.neilcsmith.praxis.impl.SimpleControl;
 import net.neilcsmith.praxis.live.core.api.LogHandler;
 import net.neilcsmith.praxis.logging.LogLevel;
 import net.neilcsmith.praxis.logging.LogService;
-import org.openide.util.Lookup;
 
 /**
  *
@@ -58,6 +56,20 @@ class Logging extends AbstractSwingRoot {
         registerInterface(LogService.class);
     }
 
+    @Override
+    protected void dispose() {
+        super.dispose();
+        for (LogHandler handler : handlers) {
+            handler.close();
+        }
+    }
+
+    private void dispatch(ComponentAddress src, long time, LogLevel level, Argument arg) {
+        for (LogHandler handler : handlers) {
+            handler.log(src, time, level, arg);
+        }
+    }
+
     private class LogControl implements Control {
 
         @Override
@@ -67,10 +79,9 @@ class Logging extends AbstractSwingRoot {
             if (type == Call.Type.INVOKE || type == Call.Type.INVOKE_QUIET) {
                 ComponentAddress src = call.getFromAddress().getComponentAddress();
                 CallArguments args = call.getArgs();
-                for (int i=1; i < args.getSize(); i += 2) {
-                    LogLevel level = LogLevel.valueOf(args.get(i-1).toString());
-                    String msg = args.get(i).toString();
-                    dispatch(src, time, level, msg);
+                for (int i = 1; i < args.getSize(); i += 2) {
+                    LogLevel level = LogLevel.valueOf(args.get(i - 1).toString());
+                    dispatch(src, time, level, args.get(i));
                 }
             }
             if (type == Call.Type.INVOKE) {
@@ -78,26 +89,17 @@ class Logging extends AbstractSwingRoot {
             }
         }
 
-        
         @Override
         public ControlInfo getInfo() {
             return LogService.LOG_INFO;
         }
-
-        private void dispatch(ComponentAddress src, long time, LogLevel level, String msg) {
-            for (LogHandler handler : handlers) {
-                handler.log(src, time, level, msg);
-            }
-        }
-
-
 
     }
 
     private static class FallbackHandler extends LogHandler {
 
         @Override
-        public void log(ComponentAddress source, long time, LogLevel level, String msg) {
+        public void log(ComponentAddress source, long time, LogLevel level, Argument arg) {
             Level jlevel = Level.SEVERE;
             switch (level) {
                 case WARNING:
@@ -110,7 +112,7 @@ class Logging extends AbstractSwingRoot {
                     jlevel = Level.CONFIG;
                     break;
             }
-            Logger.getAnonymousLogger().log(jlevel, "{0} : {1} : {2}", new Object[]{level, source, msg});
+            Logger.getAnonymousLogger().log(jlevel, "{0} : {1} : {2}", new Object[]{level, source, arg});
         }
 
     }
