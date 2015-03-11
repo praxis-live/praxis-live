@@ -1,6 +1,23 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ * 
+ * Copyright 2015 Neil C Smith.
+ * 
+ * This code is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License version 3 only, as
+ * published by the Free Software Foundation.
+ * 
+ * This code is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ * version 3 for more details.
+ * 
+ * You should have received a copy of the GNU General Public License version 3
+ * along with this work; if not, see http://www.gnu.org/licenses/
+ * 
+ * 
+ * Please visit http://neilcsmith.net if you need additional information or
+ * have any questions.
  */
 package net.neilcsmith.praxis.live.video.options;
 
@@ -25,8 +42,11 @@ final class GeneralVideoPanel extends javax.swing.JPanel {
     }
     
     private void initChoosers() {
-        for (String renderer : rendererDisplay) {
-            rendererChooser.addItem(renderer);
+//        for (String renderer : rendererDisplay) {
+//            rendererChooser.addItem(renderer);
+//        }
+        for (VideoSettings.FullScreenMode mode : VideoSettings.FullScreenMode.values()) {
+            fsemChooser.addItem(mode);
         }
     }
 
@@ -38,57 +58,73 @@ final class GeneralVideoPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jPanel1 = new javax.swing.JPanel();
         defaultConfigPanel = new javax.swing.JPanel();
-        defaultConfigDescription = new javax.swing.JLabel();
+        fsemLbl = new javax.swing.JLabel();
+        fsemChooser = new javax.swing.JComboBox();
+        advancedConfigPanel = new javax.swing.JPanel();
+        defaultConfigDescription1 = new javax.swing.JLabel();
         rendererLbl = new javax.swing.JLabel();
         rendererChooser = new javax.swing.JComboBox();
 
-        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
-        jPanel1.setLayout(jPanel1Layout);
-        jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 0, Short.MAX_VALUE)
-        );
-        jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 0, Short.MAX_VALUE)
-        );
-
         defaultConfigPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(GeneralVideoPanel.class, "GeneralVideoPanel.defaultConfigPanel.border.title"))); // NOI18N
 
-        defaultConfigDescription.setForeground(javax.swing.UIManager.getDefaults().getColor("textInactiveText"));
-        defaultConfigDescription.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
-        org.openide.awt.Mnemonics.setLocalizedText(defaultConfigDescription, org.openide.util.NbBundle.getMessage(GeneralVideoPanel.class, "GeneralVideoPanel.defaultConfigDescription.text")); // NOI18N
-
-        org.openide.awt.Mnemonics.setLocalizedText(rendererLbl, org.openide.util.NbBundle.getMessage(GeneralVideoPanel.class, "GeneralVideoPanel.rendererLbl.text")); // NOI18N
-
-        rendererChooser.setEnabled(false);
+        org.openide.awt.Mnemonics.setLocalizedText(fsemLbl, org.openide.util.NbBundle.getMessage(GeneralVideoPanel.class, "GeneralVideoPanel.fsemLbl.text")); // NOI18N
 
         javax.swing.GroupLayout defaultConfigPanelLayout = new javax.swing.GroupLayout(defaultConfigPanel);
         defaultConfigPanel.setLayout(defaultConfigPanelLayout);
         defaultConfigPanelLayout.setHorizontalGroup(
             defaultConfigPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(defaultConfigPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(defaultConfigPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(defaultConfigPanelLayout.createSequentialGroup()
-                        .addComponent(rendererLbl)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(rendererChooser, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .addComponent(defaultConfigDescription, javax.swing.GroupLayout.Alignment.TRAILING))
-                .addContainerGap())
+                .addGap(40, 40, 40)
+                .addComponent(fsemLbl)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(fsemChooser, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         defaultConfigPanelLayout.setVerticalGroup(
             defaultConfigPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(defaultConfigPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(defaultConfigPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(fsemChooser, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(fsemLbl))
+                .addContainerGap(273, Short.MAX_VALUE))
+        );
+
+        advancedConfigPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(GeneralVideoPanel.class, "GeneralVideoPanel.advancedConfigPanel.border.title"))); // NOI18N
+
+        defaultConfigDescription1.setForeground(javax.swing.UIManager.getDefaults().getColor("textInactiveText"));
+        defaultConfigDescription1.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
+        org.openide.awt.Mnemonics.setLocalizedText(defaultConfigDescription1, org.openide.util.NbBundle.getMessage(GeneralVideoPanel.class, "GeneralVideoPanel.defaultConfigDescription1.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(rendererLbl, org.openide.util.NbBundle.getMessage(GeneralVideoPanel.class, "GeneralVideoPanel.rendererLbl.text")); // NOI18N
+
+        rendererChooser.setEnabled(false);
+
+        javax.swing.GroupLayout advancedConfigPanelLayout = new javax.swing.GroupLayout(advancedConfigPanel);
+        advancedConfigPanel.setLayout(advancedConfigPanelLayout);
+        advancedConfigPanelLayout.setHorizontalGroup(
+            advancedConfigPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(advancedConfigPanelLayout.createSequentialGroup()
+                .addGap(77, 77, 77)
+                .addComponent(defaultConfigDescription1)
+                .addGap(34, 34, 34))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, advancedConfigPanelLayout.createSequentialGroup()
+                .addGap(87, 87, 87)
+                .addComponent(rendererLbl)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(rendererChooser, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+        advancedConfigPanelLayout.setVerticalGroup(
+            advancedConfigPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(advancedConfigPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(advancedConfigPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(rendererChooser, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(rendererLbl))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 317, Short.MAX_VALUE)
-                .addComponent(defaultConfigDescription)
-                .addContainerGap())
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(defaultConfigDescription1)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
@@ -97,25 +133,19 @@ final class GeneralVideoPanel extends javax.swing.JPanel {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(defaultConfigPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(defaultConfigPanel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(advancedConfigPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
-            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGroup(layout.createSequentialGroup()
-                    .addContainerGap()
-                    .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addContainerGap(668, Short.MAX_VALUE)))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
+                .addComponent(advancedConfigPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(defaultConfigPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addContainerGap())
-            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGroup(layout.createSequentialGroup()
-                    .addContainerGap()
-                    .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addContainerGap(420, Short.MAX_VALUE)))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -125,6 +155,17 @@ final class GeneralVideoPanel extends javax.swing.JPanel {
 
     void store() {
         saveRenderer();
+    }
+    
+    private void loadFSEM() {
+        fsemChooser.setSelectedItem(VideoSettings.getFullScreenMode());
+    }
+    
+    private void saveFSEM() {
+        Object o = fsemChooser.getSelectedItem();
+        if (o instanceof VideoSettings.FullScreenMode) {
+            VideoSettings.setFullScreenMode((VideoSettings.FullScreenMode) o);
+        }
     }
     
     private void loadRenderer() {
@@ -137,15 +178,15 @@ final class GeneralVideoPanel extends javax.swing.JPanel {
             }
         }
         if (idx == -1) {
-            rendererChooser.addItem(rndr);
-            rendererChooser.setSelectedItem(rndr);
+            fsemChooser.addItem(rndr);
+            fsemChooser.setSelectedItem(rndr);
         } else {
-            rendererChooser.setSelectedIndex(idx);
+            fsemChooser.setSelectedIndex(idx);
         }
     }
     
     private void saveRenderer() {
-        int idx = rendererChooser.getSelectedIndex();
+        int idx = fsemChooser.getSelectedIndex();
         if (idx >= renderers.length) {
             // custom
             return;
@@ -163,9 +204,11 @@ final class GeneralVideoPanel extends javax.swing.JPanel {
         return true;
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel defaultConfigDescription;
+    private javax.swing.JPanel advancedConfigPanel;
+    private javax.swing.JLabel defaultConfigDescription1;
     private javax.swing.JPanel defaultConfigPanel;
-    private javax.swing.JPanel jPanel1;
+    private javax.swing.JComboBox fsemChooser;
+    private javax.swing.JLabel fsemLbl;
     private javax.swing.JComboBox rendererChooser;
     private javax.swing.JLabel rendererLbl;
     // End of variables declaration//GEN-END:variables

@@ -1,10 +1,27 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ * 
+ * Copyright 2015 Neil C Smith.
+ * 
+ * This code is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License version 3 only, as
+ * published by the Free Software Foundation.
+ * 
+ * This code is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ * version 3 for more details.
+ * 
+ * You should have received a copy of the GNU General Public License version 3
+ * along with this work; if not, see http://www.gnu.org/licenses/
+ * 
+ * 
+ * Please visit http://neilcsmith.net if you need additional information or
+ * have any questions.
  */
 package net.neilcsmith.praxis.live.video.options;
 
-import net.neilcsmith.praxis.video.VideoSettings;
+import net.neilcsmith.praxis.video.gstreamer.GStreamerSettings;
 
 final class CapturePanel extends javax.swing.JPanel {
 
@@ -25,25 +42,64 @@ final class CapturePanel extends javax.swing.JPanel {
     private void initComponents() {
 
         defaultConfigPanel = new javax.swing.JPanel();
-        deviceLbl = new javax.swing.JLabel();
-        deviceChooser = new javax.swing.JComboBox();
-        defaultConfigDescription = new javax.swing.JLabel();
-        defaultConfigDescription1 = new javax.swing.JLabel();
+        devLbl1 = new javax.swing.JLabel();
+        devInput1 = new javax.swing.JTextField();
+        devInput2 = new javax.swing.JTextField();
+        devInput4 = new javax.swing.JTextField();
+        devInput3 = new javax.swing.JTextField();
+        devLbl2 = new javax.swing.JLabel();
+        devLbl3 = new javax.swing.JLabel();
+        devLbl4 = new javax.swing.JLabel();
+        resetBtn1 = new javax.swing.JButton();
+        resetBtn2 = new javax.swing.JButton();
+        resetBtn3 = new javax.swing.JButton();
+        resetBtn4 = new javax.swing.JButton();
 
         defaultConfigPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(CapturePanel.class, "CapturePanel.defaultConfigPanel.border.title"))); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(deviceLbl, org.openide.util.NbBundle.getMessage(CapturePanel.class, "CapturePanel.deviceLbl.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(devLbl1, org.openide.util.NbBundle.getMessage(CapturePanel.class, "CapturePanel.devLbl1.text")); // NOI18N
 
-        deviceChooser.setEditable(true);
-        deviceChooser.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "v4l2://0", "v4l2://1", "v4l2://0?width=640&height=480" }));
+        devInput1.setText(org.openide.util.NbBundle.getMessage(CapturePanel.class, "CapturePanel.devInput1.text")); // NOI18N
 
-        defaultConfigDescription.setForeground(javax.swing.UIManager.getDefaults().getColor("textInactiveText"));
-        defaultConfigDescription.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
-        org.openide.awt.Mnemonics.setLocalizedText(defaultConfigDescription, org.openide.util.NbBundle.getMessage(CapturePanel.class, "CapturePanel.defaultConfigDescription.text")); // NOI18N
+        devInput2.setText(org.openide.util.NbBundle.getMessage(CapturePanel.class, "CapturePanel.devInput2.text")); // NOI18N
 
-        defaultConfigDescription1.setForeground(javax.swing.UIManager.getDefaults().getColor("textInactiveText"));
-        defaultConfigDescription1.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
-        org.openide.awt.Mnemonics.setLocalizedText(defaultConfigDescription1, org.openide.util.NbBundle.getMessage(CapturePanel.class, "CapturePanel.defaultConfigDescription1.text")); // NOI18N
+        devInput4.setText(org.openide.util.NbBundle.getMessage(CapturePanel.class, "CapturePanel.devInput4.text")); // NOI18N
+
+        devInput3.setText(org.openide.util.NbBundle.getMessage(CapturePanel.class, "CapturePanel.devInput3.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(devLbl2, org.openide.util.NbBundle.getMessage(CapturePanel.class, "CapturePanel.devLbl2.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(devLbl3, org.openide.util.NbBundle.getMessage(CapturePanel.class, "CapturePanel.devLbl3.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(devLbl4, org.openide.util.NbBundle.getMessage(CapturePanel.class, "CapturePanel.devLbl4.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(resetBtn1, org.openide.util.NbBundle.getMessage(CapturePanel.class, "CapturePanel.resetBtn1.text")); // NOI18N
+        resetBtn1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                resetBtn1ActionPerformed(evt);
+            }
+        });
+
+        org.openide.awt.Mnemonics.setLocalizedText(resetBtn2, org.openide.util.NbBundle.getMessage(CapturePanel.class, "CapturePanel.resetBtn2.text")); // NOI18N
+        resetBtn2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                resetBtn2ActionPerformed(evt);
+            }
+        });
+
+        org.openide.awt.Mnemonics.setLocalizedText(resetBtn3, org.openide.util.NbBundle.getMessage(CapturePanel.class, "CapturePanel.resetBtn3.text")); // NOI18N
+        resetBtn3.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                resetBtn3ActionPerformed(evt);
+            }
+        });
+
+        org.openide.awt.Mnemonics.setLocalizedText(resetBtn4, org.openide.util.NbBundle.getMessage(CapturePanel.class, "CapturePanel.resetBtn4.text")); // NOI18N
+        resetBtn4.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                resetBtn4ActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout defaultConfigPanelLayout = new javax.swing.GroupLayout(defaultConfigPanel);
         defaultConfigPanel.setLayout(defaultConfigPanelLayout);
@@ -53,25 +109,52 @@ final class CapturePanel extends javax.swing.JPanel {
                 .addContainerGap()
                 .addGroup(defaultConfigPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(defaultConfigPanelLayout.createSequentialGroup()
-                        .addComponent(deviceLbl)
-                        .addGap(18, 18, 18)
-                        .addComponent(deviceChooser, 0, 529, Short.MAX_VALUE))
-                    .addComponent(defaultConfigDescription1, javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(defaultConfigDescription, javax.swing.GroupLayout.Alignment.TRAILING))
-                .addContainerGap())
+                        .addComponent(devLbl4)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(devInput4, javax.swing.GroupLayout.DEFAULT_SIZE, 465, Short.MAX_VALUE))
+                    .addGroup(defaultConfigPanelLayout.createSequentialGroup()
+                        .addComponent(devLbl3)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(devInput3))
+                    .addGroup(defaultConfigPanelLayout.createSequentialGroup()
+                        .addComponent(devLbl2)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(devInput2))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, defaultConfigPanelLayout.createSequentialGroup()
+                        .addComponent(devLbl1)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(devInput1)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(defaultConfigPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(resetBtn1)
+                    .addComponent(resetBtn2)
+                    .addComponent(resetBtn3)
+                    .addComponent(resetBtn4)))
         );
         defaultConfigPanelLayout.setVerticalGroup(
             defaultConfigPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(defaultConfigPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(defaultConfigPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(deviceChooser, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(deviceLbl))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 282, Short.MAX_VALUE)
-                .addComponent(defaultConfigDescription)
+                    .addComponent(devLbl1)
+                    .addComponent(devInput1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(resetBtn1))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(defaultConfigDescription1)
-                .addContainerGap())
+                .addGroup(defaultConfigPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(devLbl2)
+                    .addComponent(devInput2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(resetBtn2))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(defaultConfigPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(devLbl3)
+                    .addComponent(devInput3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(resetBtn3))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(defaultConfigPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(devLbl4)
+                    .addComponent(devInput4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(resetBtn4))
+                .addContainerGap(211, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
@@ -92,12 +175,58 @@ final class CapturePanel extends javax.swing.JPanel {
         );
     }// </editor-fold>//GEN-END:initComponents
 
+    private void resetBtn1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_resetBtn1ActionPerformed
+        devInput1.setText(GStreamerSettings.getDefaultCaptureDevice(1));
+    }//GEN-LAST:event_resetBtn1ActionPerformed
+
+    private void resetBtn2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_resetBtn2ActionPerformed
+        devInput2.setText(GStreamerSettings.getDefaultCaptureDevice(2));
+    }//GEN-LAST:event_resetBtn2ActionPerformed
+
+    private void resetBtn3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_resetBtn3ActionPerformed
+        devInput3.setText(GStreamerSettings.getDefaultCaptureDevice(3));
+    }//GEN-LAST:event_resetBtn3ActionPerformed
+
+    private void resetBtn4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_resetBtn4ActionPerformed
+        devInput4.setText(GStreamerSettings.getDefaultCaptureDevice(4));
+    }//GEN-LAST:event_resetBtn4ActionPerformed
+
     void load() {
-//        deviceChooser.setSelectedItem(VideoSettings.getCaptureDevice());
+        devInput1.setText(GStreamerSettings.getCaptureDevice(1));
+        devInput2.setText(GStreamerSettings.getCaptureDevice(2));
+        devInput3.setText(GStreamerSettings.getCaptureDevice(3));
+        devInput4.setText(GStreamerSettings.getCaptureDevice(4));
     }
 
     void store() {
-//        VideoSettings.setCaptureDevice(deviceChooser.getSelectedItem().toString());
+        String text;
+        text = devInput1.getText().trim();
+        if (text.isEmpty() || text.equals(GStreamerSettings.getDefaultCaptureDevice(1))) {
+            GStreamerSettings.resetCaptureDevice(1);
+        } else {
+            GStreamerSettings.setCaptureDevice(1, text);
+        }
+        
+        text = devInput2.getText().trim();
+        if (text.isEmpty() || text.equals(GStreamerSettings.getDefaultCaptureDevice(2))) {
+            GStreamerSettings.resetCaptureDevice(2);
+        } else {
+            GStreamerSettings.setCaptureDevice(2, text);
+        }
+        
+        text = devInput3.getText().trim();
+        if (text.isEmpty() || text.equals(GStreamerSettings.getDefaultCaptureDevice(3))) {
+            GStreamerSettings.resetCaptureDevice(3);
+        } else {
+            GStreamerSettings.setCaptureDevice(3, text);
+        }
+        
+        text = devInput4.getText().trim();
+        if (text.isEmpty() || text.equals(GStreamerSettings.getDefaultCaptureDevice(4))) {
+            GStreamerSettings.resetCaptureDevice(4);
+        } else {
+            GStreamerSettings.setCaptureDevice(4, text);
+        }
     }
 
     boolean valid() {
@@ -105,10 +234,18 @@ final class CapturePanel extends javax.swing.JPanel {
         return true;
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel defaultConfigDescription;
-    private javax.swing.JLabel defaultConfigDescription1;
     private javax.swing.JPanel defaultConfigPanel;
-    private javax.swing.JComboBox deviceChooser;
-    private javax.swing.JLabel deviceLbl;
+    private javax.swing.JTextField devInput1;
+    private javax.swing.JTextField devInput2;
+    private javax.swing.JTextField devInput3;
+    private javax.swing.JTextField devInput4;
+    private javax.swing.JLabel devLbl1;
+    private javax.swing.JLabel devLbl2;
+    private javax.swing.JLabel devLbl3;
+    private javax.swing.JLabel devLbl4;
+    private javax.swing.JButton resetBtn1;
+    private javax.swing.JButton resetBtn2;
+    private javax.swing.JButton resetBtn3;
+    private javax.swing.JButton resetBtn4;
     // End of variables declaration//GEN-END:variables
 }
