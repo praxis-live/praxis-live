@@ -1,3 +1,4 @@
+/nbproject/private/
 /praxis.live.core/build/
 /praxis.live.audio/build/
 /praxis.live.components/build/
@@ -53,5 +54,6 @@
 /praxis.live.properties/nbproject/private/
 /praxis.live.model/nbproject/private/
 /praxis.live.pxr.graph/build/
+/praxis.live.pxr.graph/nbproject/private/
 /praxis.live.logging/nbproject/private/
 /praxis.live.logging/build/
