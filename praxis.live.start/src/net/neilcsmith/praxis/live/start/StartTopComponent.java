@@ -71,8 +71,6 @@ import org.xml.sax.InputSource;
 })
 public final class StartTopComponent extends TopComponent {
 
-    private final static Color LINK_COLOR = new Color(204, 204, 204);
-    private final static Color LINK_COLOR_HOVER = LINK_COLOR.brighter().brighter();
     private final static URI WEBSITE_LINK = URI.create("http://www.praxislive.org");
     private final static URI DOWNLOAD_LINK = URI.create("http://www.praxislive.org/download");
     private final static String UPDATE_CHECKING = "Checking for updates ...";
@@ -287,7 +285,7 @@ public final class StartTopComponent extends TopComponent {
             URI startPage = null;
             if (!error) {
                 XPath xpath = XPathFactory.newInstance().newXPath();
-                InputSource source = new InputSource("http://www.praxislive.org/release-check/testing/" + version);
+                InputSource source = new InputSource("http://www.praxislive.org/release-check/" + version);
                 try {
                     String result = xpath.evaluate("//build-version", source);
                     current = version.equals(result);
