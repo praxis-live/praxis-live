@@ -2,12 +2,12 @@
     <head>
         <title>Praxis LIVE</title>
         <style>
-            body {background: black; color: #CCCCCC; font-size: 16pt}
+            body {background: black; color: #CCCCCC; font-size: 14pt}
             a {color:#CCCCCC; text-decoration: underline;}
             a:hover {color:#EEEEEE; text-decoration: none;}
-            li {list-style-type: none;}
-            ul.links {margin-left:5px;}
-            ul.links li {margin: 5px;}
+            ul {margin-left:5px;}
+            ul li {margin: 5px;}
+            ul.links li {list-style-type: none;}
         </style>
     </head>
     <body>
@@ -16,14 +16,30 @@
             <li><a href="http://www.praxislive.org">Praxis LIVE website</a></li>
             <li><a href="http://www.praxislive.org/resources/manual">Download manual</a></li>
             <li><a href="http://www.praxislive.org/resources/examples">Download examples</a></li>
-            <li><a href="http://www.praxislive.org/resources/subgraphs">Sub-graph repository</a></li>
+            <li><a href="http://www.praxislive.org/resources/subgraphs">Custom component (sub-graph) repository</a></li>
+            <li><a href="https://github.com/praxis-live/support/issues">Report a bug or request a feature.</a></li>
             <li><a href="http://twitter.com/PraxisLIVE">Twitter feed</a></li>
         </ul>
         <p></p>
-        <h2>This is a testing release of Praxis LIVE.</h2>
-        <p>Please be aware that some features may only be partially complete or unstable.<br>
-            Keep an eye on the website or Twitter feed for updates.<br>
-            Please <a href="https://github.com/praxis-live/support/issues">report any issues.</a></p>
-        <p>Thank you for testing and contributing to the success of Praxis LIVE.</p>
+        <h1>Praxis LIVE v2</h1>
+        <p>Praxis LIVE v2 is a major revision bringing a wealth of new features.</p>
+        <ul>
+            <li>New OpenGL video pipeline - based on <a href="https://processing.org/">Processing</a>.</li>
+            <li>Distributed hubs - run a project across multiple computers, or multiple processes on one machine
+                eg. for better framerates or lower-latency audio.
+            <li>New live-code support, using annotations to define ports and controls.</li>
+            <li>Fork All - majority of built-in components re-built using live-code support,
+                if a built-in component doesn't quite do what you want, rewrite it on the fly!</li>
+            <li>Almost full access to the underlying Processing API, including 3D rendering.</li>
+            <li>New code editor - based on the <a href="https://netbeans.org/">NetBeans</a> editor
+                with full code completion and error highlighting.</li>
+            <li>Much, much more ... see the <a href="http://www.praxislive.org/release">full release notes</a>.</li>
+        </ul>
+        <p>Please be aware that v2 is a major rewrite - many features have moved and changed behaviour.
+            Most v1 projects should load properly, but some tweaking may be required.
+            This version has not yet been as heavily tested as v1, and so may not yet be as stable.
+            Keep an eye on the release notes, website or Twitter feed for known issues and updates.
+            Please <a href="https://github.com/praxis-live/support/issues">report any problems.</a></p>
+        <p>Thank you for contributing to the success of Praxis LIVE.</p>
     </body>
 </html>
