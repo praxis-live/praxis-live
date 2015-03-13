@@ -25,14 +25,6 @@ import net.neilcsmith.praxis.video.VideoSettings;
 
 final class GeneralVideoPanel extends javax.swing.JPanel {
     
-    private final static String[] renderers = new String[] {
-        "Software", "OpenGL"
-    };
-    
-    private final static String[] rendererDisplay = new String[] {
-        "Software Renderer", "OpenGL Renderer"
-    };
-
     private final GeneralVideoOptionsPanelController controller;
 
     GeneralVideoPanel(GeneralVideoOptionsPanelController controller) {
@@ -42,9 +34,6 @@ final class GeneralVideoPanel extends javax.swing.JPanel {
     }
     
     private void initChoosers() {
-//        for (String renderer : rendererDisplay) {
-//            rendererChooser.addItem(renderer);
-//        }
         for (VideoSettings.FullScreenMode mode : VideoSettings.FullScreenMode.values()) {
             fsemChooser.addItem(mode);
         }
@@ -150,11 +139,11 @@ final class GeneralVideoPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     void load() {
-        loadRenderer();
+        loadFSEM();
     }
 
     void store() {
-        saveRenderer();
+        saveFSEM();
     }
     
     private void loadFSEM() {
@@ -167,37 +156,7 @@ final class GeneralVideoPanel extends javax.swing.JPanel {
             VideoSettings.setFullScreenMode((VideoSettings.FullScreenMode) o);
         }
     }
-    
-    private void loadRenderer() {
-        String rndr = VideoSettings.getRenderer();
-        int idx = -1;
-        for (int i = 0; i < renderers.length; i++) {
-            if (renderers[i].equals(rndr)) {
-                idx = i;
-                break;
-            }
-        }
-        if (idx == -1) {
-            fsemChooser.addItem(rndr);
-            fsemChooser.setSelectedItem(rndr);
-        } else {
-            fsemChooser.setSelectedIndex(idx);
-        }
-    }
-    
-    private void saveRenderer() {
-        int idx = fsemChooser.getSelectedIndex();
-        if (idx >= renderers.length) {
-            // custom
-            return;
-        }
-        String current = VideoSettings.getRenderer();
-        String selected = renderers[idx];
-        if (!selected.equals(current)) {
-            VideoSettings.setRenderer(selected);
-        }
-    }
-    
+       
 
     boolean valid() {
         // TODO check whether form is consistent and complete
