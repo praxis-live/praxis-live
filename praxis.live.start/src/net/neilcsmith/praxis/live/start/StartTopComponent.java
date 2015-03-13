@@ -74,9 +74,9 @@ public final class StartTopComponent extends TopComponent {
     private final static URI WEBSITE_LINK = URI.create("http://www.praxislive.org");
     private final static URI DOWNLOAD_LINK = URI.create("http://www.praxislive.org/download");
     private final static String UPDATE_CHECKING = "Checking for updates ...";
-    private final static String UPDATE_OK = "Praxis LIVE (testing) is up to date.";
+    private final static String UPDATE_OK = "Praxis LIVE is up to date.";
     private final static String UPDATE_ERROR = "Unable to check for updates.";
-    private final static String UPDATE_AVAILABLE = "New version of Praxis LIVE (testing) available.";
+    private final static String UPDATE_AVAILABLE = "New version of Praxis LIVE available.";
     private final static RequestProcessor RP = new RequestProcessor(StartTopComponent.class);
     private final JLabel updateLabel;
     private final JProgressBar updateProgress;
