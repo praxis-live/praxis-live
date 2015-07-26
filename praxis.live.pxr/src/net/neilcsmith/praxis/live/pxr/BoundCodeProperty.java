@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2014 Neil C Smith.
+ * Copyright 2015 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -26,6 +26,7 @@ import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -49,8 +50,10 @@ class BoundCodeProperty extends BoundArgumentProperty {
     private static final Map<String, String> mimeToExt = new HashMap<>();
 
     static {
+        // include common
         mimeToExt.put("text/x-praxis-java", "pxj");
         mimeToExt.put("text/x-praxis-script", "pxs");
+        // GLSL mime types in Praxis core don't match editor mime type (text/x-glsl)
         mimeToExt.put("text/x-glsl-frag", "frag");
         mimeToExt.put("text/x-glsl-vert", "vert");
     }
@@ -119,7 +122,14 @@ class BoundCodeProperty extends BoundArgumentProperty {
     private FileObject constructFile() throws Exception {
 
         FileSystem fs = FileUtil.createMemoryFileSystem();
-        FileObject f = fs.getRoot().createData(fileName, mimeToExt.get(mimeType));
+        FileObject f;
+        String ext = findExtension(mimeType);
+        if (ext != null) {
+            f = fs.getRoot().createData(fileName, ext);
+        } else {
+            f = fs.getRoot().createData(fileName);
+        }
+        
         OutputStreamWriter writer = null;
         try {
             writer = new OutputStreamWriter(f.getOutputStream());
@@ -132,6 +142,19 @@ class BoundCodeProperty extends BoundArgumentProperty {
         f.setAttribute("argumentInfo", getInfo().getOutputsInfo()[0]);
         f.addFileChangeListener(fileListener);
         return f;
+    }
+    
+    private String findExtension(String mimeType) {
+        if (mimeToExt.containsKey(mimeType)) {
+            return mimeToExt.get(mimeType);
+        }
+        List<String> exts = FileUtil.getMIMETypeExtensions(mimeType);
+        String ext = null;
+        if (exts.size() > 0) {
+            ext = exts.get(0);
+        }
+        mimeToExt.put(mimeType, ext);
+        return ext;
     }
 
     private String constructFileContent() {
@@ -164,11 +187,6 @@ class BoundCodeProperty extends BoundArgumentProperty {
         }
     }
     
-    
-
-    static boolean isSupportedMimeType(String mime) {
-        return mimeToExt.containsKey(mime);
-    }
 
     
     class FileListener extends FileChangeAdapter {

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2014 Neil C Smith.
+ * Copyright 2015 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -385,9 +385,9 @@ public class PXRComponentProxy implements ComponentProxy {
         }
         if (args[0].getType() == PString.class) {
             String mime = args[0].getProperties().getString(PString.KEY_MIME_TYPE, "unknown");
-            if (BoundCodeProperty.isSupportedMimeType(mime)) {
+//            if (BoundCodeProperty.isSupportedMimeType(mime)) {
                 return new BoundCodeProperty(address, info, mime);
-            }
+//            }
         }
 
         return new BoundArgumentProperty(address, info);
