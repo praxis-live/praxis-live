@@ -92,20 +92,14 @@ public class PraxisLiveLookAndFeel extends NimbusLookAndFeel {
 
         // BEGIN :: Keep this section in sync with PraxisLookAndFeel
         res.put("control", DARK_GREY);
-        res.put("info", Color.BLACK);// new Color(128,128,128) );
+        res.put("info", Color.BLACK);
         res.put("nimbusBase", BASE);
         res.put("nimbusBlueGrey", MEDIUM_GREY);
-////        res.put("nimbusBlueGrey", Color.decode("#4545a1"));
-//        res.put("nimbusAlertYellow", new Color(248, 187, 0));
-//        res.put("nimbusDisabledText", new Color(196, 196, 196));
         res.put("nimbusDisabledText", LIGHT_GREY);
         res.put("nimbusFocus", SECONDARY);
-//        res.put("nimbusGreen", new Color(176, 179, 50));
         res.put("nimbusInfoBlue", MEDIUM_GREY);
         res.put("nimbusLightBackground", Color.BLACK);
-//        res.put("nimbusOrange", new Color(191, 98, 4));
         res.put("nimbusOrange", PRIMARY);
-//        res.put("nimbusRed", new Color(169, 46, 34));
         res.put("nimbusSelectedText", Color.WHITE);
         res.put("nimbusSelectionBackground", PRIMARY);
         res.put("text", OFF_WHITE);
@@ -148,6 +142,8 @@ public class PraxisLiveLookAndFeel extends NimbusLookAndFeel {
 
         res.put("TabbedPane:TabbedPaneTab[Enabled].backgroundPainter", null);
         res.put("TabbedPane:TabbedPaneTab[Disabled].backgroundPainter", null);
+        
+        res.put("TextField.caretForeground", OFF_WHITE);
         
         res.put("ToggleButton[Selected].backgroundPainter", res.get("Button[Default].backgroundPainter"));
         res.put("ToggleButton[MouseOver+Selected].backgroundPainter", res.get("Button[Default+MouseOver].backgroundPainter"));
