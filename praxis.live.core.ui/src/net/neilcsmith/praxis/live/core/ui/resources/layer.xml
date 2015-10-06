@@ -7,6 +7,10 @@
         <file name="Build_hidden"/>
         <file name="CommonTestRunner_hidden"/>
         <file name="GlassFish_hidden"/>
+        <folder name="Help">
+            <file name="master-help.xml_hidden"/>
+            <file name="org-netbeans-modules-javahelp-HelpAction.instance_hidden"/>
+        </folder>
         <folder name="Project">
             <file name="org-netbeans-modules-project-ui-CleanMainProject.instance_hidden"/>
             <file name="org-netbeans-modules-project-ui-CleanProject.instance_hidden"/>
@@ -97,6 +101,7 @@
         </folder>
         <file name="GoTo_hidden"/>
         <folder name="Help">
+            <file name="master-help.xml_hidden"/>
             <file name="Separator1.instance_hidden"/>
             <file name="SeparatorAfterJavadoc.instance_hidden"/>
             <file name="net-neilcsmith-praxis-live-core-ui-AboutAction-separatorBefore.instance">
@@ -104,7 +109,7 @@
                 <attr name="position" intvalue="250"/>
             </file>
             <file name="netbeans-kb.url_hidden"/>
-<!--            <file name="org-netbeans-core-actions-AboutAction.shadow_hidden"/>-->
+            <!--            <file name="org-netbeans-core-actions-AboutAction.shadow_hidden"/>-->
             <file name="org-netbeans-modules-autoupdate-ui-actions-CheckForUpdatesAction.shadow_hidden"/>
             <file name="org-netbeans-modules-bugzilla-ReportNBIssueAction.shadow_hidden"/>
             <file name="org-netbeans-modules-javadoc-search-IndexOverviewAction.shadow_hidden"/>
@@ -122,11 +127,11 @@
             <file name="Separator1.instance_hidden"/>
             <file name="ServerManagerAction3.shadow_hidden"/>
             <file name="VariablesCustomizerAction.shadow_hidden"/>
-<!--            <file name="net-neilcsmith-praxis-live-core-api-RestartHubAction.shadow">
+            <!--            <file name="net-neilcsmith-praxis-live-core-api-RestartHubAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Praxis/net-neilcsmith-praxis-live-core-api-RestartHubAction.instance"/>
                 <attr name="position" intvalue="0"/>
             </file>-->
-<!--            <file name="org-netbeans-modules-autoupdate-ui-actions-PluginManagerAction.shadow_hidden"/>-->
+            <!--            <file name="org-netbeans-modules-autoupdate-ui-actions-PluginManagerAction.shadow_hidden"/>-->
             <file name="org-netbeans-modules-autoupdate-ui-actions-PluginManagerAction.shadow_hidden"/>
             <file name="org-netbeans-modules-favorites-templates-TemplatesAction.shadow_hidden"/>
             <file name="org-netbeans-modules-templates-actions-TemplatesAction.shadow_hidden"/>
@@ -146,7 +151,7 @@
             <file name="Debug_hidden">
                 <attr name="position" intvalue="100"/>
             </file>
-<!--            <file name="Favorites.shadow">
+            <!--            <file name="Favorites.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-favorites-View.instance"/>
                 <attr name="position" intvalue="350"/>
             </file>-->
@@ -260,12 +265,12 @@
             
             <file name="org-netbeans-modules-project-ui-BuildProject.shadow">
                 <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-BuildProject.instance"/>
-<!--                <attr name="position" intvalue="100"/>-->
+                <!--                <attr name="position" intvalue="100"/>-->
             </file>
             
             <file name="org-netbeans-modules-project-ui-RunProject.shadow">
                 <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-RunProject.instance"/>
-<!--                <attr name="position" intvalue="200"/>-->
+                <!--                <attr name="position" intvalue="200"/>-->
             </file>
             
         </folder>
@@ -277,7 +282,7 @@
             
             <file name="org-openide-actions-SaveAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-SaveAction.instance"/>
-<!--                <attr name="position" intvalue="200"/>-->
+                <!--                <attr name="position" intvalue="200"/>-->
             </file>
             
             
@@ -310,9 +315,7 @@
         <file name="DELETE.shadow">
             <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-DeleteAction.instance"/>
         </file>
-        <file name="F1.shadow">
-            <attr name="originalFile" stringvalue="Actions/Help/org-netbeans-modules-javahelp-HelpAction.instance"/>
-        </file> 
+        <!--<file name="F1.shadow_hidden"/>-->
         <file name="F9.shadow_hidden"/>
         <file name="O-F6.shadow_hidden"/>
         <file name="S-F11.shadow_hidden"/>
@@ -359,7 +362,7 @@
             <folder name="navigator">
                 <file name="ComponentInspector.wstcref_hidden"/>
                 <file name="HubUITopComponent.wstcref" url="HubUITopComponentWstcref.xml"/>
-<!--                <file name="navigatorTC.wscref" url="navigatorTC.wstcref"/>-->
+                <!--                <file name="navigatorTC.wscref" url="navigatorTC.wstcref"/>-->
             </folder>   
             <folder name="properties">
                 <file name="AnalyzeStackTopComponent.wstcref_hidden"/>
