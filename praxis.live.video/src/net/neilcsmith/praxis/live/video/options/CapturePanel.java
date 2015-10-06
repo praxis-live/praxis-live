@@ -21,16 +21,46 @@
  */
 package net.neilcsmith.praxis.live.video.options;
 
-import net.neilcsmith.praxis.video.gstreamer.GStreamerSettings;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import net.neilcsmith.praxis.video.VideoSettings;
+
+
 
 final class CapturePanel extends javax.swing.JPanel {
 
+    private final static String GST1 = "gstreamer-1.x";
+    
     private final CaptureOptionsPanelController controller;
 
     CapturePanel(CaptureOptionsPanelController controller) {
         this.controller = controller;
         initComponents();
-        // TODO listen to changes in form fields and call controller.changed()
+        initDocumentListener();
+    }
+    
+    private void initDocumentListener() {
+        DocumentListener l = new DocumentListener() {
+
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                controller.changed();
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                controller.changed();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                controller.changed();
+            }
+        };
+        devInput1.getDocument().addDocumentListener(l);
+        devInput2.getDocument().addDocumentListener(l);
+        devInput3.getDocument().addDocumentListener(l);
+        devInput4.getDocument().addDocumentListener(l);
     }
 
     /** This method is called from within the constructor to
@@ -54,6 +84,9 @@ final class CapturePanel extends javax.swing.JPanel {
         resetBtn2 = new javax.swing.JButton();
         resetBtn3 = new javax.swing.JButton();
         resetBtn4 = new javax.swing.JButton();
+        mediaLibraryPanel = new javax.swing.JPanel();
+        mediaSelect = new javax.swing.JComboBox();
+        mediaSelectLabel = new javax.swing.JLabel();
 
         defaultConfigPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(CapturePanel.class, "CapturePanel.defaultConfigPanel.border.title"))); // NOI18N
 
@@ -134,7 +167,7 @@ final class CapturePanel extends javax.swing.JPanel {
         defaultConfigPanelLayout.setVerticalGroup(
             defaultConfigPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(defaultConfigPanelLayout.createSequentialGroup()
-                .addContainerGap()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGroup(defaultConfigPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(devLbl1)
                     .addComponent(devInput1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -153,79 +186,133 @@ final class CapturePanel extends javax.swing.JPanel {
                 .addGroup(defaultConfigPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(devLbl4)
                     .addComponent(devInput4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(resetBtn4))
-                .addContainerGap(211, Short.MAX_VALUE))
+                    .addComponent(resetBtn4)))
+        );
+
+        mediaLibraryPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(CapturePanel.class, "CapturePanel.mediaLibraryPanel.border.title"))); // NOI18N
+
+        mediaSelect.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "GStreamer 0.10 (default)", "GStreamer 1.x" }));
+        mediaSelect.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                mediaSelectActionPerformed(evt);
+            }
+        });
+
+        org.openide.awt.Mnemonics.setLocalizedText(mediaSelectLabel, org.openide.util.NbBundle.getMessage(CapturePanel.class, "CapturePanel.mediaSelectLabel.text")); // NOI18N
+
+        javax.swing.GroupLayout mediaLibraryPanelLayout = new javax.swing.GroupLayout(mediaLibraryPanel);
+        mediaLibraryPanel.setLayout(mediaLibraryPanelLayout);
+        mediaLibraryPanelLayout.setHorizontalGroup(
+            mediaLibraryPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(mediaLibraryPanelLayout.createSequentialGroup()
+                .addComponent(mediaSelectLabel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(mediaSelect, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+        mediaLibraryPanelLayout.setVerticalGroup(
+            mediaLibraryPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(mediaLibraryPanelLayout.createSequentialGroup()
+                .addGroup(mediaLibraryPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(mediaSelect, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(mediaSelectLabel))
+                .addGap(0, 156, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addGap(12, 12, 12)
-                .addComponent(defaultConfigPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(mediaLibraryPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(defaultConfigPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addGap(12, 12, 12))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGap(12, 12, 12)
-                .addComponent(defaultConfigPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGap(12, 12, 12))
+                .addComponent(defaultConfigPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
+                .addComponent(mediaLibraryPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
 
     private void resetBtn1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_resetBtn1ActionPerformed
-        devInput1.setText(GStreamerSettings.getDefaultCaptureDevice(1));
+        devInput1.setText(VideoSettings.getDefaultCaptureDevice(1));
+        controller.changed();
     }//GEN-LAST:event_resetBtn1ActionPerformed
 
     private void resetBtn2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_resetBtn2ActionPerformed
-        devInput2.setText(GStreamerSettings.getDefaultCaptureDevice(2));
+        devInput2.setText(VideoSettings.getDefaultCaptureDevice(2));
+        controller.changed();
     }//GEN-LAST:event_resetBtn2ActionPerformed
 
     private void resetBtn3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_resetBtn3ActionPerformed
-        devInput3.setText(GStreamerSettings.getDefaultCaptureDevice(3));
+        devInput3.setText(VideoSettings.getDefaultCaptureDevice(3));
+        controller.changed();
     }//GEN-LAST:event_resetBtn3ActionPerformed
 
     private void resetBtn4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_resetBtn4ActionPerformed
-        devInput4.setText(GStreamerSettings.getDefaultCaptureDevice(4));
+        devInput4.setText(VideoSettings.getDefaultCaptureDevice(4));
+        controller.changed();
     }//GEN-LAST:event_resetBtn4ActionPerformed
 
+    private void mediaSelectActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mediaSelectActionPerformed
+        controller.changed();
+    }//GEN-LAST:event_mediaSelectActionPerformed
+
     void load() {
-        devInput1.setText(GStreamerSettings.getCaptureDevice(1));
-        devInput2.setText(GStreamerSettings.getCaptureDevice(2));
-        devInput3.setText(GStreamerSettings.getCaptureDevice(3));
-        devInput4.setText(GStreamerSettings.getCaptureDevice(4));
+        devInput1.setText(VideoSettings.getCaptureDevice(1));
+        devInput2.setText(VideoSettings.getCaptureDevice(2));
+        devInput3.setText(VideoSettings.getCaptureDevice(3));
+        devInput4.setText(VideoSettings.getCaptureDevice(4));
+        
+        String mediaLib = VideoSettings.getMediaLib();
+        if (GST1.equals(mediaLib)) {
+            mediaSelect.setSelectedIndex(1);
+        } else {
+            mediaSelect.setSelectedIndex(0);
+        }
     }
 
     void store() {
         String text;
         text = devInput1.getText().trim();
-        if (text.isEmpty() || text.equals(GStreamerSettings.getDefaultCaptureDevice(1))) {
-            GStreamerSettings.resetCaptureDevice(1);
+        if (text.isEmpty() || text.equals(VideoSettings.getDefaultCaptureDevice(1))) {
+            VideoSettings.resetCaptureDevice(1);
         } else {
-            GStreamerSettings.setCaptureDevice(1, text);
+            VideoSettings.setCaptureDevice(1, text);
         }
         
         text = devInput2.getText().trim();
-        if (text.isEmpty() || text.equals(GStreamerSettings.getDefaultCaptureDevice(2))) {
-            GStreamerSettings.resetCaptureDevice(2);
+        if (text.isEmpty() || text.equals(VideoSettings.getDefaultCaptureDevice(2))) {
+            VideoSettings.resetCaptureDevice(2);
         } else {
-            GStreamerSettings.setCaptureDevice(2, text);
+            VideoSettings.setCaptureDevice(2, text);
         }
         
         text = devInput3.getText().trim();
-        if (text.isEmpty() || text.equals(GStreamerSettings.getDefaultCaptureDevice(3))) {
-            GStreamerSettings.resetCaptureDevice(3);
+        if (text.isEmpty() || text.equals(VideoSettings.getDefaultCaptureDevice(3))) {
+            VideoSettings.resetCaptureDevice(3);
         } else {
-            GStreamerSettings.setCaptureDevice(3, text);
+            VideoSettings.setCaptureDevice(3, text);
         }
         
         text = devInput4.getText().trim();
-        if (text.isEmpty() || text.equals(GStreamerSettings.getDefaultCaptureDevice(4))) {
-            GStreamerSettings.resetCaptureDevice(4);
+        if (text.isEmpty() || text.equals(VideoSettings.getDefaultCaptureDevice(4))) {
+            VideoSettings.resetCaptureDevice(4);
         } else {
-            GStreamerSettings.setCaptureDevice(4, text);
+            VideoSettings.setCaptureDevice(4, text);
+        }
+        
+        if (mediaSelect.getSelectedIndex() == 1) {
+            VideoSettings.setMediaLib(GST1);
+        } else {
+            VideoSettings.resetMediaLib();
         }
     }
 
@@ -243,6 +330,9 @@ final class CapturePanel extends javax.swing.JPanel {
     private javax.swing.JLabel devLbl2;
     private javax.swing.JLabel devLbl3;
     private javax.swing.JLabel devLbl4;
+    private javax.swing.JPanel mediaLibraryPanel;
+    private javax.swing.JComboBox mediaSelect;
+    private javax.swing.JLabel mediaSelectLabel;
     private javax.swing.JButton resetBtn1;
     private javax.swing.JButton resetBtn2;
     private javax.swing.JButton resetBtn3;
