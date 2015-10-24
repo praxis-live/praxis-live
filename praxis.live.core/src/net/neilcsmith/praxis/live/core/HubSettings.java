@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 2014 Neil C Smith.
+ * Copyright 2015 Neil C Smith.
  * 
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -21,6 +21,7 @@
  */
 package net.neilcsmith.praxis.live.core;
 
+import com.sun.jna.Platform;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -173,8 +174,12 @@ public class HubSettings {
             return null;
         }
         File launcher;
-        if (Utilities.isWindows()) {
-            launcher = new File(binDir, "praxis.exe");
+        if (Platform.isWindows()) {
+            if (Platform.is64Bit()) {
+               launcher = new File(binDir, "praxis64.exe"); 
+            } else {
+               launcher = new File(binDir, "praxis.exe"); 
+            }
         } else {
             launcher = new File(binDir, "praxis");
         }
