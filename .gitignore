@@ -6,7 +6,6 @@
 /praxis.live.gui/build/
 /praxis.live.graph/build/
 /praxis.live.control/build/
-/praxis.live.help/build/
 /praxis.live.laf/build/
 /praxis.live.midi/build/
 /praxis.live.start/build/
@@ -57,3 +56,5 @@
 /praxis.live.pxr.graph/nbproject/private/
 /praxis.live.logging/nbproject/private/
 /praxis.live.logging/build/
+/praxis.live.tracker/nbproject/private/
+/praxis.live.tracker/build/
