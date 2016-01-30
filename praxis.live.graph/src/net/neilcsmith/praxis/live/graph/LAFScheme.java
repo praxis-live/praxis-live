@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Neil C Smith.
+ * Copyright 2016 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 2 only, as
@@ -76,122 +76,144 @@
  */
 package net.neilcsmith.praxis.live.graph;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Image;
-import org.netbeans.api.visual.model.ObjectState;
 import org.netbeans.api.visual.border.Border;
 import org.netbeans.api.visual.border.BorderFactory;
+import org.netbeans.api.visual.model.ObjectState;
+import org.netbeans.api.visual.widget.Widget;
+import org.netbeans.api.visual.anchor.AnchorShape;
+import org.netbeans.api.visual.anchor.PointShape;
+import org.netbeans.api.visual.anchor.PointShapeFactory;
+import org.openide.util.ImageUtilities;
 
+import java.util.Objects;
 
-public abstract class LAFScheme {
+public class LAFScheme {
 
-     private static final Color COLOR_SELECTED = new Color (0x447BCD);
-    private static final Color COLOR_HIGHLIGHTED = COLOR_SELECTED.darker ();
-    private static final Color COLOR_HOVERED = COLOR_SELECTED.brighter ();
-    private static final int MARGIN = 3;
-    private static final int ARC = 10;
-    private static final int MINI_THICKNESS = 1;
+    public static final String RESOURCES_KEY = "LAFScheme.Resources";
 
-    private static final Border BORDER_NORMAL = BorderFactory.createEmptyBorder (MARGIN, MARGIN);
-    private static final Border BORDER_HOVERED = BorderFactory.createRoundedBorder (ARC, ARC, MARGIN, MARGIN, COLOR_HOVERED, COLOR_HOVERED.darker ());
-    private static final Border BORDER_SELECTED = BorderFactory.createRoundedBorder (ARC, ARC, MARGIN, MARGIN, COLOR_SELECTED, COLOR_SELECTED.darker ());
+    static Color OFF_WHITE = new Color(241, 249, 253);
 
-    private static final Border MINI_BORDER_NORMAL = BorderFactory.createEmptyBorder (MINI_THICKNESS);
-    private static final Border MINI_BORDER_HOVERED = BorderFactory.createRoundedBorder (MINI_THICKNESS, MINI_THICKNESS, MINI_THICKNESS, MINI_THICKNESS, COLOR_HOVERED, COLOR_HOVERED.darker ());
-    private static final Border MINI_BORDER_SELECTED = BorderFactory.createRoundedBorder (MINI_THICKNESS, MINI_THICKNESS, MINI_THICKNESS, MINI_THICKNESS, COLOR_SELECTED, COLOR_SELECTED.darker ());
+    private static final Border BORDER_MINIMIZE
+            = BorderFactory.createOpaqueBorder(2, 2, 2, 2);
+    private static final Border BORDER_PIN
+            = BorderFactory.createOpaqueBorder(1, 4, 1, 4);
+    private static final Border BORDER_PIN_HOVERED
+            = BorderFactory.createLineBorder(1, 4, 1, 4, Color.DARK_GRAY);
+    private static final PointShape POINT_SHAPE_IMAGE
+            = PointShapeFactory.createImagePointShape(
+                    ImageUtilities.loadImage("net/neilcsmith/praxis/live/graph/resources/vmd-pin.png")); // NOI18N
 
+    private static final Colors DEFAULT_RESOURCES
+            = new Colors(new Color(0x748CC0), new Color(0xBACDF0));
 
+    public static class Colors {
 
-    protected LAFScheme() {
+        private final Color COLOR_SELECTED;
+        private final Color COLOR_NORMAL;
+
+        private final Border BORDER_NODE;
+        private final Border BORDER_NODE_COLOR;
+        private final Border BORDER_NODE_SELECTED;
+        private final Border BORDER_HEADER;
+        private final Border BORDER_HEADER_SELECTED;
+
+        public Colors(Color highlight, Color normal) {
+            COLOR_SELECTED = Objects.requireNonNull(highlight);
+            COLOR_NORMAL = Objects.requireNonNull(normal);
+            BORDER_NODE = BorderFactory.createRoundedBorder(8, 8, 0, 0, OFF_WHITE, null);
+            BORDER_NODE_COLOR = BorderFactory.createRoundedBorder(8, 8, 0, 0, COLOR_NORMAL, null);
+            BORDER_NODE_SELECTED = BorderFactory.createRoundedBorder(8, 8, 0, 0, COLOR_SELECTED, null);
+            BORDER_HEADER = BorderFactory.createRoundedBorder(8, 8, 8, 3, COLOR_NORMAL, null);
+            BORDER_HEADER_SELECTED = BorderFactory.createRoundedBorder(8, 8, 8, 3, COLOR_SELECTED, null);
+        }
+
     }
 
-    /**
-     * Called to install UI to a node widget.
-     * @param widget the node widget
-     */
-    public abstract void installUI(NodeWidget widget);
+    protected void installUI(NodeWidget widget) {
+        widget.setOpaque(false);
+        widget.getHeader().setOpaque(false);
+        widget.getMinimizeButton().setBorder(BORDER_MINIMIZE);
+        updateUI(widget);
+    }
 
-    public void revalidateUI(NodeWidget widget) {}
+    protected void updateUI(NodeWidget widget) {
+        ObjectState state = widget.getState();
+        Colors colors = widget.getSchemeColors();
+        if (colors == null) {
+            colors = DEFAULT_RESOURCES;
+        }
+        if (widget.isBelowLODThreshold()) {
+            widget.setBorder(state.isSelected() ? colors.BORDER_NODE_SELECTED 
+                    : colors.BORDER_NODE_COLOR);
+        } else {
+            widget.setBorder(colors.BORDER_NODE);
+        }
+        Widget header = widget.getHeader();
+        header.setBorder(state.isSelected() || state.isHovered()
+                ? colors.BORDER_HEADER_SELECTED : colors.BORDER_HEADER);
+        Widget comment = widget.getCommentWidget();
+        if (comment != null) {
+            comment.setBorder(colors.BORDER_NODE_COLOR);
+        }
+    }
 
-    /**
-     * Called to update UI of a node widget. Called from NodeWidget.notifyStateChanged method.
-     * @param widget the node widget
-     * @param previousState the previous state
-     * @param state the new state
-     */
-    public abstract void updateUI(NodeWidget widget, ObjectState previousState, ObjectState state);
+    protected boolean isNodeMinimizeButtonOnRight(NodeWidget widget) {
+        return false;
+    }
 
-    /**
-     * Returns whether the node minimize button is on the right side of the node header.
-     * @param widget the node widget
-     * @return true, if the button is on the right side; false, if the button is on the left side
-     */
-    public abstract boolean isNodeMinimizeButtonOnRight(NodeWidget widget);
+    protected Image getMinimizeWidgetImage(NodeWidget widget) {
+        return widget.isMinimized()
+                ? ImageUtilities.loadImage("net/neilcsmith/praxis/live/graph/resources/vmd-expand.png") // NOI18N
+                : ImageUtilities.loadImage("net/neilcsmith/praxis/live/graph/resources/vmd-collapse.png"); // NOI18N
+    }
 
-    /**
-     * Returns an minimize-widget image for a specific node widget.
-     * @param widget the node widget
-     * @return the minimize-widget image
-     */
-    public abstract Image getMinimizeWidgetImage(NodeWidget widget);
+    protected void installUI(EdgeWidget widget) {
+        widget.setSourceAnchorShape(AnchorShape.NONE);
+        widget.setTargetAnchorShape(AnchorShape.NONE);
+        widget.setPaintControlPoints(true);
+        widget.setForeground(OFF_WHITE);
+        updateUI(widget);
+    }
 
-//    /**
-//     * Called to create a pin-category widget.
-//     * @param widget the node widget
-//     * @param categoryDisplayName the category display name
-//     * @return the pin-category widget
-//     */
-//    public abstract Widget createPinCategoryWidget(NodeWidget widget, String categoryDisplayName);
+    protected void updateUI(EdgeWidget widget) {
+        ObjectState state = widget.getState();
 
-    /**
-     * Called to install UI to a connection widget.
-     * @param widget the connection widget
-     */
-    public abstract void installUI(EdgeWidget widget);
+        if (state.isSelected()) {
+            widget.setEndPointShape(PointShape.SQUARE_FILLED_BIG);
+        } else {
+            widget.setControlPointShape(PointShape.NONE);
+            widget.setEndPointShape(POINT_SHAPE_IMAGE);
+        }
 
-    public void revalidateUI(EdgeWidget widget) {}
+        if (state.isHovered() || state.isSelected()) {
+            widget.bringToFront();
+            widget.setStroke(new BasicStroke(3));
+        } else {
+            widget.setStroke(new BasicStroke());
+        }
 
-    /**
-     * Called to update UI of a connection widget. Called from EdgeWidget.notifyStateChanged method.
-     * @param widget the connection widget
-     * @param previousState the previous state
-     * @param state the new state
-     */
-    public abstract void updateUI(EdgeWidget widget, ObjectState previousState, ObjectState state);
+        widget.setControlPointCutDistance(5);
 
-    /**
-     * Called to install UI to a pin widget.
-     * @param widget the pin widget
-     */
-    public abstract void installUI(PinWidget widget);
+    }
 
-    public void revalidateUI(PinWidget widget) {}
+    protected void installUI(PinWidget widget) {
+        widget.setOpaque(false);
+    }
 
-    /**
-     * Called to update UI of a pin widget. Called from PinWidget.notifyStateChanged method.
-     * @param widget the pin widget
-     * @param previousState the previous state
-     * @param state the new state
-     */
-    public abstract void updateUI(PinWidget widget, ObjectState previousState, ObjectState state);
+    protected void updateUI(PinWidget widget) {
+        ObjectState state = widget.getState();
+        widget.setBorder(state.isFocused() || state.isHovered()
+                ? BORDER_PIN_HOVERED : BORDER_PIN);
+    }
 
-    /**
-     * Returns a gap size of a node-anchor from a node-widget.
-     * @param anchor the node anchor
-     * @return the gap size
-     */
-    public abstract int getAnchorGap();
+    protected int getAnchorGap() {
+        return 8;
+    }
 
-    public Color getBackgroundColor() {
+    protected Color getBackgroundColor() {
         return Color.BLACK;
-    }
-    private static LAFScheme SCHEME_DEFAULT = new DefaultLAFScheme();
-
-    public static LAFScheme getDefault() {
-        return SCHEME_DEFAULT;
-    }
-
-    public static Border createVMDNodeBorder(Color borderColor, int borderThickness, Color color1, Color color2, Color color3, Color color4, Color color5) {
-        return new NodeBorder(borderColor, borderThickness, color1, color2, color3, color4, color5);
     }
 }
