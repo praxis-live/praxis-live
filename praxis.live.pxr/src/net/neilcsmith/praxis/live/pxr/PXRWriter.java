@@ -21,7 +21,6 @@
  */
 package net.neilcsmith.praxis.live.pxr;
 
-import net.neilcsmith.praxis.live.properties.SyntaxUtils;
 import java.io.IOException;
 import java.util.Set;
 import java.util.logging.Level;
@@ -112,7 +111,7 @@ class PXRWriter {
     private void writeAttribute(Appendable sb, String key, String value) throws IOException {
         LOG.log(Level.FINEST, "Writing attribute {0} : {1}", new Object[]{key, value});
         sb.append("#%").append(key).append(' ');
-        sb.append(SyntaxUtils.escape(value)).append('\n');
+        sb.append(AttrUtils.escape(value)).append('\n');
     }
     
     private void writeFormat(Appendable sb, int format) throws IOException {

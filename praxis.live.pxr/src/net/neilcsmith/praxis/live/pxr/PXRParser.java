@@ -32,6 +32,7 @@ import net.neilcsmith.praxis.core.syntax.Token;
 import static net.neilcsmith.praxis.core.syntax.Token.Type.*;
 import net.neilcsmith.praxis.core.syntax.Tokenizer;
 import net.neilcsmith.praxis.core.types.PString;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -226,25 +227,26 @@ class PXRParser {
 
     }
 
-//    private void parseAttribute(List<AttributeElement> attrs, ComponentAddress component, String body) throws Exception {
     private void parseAttribute(List<AttributeElement> attrs, ComponentElement component, String body) throws Exception {
 
-        Iterator<Token> tokens = new Tokenizer(body).iterator();
         String key = null;
         String value = null;
-        Token t;
-        if (tokens.hasNext()) {
-            t = tokens.next();
-            if (t.getType() == PLAIN && t.getText().length() > 1) {
-                key = t.getText().substring(1);
-            }
+
+        int delim = body.indexOf(" ");
+        if (delim > 1) {
+            key = body.substring(1, delim);
+            value = AttrUtils.unescape(body.substring(delim + 1));
         }
-        if (tokens.hasNext()) {
-            t = tokens.next();
-            if (t.getType() != EOL) {
-                value = t.getText();
+        if (component instanceof RootElement && FORMAT_KEY.equals(key)) {
+            try {
+                format = Integer.parseInt(value);
+            } catch (Exception ex) {
+                Exceptions.printStackTrace(ex);
             }
+            // don't set format as attribute? Being saved twice!
+            return;
         }
+        
         if (key != null && value != null) {
             AttributeElement a = new AttributeElement();
             a.component = component;
@@ -254,15 +256,7 @@ class PXRParser {
         } else {/*?*/
 
         }
-        
-        if (component instanceof RootElement && FORMAT_KEY.equals(key)) {
-            try {
-                format = Integer.parseInt(value);
-            } catch (Exception ex) {
-                
-            }
-        }
-        
+
     }
 
     private void parseProperty(List<PropertyElement> props, ComponentElement component,
