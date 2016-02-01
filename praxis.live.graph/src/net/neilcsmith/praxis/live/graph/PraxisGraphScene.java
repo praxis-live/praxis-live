@@ -118,6 +118,7 @@ public class PraxisGraphScene<N> extends GraphPinScene<N, EdgeID<N>, PinID<N>> {
     private LAFScheme scheme;
     private WidgetAction menuAction;
     private WidgetAction connectAction;
+    private LAFScheme.Colors schemeColors;
 
 //    private int edgeCount = 10;
     /**
@@ -188,6 +189,12 @@ public class PraxisGraphScene<N> extends GraphPinScene<N, EdgeID<N>, PinID<N>> {
         return n;
     }
 
+    @Override
+    protected void detachNodeWidget(N node, Widget widget) {
+        ((NodeWidget) widget).getCommentWidget().removeFromParent();
+        super.detachNodeWidget(node, widget);
+    }
+
     public PinWidget addPin(N node, String name) {
         return addPin(new PinID<N>(node, name), PinWidget.DEFAULT_CATEGORY,
                 Alignment.Center);
@@ -227,8 +234,17 @@ public class PraxisGraphScene<N> extends GraphPinScene<N, EdgeID<N>, PinID<N>> {
         removeEdge(d);
     }
 
-    public LAFScheme getColorScheme() {
+    public LAFScheme getLookAndFeel() {
         return scheme;
+    }
+    
+    public void setSchemeColors(LAFScheme.Colors schemeColors) {
+        this.schemeColors = schemeColors;
+        revalidate();
+    }
+    
+    public LAFScheme.Colors getSchemeColors() {
+        return schemeColors;
     }
 
     @Override

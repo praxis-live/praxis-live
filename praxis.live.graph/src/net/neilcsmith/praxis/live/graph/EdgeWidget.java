@@ -97,7 +97,7 @@ public class EdgeWidget extends ConnectionWidget {
      */
     public EdgeWidget (PraxisGraphScene scene) {
         super (scene);
-        this.scheme = scene.getColorScheme();
+        this.scheme = scene.getLookAndFeel();
         scheme.installUI (this);
     }
 

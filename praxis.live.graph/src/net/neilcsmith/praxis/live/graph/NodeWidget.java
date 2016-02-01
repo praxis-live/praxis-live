@@ -130,7 +130,7 @@ public class NodeWidget extends Widget implements StateModel.Listener, MinimizeA
         super(scene);
         this.scene = scene;
         scene.addSceneListener(new SceneListenerImpl());
-        this.scheme = scene.getColorScheme();
+        this.scheme = scene.getLookAndFeel();
 
         stateModel = new StateModel();
 
@@ -343,13 +343,14 @@ public class NodeWidget extends Widget implements StateModel.Listener, MinimizeA
             // remove comment
             commentWidget.setText("");
             commentWidget.setVisible(false);
-            getParentWidget().removeChild(commentWidget);
+            commentWidget.removeFromParent();
         } else {
             // add comment
             commentWidget.setText(comment);
             commentWidget.setVisible(true);
-            getParentWidget().addChild(commentWidget);
-            positionComment();
+            if (commentWidget.getParentWidget() == null) {
+                getParentWidget().addChild(commentWidget);
+            }
         }
         scheme.updateUI(this);
     }
@@ -393,7 +394,7 @@ public class NodeWidget extends Widget implements StateModel.Listener, MinimizeA
     }
     
     public LAFScheme.Colors getSchemeColors() {
-        return schemeColors;
+        return schemeColors == null ? scene.getSchemeColors() : schemeColors;
     }
 
     private class SceneListenerImpl implements Scene.SceneListener {

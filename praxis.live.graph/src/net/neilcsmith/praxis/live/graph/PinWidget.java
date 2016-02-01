@@ -109,7 +109,7 @@ public class PinWidget extends Widget {
     public PinWidget(PraxisGraphScene scene, String name) {
         super(scene);
         this.scene = scene;
-        this.scheme = scene.getColorScheme();
+        this.scheme = scene.getLookAndFeel();
 //        setLayout (LayoutFactory.createHorizontalFlowLayout (LayoutFactory.SerialAlignment.CENTER, 8));
         this.alignment = Alignment.Center;
         this.category = DEFAULT_CATEGORY;
