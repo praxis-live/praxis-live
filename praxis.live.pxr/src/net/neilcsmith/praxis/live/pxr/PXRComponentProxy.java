@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2015 Neil C Smith.
+ * Copyright 2016 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -405,8 +405,11 @@ public class PXRComponentProxy implements ComponentProxy {
     }
 
     void dispose() {
-
-        LOG.log(Level.FINE, "Dispose called on {0}", getAddress());
+        
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, "Dispose called on {0}", getAddress());
+        }
+        
         parent = null;
 
         if (dynInfoAdaptor != null) {

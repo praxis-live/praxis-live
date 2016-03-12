@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2014 Neil C Smith.
+ * Copyright 2016 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -152,10 +152,11 @@ public class PXRContainerProxy extends PXRComponentProxy implements ContainerPro
         PXRHelper.getDefault().removeComponent(childAddress, new Callback() {
             @Override
             public void onReturn(CallArguments args) {
-                PXRComponentProxy child = children.remove(id);
+                PXRComponentProxy child = children.get(id);
                 if (child != null) {
                     child.dispose();
                 }
+                children.remove(id);
                 Iterator<Connection> itr = connections.iterator();
                 boolean conChanged = false;
                 while (itr.hasNext()) {
