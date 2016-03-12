@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Neil C Smith.
+ * Copyright 2016 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -19,47 +19,47 @@
  * Please visit http://neilcsmith.net if you need additional information or
  * have any questions.
  */
-package net.neilcsmith.praxis.live.start;
+package net.neilcsmith.praxis.live.core.ui;
 
-import java.awt.Color;
+import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URI;
 import java.net.URL;
+import java.util.Objects;
+import java.util.prefs.PreferenceChangeEvent;
+import java.util.prefs.PreferenceChangeListener;
 import javax.swing.JButton;
 import javax.swing.JLabel;
-import javax.swing.JProgressBar;
-import javax.swing.SwingUtilities;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 import javax.swing.text.Style;
 import javax.swing.text.html.HTMLDocument;
-import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathFactory;
+import net.neilcsmith.praxis.live.core.Core;
 import org.netbeans.api.settings.ConvertAsProperties;
 import org.openide.awt.ActionID;
-import org.openide.modules.ModuleInfo;
+import org.openide.awt.NotificationDisplayer;
 import org.openide.util.Exceptions;
-import org.openide.util.Lookup;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle.Messages;
-import org.openide.util.RequestProcessor;
+import org.openide.windows.OnShowing;
 import org.openide.windows.TopComponent;
-import org.xml.sax.InputSource;
+import org.openide.windows.WindowManager;
+import org.openide.windows.WindowSystemEvent;
+import org.openide.windows.WindowSystemListener;
 
 /**
  * Welcome Page
  */
 @ConvertAsProperties(
-        dtd = "-//net.neilcsmith.praxis.live.start//Start//EN",
+        dtd = "-//net.neilcsmith.praxis.live.core.ui//Start//EN",
         autostore = false)
 @TopComponent.Description(
         preferredID = "StartTopComponent",
         //iconBase="SET/PATH/TO/ICON/HERE", 
         persistenceType = TopComponent.PERSISTENCE_ALWAYS)
 @TopComponent.Registration(mode = "editor", openAtStartup = true)
-@ActionID(category = "Window", id = "net.neilcsmith.praxis.live.start.StartTopComponent")
+@ActionID(category = "Window", id = "net.neilcsmith.praxis.live.core.ui.StartTopComponent")
 //@ActionReference(path = "Menu/Window" /*, position = 333 */)
 @TopComponent.OpenActionRegistration(
         displayName = "#CTL_StartAction",
@@ -67,19 +67,14 @@ import org.xml.sax.InputSource;
 @Messages({
     "CTL_StartAction=Start",
     "CTL_StartTopComponent=Praxis LIVE",
-    "HINT_StartTopComponent=Welcome to Praxis LIVE"
+    "HINT_StartTopComponent=Welcome to Praxis LIVE",
+    "LBL_NewVersion=New version available",
+    "LBL_NewVersionInfo=A new version of Praxis LIVE is available to download",
+    "LBL_Download=Download",
 })
 public final class StartTopComponent extends TopComponent {
 
-    private final static URI WEBSITE_LINK = URI.create("http://www.praxislive.org");
-    private final static URI DOWNLOAD_LINK = URI.create("http://www.praxislive.org/download");
-    private final static String UPDATE_CHECKING = "Checking for updates ...";
-    private final static String UPDATE_OK = "Praxis LIVE is up to date.";
-    private final static String UPDATE_ERROR = "Unable to check for updates.";
-    private final static String UPDATE_AVAILABLE = "New version of Praxis LIVE available.";
-    private final static RequestProcessor RP = new RequestProcessor(StartTopComponent.class);
     private final JLabel updateLabel;
-    private final JProgressBar updateProgress;
     private final JButton downloadButton;
 
     public StartTopComponent() {
@@ -92,17 +87,14 @@ public final class StartTopComponent extends TopComponent {
 
         initHTMLPane();
 
-        updateLabel = new JLabel();
-        updateProgress = new JProgressBar();
-        updateProgress.setIndeterminate(true);
-        downloadButton = new JButton("Download");
+        updateLabel = new JLabel(Bundle.LBL_NewVersion());
+        downloadButton = new JButton(Bundle.LBL_Download());
         downloadButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                Utils.openExternalLink(DOWNLOAD_LINK);
+                Utils.openExternalLink(Utils.DOWNLOAD_LINK);
             }
         });
-
     }
 
     private void initHTMLPane() {
@@ -149,22 +141,19 @@ public final class StartTopComponent extends TopComponent {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jButton2 = new javax.swing.JButton();
-        jPanel1 = new javax.swing.JPanel();
+        mainPanel = new javax.swing.JPanel();
         logo = new javax.swing.JButton();
         updatePanel = new javax.swing.JPanel();
-        jScrollPane1 = new javax.swing.JScrollPane();
+        scrollPane = new javax.swing.JScrollPane();
         htmlPane = new javax.swing.JEditorPane();
-
-        org.openide.awt.Mnemonics.setLocalizedText(jButton2, org.openide.util.NbBundle.getMessage(StartTopComponent.class, "StartTopComponent.jButton2.text")); // NOI18N
 
         setBackground(java.awt.Color.black);
         setOpaque(true);
 
-        jPanel1.setBackground(new java.awt.Color(0, 0, 0));
-        jPanel1.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
+        mainPanel.setBackground(new java.awt.Color(0, 0, 0));
+        mainPanel.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
 
-        logo.setIcon(new javax.swing.ImageIcon(getClass().getResource("/net/neilcsmith/praxis/live/start/resources/praxis live.png"))); // NOI18N
+        logo.setIcon(new javax.swing.ImageIcon(getClass().getResource("/net/neilcsmith/praxis/live/core/ui/resources/praxis live.png"))); // NOI18N
         logo.setBorderPainted(false);
         logo.setContentAreaFilled(false);
         logo.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
@@ -178,38 +167,37 @@ public final class StartTopComponent extends TopComponent {
         updatePanel.setForeground(new java.awt.Color(204, 204, 204));
         updatePanel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT));
 
-        jScrollPane1.setBackground(new java.awt.Color(0, 0, 0));
+        scrollPane.setBackground(new java.awt.Color(0, 0, 0));
 
         htmlPane.setEditable(false);
         htmlPane.setBackground(new java.awt.Color(0, 0, 0));
         htmlPane.setContentType("text/html"); // NOI18N
-        htmlPane.setText(org.openide.util.NbBundle.getMessage(StartTopComponent.class, "StartTopComponent.htmlPane.text")); // NOI18N
         htmlPane.setFocusable(false);
-        jScrollPane1.setViewportView(htmlPane);
+        scrollPane.setViewportView(htmlPane);
 
-        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
-        jPanel1.setLayout(jPanel1Layout);
-        jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
+        javax.swing.GroupLayout mainPanelLayout = new javax.swing.GroupLayout(mainPanel);
+        mainPanel.setLayout(mainPanelLayout);
+        mainPanelLayout.setHorizontalGroup(
+            mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(mainPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane1)
-                    .addGroup(jPanel1Layout.createSequentialGroup()
+                .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(scrollPane)
+                    .addGroup(mainPanelLayout.createSequentialGroup()
                         .addComponent(updatePanel, javax.swing.GroupLayout.DEFAULT_SIZE, 554, Short.MAX_VALUE)
                         .addGap(234, 234, 234))
-                    .addGroup(jPanel1Layout.createSequentialGroup()
+                    .addGroup(mainPanelLayout.createSequentialGroup()
                         .addComponent(logo)
                         .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
-        jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+        mainPanelLayout.setVerticalGroup(
+            mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, mainPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(logo)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 440, Short.MAX_VALUE)
+                .addComponent(scrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 390, Short.MAX_VALUE)
                 .addGap(64, 64, 64)
                 .addComponent(updatePanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
@@ -219,43 +207,50 @@ public final class StartTopComponent extends TopComponent {
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanel1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(mainPanel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(mainPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
     }// </editor-fold>//GEN-END:initComponents
 
     private void logoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_logoActionPerformed
-        Utils.openExternalLink(WEBSITE_LINK);
+        Utils.openExternalLink(Utils.WEBSITE_LINK);
     }//GEN-LAST:event_logoActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JEditorPane htmlPane;
-    private javax.swing.JButton jButton2;
-    private javax.swing.JPanel jPanel1;
-    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JButton logo;
+    private javax.swing.JPanel mainPanel;
+    private javax.swing.JScrollPane scrollPane;
     private javax.swing.JPanel updatePanel;
     // End of variables declaration//GEN-END:variables
 
     @Override
     public void componentOpened() {
-        updatePanel.add(updateLabel);
-        if (Boolean.getBoolean("praxislive.start.suppresscheck")) {
-            updateLabel.setText(UPDATE_OK);
-        } else {
-            updateLabel.setText(UPDATE_CHECKING);
-            updatePanel.add(updateProgress);
-            RP.execute(new UpdateCheck());
-        }
-        updatePanel.revalidate();
+        configureUpdatePanel();
+        configureStartPage();
     }
 
-    @Override
-    public void componentClosed() {
+    void configureUpdatePanel() {
         updatePanel.removeAll();
+        if (isUpdateAvailable()) {
+            updatePanel.add(updateLabel);
+            updatePanel.add(downloadButton);
+            updatePanel.revalidate();
+        }
+    }
+
+    void configureStartPage() {
+        String startPage = Core.getInstance().getPreferences().get("start-page", null);
+        if (startPage != null) {
+            try {
+                htmlPane.setPage(startPage);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
     }
 
     void writeProperties(java.util.Properties p) {
@@ -270,74 +265,97 @@ public final class StartTopComponent extends TopComponent {
         // TODO read your settings according to their version
     }
 
-    private class UpdateCheck implements Runnable {
+    private static void checkInfo() {
+        StartTopComponent start = StartTopComponent.find();
+        if (start != null && start.isVisible()) {
+            start.configureUpdatePanel();
+            start.configureStartPage();
+        }
+        if (isUpdateAvailable()) {
+            NotificationDisplayer.getDefault().notify(
+                    Bundle.LBL_NewVersion(),
+                    ImageUtilities.loadImageIcon(
+                            "net/neilcsmith/praxis/live/core/ui/resources/info_icon.png", true),
+                    Bundle.LBL_NewVersionInfo(),
+                    null);
+        }
+    }
+
+    private static boolean isUpdateAvailable() {
+        Core core = Core.getInstance();
+        String current = core.getBuildVersion();
+        String latest = core.getLatestBuild();
+        return !Objects.equals(current, latest);
+    }
+
+    static StartTopComponent find() {
+        TopComponent tc = WindowManager.getDefault().findTopComponent("StartTopComponent");
+        if (tc instanceof StartTopComponent) {
+            return (StartTopComponent) tc;
+        }
+        assert false;
+        return null;
+    }
+
+    @OnShowing
+    public static class Installer implements Runnable {
 
         @Override
         public void run() {
-            String version = null;
-            for (ModuleInfo info : Lookup.getDefault().lookupAll(ModuleInfo.class)) {
-                if (info.owns(this.getClass())) {
-                    version = info.getImplementationVersion();
+            WindowManager.getDefault().addWindowSystemListener(new WindowSystemListener() {
+                @Override
+                public void beforeLoad(WindowSystemEvent event) {
                 }
-            }
-            boolean error = version == null;
-            boolean current = true;
-            URI startPage = null;
-            if (!error) {
-                XPath xpath = XPathFactory.newInstance().newXPath();
-                InputSource source = new InputSource("http://www.praxislive.org/release-check/" + version);
-                try {
-                    String result = xpath.evaluate("//build-version", source);
-                    current = version.equals(result);
-//                    int curV = Integer.parseInt(version);
-//                    int resV = Integer.parseInt(result);
-//                    if (curV < resV) {
-//                        current = false;
-//                    }
-                } catch (Exception ex) {
-                    Exceptions.printStackTrace(ex);
-                    error = true;
+
+                @Override
+                public void afterLoad(WindowSystemEvent event) {
                 }
-                try {
-                    String result = xpath.evaluate("//start-page", source);
-                    if (result != null && !result.isEmpty()) {
-                        startPage = new URI(result);
+
+                @Override
+                public void beforeSave(WindowSystemEvent event) {
+                    boolean show = Utils.isShowStart();
+                    TopComponent start = StartTopComponent.find();
+                    if (start != null) {
+                        if (show) {
+                            start.open();
+                            start.requestActive();
+                        } else {
+                            start.close();
+                        }
                     }
-                } catch (Exception ex) {
-                    Exceptions.printStackTrace(ex);
+
                 }
-            }
-            final boolean err = error;
-            final boolean cur = current;
-            final URI start = startPage;
-            SwingUtilities.invokeLater(new Runnable() {
+
+                @Override
+                public void afterSave(WindowSystemEvent event) {
+                }
+            });
+
+            Core.getInstance().getPreferences().addPreferenceChangeListener(
+                    new PreferenceChangeListener() {
+
+                        @Override
+                        public void preferenceChange(PreferenceChangeEvent evt) {
+                            update();
+
+                        }
+                    });
+            
+            update();
+
+        }
+
+        private void update() {
+            EventQueue.invokeLater(new Runnable() {
 
                 @Override
                 public void run() {
-                    if (start != null) {
-                        try {
-                            htmlPane.setPage(start.toURL());
-                        } catch (MalformedURLException ex) {
-                            Exceptions.printStackTrace(ex);
-                        } catch (IOException ex) {
-                            Exceptions.printStackTrace(ex);
-                        }
-                    }
-                    if (updatePanel.isShowing()) {
-                        updatePanel.remove(updateProgress);
-                        if (err) {
-                            updateLabel.setText(UPDATE_ERROR);
-                        } else if (cur) {
-                            updateLabel.setText(UPDATE_OK);
-                        } else {
-                            updateLabel.setText(UPDATE_AVAILABLE);
-                            updatePanel.add(downloadButton);
-                        }
-                        updatePanel.revalidate();
-                        StartTopComponent.this.repaint();
-                    }
+                    StartTopComponent.checkInfo();
                 }
+
             });
         }
+
     }
+
 }
