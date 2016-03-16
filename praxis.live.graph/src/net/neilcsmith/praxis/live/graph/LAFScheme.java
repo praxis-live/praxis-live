@@ -156,7 +156,7 @@ public class LAFScheme {
                 ? colors.BORDER_HEADER_SELECTED : colors.BORDER_HEADER);
         Widget comment = widget.getCommentWidget();
         if (comment != null) {
-            comment.setBorder(colors.BORDER_NODE_COLOR);
+            comment.setBorder(colors.BORDER_HEADER);
         }
     }
 

@@ -42,14 +42,11 @@ package net.neilcsmith.praxis.live.graph;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.util.Objects;
-import org.netbeans.api.visual.border.Border;
-import org.netbeans.api.visual.border.BorderFactory;
 import org.netbeans.api.visual.layout.LayoutFactory;
-import org.netbeans.api.visual.widget.*;
+import org.netbeans.api.visual.widget.LabelWidget;
+import org.netbeans.api.visual.widget.Widget;
 
 class CommentWidget extends Widget {
-
-    private final static Border LABEL_BORDER = BorderFactory.createEmptyBorder(4);
 
     private final PraxisGraphScene<?> scene;
     
@@ -62,7 +59,6 @@ class CommentWidget extends Widget {
         
         setLayout(LayoutFactory.createVerticalFlowLayout());
         setMinimumSize(new Dimension(100, 10));
-
         setText("");
         
     }
@@ -75,7 +71,6 @@ class CommentWidget extends Widget {
             LabelWidget lw = new LabelWidget(getScene(), line);
             lw.setOpaque(false);
             lw.setForeground(Color.BLACK); // how to set this?
-            lw.setBorder(LABEL_BORDER);
             addChild(lw);
         }
     }

@@ -346,11 +346,11 @@ public class NodeWidget extends Widget implements StateModel.Listener, MinimizeA
             commentWidget.removeFromParent();
         } else {
             // add comment
-            commentWidget.setText(comment);
-            commentWidget.setVisible(true);
             if (commentWidget.getParentWidget() == null) {
                 getParentWidget().addChild(commentWidget);
             }
+            commentWidget.setText(comment);
+            commentWidget.setVisible(true);       
         }
         scheme.updateUI(this);
     }
@@ -369,7 +369,8 @@ public class NodeWidget extends Widget implements StateModel.Listener, MinimizeA
         if (loc == null || bounds == null|| commentBounds == null) {
             return;
         }
-        commentWidget.setPreferredLocation(new Point(loc.x, loc.y - commentBounds.height - 4));
+        int offset = commentWidget.getBorder().getInsets().left;
+        commentWidget.setPreferredLocation(new Point(loc.x + offset, loc.y - commentBounds.height - 4));
         commentWidget.setMinimumSize(new Dimension(bounds.width, 15));
     }
 
