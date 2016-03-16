@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Neil C Smith.
+ * Copyright 2016 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -92,7 +92,7 @@ public final class PraxisProjectWizardIterator implements WizardDescriptor.Insta
         FileObject project = FileUtil.createFolder(projDir);
         project.createFolder("config");
         project.createFolder("resources");
-        project.createData(project.getName(), "pxp");
+        project.createData("project", "pxp");
 
         return Collections.singleton(project);
     }
