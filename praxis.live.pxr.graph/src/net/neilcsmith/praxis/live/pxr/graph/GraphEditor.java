@@ -372,7 +372,7 @@ public class GraphEditor extends RootEditor {
         if ("true".equals(Utils.getAttr(cmp, ATTR_GRAPH_MINIMIZED))) {
             widget.setMinimized(true);
         }
-        widget.setComment(Utils.getAttr(cmp, ATTR_GRAPH_COMMENT));
+        updateWidgetComment(widget, Utils.getAttr(cmp, ATTR_GRAPH_COMMENT), cmp instanceof ContainerProxy);
         widget.getActions().addAction(ActionFactory.createEditAction(new EditProvider() {
             @Override
             public void edit(Widget widget) {
@@ -595,7 +595,7 @@ public class GraphEditor extends RootEditor {
         // OK, we have a container, trim text
         int delim = text.indexOf("\n\n");
         if (delim >= 0) {
-            widget.setComment(text.substring(0, delim));
+            widget.setComment(text.substring(0, delim) + "...");
         } else {
             widget.setComment(text);
         }
