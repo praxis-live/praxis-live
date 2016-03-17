@@ -983,6 +983,7 @@ public class GraphEditor extends RootEditor {
                             }
                         }
                     }
+                    scene.validate();
                 }
             };
             EventQueue.invokeLater(runnable);
