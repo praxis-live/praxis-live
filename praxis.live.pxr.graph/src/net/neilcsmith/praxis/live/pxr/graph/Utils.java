@@ -97,4 +97,9 @@ class Utils {
         return attrs.getAttribute(key);
     }
     
+    static String getAttr(ComponentProxy cmp, String key, String def) {
+        String ret = getAttr(cmp, key);
+        return ret == null ? def : ret;
+    }
+
 }

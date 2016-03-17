@@ -372,7 +372,9 @@ public class GraphEditor extends RootEditor {
         if ("true".equals(Utils.getAttr(cmp, ATTR_GRAPH_MINIMIZED))) {
             widget.setMinimized(true);
         }
-        updateWidgetComment(widget, Utils.getAttr(cmp, ATTR_GRAPH_COMMENT), cmp instanceof ContainerProxy);
+        updateWidgetComment(widget,
+                Utils.getAttr(cmp, ATTR_GRAPH_COMMENT, ""),
+                cmp instanceof ContainerProxy);
         widget.getActions().addAction(ActionFactory.createEditAction(new EditProvider() {
             @Override
             public void edit(Widget widget) {
