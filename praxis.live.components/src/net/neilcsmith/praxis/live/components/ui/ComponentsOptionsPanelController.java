@@ -14,7 +14,8 @@ import org.openide.util.Lookup;
 @OptionsPanelController.SubRegistration(location = "Core",
 displayName = "#AdvancedOption_DisplayName_Components",
 keywords = "#AdvancedOption_Keywords_Components",
-keywordsCategory = "Core/Components")
+keywordsCategory = "Core/Components",
+position=500)
 public final class ComponentsOptionsPanelController extends OptionsPanelController {
 
     private ComponentsPanel panel;

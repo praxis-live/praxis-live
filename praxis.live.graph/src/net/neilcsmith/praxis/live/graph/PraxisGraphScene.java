@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Neil C Smith.
+ * Copyright 2016 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 2 only, as
@@ -76,6 +76,7 @@
  */
 package net.neilcsmith.praxis.live.graph;
 
+import java.awt.Color;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.Collections;
@@ -90,8 +91,8 @@ import org.netbeans.api.visual.action.MoveProvider;
 import org.netbeans.api.visual.action.PopupMenuProvider;
 import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.anchor.Anchor;
+import org.netbeans.api.visual.border.BorderFactory;
 import org.netbeans.api.visual.graph.GraphPinScene;
-import org.netbeans.api.visual.layout.SceneLayout;
 import org.netbeans.api.visual.router.ConnectionWidgetCollisionsCollector;
 import org.netbeans.api.visual.router.Router;
 import org.netbeans.api.visual.router.RouterFactory;
@@ -102,19 +103,22 @@ import org.netbeans.api.visual.widget.Widget;
 
 public class PraxisGraphScene<N> extends GraphPinScene<N, EdgeID<N>, PinID<N>> {
 
-    private final static double LOD_ZOOM = 0.5;
+    private final static double LOD_ZOOM = 0.7;
     
     private final LayerWidget backgroundLayer = new LayerWidget(this);
     private final LayerWidget mainLayer = new LayerWidget(this);
     private final LayerWidget connectionLayer = new LayerWidget(this);
     private final LayerWidget upperLayer = new LayerWidget(this);
+    
+    private final CommentWidget commentWidget;
+    
     private Router router;
     private WidgetAction moveAction = ActionFactory.createMoveAction(null, new MoveProviderImpl());
 //    private WidgetAction moveAction = ActionFactory.createAlignWithMoveAction(mainLayer, upperLayer, null);
-    private SceneLayout sceneLayout;
     private LAFScheme scheme;
     private WidgetAction menuAction;
     private WidgetAction connectAction;
+    private LAFScheme.Colors schemeColors;
 
 //    private int edgeCount = 10;
     /**
@@ -139,7 +143,7 @@ public class PraxisGraphScene<N> extends GraphPinScene<N, EdgeID<N>, PinID<N>> {
 
     public PraxisGraphScene(LAFScheme scheme, ConnectProvider connectProvider, PopupMenuProvider popupProvider) {
         if (scheme == null) {
-            scheme = LAFScheme.getDefault();
+            scheme = new LAFScheme();
         }
         this.scheme = scheme;
 
@@ -150,11 +154,15 @@ public class PraxisGraphScene<N> extends GraphPinScene<N, EdgeID<N>, PinID<N>> {
         addChild(mainLayer);
         addChild(connectionLayer);
         addChild(upperLayer);
+        
+        commentWidget = new CommentWidget(this);
+        commentWidget.setPreferredLocation(new Point(32,32));
+        commentWidget.setBorder(BorderFactory.createRoundedBorder(8, 8, 8, 8, new Color(0xffff7a), null));
+        commentWidget.setVisible(false);
+        mainLayer.addChild(commentWidget);
 
         setBackground(scheme.getBackgroundColor());
 
-//        router = RouterFactory.createDirectRouter();
-//        router = RouterFactory.createOrthogonalSearchRouter(mainLayer);
         router = RouterFactory.createOrthogonalSearchRouter(new WidgetCollector());
 
         getActions().addAction(ActionFactory.createMouseCenteredZoomAction(1.2));
@@ -179,6 +187,12 @@ public class PraxisGraphScene<N> extends GraphPinScene<N, EdgeID<N>, PinID<N>> {
         NodeWidget n = (NodeWidget) super.addNode(node);
         n.setNodeName(name);
         return n;
+    }
+
+    @Override
+    protected void detachNodeWidget(N node, Widget widget) {
+        ((NodeWidget) widget).getCommentWidget().removeFromParent();
+        super.detachNodeWidget(node, widget);
     }
 
     public PinWidget addPin(N node, String name) {
@@ -220,8 +234,17 @@ public class PraxisGraphScene<N> extends GraphPinScene<N, EdgeID<N>, PinID<N>> {
         removeEdge(d);
     }
 
-    public LAFScheme getColorScheme() {
+    public LAFScheme getLookAndFeel() {
         return scheme;
+    }
+    
+    public void setSchemeColors(LAFScheme.Colors schemeColors) {
+        this.schemeColors = schemeColors;
+        revalidate();
+    }
+    
+    public LAFScheme.Colors getSchemeColors() {
+        return schemeColors;
     }
 
     @Override
@@ -262,7 +285,6 @@ public class PraxisGraphScene<N> extends GraphPinScene<N, EdgeID<N>, PinID<N>> {
         if (menuAction != null) {
             widget.getActions().addAction(menuAction);
         }
-
         return widget;
     }
 
@@ -347,10 +369,29 @@ public class PraxisGraphScene<N> extends GraphPinScene<N, EdgeID<N>, PinID<N>> {
         return p.createAnchor();
     }
     
-    boolean isBelowLODThreshold() {
+    public boolean isBelowLODThreshold() {
         return getZoomFactor() < LOD_ZOOM;
     }
     
+    public void setComment(String comment) {
+        if (comment == null || comment.trim().isEmpty()) {
+            // remove comment
+            commentWidget.setText("");
+            commentWidget.setVisible(false);
+        } else {
+            // add comment
+            commentWidget.setText(comment);
+            commentWidget.setVisible(true);
+        }
+    }
+
+    public String getComment() {
+        return commentWidget.getText();
+    }
+    
+    public Widget getCommentWidget() {
+        return commentWidget;
+    }
     
 //
 //    /**

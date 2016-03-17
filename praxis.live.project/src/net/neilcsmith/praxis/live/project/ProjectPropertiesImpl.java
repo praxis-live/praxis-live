@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Neil C Smith.
+ * Copyright 2016 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -41,23 +41,23 @@ import org.openide.filesystems.FileUtil;
 public class ProjectPropertiesImpl extends PraxisProjectProperties {
 
     private final static FileObject[] FILEOBJECT_ARRAY = new FileObject[0];
-    private Set<FileObject> buildFiles;
-    private Set<FileObject> runFiles;
-    private PropertyChangeSupport pcs;
-    private DefaultPraxisProject project;
-    private FileListener listener;
+    private final Set<FileObject> buildFiles;
+    private final Set<FileObject> runFiles;
+    private final PropertyChangeSupport pcs;
+    private final DefaultPraxisProject project;
+    private final FileListener listener;
 
     ProjectPropertiesImpl(DefaultPraxisProject project) {
         this.project = project;
-        buildFiles = new LinkedHashSet<FileObject>();
-        runFiles = new LinkedHashSet<FileObject>();
+        buildFiles = new LinkedHashSet<>();
+        runFiles = new LinkedHashSet<>();
         pcs = new PropertyChangeSupport(this);
         listener = new FileListener();
         project.getProjectDirectory().addRecursiveListener(listener);
     }
 
     @Override
-    public boolean addProjectFile(ExecutionLevel level, FileObject file) {
+    public synchronized boolean addProjectFile(ExecutionLevel level, FileObject file) {
         Set<FileObject> set;
         if (level == ExecutionLevel.BUILD) {
             set = buildFiles;
@@ -74,7 +74,7 @@ public class ProjectPropertiesImpl extends PraxisProjectProperties {
     }
 
     @Override
-    public boolean removeProjectFile(ExecutionLevel level, FileObject file) {
+    public synchronized boolean removeProjectFile(ExecutionLevel level, FileObject file) {
         Set<FileObject> set;
         if (level == ExecutionLevel.BUILD) {
             set = buildFiles;
@@ -91,7 +91,7 @@ public class ProjectPropertiesImpl extends PraxisProjectProperties {
     }
 
     @Override
-    public FileObject[] getProjectFiles(ExecutionLevel level) {
+    public synchronized FileObject[] getProjectFiles(ExecutionLevel level) {
         if (level == ExecutionLevel.BUILD) {
             return buildFiles.toArray(FILEOBJECT_ARRAY);
         } else if (level == ExecutionLevel.RUN) {
@@ -101,7 +101,7 @@ public class ProjectPropertiesImpl extends PraxisProjectProperties {
         }
     }
 
-    public void setProjectFiles(ExecutionLevel level, FileObject[] files) {
+    public synchronized void setProjectFiles(ExecutionLevel level, FileObject[] files) {
         for (FileObject file : files) {
             checkFile(file);
         }
@@ -137,22 +137,27 @@ public class ProjectPropertiesImpl extends PraxisProjectProperties {
 
         @Override
         public void fileDeleted(FileEvent fe) {
-            FileObject file = fe.getFile();
-            boolean changed = false;
-            if (buildFiles.remove(file)) {
-                changed = true;
+            synchronized (ProjectPropertiesImpl.this) {
+                FileObject file = fe.getFile();
+                boolean changed = false;
+                if (buildFiles.remove(file)) {
+                    changed = true;
+                }
+                if (runFiles.remove(file)) {
+                    changed = true;
+                }
+                if (changed) {
+                    pcs.firePropertyChange(PROP_FILES_CHANGED, null, null);
+                }
             }
-            if (runFiles.remove(file)) {
-                changed = true;
-            }
-            if (changed) {
-                pcs.firePropertyChange(PROP_FILES_CHANGED, null, null);
-            }
+
         }
 
         @Override
         public void fileRenamed(FileRenameEvent fe) {
-            pcs.firePropertyChange(PROP_FILES_CHANGED, null, null);
+            synchronized (ProjectPropertiesImpl.this) {
+                pcs.firePropertyChange(PROP_FILES_CHANGED, null, null);
+            }
         }
     }
 }

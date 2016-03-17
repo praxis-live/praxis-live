@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Neil C Smith.
+ * Copyright 2016 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 2 only, as
@@ -91,27 +91,14 @@ public class EdgeWidget extends ConnectionWidget {
 
     private LAFScheme scheme;
 
-//    /**
-//     * Creates a connection widget with a specific router.
-//     * @param scene the scene
-//     * @param router the router
-//     */
-//    public EdgeWidget (PraxisGraphScene scene, Router router) {
-//        this (scene, LAFScheme.getDefault());
-//        if (router != null)
-//            setRouter (router);
-//    }
-
     /**
      * Creates a connection widget with a specific color scheme.
      * @param scene the scene
-     * @param scheme the color scheme
      */
     public EdgeWidget (PraxisGraphScene scene) {
         super (scene);
-        this.scheme = scene.getColorScheme();
+        this.scheme = scene.getLookAndFeel();
         scheme.installUI (this);
-        setState (ObjectState.createNormal ());
     }
 
 
@@ -121,8 +108,14 @@ public class EdgeWidget extends ConnectionWidget {
      * @param previousState the previous state
      * @param state the new state
      */
+    @Override
     public void notifyStateChanged (ObjectState previousState, ObjectState state) {
-        scheme.updateUI (this, previousState, state);
+        if (!previousState.isSelected() && state.isSelected()) {
+            bringToFront();
+        } else if (!previousState.isHovered() && state.isHovered()) {
+            bringToFront();
+        }
+        scheme.updateUI(this);
     }
 
 }

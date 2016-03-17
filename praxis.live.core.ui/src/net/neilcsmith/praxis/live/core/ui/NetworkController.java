@@ -33,7 +33,8 @@ import org.openide.util.Lookup;
         location = "Core",
         displayName = "#AdvancedOption_DisplayName_Network",
         keywords = "#AdvancedOption_Keywords_Network",
-        keywordsCategory = "Core/Network"
+        keywordsCategory = "Core/Network",
+        position = 0
 )
 @org.openide.util.NbBundle.Messages({"AdvancedOption_DisplayName_Network=Network", "AdvancedOption_Keywords_Network=Network Hub"})
 public final class NetworkController extends OptionsPanelController {

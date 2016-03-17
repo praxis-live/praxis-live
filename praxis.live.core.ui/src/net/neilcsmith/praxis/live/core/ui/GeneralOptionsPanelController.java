@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Neil C Smith.
+ * Copyright 2016 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -19,24 +19,27 @@
  * Please visit http://neilcsmith.net if you need additional information or
  * have any questions.
  */
-package net.neilcsmith.praxis.live.start;
+package net.neilcsmith.praxis.live.core.ui;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import javax.swing.JComponent;
+import javax.swing.SwingUtilities;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 
 @OptionsPanelController.SubRegistration(
-    location = "Core",
-displayName = "#AdvancedOption_DisplayName_StartPage",
-keywords = "#AdvancedOption_Keywords_StartPage",
-keywordsCategory = "Core/StartPage")
-@org.openide.util.NbBundle.Messages({"AdvancedOption_DisplayName_StartPage=Start Page", "AdvancedOption_Keywords_StartPage=Start"})
-public final class StartPageOptionsPanelController extends OptionsPanelController {
+        location = "Core",
+        displayName = "#AdvancedOption_DisplayName_General",
+        keywords = "#AdvancedOption_Keywords_General",
+        keywordsCategory = "Core/General",
+        position = Integer.MIN_VALUE
+)
+@org.openide.util.NbBundle.Messages({"AdvancedOption_DisplayName_General=General", "AdvancedOption_Keywords_General=Start, Updates"})
+public final class GeneralOptionsPanelController extends OptionsPanelController {
 
-    private StartPagePanel panel;
+    private GeneralPanel panel;
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
     private boolean changed;
 
@@ -46,8 +49,13 @@ public final class StartPageOptionsPanelController extends OptionsPanelControlle
     }
 
     public void applyChanges() {
-        getPanel().store();
-        changed = false;
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                getPanel().store();
+                changed = false;
+            }
+        });
     }
 
     public void cancel() {
@@ -78,9 +86,9 @@ public final class StartPageOptionsPanelController extends OptionsPanelControlle
         pcs.removePropertyChangeListener(l);
     }
 
-    private StartPagePanel getPanel() {
+    private GeneralPanel getPanel() {
         if (panel == null) {
-            panel = new StartPagePanel(this);
+            panel = new GeneralPanel(this);
         }
         return panel;
     }
@@ -92,4 +100,5 @@ public final class StartPageOptionsPanelController extends OptionsPanelControlle
         }
         pcs.firePropertyChange(OptionsPanelController.PROP_VALID, null, null);
     }
+
 }

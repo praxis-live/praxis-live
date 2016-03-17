@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Neil C Smith.
+ * Copyright 2016 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -38,9 +38,9 @@ public class PXPWriter {
     
     
 
-    private FileObject projectDir;
-    private FileObject projectFile;
-    private PraxisProjectProperties props;
+    private final FileObject projectDir;
+    private final FileObject projectFile;
+    private final PraxisProjectProperties props;
 
     private PXPWriter(FileObject projectDir, FileObject projectFile,
             PraxisProjectProperties props) {

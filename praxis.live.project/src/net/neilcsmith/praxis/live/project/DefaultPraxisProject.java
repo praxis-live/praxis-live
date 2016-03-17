@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Neil C Smith.
+ * Copyright 2016 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -31,6 +31,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import javax.swing.Icon;
 import net.neilcsmith.praxis.core.CallArguments;
 import net.neilcsmith.praxis.live.core.api.Callback;
@@ -44,6 +45,7 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ProjectState;
 import org.netbeans.spi.project.support.LookupProviderSupport;
@@ -55,6 +57,7 @@ import org.openide.util.Cancellable;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
+import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 import org.openide.util.lookup.Lookups;
 
@@ -64,16 +67,18 @@ import org.openide.util.lookup.Lookups;
  */
 public class DefaultPraxisProject extends PraxisProject {
 
+    private final static RequestProcessor RP = new RequestProcessor(PraxisProject.class);
+    
     private final static FileObject[] EMPTY_FILES = new FileObject[0];
     
     private final FileObject directory;
-    private FileObject projectFile;
-    private PraxisProjectProperties properties;
+    private final FileObject projectFile;
+    private final PraxisProjectProperties properties;
     private final Lookup lookup;
-    private HelperListener helperListener;
-    private PropertiesListener propsListener;
-    private ProjectState state;
-    private Set<FileObject> executedBuildFiles = new HashSet<FileObject>();
+    private final HelperListener helperListener;
+    private final PropertiesListener propsListener;
+    private final ProjectState state;
+    private final Set<FileObject> executedBuildFiles = new HashSet<>();
     private boolean actionsEnabled = true;
 
     DefaultPraxisProject(FileObject directory, FileObject projectFile, ProjectState state)
@@ -210,6 +215,17 @@ public class DefaultPraxisProject extends PraxisProject {
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
             state.markModified();
+            RP.schedule(new Runnable() {
+
+                @Override
+                public void run() {
+                    try {
+                        ProjectManager.getDefault().saveProject(DefaultPraxisProject.this);
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+            }, 500, TimeUnit.MILLISECONDS);
         }
     }
 

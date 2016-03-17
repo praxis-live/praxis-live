@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2014 Neil C Smith.
+ * Copyright 2016 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -24,6 +24,7 @@ package net.neilcsmith.praxis.live.pxr.graph;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
@@ -34,13 +35,11 @@ import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.peer.ComponentPeer;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -59,7 +58,6 @@ import net.neilcsmith.praxis.core.info.ComponentInfo;
 import net.neilcsmith.praxis.core.info.PortInfo;
 import net.neilcsmith.praxis.core.interfaces.ComponentInterface;
 import net.neilcsmith.praxis.core.interfaces.ContainerInterface;
-import net.neilcsmith.praxis.live.components.api.Components;
 import net.neilcsmith.praxis.live.core.api.Callback;
 import net.neilcsmith.praxis.live.core.api.Syncable;
 import net.neilcsmith.praxis.live.graph.Alignment;
@@ -89,6 +87,7 @@ import org.netbeans.api.visual.model.ObjectSceneEvent;
 import org.netbeans.api.visual.model.ObjectSceneEventType;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
+import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.explorer.ExplorerManager;
@@ -113,41 +112,45 @@ public class GraphEditor extends RootEditor {
     final static String ATTR_GRAPH_X = "graph.x";
     final static String ATTR_GRAPH_Y = "graph.y";
     final static String ATTR_GRAPH_MINIMIZED = "graph.minimized";
+    final static String ATTR_GRAPH_COLORS = "graph.colors";
+    final static String ATTR_GRAPH_COMMENT = "graph.comment";
     private final RootProxy root;
     private final Map<String, ComponentProxy> knownChildren;
     private final Set<Connection> knownConnections;
     private final ContainerListener containerListener;
     private final InfoListener infoListener;
 
-    private Action deleteAction;
+    private final PraxisGraphScene<String> scene;
+    private final ExplorerManager manager;
+    private final Lookup lookup;
+
+    private final LocationAction location;
+    private final Action goUpAction;
+    private final Action deleteAction;
+    private final Action sceneCommentAction;
+
     private JComponent panel;
-    private PraxisGraphScene<String> scene;
-    private ExplorerManager manager;
     private ContainerProxy container;
-    private Lookup lookup;
-    private int lastX;
 
     private ActionSupport actionSupport;
-    private Point activePoint = new Point();
+    private final Point activePoint = new Point();
     private boolean sync;
-    private LocationAction location;
-    private Action goUpAction;
+
+    private final ColorsAction[] colorsActions;
 
     public GraphEditor(RootProxy root, String category) {
         this.root = root;
         knownChildren = new LinkedHashMap<>();
         knownConnections = new LinkedHashSet<>();
 
-        scene = new PraxisGraphScene<String>(new ConnectProviderImpl(), new MenuProviderImpl());
+        scene = new PraxisGraphScene<>(new ConnectProviderImpl(), new MenuProviderImpl());
         manager = new ExplorerManager();
         manager.setRootContext(root.getNodeDelegate());
         if (root instanceof ContainerProxy) {
             container = (ContainerProxy) root;
         }
-//        if (container != null) {
-//            buildScene();
-//        }
 
+        deleteAction = new DeleteAction();
         lookup = new ProxyLookup(ExplorerUtils.createLookup(manager, buildActionMap(manager)),
                 Lookups.fixed(
                         PaletteUtils.getPalette("core", category)));
@@ -157,12 +160,19 @@ public class GraphEditor extends RootEditor {
         location = new LocationAction();
         containerListener = new ContainerListener();
         infoListener = new InfoListener();
+
+        Colors[] colorsValues = Colors.values();
+        colorsActions = new ColorsAction[colorsValues.length];
+        for (int i = 0; i < colorsValues.length; i++) {
+            colorsActions[i] = new ColorsAction(colorsValues[i]);
+        }
+
+        sceneCommentAction = new CommentAction(scene);
         setupSceneActions();
     }
 
     private ActionMap buildActionMap(ExplorerManager em) {
         ActionMap am = new ActionMap();
-        deleteAction = new DeleteAction();
         deleteAction.setEnabled(false);
         am.put("delete", deleteAction);
 
@@ -176,6 +186,13 @@ public class GraphEditor extends RootEditor {
 
     private void setupSceneActions() {
         scene.getActions().addAction(ActionFactory.createAcceptAction(new AcceptProviderImpl()));
+        scene.getCommentWidget().getActions().addAction(ActionFactory.createEditAction(new EditProvider() {
+
+            @Override
+            public void edit(Widget widget) {
+                sceneCommentAction.actionPerformed(new ActionEvent(scene, ActionEvent.ACTION_PERFORMED, "edit"));
+            }
+        }));
     }
 
     private JPopupMenu getComponentPopup(NodeWidget widget) {
@@ -204,16 +221,32 @@ public class GraphEditor extends RootEditor {
             }
         }
         menu.add(deleteAction);
+        menu.addSeparator();
+        JMenu colorsMenu = new JMenu("Colors");
+        for (ColorsAction action : colorsActions) {
+            colorsMenu.add(action);
+        }
+        menu.add(colorsMenu);
+        menu.add(new CommentAction(widget));
         return menu;
     }
 
     private JPopupMenu getConnectionPopup() {
-        return getScenePopup();
+        JPopupMenu menu = new JPopupMenu();
+        menu.add(deleteAction);
+        return menu;
     }
 
     private JPopupMenu getScenePopup() {
         JPopupMenu menu = new JPopupMenu();
         menu.add(deleteAction);
+        menu.addSeparator();
+        JMenu colorsMenu = new JMenu("Colors");
+        for (ColorsAction action : colorsActions) {
+            colorsMenu.add(action);
+        }
+        menu.add(colorsMenu);
+        menu.add(new CommentAction(scene));
         return menu;
     }
 
@@ -321,6 +354,9 @@ public class GraphEditor extends RootEditor {
         goUpAction.setEnabled(container.getParent() != null);
         location.address.setText(container.getAddress().toString());
 
+        scene.setSchemeColors(getColorsFromAttribute(container).getSchemeColors());
+        scene.setComment(Utils.getAttr(container, ATTR_GRAPH_COMMENT));
+        scene.validate();
     }
 
     private void buildChild(String id, final ComponentProxy cmp) {
@@ -330,16 +366,25 @@ public class GraphEditor extends RootEditor {
         }
         String name = cmp instanceof ContainerProxy ? id + "/.." : id;
         NodeWidget widget = scene.addNode(id, name);
-//        widget.setNodeType(cmp.getType().toString());
+        widget.setSchemeColors(getColorsFromAttribute(cmp).getSchemeColors());
         widget.setToolTipText(cmp.getType().toString());
         widget.setPreferredLocation(resolveLocation(id, cmp));
         if ("true".equals(Utils.getAttr(cmp, ATTR_GRAPH_MINIMIZED))) {
             widget.setMinimized(true);
         }
+        updateWidgetComment(widget, Utils.getAttr(cmp, ATTR_GRAPH_COMMENT), cmp instanceof ContainerProxy);
         widget.getActions().addAction(ActionFactory.createEditAction(new EditProvider() {
             @Override
             public void edit(Widget widget) {
                 cmp.getNodeDelegate().getPreferredAction().actionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, "edit"));
+            }
+        }));
+        final CommentAction commentAction = new CommentAction(widget);
+        widget.getCommentWidget().getActions().addAction(ActionFactory.createEditAction(new EditProvider() {
+
+            @Override
+            public void edit(Widget widget) {
+                commentAction.actionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, "edit"));
             }
         }));
         ComponentInfo info = cmp.getInfo();
@@ -412,6 +457,18 @@ public class GraphEditor extends RootEditor {
         // @TODO what to do about importing components without positions?
         // if point not set, check for widget at point?
         return new Point(x, y);
+    }
+
+    private Colors getColorsFromAttribute(ComponentProxy cmp) {
+        String colorsAttr = Utils.getAttr(cmp, ATTR_GRAPH_COLORS);
+        if (colorsAttr != null) {
+            try {
+                return Colors.valueOf(colorsAttr);
+            } catch (Exception e) {
+                Exceptions.printStackTrace(e);
+            }
+        }
+        return Colors.Default;
     }
 
     private void buildPin(String cmpID, String pinID, PortInfo info) {
@@ -527,6 +584,40 @@ public class GraphEditor extends RootEditor {
         } else {
             this.sync = false;
         }
+    }
+
+    private void updateWidgetComment(final NodeWidget widget, final String text, final boolean container) {
+
+        if (!container) {
+            widget.setComment(text);
+            return;
+        }
+        // OK, we have a container, trim text
+        int delim = text.indexOf("\n\n");
+        if (delim >= 0) {
+            widget.setComment(text.substring(0, delim) + "...");
+        } else {
+            widget.setComment(text);
+        }
+        scene.revalidate();
+
+    }
+
+    private ComponentProxy findComponent(Widget widget) {
+        if (widget == scene) {
+            return container;
+        }
+        return findComponent(scene.findObject(widget));
+    }
+
+    private ComponentProxy findComponent(Object obj) {
+        if (obj instanceof Widget) {
+            return findComponent((Widget) obj);
+        }
+        if (obj instanceof String) {
+            return container.getChild(obj.toString());
+        }
+        return null;
     }
 
     private class ContainerListener implements PropertyChangeListener {
@@ -808,6 +899,108 @@ public class GraphEditor extends RootEditor {
 
     }
 
+    private class ColorsAction extends AbstractAction {
+
+        private final Colors colors;
+
+        private ColorsAction(Colors colors) {
+            super(colors.name());
+            this.colors = colors;
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            boolean foundNode = false;
+            for (Object obj : scene.getSelectedObjects()) {
+                if (obj instanceof String) {
+                    ComponentProxy cmp = container.getChild(obj.toString());
+                    NodeWidget widget = (NodeWidget) scene.findWidget(obj);
+                    widget.setSchemeColors(colors.getSchemeColors());
+                    setColorsAttr(cmp);
+                    foundNode = true;
+                }
+            }
+            if (!foundNode) {
+                scene.setSchemeColors(colors.getSchemeColors());
+                setColorsAttr(container);
+            }
+            scene.revalidate();
+        }
+
+        private void setColorsAttr(ComponentProxy cmp) {
+            if (colors == Colors.Default) {
+                Utils.setAttr(cmp, ATTR_GRAPH_COLORS, null);
+            } else {
+                Utils.setAttr(cmp, ATTR_GRAPH_COLORS, colors.name());
+            }
+        }
+
+    }
+
+    private class CommentAction extends AbstractAction {
+
+        private final Widget widget;
+
+        private CommentAction(Widget widget) {
+            super("Comment...");
+            this.widget = widget;
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            Runnable runnable = new Runnable() {
+                @Override
+                public void run() {
+                    String comment = findInitialText(widget);
+                    JTextArea editor = new JTextArea(comment);
+                    JPanel panel = new JPanel(new BorderLayout());
+                    panel.add(new JScrollPane(editor));
+                    panel.setPreferredSize(new Dimension(400, 300));
+                    DialogDescriptor dlg = new DialogDescriptor(panel, "Comment");
+                    editor.selectAll();
+                    editor.requestFocusInWindow();
+                    Object result = DialogDisplayer.getDefault().notify(dlg);
+                    if (result != NotifyDescriptor.OK_OPTION) {
+                        return;
+                    }
+                    comment = editor.getText();
+                    if (widget == scene) {
+                        scene.setComment(comment);
+                        Utils.setAttr(container, ATTR_GRAPH_COMMENT, comment.isEmpty() ? null : comment);
+                    } else if (widget instanceof NodeWidget) {
+                        ComponentProxy cmp = findComponent(widget);
+                        updateWidgetComment((NodeWidget) widget, comment, cmp instanceof ContainerProxy);
+                        Utils.setAttr(cmp, ATTR_GRAPH_COMMENT, comment.isEmpty() ? null : comment);
+                        for (Object obj : scene.getSelectedObjects()) {
+                            ComponentProxy additional = findComponent(obj);
+                            if (additional != null) {
+                                NodeWidget n = (NodeWidget) scene.findWidget(obj);
+                                if (n != widget) {
+                                    updateWidgetComment(n, comment, cmp instanceof ContainerProxy);
+                                    Utils.setAttr(additional, ATTR_GRAPH_COMMENT, comment.isEmpty() ? null : comment);
+                                }
+
+                            }
+                        }
+                    }
+                    scene.validate();
+                }
+            };
+            EventQueue.invokeLater(runnable);
+        }
+
+        private String findInitialText(Widget widget) {
+            ComponentProxy cmp = findComponent(widget);
+            if (cmp != null) {
+                String comment = Utils.getAttr(cmp, ATTR_GRAPH_COMMENT);
+                return comment == null ? "" : comment;
+            } else {
+                return "";
+            }
+        }
+
+    }
+
     private class GoUpAction extends AbstractAction {
 
         private GoUpAction() {
@@ -958,15 +1151,6 @@ public class GraphEditor extends RootEditor {
         }
 
         private String getFreeID(ComponentType type) {
-//            String base = type.toString();
-//            base = base.substring(base.lastIndexOf(":") + 1);
-//            for (int i = 1; i < 100; i++) {
-//                if (container.getChild(base + i) == null) {
-//                    return base + i;
-//                }
-//            }
-//            return "";
-
             Set<String> existing = new HashSet<String>(Arrays.asList(container.getChildIDs()));
             return EditorUtils.findFreeID(existing, EditorUtils.extractBaseID(type), true);
 

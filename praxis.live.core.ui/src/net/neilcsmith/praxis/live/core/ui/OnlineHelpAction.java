@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2015 Neil C Smith.
+ * Copyright 2016 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -23,7 +23,6 @@ package net.neilcsmith.praxis.live.core.ui;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.net.URI;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionReferences;
@@ -49,7 +48,7 @@ public final class OnlineHelpAction implements ActionListener, HelpCtx.Displayer
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        Utils.openExternalLink(URI.create("http://praxis-live.readthedocs.org"));
+        Utils.openExternalLink(Utils.DOCUMENTATION_LINK);
     }
 
     @Override
