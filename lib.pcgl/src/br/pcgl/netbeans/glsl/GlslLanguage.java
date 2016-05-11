@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2013 João Vicente Reis
+ * Copyright (C) 2016 Neil C Smith
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -36,6 +37,11 @@ public class GlslLanguage extends DefaultLanguageConfig {
     @Override
     public String getDisplayName() {
         return "GLSL";
+    }
+
+    @Override
+    public String getLineCommentPrefix() {
+        return "//";
     }
 
 }
