@@ -113,8 +113,7 @@ public class PraxisGraphScene<N> extends GraphPinScene<N, EdgeID<N>, PinID<N>> {
     private final CommentWidget commentWidget;
     
     private Router router;
-    private WidgetAction moveAction = ActionFactory.createMoveAction(null, new MoveProviderImpl());
-//    private WidgetAction moveAction = ActionFactory.createAlignWithMoveAction(mainLayer, upperLayer, null);
+    private final WidgetAction moveAction;
     private LAFScheme scheme;
     private WidgetAction menuAction;
     private WidgetAction connectAction;
@@ -155,6 +154,9 @@ public class PraxisGraphScene<N> extends GraphPinScene<N, EdgeID<N>, PinID<N>> {
         addChild(connectionLayer);
         addChild(upperLayer);
         
+        PraxisMoveProvider mover = new PraxisMoveProvider(this, backgroundLayer);
+        moveAction = ActionFactory.createMoveAction(mover, mover);
+        
         commentWidget = new CommentWidget(this);
         commentWidget.setPreferredLocation(new Point(32,32));
         commentWidget.setBorder(BorderFactory.createRoundedBorder(8, 8, 8, 8, new Color(0xffff7a), null));
@@ -168,7 +170,6 @@ public class PraxisGraphScene<N> extends GraphPinScene<N, EdgeID<N>, PinID<N>> {
         getActions().addAction(ActionFactory.createWheelPanAction());
         getActions().addAction(ActionFactory.createMouseCenteredZoomAction(1.2));
         getActions().addAction(ActionFactory.createPanAction());
-
 
         if (connectProvider != null) {
             connectAction = ActionFactory.createConnectAction(new PraxisConnectDecorator(), connectionLayer, connectProvider);
@@ -429,63 +430,6 @@ public class PraxisGraphScene<N> extends GraphPinScene<N, EdgeID<N>, PinID<N>> {
         
     }
 
-    private class MoveProviderImpl implements MoveProvider {
-        
-        private final Map<Widget, Point> locations;
-        private final MoveProvider defaultProvider;
-        
-        private MoveProviderImpl() {
-            locations = new HashMap<Widget, Point>();
-            defaultProvider = ActionFactory.createDefaultMoveProvider();
-        }
-
-        @Override
-        public void movementStarted(Widget widget) {
-            // no op?    
-        }
-
-        @Override
-        public void movementFinished(Widget widget) {
-            locations.clear();
-        }
-
-        @Override
-        public Point getOriginalLocation(Widget widget) {
-            locations.put(widget, defaultProvider.getOriginalLocation(widget));
-            for (Object obj : getSelectedObjects()) {
-                if (!isNode(obj)) {
-                    continue;
-                }
-                Widget additional = findWidget(obj);
-                if (additional == widget) {
-                    continue;
-                }
-                locations.put(additional, defaultProvider.getOriginalLocation(additional));
-            }
-            return defaultProvider.getOriginalLocation(widget);
-        }
-
-        @Override
-        public void setNewLocation(Widget widget, Point location) {
-            defaultProvider.setNewLocation(widget, location);
-            Point primary = locations.get(widget);
-            if (primary == null || locations.size() == 1) {
-                return;
-            }
-            int dx = location.x - primary.x;
-            int dy = location.y - primary.y;
-            for (Map.Entry<Widget, Point> loc : locations.entrySet()) {
-                Widget additional = loc.getKey();
-                if (additional == widget) {
-                    continue;
-                }
-                Point pt = new Point(loc.getValue());
-                pt.translate(dx, dy);
-                defaultProvider.setNewLocation(additional, pt);
-            }
-        }
-        
-    }
     
     
     private static class WidgetCollector implements ConnectionWidgetCollisionsCollector {
