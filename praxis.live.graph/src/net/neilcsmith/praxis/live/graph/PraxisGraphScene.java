@@ -165,6 +165,7 @@ public class PraxisGraphScene<N> extends GraphPinScene<N, EdgeID<N>, PinID<N>> {
 
         router = RouterFactory.createOrthogonalSearchRouter(new WidgetCollector());
 
+        getActions().addAction(ActionFactory.createWheelPanAction());
         getActions().addAction(ActionFactory.createMouseCenteredZoomAction(1.2));
         getActions().addAction(ActionFactory.createPanAction());
 
