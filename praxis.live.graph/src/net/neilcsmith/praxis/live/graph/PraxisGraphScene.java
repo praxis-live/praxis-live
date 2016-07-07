@@ -80,14 +80,11 @@ import java.awt.Color;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.action.ConnectProvider;
-import org.netbeans.api.visual.action.MoveProvider;
 import org.netbeans.api.visual.action.PopupMenuProvider;
 import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.anchor.Anchor;
@@ -170,6 +167,7 @@ public class PraxisGraphScene<N> extends GraphPinScene<N, EdgeID<N>, PinID<N>> {
         getActions().addAction(ActionFactory.createWheelPanAction());
         getActions().addAction(ActionFactory.createMouseCenteredZoomAction(1.2));
         getActions().addAction(ActionFactory.createPanAction());
+        getActions().addAction(ActionFactory.createCycleFocusAction(new PraxisCycleFocusProvider()));
 
         if (connectProvider != null) {
             connectAction = ActionFactory.createConnectAction(new PraxisConnectDecorator(), connectionLayer, connectProvider);

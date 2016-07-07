@@ -115,17 +115,35 @@ public class LAFScheme {
         private final Color COLOR_NORMAL;
 
         private final Border BORDER_NODE;
+        private final Border BORDER_NODE_FOCUSED;
         private final Border BORDER_NODE_COLOR;
+        private final Border BORDER_NODE_COLOR_FOCUSED;
         private final Border BORDER_NODE_SELECTED;
+        private final Border BORDER_NODE_SELECTED_FOCUSED;
         private final Border BORDER_HEADER;
         private final Border BORDER_HEADER_SELECTED;
-
+        
         public Colors(Color highlight, Color normal) {
             COLOR_SELECTED = Objects.requireNonNull(highlight);
             COLOR_NORMAL = Objects.requireNonNull(normal);
-            BORDER_NODE = BorderFactory.createRoundedBorder(8, 8, 0, 0, OFF_WHITE, null);
-            BORDER_NODE_COLOR = BorderFactory.createRoundedBorder(8, 8, 0, 0, COLOR_NORMAL, null);
-            BORDER_NODE_SELECTED = BorderFactory.createRoundedBorder(8, 8, 0, 0, COLOR_SELECTED, null);
+            BORDER_NODE = BorderFactory.createCompositeBorder(
+                    BorderFactory.createEmptyBorder(2),
+                    BorderFactory.createRoundedBorder(8, 8, 0, 0, OFF_WHITE, null));
+            BORDER_NODE_FOCUSED = BorderFactory.createCompositeBorder(
+                    BorderFactory.createResizeBorder(2, COLOR_NORMAL, true),
+                    BorderFactory.createRoundedBorder(8, 8, 0, 0, OFF_WHITE, null));
+            BORDER_NODE_COLOR = BorderFactory.createCompositeBorder(
+                    BorderFactory.createEmptyBorder(3),
+                    BorderFactory.createRoundedBorder(8, 8, 0, 0, COLOR_NORMAL, null));
+            BORDER_NODE_COLOR_FOCUSED = BorderFactory.createCompositeBorder(
+                    BorderFactory.createResizeBorder(3, OFF_WHITE, true),
+                    BorderFactory.createRoundedBorder(8, 8, 0, 0, COLOR_NORMAL, null));
+            BORDER_NODE_SELECTED = BorderFactory.createCompositeBorder(
+                    BorderFactory.createEmptyBorder(3),
+                    BorderFactory.createRoundedBorder(8, 8, 0, 0, COLOR_SELECTED, null));
+            BORDER_NODE_SELECTED_FOCUSED = BorderFactory.createCompositeBorder(
+                    BorderFactory.createResizeBorder(3, OFF_WHITE, true),
+                    BorderFactory.createRoundedBorder(8, 8, 0, 0, COLOR_SELECTED, null));
             BORDER_HEADER = BorderFactory.createRoundedBorder(8, 8, 8, 3, COLOR_NORMAL, null);
             BORDER_HEADER_SELECTED = BorderFactory.createRoundedBorder(8, 8, 8, 3, COLOR_SELECTED, null);
         }
@@ -146,10 +164,22 @@ public class LAFScheme {
             colors = DEFAULT_RESOURCES;
         }
         if (widget.isBelowLODThreshold()) {
-            widget.setBorder(state.isSelected() ? colors.BORDER_NODE_SELECTED 
-                    : colors.BORDER_NODE_COLOR);
+            if (state.isSelected()) {
+                if (state.isFocused()) {
+                    widget.setBorder(colors.BORDER_NODE_SELECTED_FOCUSED);
+                } else {
+                    widget.setBorder(colors.BORDER_NODE_SELECTED);
+                }
+            } else {
+                if (state.isFocused()) {
+                    widget.setBorder(colors.BORDER_NODE_COLOR_FOCUSED);
+                } else {
+                    widget.setBorder(colors.BORDER_NODE_COLOR);
+                }
+            }
         } else {
-            widget.setBorder(colors.BORDER_NODE);
+            widget.setBorder(state.isFocused() ? 
+                    colors.BORDER_NODE_FOCUSED : colors.BORDER_NODE);
         }
         Widget header = widget.getHeader();
         header.setBorder(state.isSelected() || state.isHovered()
@@ -205,7 +235,7 @@ public class LAFScheme {
 
     protected void updateUI(PinWidget widget) {
         ObjectState state = widget.getState();
-        widget.setBorder(state.isFocused() || state.isHovered()
+        widget.setBorder(state.isHovered()
                 ? BORDER_PIN_HOVERED : BORDER_PIN);
     }
 

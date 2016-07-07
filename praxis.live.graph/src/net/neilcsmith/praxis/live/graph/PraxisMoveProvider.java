@@ -184,13 +184,15 @@ class PraxisMoveProvider extends AlignWithSupport implements MoveProvider, MoveS
 
     private static class Decorator implements AlignWithMoveDecorator {
 
-        private static final BasicStroke STROKE = new BasicStroke(1.0f, BasicStroke.JOIN_BEVEL, BasicStroke.CAP_BUTT, 5.0f, new float[]{6.0f, 3.0f}, 0.0f);
+        private static final BasicStroke STROKE = new BasicStroke(1.0f, BasicStroke.JOIN_BEVEL,
+                BasicStroke.CAP_BUTT, 5.0f, new float[]{2.0f, 2.0f}, 0.0f);
+        private static final Color COLOR = new Color(127, 127, 127);
 
         @Override
         public ConnectionWidget createLineWidget(Scene scene) {
             ConnectionWidget widget = new ConnectionWidget(scene);
             widget.setStroke(STROKE);
-            widget.setForeground(Color.LIGHT_GRAY);
+            widget.setForeground(COLOR);
             return widget;
         }
 
