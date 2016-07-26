@@ -272,7 +272,7 @@ public class DefaultHubManager {
         if (distributed) {
             builder.setCoreRootFactory(new MasterFactory(slaves));
         }
-        builder.replaceComponentFactoryService(new CoreComponentFactoryService())
+        builder
                 .addExtension(rootManager)
                 .addExtension(log)
                 .addExtension(container)
