@@ -285,7 +285,13 @@ public final class StartTopComponent extends TopComponent {
         Core core = Core.getInstance();
         String current = core.getBuildVersion();
         String latest = core.getLatestBuild();
-        return !Objects.equals(current, latest);
+        try {
+            int cur = Integer.parseInt(current);
+            int lat = Integer.parseInt(latest);
+            return lat > cur;
+        } catch (Exception ex) {
+            return !Objects.equals(current, latest);
+        }
     }
 
     static StartTopComponent find() {
