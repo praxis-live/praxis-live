@@ -212,9 +212,7 @@ public class PXJDataObject extends MultiDataObject {
             BufferedReader r = new BufferedReader(new StringReader(fileContents));
             ClassBodyContext<?> context = classBodyContext;
             if (context == null) {
-                boolean video = fileContents.contains("draw()");
-                context = video ? new VideoClassBodyContext()
-                        : new CoreClassBodyContext();
+                // what now?
             }
             String[] extraImports = parseImportDeclarations(r);
             StringBuilder sb = new StringBuilder();
