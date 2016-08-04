@@ -19,7 +19,6 @@
  * Please visit http://neilcsmith.net if you need additional information or
  * have any questions.
  */
-
 package net.neilcsmith.praxis.live.core.ui;
 
 import java.awt.event.ActionEvent;
@@ -89,13 +88,10 @@ public class RootProxy {
         LOG.info("RootProxy received Root Info");
         try {
             ComponentInfo info = ComponentInfo.coerce(infoAdaptor.getValue());
-            for (InterfaceDefinition i : info.getInterfaces()) {
-                LOG.info("Found Interface : " + i.toString());
-                if (StartableInterface.INSTANCE.equals(i)) {
-                    setStartable(true);
-                    LOG.info("Found Startable");
-                    return;
-                }
+            if (info.hasInterface(StartableInterface.class)) {
+                setStartable(true);
+                LOG.info("Found Startable");
+                return;
             }
         } catch (ArgumentFormatException ex) {
             // fall through
@@ -160,7 +156,6 @@ public class RootProxy {
         }
     }
 
-
     private static class Delegate extends AbstractNode {
 
         private RootProxy root;
@@ -204,14 +199,14 @@ public class RootProxy {
                 return new Action[0];
             }
             if (root.startable) {
-                return new Action[] {
-                  startAction,
-                  stopAction,
-                  null,
-                  deleteAction
+                return new Action[]{
+                    startAction,
+                    stopAction,
+                    null,
+                    deleteAction
                 };
             } else {
-                return new Action[] {deleteAction};
+                return new Action[]{deleteAction};
             }
         }
 
@@ -225,9 +220,6 @@ public class RootProxy {
                 return null;
             }
         }
-
-        
-
 
         private class StartableAction extends AbstractAction {
 
@@ -256,7 +248,6 @@ public class RootProxy {
                 super("Delete");
             }
 
-
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
@@ -268,15 +259,8 @@ public class RootProxy {
                 }
             }
 
-            
-
         }
 
-
-
     }
-
-
-
 
 }

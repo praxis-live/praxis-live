@@ -157,12 +157,7 @@ class StartableRootAction extends AbstractAction
 
     
     private boolean isStartable(PXRRootProxy root) {
-        for (InterfaceDefinition i : root.getInfo().getInterfaces()) {
-            if (StartableInterface.INSTANCE.equals(i)) {
-                return true;
-            }
-        }
-        return false;
+        return root.getInfo().hasInterface(StartableInterface.class);
     }
     
 }

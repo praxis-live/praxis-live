@@ -138,12 +138,7 @@ public class PXRContainerProxy extends PXRComponentProxy implements ContainerPro
     }
 
     private boolean isContainer(ComponentInfo info) {
-        for (InterfaceDefinition def : info.getInterfaces()) {
-            if (ContainerInterface.INSTANCE.equals(def)) {
-                return true;
-            }
-        }
-        return false;
+        return info.hasInterface(ContainerInterface.class);
     }
 
     @Override
