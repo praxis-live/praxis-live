@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
+<filesystem>
+    <folder name="Editors">
+        <folder name="FontsColors">
+            <folder name="Darcula">
+                <folder name="Defaults">
+                    <file name="org-netbeans-modules-editor-annotations-colorings.xml" url="Editors/FontsColors/Darcula/annotations.xml">
+                        <attr name="nbeditor-settings-ColoringType" stringvalue="annotation"/>
+                    </file>
+                    <file name="org-netbeans-modules-defaults-highlight-colorings.xml" url="Editors/FontsColors/Darcula/highlights.xml"> 
+                        <attr name="nbeditor-settings-ColoringType" stringvalue="highlight"/>
+                    </file>
+                    <file name="org-netbeans-modules-defaults-token-colorings.xml" url="Editors/FontsColors/Darcula/tokenColorings.xml">
+                        <attr name="nbeditor-settings-ColoringType" stringvalue="token"/>
+                    </file>
+                </folder>
+            </folder>
+        </folder>
+        
+        <folder name="application">
+            <folder name="xml-dtd">
+                <folder name="FontsColors">
+                    <folder name="Darcula">
+                        <folder name="Defaults">
+                            <file name="org-netbeans-modules-defaults-xml-dtd-colorings.xml" url="Editors/application/xml-dtd/FontsColors/Darcula/tokenColorings.xml"/>
+                        </folder>
+                    </folder>
+                </folder>
+            </folder>
+        </folder>
+        
+        <folder name="text">
+            <folder name="css">
+                <folder name="FontsColors">
+                    <folder name="Darcula">
+                        <folder name="Defaults">
+                            <file name="org-netbeans-modules-editor-java-token-colorings.xml" url="Editors/text/css/FontsColors/Darcula/tokenColorings.xml"/>
+                        </folder>
+                    </folder>                
+                </folder>
+            </folder>
+                        
+            <folder name="html">
+                <folder name="FontsColors">
+                    <folder name="Darcula">
+                        <folder name="Defaults">
+                            <file name="org-netbeans-modules-editor-html-colorings.xml" url="Editors/text/html/FontsColors/Darcula/tokenColorings.xml"/>
+                        </folder>
+                    </folder>                
+                </folder>
+            </folder>
+            
+            <folder name="javascript">
+                <folder name="FontsColors">
+                    <folder name="Darcula">
+                        <folder name="Defaults">
+                            <file name="org-netbeans-modules-web-core-syntax-token-colorings.xml" url="Editors/text/javascript/FontsColors/Darcula/tokenColorings.xml"/>
+                        </folder>
+                    </folder>                
+                </folder>
+            </folder>
+            
+            <folder name="plain">
+                <folder name="FontsColors">
+                    <folder name="Darcula">
+                        <folder name="Defaults">
+                            <file name="org-netbeans-modules-editor-plain-token-colorings.xml" url="Editors/text/plain/FontsColors/Darcula/tokenColorings.xml"/>
+                        </folder>
+                    </folder>                
+                </folder>
+            </folder>
+            
+            <folder name="x-apache-conf">
+                <folder name="FontsColors">
+                    <folder name="Darcula">
+                        <folder name="Defaults">
+                            <file name="org-netbeans-modules-editor-apache-conf-token-colorings.xml" url="Editors/text/x-apache-conf/FontsColors/Darcula/tokenColorings.xml"/>
+                        </folder>
+                    </folder>                
+                </folder>
+            </folder>
+            
+            <folder name="x-diff">
+                <folder name="FontsColors">
+                    <folder name="Darcula">
+                        <folder name="Defaults">
+                            <file name="org-netbeans-modules-editor-diff-token-colorings.xml" url="Editors/text/x-diff/FontsColors/Darcula/tokenColorings.xml"/>
+                        </folder>
+                    </folder>
+                </folder>
+            </folder>
+            
+            <folder name="x-el">
+                <folder name="FontsColors">
+                    <folder name="Darcula">
+                        <folder name="Defaults">
+                            <file name="org-netbeans-modules-el-lexer-token-colorings.xml" url="Editors/text/x-el/FontsColors/Darcula/tokenColorings.xml"/>
+                        </folder>
+                    </folder>
+                </folder>
+            </folder>
+            
+            <folder name="x-java">
+                <folder name="FontsColors">
+                    <folder name="Darcula">
+                        <folder name="Defaults">
+                            <file name="org-netbeans-modules-editor-java-token-colorings.xml" url="Editors/text/x-java/FontsColors/Darcula/tokenColorings.xml"/>
+                        </folder>
+                    </folder>                
+                </folder>
+            </folder>
+            
+            <folder name="x-json">
+                <folder name="FontsColors">
+                    <folder name="Darcula">
+                        <folder name="Defaults">
+                            <file name="org-netbeans-modules-editor-json-token-colorings.xml" url="Editors/text/x-json/FontsColors/Darcula/tokenColorings.xml"/>
+                        </folder>
+                    </folder>                
+                </folder>
+            </folder>
+                
+            <folder name="x-jsp">
+                <folder name="FontsColors">
+                    <folder name="Darcula">
+                        <folder name="Defaults">
+                            <file name="org-netbeans-modules-web-core-syntax-token-colorings.xml" url="Editors/text/x-jsp/FontsColors/Darcula/tokenColorings.xml"/>
+                        </folder>
+                    </folder>                
+                </folder>
+            </folder>
+            
+            <folder name="x-php5">
+                <folder name="FontsColors">
+                    <folder name="Darcula">
+                        <folder name="Defaults">
+                            <file name="org-netbeans-modules-web-core-syntax-token-colorings.xml" url="Editors/text/x-php5/FontsColors/Darcula/tokenColorings.xml"/>
+                        </folder>
+                    </folder>                
+                </folder>
+            </folder>
+            
+            <folder name="x-properties">
+                <folder name="FontsColors">
+                    <folder name="Darcula">
+                        <folder name="Defaults">
+                            <file name="org-netbeans-modules-properties-syntax-token-colorings.xml" url="Editors/text/x-properties/FontsColors/Darcula/tokenColorings.xml"/>
+                        </folder>
+                    </folder>                
+                </folder>
+            </folder>
+
+            <folder name="x-sql">
+                <folder name="FontsColors">
+                    <folder name="Darcula">
+                        <folder name="Defaults">
+                            <file name="org-netbeans-modules-db-sql-editor-token-colorings.xml" url="Editors/text/x-sql/FontsColors/Darcula/tokenColorings.xml"/>
+                        </folder>
+                    </folder>                
+                </folder>
+            </folder>
+            
+            <folder name="x-tag">
+                <folder name="FontsColors">
+                    <folder name="Darcula">
+                        <folder name="Defaults">
+                            <file name="org-netbeans-modules-web-core-syntax-token-colorings.xml" url="Editors/text/x-tag/FontsColors/Darcula/tokenColorings.xml"/>
+                        </folder>
+                    </folder>                
+                </folder>
+            </folder>      
+            
+            <folder name="x-tpl">
+                <folder name="FontsColors">
+                    <folder name="Darcula">
+                        <folder name="Defaults">
+                            <file name="org-netbeans-modules-tpl-editor-token-colorings.xml" url="Editors/text/x-tpl/FontsColors/Darcula/tokenColorings.xml"/>
+                        </folder>
+                    </folder>                
+                </folder>
+            </folder>
+
+            <folder name="xhtml">
+                <folder name="FontsColors">
+                    <folder name="Darcula">
+                        <folder name="Defaults">
+                            <file name="org-netbeans-modules-editor-xhtml-colorings.xml" url="Editors/text/xhtml/FontsColors/Darcula/tokenColorings.xml"/>
+                        </folder>
+                    </folder>                
+                </folder>
+            </folder>
+
+            <folder name="xml">
+                <folder name="FontsColors">
+                    <folder name="Darcula">
+                        <folder name="Defaults">
+                            <file name="org-netbeans-modules-xml-text-token-colorings.xml" url="Editors/text/xml/FontsColors/Darcula/tokenColorings.xml"/>
+                        </folder>
+                    </folder>                
+                </folder>
+            </folder>
+
+            <folder name="xml-external-parsed-entity">
+                <folder name="FontsColors">
+                    <folder name="Darcula">
+                        <folder name="Defaults">
+                            <file name="org-netbeans-modules-xml-external-parsed-entity-token-colorings.xml" url="Editors/text/xml-external-parsed-entity/FontsColors/Darcula/tokenColorings.xml"/>
+                        </folder>
+                    </folder>                
+                </folder>
+            </folder>
+        </folder>
+    </folder>
+</filesystem>

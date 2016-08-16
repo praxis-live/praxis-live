@@ -2,7 +2,7 @@
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
 <filesystem>
 
-    <folder name="Editors">
+<!--    <folder name="Editors">
         <folder name="FontsColors">
             <folder name="NetBeans"> 
                 <folder name="Defaults">
@@ -38,7 +38,7 @@
         
         </folder>
         
-    </folder>
+    </folder>-->
     
     
 
