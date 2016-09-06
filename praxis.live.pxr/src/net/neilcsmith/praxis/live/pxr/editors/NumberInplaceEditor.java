@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Neil C Smith.
+ * Copyright 2016 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -64,20 +64,19 @@ class NumberInplaceEditor extends JComponent implements InplaceEditor {
     private static final long IGNORE_CLICK_TIME = 500 * 1000000;
     private PropertyEditor propertyEditor;
     private PropertyModel propertyModel;
-    private List<ActionListener> listeners;
+    private final List<ActionListener> listeners;
     private JTextField textField;
     private Object initialValue;
     private PNumber currentValue;
-    private double minimum;
-    private double maximum;
+    private final double min;
+    private final double max;
+    private final double skew;
 
-    NumberInplaceEditor(PNumber min, PNumber max) {
-        minimum = min.value();
-        maximum = max.value();
-        if (minimum >= maximum) {
-            throw new IllegalArgumentException();
-        }
-        listeners = new ArrayList<ActionListener>();
+    NumberInplaceEditor(double min, double max, double skew) {
+        this.min = min;
+        this.max = max;
+        this.skew = skew < 0.125 ? 0.125 : skew > 8 ? 8 : skew;
+        listeners = new ArrayList<>();
         initThis();
         initComponents();
 
@@ -117,7 +116,8 @@ class NumberInplaceEditor extends JComponent implements InplaceEditor {
     void paintValue(Graphics g, Rectangle box, double value, boolean highlight) {
         Color c = g.getColor();
         String stringValue = FORMATTER.format(value);
-        double delta = (value - minimum) / (maximum - minimum);
+        double delta = (value - min) / (max - min);
+        delta = Math.pow(delta, 1.0/skew);
         int x = (int) (delta * (box.width - 1));
         x += box.x;
         FontMetrics fm = g.getFontMetrics();
@@ -139,21 +139,6 @@ class NumberInplaceEditor extends JComponent implements InplaceEditor {
 
     }
 
-//    @Override
-//    public void addNotify() {
-//        super.addNotify();
-//        if (EventQueue.getCurrentEvent() instanceof MouseEvent) {
-//            textField.setVisible(false);
-//        } else {
-//            EventQueue.invokeLater(new Runnable() {
-//
-//                @Override
-//                public void run() {
-//                    focusTextField();
-//                }
-//            });
-//        }
-//    }
     @Override
     public void connect(PropertyEditor pe, PropertyEnv env) {
         this.propertyEditor = pe;
@@ -283,7 +268,7 @@ class NumberInplaceEditor extends JComponent implements InplaceEditor {
     private class MouseHandler extends MouseAdapter {
 
         private int startX;
-        private double startValue;
+        private int valueX;
         private boolean dragging;
         private long clickTime;
 
@@ -294,7 +279,9 @@ class NumberInplaceEditor extends JComponent implements InplaceEditor {
             }
             clickTime = System.nanoTime();
             startX = me.getX();
-            startValue = currentValue.value();
+            double delta = (currentValue.value() - min) / (max - min);
+            delta = Math.pow(delta, 1.0/skew);
+            valueX = (int) (delta * (getWidth()) + 0.5);
         }
 
         @Override
@@ -318,15 +305,12 @@ class NumberInplaceEditor extends JComponent implements InplaceEditor {
         }
 
         private void update(MouseEvent me) {
-            double delta = (me.getX() - startX) / (double) getWidth();
-            delta *= (maximum - minimum);
-            double value = startValue + delta;
-            if (value > maximum) {
-                value = maximum;
-            } else if (value < minimum) {
-                value = minimum;
-            }
-            updateValue(value);
+            int curX = valueX + (me.getX() - startX);
+            double delta = curX / (double) getWidth();
+            delta = delta < 0 ? 0 : delta > 1 ? 1 : delta;
+            delta = Math.pow(delta, skew);
+            delta = delta * (max  - min) + min;
+            updateValue(delta);
         }
     }
 }

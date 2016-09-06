@@ -48,11 +48,9 @@ public class NumberEditor extends EditorSupport implements
     
     private final static String EDIT_AS_TEXT = "canEditAsText";
 
-    private ArgumentInfo info;
+    private final ArgumentInfo info;
     private NumberInplaceEditor inplace;
 
-    private PNumber minimum;
-    private PNumber maximum;
     private boolean isInteger;
     private List<String> suggested;
 
@@ -72,19 +70,15 @@ public class NumberEditor extends EditorSupport implements
 
     private void initFP() {
         PMap props = info.getProperties();
-        Argument minProp = props.get(PNumber.KEY_MINIMUM);
-        Argument maxProp = props.get(PNumber.KEY_MAXIMUM);
-        if (minProp != null && maxProp != null) {
-            try {
-                minimum = PNumber.coerce(minProp);
-                maximum = PNumber.coerce(maxProp);
-            } catch (Exception ex) {
-                minimum = maximum = null;
-            }
+        
+        double min = props.getDouble(PNumber.KEY_MINIMUM, PNumber.MIN_VALUE);
+        double max = props.getDouble(PNumber.KEY_MAXIMUM, PNumber.MAX_VALUE);
+        if (min > (PNumber.MIN_VALUE + 1)
+                || max < (PNumber.MAX_VALUE - 1)) {
+            double skew = props.getDouble(PNumber.KEY_SKEW, 1);
+            inplace = new NumberInplaceEditor(min, max, skew);
         }
-        if (minimum != null && maximum != null) {
-            inplace = new NumberInplaceEditor(minimum, maximum);
-        }
+
     }
 
     private void initInt() {
@@ -162,7 +156,7 @@ public class NumberEditor extends EditorSupport implements
         try {
             value = PNumber.coerce((Argument) getValue()).value();
         } catch (Exception ex) {
-            value = minimum.value();
+            value = 0;
         }
         inplace.paintValue(g, box, value, false);
     }
