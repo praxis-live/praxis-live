@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2014 Neil C Smith.
+ * Copyright 2016 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -30,16 +30,15 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import net.neilcsmith.praxis.core.Component;
 import net.neilcsmith.praxis.hub.Hub;
 import net.neilcsmith.praxis.hub.net.MasterFactory;
-import net.neilcsmith.praxis.hub.net.SlaveInfo;
 import net.neilcsmith.praxis.live.core.api.LogHandler;
 import net.neilcsmith.praxis.live.core.api.Task;
 import net.neilcsmith.praxis.logging.LogLevel;
-import net.neilcsmith.praxis.logging.LogService;
 import org.openide.util.Exceptions;
 
 /**
@@ -284,6 +283,13 @@ public class DefaultHubManager {
     private void deinitHub() {
         container.uninstallExtensions();
         hub.shutdown();
+        try {
+            hub.await();
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (ExecutionException ex) {
+            Exceptions.printStackTrace(ex);
+        }
         container = null;
         rootManager = null;
         hub = null;
