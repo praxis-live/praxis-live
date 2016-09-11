@@ -28,8 +28,6 @@ import net.neilcsmith.praxis.video.VideoSettings;
 
 
 final class CapturePanel extends javax.swing.JPanel {
-
-    private final static String GST1 = "gstreamer-1.x";
     
     private final CaptureOptionsPanelController controller;
 
@@ -84,9 +82,7 @@ final class CapturePanel extends javax.swing.JPanel {
         resetBtn2 = new javax.swing.JButton();
         resetBtn3 = new javax.swing.JButton();
         resetBtn4 = new javax.swing.JButton();
-        mediaLibraryPanel = new javax.swing.JPanel();
-        mediaSelect = new javax.swing.JComboBox();
-        mediaSelectLabel = new javax.swing.JLabel();
+        jPanel1 = new javax.swing.JPanel();
 
         defaultConfigPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(CapturePanel.class, "CapturePanel.defaultConfigPanel.border.title"))); // NOI18N
 
@@ -189,44 +185,28 @@ final class CapturePanel extends javax.swing.JPanel {
                     .addComponent(resetBtn4)))
         );
 
-        mediaLibraryPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(CapturePanel.class, "CapturePanel.mediaLibraryPanel.border.title"))); // NOI18N
+        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(CapturePanel.class, "CapturePanel.jPanel1.border.title"))); // NOI18N
+        jPanel1.setEnabled(false);
 
-        mediaSelect.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "GStreamer 0.10 (default)", "GStreamer 1.x" }));
-        mediaSelect.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                mediaSelectActionPerformed(evt);
-            }
-        });
-
-        org.openide.awt.Mnemonics.setLocalizedText(mediaSelectLabel, org.openide.util.NbBundle.getMessage(CapturePanel.class, "CapturePanel.mediaSelectLabel.text")); // NOI18N
-
-        javax.swing.GroupLayout mediaLibraryPanelLayout = new javax.swing.GroupLayout(mediaLibraryPanel);
-        mediaLibraryPanel.setLayout(mediaLibraryPanelLayout);
-        mediaLibraryPanelLayout.setHorizontalGroup(
-            mediaLibraryPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(mediaLibraryPanelLayout.createSequentialGroup()
-                .addComponent(mediaSelectLabel)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(mediaSelect, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addContainerGap())
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 0, Short.MAX_VALUE)
         );
-        mediaLibraryPanelLayout.setVerticalGroup(
-            mediaLibraryPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(mediaLibraryPanelLayout.createSequentialGroup()
-                .addGroup(mediaLibraryPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(mediaSelect, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(mediaSelectLabel))
-                .addGap(0, 156, Short.MAX_VALUE))
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 100, Short.MAX_VALUE)
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+            .addGroup(layout.createSequentialGroup()
                 .addGap(12, 12, 12)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(mediaLibraryPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(defaultConfigPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addGap(12, 12, 12))
         );
@@ -235,9 +215,9 @@ final class CapturePanel extends javax.swing.JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addGap(12, 12, 12)
                 .addComponent(defaultConfigPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
-                .addComponent(mediaLibraryPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addContainerGap())
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -261,22 +241,12 @@ final class CapturePanel extends javax.swing.JPanel {
         controller.changed();
     }//GEN-LAST:event_resetBtn4ActionPerformed
 
-    private void mediaSelectActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mediaSelectActionPerformed
-        controller.changed();
-    }//GEN-LAST:event_mediaSelectActionPerformed
-
     void load() {
         devInput1.setText(VideoSettings.getCaptureDevice(1));
         devInput2.setText(VideoSettings.getCaptureDevice(2));
         devInput3.setText(VideoSettings.getCaptureDevice(3));
         devInput4.setText(VideoSettings.getCaptureDevice(4));
         
-        String mediaLib = VideoSettings.getMediaLib();
-        if (GST1.equals(mediaLib)) {
-            mediaSelect.setSelectedIndex(1);
-        } else {
-            mediaSelect.setSelectedIndex(0);
-        }
     }
 
     void store() {
@@ -308,12 +278,7 @@ final class CapturePanel extends javax.swing.JPanel {
         } else {
             VideoSettings.setCaptureDevice(4, text);
         }
-        
-        if (mediaSelect.getSelectedIndex() == 1) {
-            VideoSettings.setMediaLib(GST1);
-        } else {
-            VideoSettings.resetMediaLib();
-        }
+
     }
 
     boolean valid() {
@@ -330,9 +295,7 @@ final class CapturePanel extends javax.swing.JPanel {
     private javax.swing.JLabel devLbl2;
     private javax.swing.JLabel devLbl3;
     private javax.swing.JLabel devLbl4;
-    private javax.swing.JPanel mediaLibraryPanel;
-    private javax.swing.JComboBox mediaSelect;
-    private javax.swing.JLabel mediaSelectLabel;
+    private javax.swing.JPanel jPanel1;
     private javax.swing.JButton resetBtn1;
     private javax.swing.JButton resetBtn2;
     private javax.swing.JButton resetBtn3;
