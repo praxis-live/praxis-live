@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 2014 Neil C Smith.
+ * Copyright 2016 Neil C Smith.
  * 
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -19,45 +19,50 @@
  * Please visit http://neilcsmith.net if you need additional information or
  * have any questions.
  */
-
 package net.neilcsmith.praxis.live.core;
 
 import java.net.InetSocketAddress;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 import java.util.regex.Pattern;
+import net.neilcsmith.praxis.code.CodeCompilerService;
 import net.neilcsmith.praxis.core.ComponentType;
+import net.neilcsmith.praxis.core.interfaces.Service;
 import net.neilcsmith.praxis.hub.net.SlaveInfo;
+import net.neilcsmith.praxis.logging.LogService;
 
 /**
  *
  * @author Neil C Smith <http://neilcsmith.net>
  */
 public class HubSlaveInfo extends SlaveInfo {
-    
+
     private final String host;
     private final int port;
     private final String id;
     private final String type;
     private final boolean autoStart;
-    
+
     private final Pattern idPattern;
     private final Pattern typePattern;
 
     public HubSlaveInfo(String host, int port, String id, String type, boolean autoStart) {
         super(new InetSocketAddress(host, port));
-        
+
         validateHostString(host);
-        
+
         this.host = host;
         this.port = port;
         this.id = id;
         this.type = type;
         this.autoStart = autoStart;
-        
+
         idPattern = globToRegex(id);
         typePattern = globToRegex(type);
     }
-    
+
     private void validateHostString(String host) {
         for (char c : host.toCharArray()) {
             if (Character.isWhitespace(c)) {
@@ -65,18 +70,28 @@ public class HubSlaveInfo extends SlaveInfo {
             }
         }
     }
-     
+
     private Pattern globToRegex(String glob) {
         StringBuilder regex = new StringBuilder();
 //        boolean first = true;
         for (char c : glob.toCharArray()) {
             switch (c) {
-                case '*' : regex.append(".*"); break;
-                case '?' : regex.append('.'); break;
-                case '|' : regex.append('|'); break;
-                case '_' : regex.append('_'); break;
-                case '-' : regex.append("\\-"); break;
-                default :
+                case '*':
+                    regex.append(".*");
+                    break;
+                case '?':
+                    regex.append('.');
+                    break;
+                case '|':
+                    regex.append('|');
+                    break;
+                case '_':
+                    regex.append('_');
+                    break;
+                case '-':
+                    regex.append("\\-");
+                    break;
+                default:
                     if (Character.isJavaIdentifierPart(c)) {
                         regex.append(c);
                     } else {
@@ -119,8 +134,32 @@ public class HubSlaveInfo extends SlaveInfo {
     public boolean isAutoStart() {
         return autoStart;
     }
-    
-    
+
+    @Override
+    public List<Class<? extends Service>> getRemoteServices() {
+        if (HubSettings.getDefault().isUseMasterCompiler()) {
+            List<Class<? extends Service>> list = new ArrayList<>(2);
+            list.add(LogService.class);
+            list.add(CodeCompilerService.class);
+            return list;
+        } else {
+            return Collections.singletonList(LogService.class);
+        }
+    }
+
+    @Override
+    public boolean getUseLocalResources() {
+        if (getUseRemoteResources()) {
+            return HubSettings.getDefault().isPreferLocalFiles();
+        } else {
+            return true;
+        }
+    }
+
+    @Override
+    public boolean getUseRemoteResources() {
+        return HubSettings.getDefault().isRunFileServer();
+    }
 
     @Override
     public String toString() {
@@ -171,7 +210,6 @@ public class HubSlaveInfo extends SlaveInfo {
         return true;
     }
 
-    
     public static HubSlaveInfo fromString(String string) {
         String[] parts = string.split("\\s+");
         if (parts.length != 5) {
@@ -181,5 +219,5 @@ public class HubSlaveInfo extends SlaveInfo {
         boolean autoStart = Boolean.parseBoolean(parts[4]);
         return new HubSlaveInfo(parts[0], port, parts[2], parts[3], autoStart);
     }
-    
+
 }

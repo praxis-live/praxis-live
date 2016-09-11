@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 2015 Neil C Smith.
+ * Copyright 2016 Neil C Smith.
  * 
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -32,7 +32,6 @@ import java.util.prefs.Preferences;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.NbPreferences;
-import org.openide.util.Utilities;
 
 /**
  *
@@ -45,6 +44,9 @@ public class HubSettings {
     private final static HubSettings DEFAULT = new HubSettings();
     private final static Preferences PREFS = NbPreferences.forModule(HubSettings.class);
     private final static String KEY_DISTRIBUTED = "hub.distributed";
+    private final static String KEY_FILE_SERVER = "hub.file-server";
+    private final static String KEY_PREFER_LOCAL_FILES = "hub.prefer-local-files";
+    private final static String KEY_MASTER_COMPILER = "hub.master-compiler";
     private final static String KEY_SLAVE_INFO = "hub.slave-info";
 //    private final static String KEY_LOCAL_SLAVE_CONFIG = "hub.local-slave-config";
     private final static String KEY_LOCAL_SLAVE_LAUNCHER = "hub.local-slave-launcher";
@@ -62,6 +64,30 @@ public class HubSettings {
 
     public boolean isDistributedHub() {
         return PREFS.getBoolean(KEY_DISTRIBUTED, false);
+    }
+    
+    public void setRunFileServer(boolean server) {
+        PREFS.putBoolean(KEY_FILE_SERVER, server);
+    }
+    
+    public boolean isRunFileServer() {
+        return PREFS.getBoolean(KEY_FILE_SERVER, false);
+    }
+    
+    public void setUseMasterCompiler(boolean master) {
+        PREFS.putBoolean(KEY_MASTER_COMPILER, master);
+    }
+    
+    public boolean isUseMasterCompiler() {
+        return PREFS.getBoolean(KEY_MASTER_COMPILER, true);
+    }
+    
+    public void setPreferLocalFiles(boolean master) {
+        PREFS.putBoolean(KEY_PREFER_LOCAL_FILES, master);
+    }
+    
+    public boolean isPreferLocalFiles() {
+        return PREFS.getBoolean(KEY_PREFER_LOCAL_FILES, true);
     }
 
     public void setLocalSlaveLauncher(File launcher) {
