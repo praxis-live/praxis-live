@@ -60,6 +60,16 @@ public class ActionSupport {
         return ActionBridge.getDefault().createCopyTask(container, children, preWriteTask, postWriteTask);
     }
     
+    public Task createExportTask(ContainerProxy container, Set<String> children) {
+        return createExportTask(container, children, null, null);
+    }
+    
+    public Task createExportTask(ContainerProxy container,
+            Set<String> children,
+            Runnable preWriteTask, Runnable postWriteTask) {
+        return ActionBridge.getDefault().createExportTask(container, children, preWriteTask, postWriteTask);
+    }
+    
     
     public boolean pasteFromClipboard(ContainerProxy container, Callback callback) {
         return ActionBridge.getDefault().pasteFromClipboard(container, callback);

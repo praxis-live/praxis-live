@@ -21,16 +21,21 @@
  */
 package net.neilcsmith.praxis.live.pxr;
 
+import java.awt.EventQueue;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.ClipboardOwner;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
+import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.Set;
 import java.util.stream.Collectors;
 import javax.swing.SwingUtilities;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import net.neilcsmith.praxis.core.CallArguments;
 import net.neilcsmith.praxis.core.ComponentAddress;
 import net.neilcsmith.praxis.live.core.api.Callback;
@@ -38,7 +43,11 @@ import net.neilcsmith.praxis.live.core.api.Task;
 import net.neilcsmith.praxis.live.model.ContainerProxy;
 import net.neilcsmith.praxis.live.util.AbstractTask;
 import net.neilcsmith.praxis.live.util.SerialTasks;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.filesystems.FileChooserBuilder;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
@@ -51,7 +60,7 @@ public class ActionBridge {
 
     private final static ActionBridge INSTANCE = new ActionBridge();
 
-    private final RequestProcessor RP = new RequestProcessor(ActionBridge.class);
+    private final static RequestProcessor RP = new RequestProcessor(ActionBridge.class);
 
     private ActionBridge() {
         // non instantiable
@@ -79,8 +88,21 @@ public class ActionBridge {
                 .map(container::getChild)
                 .filter(cmp -> cmp != null)
                 .collect(Collectors.toSet()), 250);
-        WriteClipboardTask write = 
-                new WriteClipboardTask(container, children, preWriteTask, postWriteTask);
+        WriteClipboardTask write
+                = new WriteClipboardTask(container, children, preWriteTask, postWriteTask);
+        return new SerialTasks(sync, write);
+    }
+    
+    public Task createExportTask(ContainerProxy container,
+            Set<String> children,
+            Runnable preWriteTask, Runnable postWriteTask) {
+        SyncTask sync = new SyncTask(
+                children.stream()
+                .map(container::getChild)
+                .filter(cmp -> cmp != null)
+                .collect(Collectors.toSet()), 250);
+        ExportTask write
+                = new ExportTask(container, children, preWriteTask, postWriteTask);
         return new SerialTasks(sync, write);
     }
 
@@ -117,6 +139,80 @@ public class ActionBridge {
                 }
             }
             updateState(State.COMPLETED);
+        }
+
+    }
+
+    private static class ExportTask extends AbstractTask {
+
+        private final ContainerProxy container;
+        private final Set<String> children;
+        private final Runnable preWriteTask;
+        private final Runnable postWriteTask;
+
+        ExportTask(ContainerProxy container,
+                Set<String> children,
+                Runnable preWriteTask,
+                Runnable postWriteTask) {
+            this.container = container;
+            this.children = children;
+            this.preWriteTask = preWriteTask;
+            this.postWriteTask = postWriteTask;
+        }
+
+        @Override
+        protected void handleExecute() throws Exception {
+            if (preWriteTask != null) {
+                preWriteTask.run();
+            }
+            StringBuilder sb = new StringBuilder();
+            PXRWriter.writeSubGraph((PXRContainerProxy) container, children, sb);
+
+            if (postWriteTask != null) {
+                postWriteTask.run();
+            }
+
+            File f = new FileChooserBuilder("export-pxg")
+                    .addFileFilter(new FileNameExtensionFilter("PXG files", "pxg"))
+                    .setAcceptAllFileFilterUsed(false)
+                    .showSaveDialog();
+
+            if (f == null) {
+                updateState(State.CANCELLED);
+                return;
+            }
+            
+            if (!f.getName().endsWith(".pxg")) {
+                f = new File(f.getParent(), f.getName() + ".pxg");
+            }
+            
+            File file = f;
+            String export = sb.toString();
+
+            RP.post(() -> {
+                if (file.exists()) {
+                    EventQueue.invokeLater(() -> {
+                        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message("File already exists.", NotifyDescriptor.ERROR_MESSAGE));
+                        updateState(State.ERROR);
+                    });
+                } else {
+                    try {
+                        Files.write(file.toPath(), export.getBytes(StandardCharsets.UTF_8));
+                        FileUtil.toFileObject(file.getParentFile()).refresh();
+                        EventQueue.invokeLater(() -> {
+                            updateState(State.COMPLETED);
+                        });
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                        EventQueue.invokeLater(() -> {
+                            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message("Failed to write file.", NotifyDescriptor.ERROR_MESSAGE));
+                            updateState(State.ERROR);
+                        });
+                    }
+                }
+
+            });
+
         }
 
     }
