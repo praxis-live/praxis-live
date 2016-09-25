@@ -33,6 +33,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.table.AbstractTableModel;
 import net.neilcsmith.praxis.core.ComponentAddress;
+import net.neilcsmith.praxis.core.ControlAddress;
 import net.neilcsmith.praxis.live.model.ContainerProxy;
 import net.neilcsmith.praxis.live.pxr.PXRParser.ComponentElement;
 import net.neilcsmith.praxis.live.pxr.PXRParser.ConnectionElement;
@@ -63,8 +64,14 @@ class ImportRenameSupport {
             // assert?
             throw new IllegalArgumentException();
         }
-        Set<String> existing = new LinkedHashSet<String>(Arrays.asList(container.getChildIDs()));
         ComponentElement[] cmps = fakeRoot.children;
+        
+        if (cmps.length == 1 && fakeRoot.connections.length == 0) {
+            return prepareSingle(container, cmps[0], paste);
+        }
+        
+        Set<String> existing = new LinkedHashSet<String>(Arrays.asList(container.getChildIDs()));
+        
         List<String> names = new ArrayList<String>(cmps.length);
         for (ComponentElement cmp : cmps) {
             String name = EditorUtils.findFreeID(existing, cmp.address.getID(), false);
@@ -98,6 +105,19 @@ class ImportRenameSupport {
         
         return true;
         
+    }
+    
+    private static boolean prepareSingle(ContainerProxy container, ComponentElement cmp, boolean paste) {
+        String id = cmp.address.getID();
+        NotifyDescriptor.InputLine dlg = new NotifyDescriptor.InputLine(
+                "ID:", "Enter an ID for " + id);
+        dlg.setInputText(EditorUtils.findFreeID(new LinkedHashSet<>(Arrays.asList(container.getChildIDs())), id, false));
+        Object retval = DialogDisplayer.getDefault().notify(dlg);
+        if (retval == NotifyDescriptor.OK_OPTION) {
+            cmp.address = ComponentAddress.create(cmp.address.getParentAddress(), dlg.getInputText());
+            return true;
+        }
+        return false;
     }
     
     private static NotifyDescriptor constructDialog(String title, JTable table) {

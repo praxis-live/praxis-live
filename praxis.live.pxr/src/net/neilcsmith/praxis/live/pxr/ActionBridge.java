@@ -264,15 +264,19 @@ public class ActionBridge {
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {
-                        if (root != null) {
-                            if (ImportRenameSupport.prepareForImport(container, root)) {
-                                PXRBuilder builder = new PXRBuilder(findRootProxy(container), root, null);
-                                builder.process(callback);
+                        try {
+                            if (root != null) {
+                                if (ImportRenameSupport.prepareForImport(container, root)) {
+                                    PXRBuilder builder = new PXRBuilder(findRootProxy(container), root, null);
+                                    builder.process(callback);
+                                } else {
+                                    callback.onReturn(CallArguments.EMPTY);
+                                }
                             } else {
-                                callback.onReturn(CallArguments.EMPTY);
+                                callback.onError(CallArguments.EMPTY);
                             }
-                        } else {
-                            callback.onError(CallArguments.EMPTY);
+                        } catch (Exception ex) {
+                            Exceptions.printStackTrace(ex);
                         }
                     }
                 });
