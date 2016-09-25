@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Neil C Smith.
+ * Copyright 2016 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -27,12 +27,13 @@ import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import javax.swing.AbstractAction;
+import net.neilcsmith.praxis.live.core.api.Task;
 import net.neilcsmith.praxis.live.model.ComponentProxy;
 import net.neilcsmith.praxis.live.model.ContainerProxy;
 import org.openide.explorer.ExplorerManager;
@@ -43,11 +44,11 @@ import org.openide.nodes.Node;
  * @author Neil C Smith
  */
 class CopyActionPerformer extends AbstractAction {
-
+    
     private final static Logger LOG = Logger.getLogger(CopyActionPerformer.class.getName());
     private GraphEditor editor;
     private ExplorerManager em;
-
+    
     CopyActionPerformer(GraphEditor editor, ExplorerManager em) {
         this.editor = editor;
         this.em = em;
@@ -59,12 +60,12 @@ class CopyActionPerformer extends AbstractAction {
         });
         refresh();
     }
-
+    
     @Override
     public void actionPerformed(ActionEvent e) {
         LOG.finest("Copy action invoked");
         assert EventQueue.isDispatchThread();
-        List<ComponentProxy> cmps = new ArrayList<ComponentProxy>();
+        List<ComponentProxy> cmps = new ArrayList<>();
         ContainerProxy container = findComponentsAndParent(cmps);
         if (container == null) {
             LOG.finest("No container found");
@@ -72,15 +73,18 @@ class CopyActionPerformer extends AbstractAction {
         }
         Point offset = Utils.findOffset(cmps);
         LOG.log(Level.FINEST, "Found offset : {0}", offset);
-        Utils.offsetComponents(cmps, offset, false);
-        Set<String> childIDs = new LinkedHashSet<String>();
-        for (ComponentProxy cmp : cmps) {
-            childIDs.add(cmp.getAddress().getID());
-        }
-        editor.getActionSupport().copyToClipboard(container, childIDs);
-        Utils.offsetComponents(cmps, offset, true);
+        Set<String> childIDs = cmps.stream()
+                .map(cmp -> cmp.getAddress().getID())
+                .collect(Collectors.toSet());
+        Task copyTask = editor.getActionSupport().createCopyTask(
+                container,
+                childIDs,
+                () -> Utils.offsetComponents(cmps, offset, false),
+                () -> Utils.offsetComponents(cmps, offset, true)
+        );
+        copyTask.execute();
     }
-
+    
     private void refresh() {
         boolean enabled = findComponentsAndParent(null) != null;
         LOG.log(Level.FINEST, "Refreshing Copy action : enabled {0}", enabled);
@@ -108,11 +112,10 @@ class CopyActionPerformer extends AbstractAction {
                 if (components != null) {
                     components.add(cmp);
                 }
-
+                
             }
         }
         return parent;
     }
-
     
 }
