@@ -2,7 +2,6 @@
 
 package net.neilcsmith.praxis.live.pxr.palette;
 
-import org.openide.loaders.DataFolder;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 
@@ -27,7 +26,13 @@ class PaletteFilterNode extends FilterNode {
             if (html != null) {
                 return "<html>" + html;
             } else {
-                return super.getDisplayName();
+                String name = super.getDisplayName();
+                int index = name.lastIndexOf(":");
+                if (isLeaf() && index > 0 && index < name.length() - 1) {
+                    return name.substring(index + 1);
+                } else {
+                    return name;
+                }
             }
         }
 
