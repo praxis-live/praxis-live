@@ -87,13 +87,16 @@ import org.netbeans.api.visual.model.ObjectSceneEvent;
 import org.netbeans.api.visual.model.ObjectSceneEventType;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
+import org.netbeans.spi.palette.PaletteController;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerUtils;
+import org.openide.explorer.view.MenuView;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
+import org.openide.nodes.NodeAcceptor;
 import org.openide.nodes.NodeTransfer;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
@@ -129,6 +132,7 @@ public class GraphEditor extends RootEditor {
     private final Action deleteAction;
     private final Action sceneCommentAction;
     private final Action exportAction;
+    private final JMenuItem addMenu;
 
     private JComponent panel;
     private ContainerProxy container;
@@ -152,9 +156,30 @@ public class GraphEditor extends RootEditor {
         }
 
         deleteAction = new DeleteAction();
+        
+        PaletteController palette = PaletteUtils.getPalette("core", category);
+        
         lookup = new ProxyLookup(ExplorerUtils.createLookup(manager, buildActionMap(manager)),
-                Lookups.fixed(
-                        PaletteUtils.getPalette("core", category)));
+                Lookups.fixed(palette));
+        
+        addMenu = new MenuView.Menu(
+                palette.getRoot().lookup(Node.class),
+                new NodeAcceptor() {
+            @Override
+            public boolean acceptNodes(Node[] nodes) {
+                if (nodes.length == 1) {
+                    ComponentType type = nodes[0].getLookup().lookup(ComponentType.class);
+                    if (type != null) {
+                        EventQueue.invokeLater(() -> acceptComponentType(type));
+                        return true;
+                    }
+                }
+                return false;
+            }
+        });
+        addMenu.setIcon(null);
+        addMenu.setText("Add");
+        
         scene.addObjectSceneListener(new SelectionListener(),
                 ObjectSceneEventType.OBJECT_SELECTION_CHANGED);
         goUpAction = new GoUpAction();
@@ -243,7 +268,8 @@ public class GraphEditor extends RootEditor {
 
     private JPopupMenu getScenePopup() {
         JPopupMenu menu = new JPopupMenu();
-        menu.add(deleteAction);
+//        menu.add(deleteAction);
+        menu.add(addMenu);  
         menu.addSeparator();
         JMenu colorsMenu = new JMenu("Colors");
         for (ColorsAction action : colorsActions) {
@@ -624,6 +650,56 @@ public class GraphEditor extends RootEditor {
             return container.getChild(obj.toString());
         }
         return null;
+    }
+
+    private void acceptComponentType(final ComponentType type) {
+        NotifyDescriptor.InputLine dlg = new NotifyDescriptor.InputLine(
+                "ID:", "Enter an ID for " + type);
+        dlg.setInputText(getFreeID(type));
+        Object retval = DialogDisplayer.getDefault().notify(dlg);
+        if (retval == NotifyDescriptor.OK_OPTION) {
+            final String id = dlg.getInputText();
+            try {
+                container.addChild(id, type, new Callback() {
+                    @Override
+                    public void onReturn(CallArguments args) {
+                        // nothing wait for sync
+                    }
+
+                    @Override
+                    public void onError(CallArguments args) {
+//                                        pointMap.remove(id);
+                        DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message("Error creating component", NotifyDescriptor.ERROR_MESSAGE));
+                    }
+                });
+            } catch (ProxyException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+//                            pointMap.put(id, point);
+
+        }
+    }
+
+    private void acceptImport(FileObject file) {
+        if (getActionSupport().importSubgraph(container, file, new Callback() {
+            @Override
+            public void onReturn(CallArguments args) {
+                sync(true);
+            }
+
+            @Override
+            public void onError(CallArguments args) {
+                sync(true);
+            }
+        })) {
+            sync(false);
+        }
+    }
+
+    private String getFreeID(ComponentType type) {
+        Set<String> existing = new HashSet<String>(Arrays.asList(container.getChildIDs()));
+        return EditorUtils.findFreeID(existing, EditorUtils.extractBaseID(type), true);
+
     }
 
     private class ContainerListener implements PropertyChangeListener {
@@ -1075,62 +1151,12 @@ public class GraphEditor extends RootEditor {
             activePoint.setLocation(point);
             ComponentType type = extractType(transferable);
             if (type != null) {
-                acceptComponentType(type);
+                EventQueue.invokeLater(() -> acceptComponentType(type));
                 return;
             }
             FileObject file = extractFile(transferable);
             if (file != null) {
-                acceptImport(file);
-            }
-        }
-
-        private void acceptComponentType(final ComponentType type) {
-            Runnable runnable = new Runnable() {
-                @Override
-                public void run() {
-                    NotifyDescriptor.InputLine dlg = new NotifyDescriptor.InputLine(
-                            "ID:", "Enter an ID for " + type);
-                    dlg.setInputText(getFreeID(type));
-                    Object retval = DialogDisplayer.getDefault().notify(dlg);
-                    if (retval == NotifyDescriptor.OK_OPTION) {
-                        final String id = dlg.getInputText();
-                        try {
-                            container.addChild(id, type, new Callback() {
-                                @Override
-                                public void onReturn(CallArguments args) {
-                                    // nothing wait for sync
-                                }
-
-                                @Override
-                                public void onError(CallArguments args) {
-//                                        pointMap.remove(id);
-                                    DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message("Error creating component", NotifyDescriptor.ERROR_MESSAGE));
-                                }
-                            });
-                        } catch (ProxyException ex) {
-                            Exceptions.printStackTrace(ex);
-                        }
-//                            pointMap.put(id, point);
-
-                    }
-                }
-            };
-            SwingUtilities.invokeLater(runnable);
-        }
-
-        private void acceptImport(FileObject file) {
-            if (getActionSupport().importSubgraph(container, file, new Callback() {
-                @Override
-                public void onReturn(CallArguments args) {
-                    sync(true);
-                }
-
-                @Override
-                public void onError(CallArguments args) {
-                    sync(true);
-                }
-            })) {
-                sync(false);
+                EventQueue.invokeLater(() -> acceptImport(file));
             }
         }
 
@@ -1156,10 +1182,5 @@ public class GraphEditor extends RootEditor {
             return null;
         }
 
-        private String getFreeID(ComponentType type) {
-            Set<String> existing = new HashSet<String>(Arrays.asList(container.getChildIDs()));
-            return EditorUtils.findFreeID(existing, EditorUtils.extractBaseID(type), true);
-
-        }
     }
 }
