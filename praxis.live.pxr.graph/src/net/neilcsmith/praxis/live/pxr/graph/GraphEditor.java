@@ -128,6 +128,7 @@ public class GraphEditor extends RootEditor {
     private final Action goUpAction;
     private final Action deleteAction;
     private final Action sceneCommentAction;
+    private final Action exportAction;
 
     private JComponent panel;
     private ContainerProxy container;
@@ -168,6 +169,7 @@ public class GraphEditor extends RootEditor {
         }
 
         sceneCommentAction = new CommentAction(scene);
+        exportAction = new ExportAction(this, manager);
         setupSceneActions();
     }
 
@@ -221,6 +223,8 @@ public class GraphEditor extends RootEditor {
             }
         }
         menu.add(deleteAction);
+        menu.addSeparator();
+        menu.add(exportAction);
         menu.addSeparator();
         JMenu colorsMenu = new JMenu("Colors");
         for (ColorsAction action : colorsActions) {
