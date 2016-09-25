@@ -173,6 +173,11 @@ public class GraphEditor extends RootEditor {
                         EventQueue.invokeLater(() -> acceptComponentType(type));
                         return true;
                     }
+                    FileObject fo = nodes[0].getLookup().lookup(FileObject.class);
+                    if (fo != null) {
+                        EventQueue.invokeLater(() -> acceptImport(fo));
+                        return true;
+                    }
                 }
                 return false;
             }
