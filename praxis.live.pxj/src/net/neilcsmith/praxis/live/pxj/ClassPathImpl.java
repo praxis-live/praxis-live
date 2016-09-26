@@ -40,6 +40,8 @@ public class ClassPathImpl implements ClassPathProvider {
     public ClassPath findClassPath(FileObject file, String type) {
         if (file.getAttribute(PXJDataObject.PXJ_DOB_KEY) instanceof PXJDataObject) {
             switch (type) {
+                case ClassPath.BOOT:
+                    return ClassPathRegistry.getInstance().getBootClasspath();
                 case ClassPath.COMPILE:
                     return ClassPathRegistry.getInstance().getCompileClasspath();
                 case ClassPath.SOURCE:
