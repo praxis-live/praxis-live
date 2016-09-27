@@ -108,13 +108,15 @@ class ImportRenameSupport {
     }
     
     private static boolean prepareSingle(ContainerProxy container, ComponentElement cmp, boolean paste) {
-        String id = cmp.address.getID();
+        ComponentAddress parsedAddress = cmp.address;
+        String id = parsedAddress.getID();
         NotifyDescriptor.InputLine dlg = new NotifyDescriptor.InputLine(
                 "ID:", "Enter an ID for " + id);
         dlg.setInputText(EditorUtils.findFreeID(new LinkedHashSet<>(Arrays.asList(container.getChildIDs())), id, false));
         Object retval = DialogDisplayer.getDefault().notify(dlg);
         if (retval == NotifyDescriptor.OK_OPTION) {
             cmp.address = ComponentAddress.create(cmp.address.getParentAddress(), dlg.getInputText());
+            checkChildren(cmp, parsedAddress, cmp.address);
             return true;
         }
         return false;
