@@ -738,15 +738,15 @@ public class DarculaLFCustoms extends LFCustoms {
                         sbClass = systemClassLoader.loadClass(className);
                     }
                 } catch (ClassNotFoundException ex2) {
-                    Logger.getLogger(DarculaLFCustoms.class.getName()).log(Level.INFO,
+                    Logger.getLogger(DarculaLFCustoms.class.getName()).log(Level.FINE,
                             "Can not find class, will not be able to replace its field...", ex2);
                 }
             }
         } catch (SecurityException ex) {
-            Logger.getLogger(DarculaLFCustoms.class.getName()).log(Level.INFO,
+            Logger.getLogger(DarculaLFCustoms.class.getName()).log(Level.FINE,
                     "Can not find class, will not be able to replace its field...", ex);
         } catch (IllegalArgumentException ex) {
-            Logger.getLogger(DarculaLFCustoms.class.getName()).log(Level.INFO,
+            Logger.getLogger(DarculaLFCustoms.class.getName()).log(Level.FINE,
                     "Can not find class, will not be able to replace its field...", ex);
         }
 
@@ -769,13 +769,13 @@ public class DarculaLFCustoms extends LFCustoms {
 
             field.set(null, value);
         } catch (IllegalAccessException ex) {
-            Logger.getLogger(DarculaLFCustoms.class.getName()).log(Level.INFO,
+            Logger.getLogger(DarculaLFCustoms.class.getName()).log(Level.FINE,
                     "Can not replace field...", ex);
         } catch (NoSuchFieldException ex) {
-            Logger.getLogger(DarculaLFCustoms.class.getName()).log(Level.INFO,
+            Logger.getLogger(DarculaLFCustoms.class.getName()).log(Level.FINE,
                     "Can not replace field...", ex);
         } catch (SecurityException ex) {
-            Logger.getLogger(DarculaLFCustoms.class.getName()).log(Level.INFO,
+            Logger.getLogger(DarculaLFCustoms.class.getName()).log(Level.FINE,
                     "Can not replace field...", ex);
         }
     }
