@@ -14,7 +14,7 @@
     <fontcolor foreColor="ffa9b7c6" name="operator"/>
     <fontcolor foreColor="ff287bde" name="url" underline="ff287bde"/>
     <fontcolor foreColor="ff6897bb" name="number"/>
-    <fontcolor bgColor="ff1f1f1f" foreColor="ffa9b7c6" name="default"/>
+    <fontcolor bgColor="ff191919" foreColor="ffa9b7c6" name="default"/>
     <fontcolor default="identifier" foreColor="ff9876aa" name="field"/>
     <fontcolor foreColor="ff6a8759" name="char"/>
     <fontcolor bgColor="ff52503a" name="warning" waveUnderlined="ff52503a"/>
