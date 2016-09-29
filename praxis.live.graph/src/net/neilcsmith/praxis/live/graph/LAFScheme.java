@@ -95,6 +95,8 @@ public class LAFScheme {
     public static final String RESOURCES_KEY = "LAFScheme.Resources";
 
     static Color OFF_WHITE = new Color(241, 249, 253);
+    
+    private static final Color DARK_GREY = Color.decode("#191919");
 
     private static final Border BORDER_MINIMIZE
             = BorderFactory.createOpaqueBorder(2, 2, 2, 2);
@@ -105,7 +107,7 @@ public class LAFScheme {
     private static final PointShape POINT_SHAPE_IMAGE
             = PointShapeFactory.createImagePointShape(
                     ImageUtilities.loadImage("net/neilcsmith/praxis/live/graph/resources/vmd-pin.png")); // NOI18N
-
+    
     private static final Colors DEFAULT_RESOURCES
             = new Colors(new Color(0x748CC0), new Color(0xBACDF0));
 
@@ -244,6 +246,6 @@ public class LAFScheme {
     }
 
     protected Color getBackgroundColor() {
-        return Color.BLACK;
+        return DARK_GREY;
     }
 }
