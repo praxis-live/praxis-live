@@ -14,6 +14,7 @@
         <copy file="praxis.conf" todir="${build.launcher.dir}/etc/"/>
         <copy file="praxis.clusters" todir="${build.launcher.dir}/etc/"/>
         <copy file="uninstaller.conf" todir="${build.launcher.dir}/etc/"/>
+        <replace dir="${build.launcher.dir}/etc/" token="$${app.version}" value="${app.version}"/>
     </target>
    
 </project>

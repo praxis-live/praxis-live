@@ -76,6 +76,7 @@
  */
 package net.neilcsmith.praxis.live.graph;
 
+import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -152,6 +153,7 @@ public class NodeWidget extends Widget implements StateModel.Listener, MinimizeA
 
         nameWidget = new LabelWidget(scene);
         nameWidget.setFont(scene.getDefaultFont().deriveFont(Font.BOLD));
+        nameWidget.setForeground(Color.BLACK);
         header.addChild(nameWidget);
 
         glyphSetWidget = new GlyphSetWidget(scene);

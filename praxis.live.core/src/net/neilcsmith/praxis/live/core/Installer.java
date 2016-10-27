@@ -34,16 +34,21 @@ public class Installer extends ModuleInstall {
     @Override
     public void restored() {
 
-        String version = null;
+        String build = null;
 
         for (ModuleInfo info : Lookup.getDefault().lookupAll(ModuleInfo.class)) {
             if (info.owns(this.getClass())) {
-                version = info.getImplementationVersion();
+                build = info.getImplementationVersion();
             }
         }
         Core coreInfo = Core.getInstance();
-        coreInfo.setBuildVersion(version);
-        System.setProperty("netbeans.buildnumber", "build:" + version);
+        coreInfo.setBuildVersion(build);
+        
+        String version = System.getProperty("praxis.version", "DEV");
+        coreInfo.setVersion(version);
+        System.setProperty("netbeans.buildnumber", version);
+        System.setProperty("netbeans.productversion", "Praxis LIVE " + version);
+        
         coreInfo.checkForUpdates();
         
         DefaultHubManager.getInstance().start();

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE fontscolors PUBLIC "-//NetBeans//DTD Editor Fonts and Colors settings 1.1//EN" "http://www.netbeans.org/dtds/EditorFontsColors-1_1.dtd">
+<fontscolors>
+    <fontcolor default="identifier" name="identifier"/>
+    <fontcolor default="default" foreColor="ffcc7832" name="tag-lib-prefix">
+        <font style="bold"/>
+    </fontcolor>
+    <fontcolor default="default" name="eol"/>
+    <fontcolor default="keyword" name="keywords">
+        <font style="bold"/>
+    </fontcolor>
+    <fontcolor default="number" name="numeric-literals"/>
+    <fontcolor default="string" name="string"/>
+    <fontcolor default="string" name="char-literal"/>
+    <fontcolor default="operator" name="operators"/>
+    <fontcolor default="whitespace" name="whitespace"/>
+    <fontcolor default="error" name="errors"/>
+</fontscolors>

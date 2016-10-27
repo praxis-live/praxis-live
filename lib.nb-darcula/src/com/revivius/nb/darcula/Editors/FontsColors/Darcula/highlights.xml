@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE fontscolors PUBLIC "-//NetBeans//DTD Editor Fonts and Colors settings 1.1//EN" "http://www.netbeans.org/dtds/EditorFontsColors-1_1.dtd">
+<fontscolors>
+    <fontcolor bgColor="ff3b514d" foreColor="ffffef28" name="nbeditor-bracesMatching-match"/>
+    <fontcolor foreColor="ff555555" name="text-limit-line-color"/>
+    <fontcolor bgColor="ff3a3a3a" foreColor="ff8c8c8c" name="code-folding"/>
+    <fontcolor foreColor="ffcc0099" name="synchronized-text-blocks-ext"/>
+    <fontcolor bgColor="ffd1243b" name="nbeditor-bracesMatching-mismatch"/>
+    <fontcolor bgColor="ff323232" name="highlight-caret-row"/>
+    <fontcolor foreColor="ffbbbbbb" name="caret-color-overwrite-mode"/>
+    <fontcolor name="status-bar"/>
+    <fontcolor bgColor="ff323232" name="guarded"/>
+    <fontcolor name="trailing-whitespace"/>
+    <fontcolor bgColor="ffd1243b" name="nbeditor-bracesMatching-mismatch-multichar"/>
+    <fontcolor foreColor="ff666666" name="code-folding-border"/>
+    <fontcolor name="west-sidebars-color"/>
+    <fontcolor foreColor="red" name="status-bar-bold"/>
+    <fontcolor foreColor="ff6b8eb2" name="nbeditor-bracesMatching-sidebar"/>
+    <fontcolor bgColor="ff313335" foreColor="ff888888" name="line-number"/>
+    <fontcolor bgColor="ff323232" name="readonly-files"/>
+    <fontcolor bgColor="ff32593d" name="highlight-search"/>
+    <fontcolor foreColor="ff666666" name="code-folding-bar"/>
+    <fontcolor foreColor="ff996600" name="synchronized-text-blocks-ext-slave"/>
+    <fontcolor foreColor="darkGray" name="indent-guide-lines"/>
+    <fontcolor name="indent-whitespace"/>
+    <fontcolor bgColor="ffe0e8f1" foreColor="black" name="block-search"/>
+    <fontcolor bgColor="ff214283" name="selection"/>
+    <fontcolor bgColor="ffffb442" foreColor="black" name="inc-search"/>
+    <fontcolor bgColor="ff3b514d" name="nbeditor-bracesMatching-match-multichar"/>
+    <fontcolor foreColor="ffbbbbbb" name="caret-color-insert-mode"/>
+    <fontcolor foreColor="ff287bde" name="hyperlinks" underline="ff287bde"/>
+</fontscolors>

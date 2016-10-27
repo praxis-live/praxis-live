@@ -55,7 +55,7 @@ public class EditorUtilsTest {
     public void testFindFreeID() {
         System.out.println("findFreeID");
         Set<String> existing = new HashSet<String>();
-        existing.add("delay1");
+        existing.add("delay-1");
         existing.add("timing4-1");
         
         String baseID = "delay";
@@ -66,7 +66,7 @@ public class EditorUtilsTest {
         
         baseID = "delay";
         forceSuffix = true;
-        expResult = "delay2";
+        expResult = "delay-2";
         result = EditorUtils.findFreeID(existing, baseID, forceSuffix);
         assertEquals(expResult, result);
         

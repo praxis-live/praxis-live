@@ -51,7 +51,13 @@ public class Core extends CoreInfo {
     private final static Preferences GLOBALS = NbPreferences.root().node("/org/praxislive");
     private final static Preferences INTERNAL = NbPreferences.forModule(Core.class);
 
+    private String version;
     private String build;
+
+    @Override
+    public String getVersion() {
+        return version;
+    }
 
     @Override
     public String getBuildVersion() {
@@ -69,6 +75,10 @@ public class Core extends CoreInfo {
     
     public Preferences getInternalPreferences() {
         return INTERNAL;
+    }
+    
+    void setVersion(String version) {
+        this.version = version;
     }
 
     void setBuildVersion(String build) {

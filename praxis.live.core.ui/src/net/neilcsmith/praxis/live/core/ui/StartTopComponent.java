@@ -68,6 +68,8 @@ import org.openide.windows.WindowSystemListener;
     "CTL_StartAction=Start",
     "CTL_StartTopComponent=Praxis LIVE",
     "HINT_StartTopComponent=Welcome to Praxis LIVE",
+    "# {0} - version",
+    "LBL_Version=version {0}",
     "LBL_NewVersion=New version available",
     "LBL_NewVersionInfo=A new version of Praxis LIVE is available to download",
     "LBL_Download=Download",
@@ -80,6 +82,7 @@ public final class StartTopComponent extends TopComponent {
     public StartTopComponent() {
         initComponents();
         setName(Bundle.CTL_StartTopComponent());
+        versionLabel.setText(Bundle.LBL_Version(Core.getInstance().getVersion()));
         setToolTipText(Bundle.HINT_StartTopComponent());
         putClientProperty("activateAtStartup", Boolean.TRUE);
         putClientProperty(TopComponent.PROP_DRAGGING_DISABLED, true);
@@ -146,6 +149,7 @@ public final class StartTopComponent extends TopComponent {
         updatePanel = new javax.swing.JPanel();
         scrollPane = new javax.swing.JScrollPane();
         htmlPane = new javax.swing.JEditorPane();
+        versionLabel = new javax.swing.JLabel();
 
         setBackground(java.awt.Color.black);
         setOpaque(true);
@@ -171,9 +175,14 @@ public final class StartTopComponent extends TopComponent {
 
         htmlPane.setEditable(false);
         htmlPane.setBackground(new java.awt.Color(0, 0, 0));
+        htmlPane.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
         htmlPane.setContentType("text/html"); // NOI18N
         htmlPane.setFocusable(false);
         scrollPane.setViewportView(htmlPane);
+
+        versionLabel.setBackground(new java.awt.Color(0, 0, 0));
+        versionLabel.setFont(versionLabel.getFont().deriveFont(versionLabel.getFont().getSize()+2f));
+        versionLabel.setForeground(new java.awt.Color(204, 204, 204));
 
         javax.swing.GroupLayout mainPanelLayout = new javax.swing.GroupLayout(mainPanel);
         mainPanel.setLayout(mainPanelLayout);
@@ -188,17 +197,20 @@ public final class StartTopComponent extends TopComponent {
                         .addGap(234, 234, 234))
                     .addGroup(mainPanelLayout.createSequentialGroup()
                         .addComponent(logo)
-                        .addGap(0, 0, Short.MAX_VALUE)))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(versionLabel)))
                 .addContainerGap())
         );
         mainPanelLayout.setVerticalGroup(
             mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, mainPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(logo)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(scrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 390, Short.MAX_VALUE)
-                .addGap(64, 64, 64)
+                .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(logo)
+                    .addComponent(versionLabel, javax.swing.GroupLayout.Alignment.TRAILING))
+                .addGap(18, 18, 18)
+                .addComponent(scrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 442, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(updatePanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
@@ -225,6 +237,7 @@ public final class StartTopComponent extends TopComponent {
     private javax.swing.JPanel mainPanel;
     private javax.swing.JScrollPane scrollPane;
     private javax.swing.JPanel updatePanel;
+    private javax.swing.JLabel versionLabel;
     // End of variables declaration//GEN-END:variables
 
     @Override
@@ -285,7 +298,13 @@ public final class StartTopComponent extends TopComponent {
         Core core = Core.getInstance();
         String current = core.getBuildVersion();
         String latest = core.getLatestBuild();
-        return !Objects.equals(current, latest);
+        try {
+            int cur = Integer.parseInt(current);
+            int lat = Integer.parseInt(latest);
+            return lat > cur;
+        } catch (Exception ex) {
+            return !Objects.equals(current, latest);
+        }
     }
 
     static StartTopComponent find() {

@@ -30,7 +30,7 @@ import org.openide.util.lookup.Lookups;
  *
  * @author Neil C Smith (http://neilcsmith.net)
  */
-@LookupProvider.Registration(projectType="net-neilcsmith-praxis-live-project")
+//@LookupProvider.Registration(projectType="net-neilcsmith-praxis-live-project")
 public class PXSLookupProvider implements LookupProvider {
 
     private final static PrivilegedTemplates templates = new PrivTemplatesImpl();

@@ -30,6 +30,10 @@ import net.neilcsmith.praxis.live.core.Core;
  */
 public abstract class CoreInfo {
     
+    public String getVersion() {
+        return getBuildVersion();
+    }
+    
     public abstract String getBuildVersion();
     
     public abstract Preferences getPreferences();

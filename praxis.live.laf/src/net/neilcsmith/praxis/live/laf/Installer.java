@@ -49,13 +49,13 @@ import org.openide.windows.WindowManager;
  */
 public class Installer extends ModuleInstall {
 
-    @Override
-    public void validate() throws IllegalStateException {
-        Preferences prefs = getPreferences();
-        prefs.put("laf", PraxisLiveLookAndFeel.class.getName());
-        prefs.putBoolean("dark.themes.installed", true); //NOI18N
-        UIManager.installLookAndFeel(new UIManager.LookAndFeelInfo("Praxis LIVE", PraxisLiveLookAndFeel.class.getName()));
-    }
+//    @Override
+//    public void validate() throws IllegalStateException {
+//        Preferences prefs = getPreferences();
+//        prefs.put("laf", PraxisLiveLookAndFeel.class.getName());
+//        prefs.putBoolean("dark.themes.installed", true); //NOI18N
+//        UIManager.installLookAndFeel(new UIManager.LookAndFeelInfo("Praxis LIVE", PraxisLiveLookAndFeel.class.getName()));
+//    }
 
     @Override
     public void restored() {

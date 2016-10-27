@@ -80,9 +80,12 @@ final class NetworkPanel extends javax.swing.JPanel {
     private void initComponents() {
 
         enableBox = new javax.swing.JCheckBox();
-        localSlavePanel = new javax.swing.JPanel();
+        configPanel = new javax.swing.JPanel();
         launcherLocation = new javax.swing.JTextField();
         launcherLocationLabel = new javax.swing.JLabel();
+        fileServerCheckBox = new javax.swing.JCheckBox();
+        masterCompilerCheckBox = new javax.swing.JCheckBox();
+        preferLocalCheckBox = new javax.swing.JCheckBox();
         slavePanel = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         slaveTable = new javax.swing.JTable();
@@ -96,28 +99,51 @@ final class NetworkPanel extends javax.swing.JPanel {
             }
         });
 
-        localSlavePanel.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(NetworkPanel.class, "NetworkPanel.localSlavePanel.border.title"))); // NOI18N
+        configPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(NetworkPanel.class, "NetworkPanel.configPanel.border.title"))); // NOI18N
 
         launcherLocation.setText(org.openide.util.NbBundle.getMessage(NetworkPanel.class, "NetworkPanel.launcherLocation.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(launcherLocationLabel, org.openide.util.NbBundle.getMessage(NetworkPanel.class, "NetworkPanel.launcherLocationLabel.text")); // NOI18N
 
-        javax.swing.GroupLayout localSlavePanelLayout = new javax.swing.GroupLayout(localSlavePanel);
-        localSlavePanel.setLayout(localSlavePanelLayout);
-        localSlavePanelLayout.setHorizontalGroup(
-            localSlavePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(localSlavePanelLayout.createSequentialGroup()
-                .addComponent(launcherLocationLabel)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-            .addComponent(launcherLocation)
+        org.openide.awt.Mnemonics.setLocalizedText(fileServerCheckBox, org.openide.util.NbBundle.getMessage(NetworkPanel.class, "NetworkPanel.fileServerCheckBox.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(masterCompilerCheckBox, org.openide.util.NbBundle.getMessage(NetworkPanel.class, "NetworkPanel.masterCompilerCheckBox.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(preferLocalCheckBox, org.openide.util.NbBundle.getMessage(NetworkPanel.class, "NetworkPanel.preferLocalCheckBox.text")); // NOI18N
+
+        javax.swing.GroupLayout configPanelLayout = new javax.swing.GroupLayout(configPanel);
+        configPanel.setLayout(configPanelLayout);
+        configPanelLayout.setHorizontalGroup(
+            configPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(configPanelLayout.createSequentialGroup()
+                .addGroup(configPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(configPanelLayout.createSequentialGroup()
+                        .addComponent(launcherLocationLabel)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(launcherLocation))
+                    .addGroup(configPanelLayout.createSequentialGroup()
+                        .addGroup(configPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(masterCompilerCheckBox)
+                            .addGroup(configPanelLayout.createSequentialGroup()
+                                .addComponent(fileServerCheckBox)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(preferLocalCheckBox)))
+                        .addGap(0, 0, Short.MAX_VALUE)))
+                .addContainerGap())
         );
-        localSlavePanelLayout.setVerticalGroup(
-            localSlavePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(localSlavePanelLayout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(launcherLocationLabel)
+        configPanelLayout.setVerticalGroup(
+            configPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(configPanelLayout.createSequentialGroup()
+                .addGroup(configPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(fileServerCheckBox)
+                    .addComponent(preferLocalCheckBox))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(masterCompilerCheckBox)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(launcherLocation, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGroup(configPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(launcherLocation, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(launcherLocationLabel))
+                .addGap(39, 39, 39))
         );
 
         slavePanel.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(NetworkPanel.class, "NetworkPanel.slavePanel.border.title"))); // NOI18N
@@ -152,7 +178,7 @@ final class NetworkPanel extends javax.swing.JPanel {
         slavePanel.setLayout(slavePanelLayout);
         slavePanelLayout.setHorizontalGroup(
             slavePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 557, Short.MAX_VALUE)
+            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 609, Short.MAX_VALUE)
             .addGroup(slavePanelLayout.createSequentialGroup()
                 .addComponent(addSlaveBtn)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -162,8 +188,8 @@ final class NetworkPanel extends javax.swing.JPanel {
         slavePanelLayout.setVerticalGroup(
             slavePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(slavePanelLayout.createSequentialGroup()
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 98, Short.MAX_VALUE)
-                .addGap(4, 4, 4)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 109, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(slavePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(addSlaveBtn)
                     .addComponent(removeSlaveBtn)))
@@ -174,25 +200,25 @@ final class NetworkPanel extends javax.swing.JPanel {
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
+                .addGap(14, 14, 14)
+                .addComponent(enableBox)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(localSlavePanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(14, 14, 14)
-                        .addComponent(enableBox)
-                        .addGap(0, 0, Short.MAX_VALUE))
-                    .addComponent(slavePanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(slavePanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(configPanel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addGap(15, 15, 15)
+                .addGap(9, 9, 9)
                 .addComponent(enableBox)
-                .addGap(18, 18, 18)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(slavePanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGap(18, 18, 18)
-                .addComponent(localSlavePanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(configPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 110, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -217,30 +243,38 @@ final class NetworkPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_removeSlaveBtnActionPerformed
 
     void load() {
-        enableBox.setSelected(HubSettings.getDefault().isDistributedHub());
+        HubSettings settings = HubSettings.getDefault();
+        enableBox.setSelected(settings.isDistributedHub());
         enableBoxActionPerformed(null);
-        File launcher = HubSettings.getDefault().getLocalSlaveLauncher();
+        File launcher = settings.getLocalSlaveLauncher();
         if (launcher == null) {
             launcherLocation.setText("");
         } else {
             launcherLocation.setText(launcher.getAbsolutePath());
         }
-        slaveModel.load(HubSettings.getDefault().getSlaveInfo());
+        slaveModel.load(settings.getSlaveInfo());
+        fileServerCheckBox.setSelected(settings.isRunFileServer());
+        preferLocalCheckBox.setSelected(settings.isPreferLocalFiles());
+        masterCompilerCheckBox.setSelected(settings.isUseMasterCompiler());
     }
 
     void store() {
-        HubSettings.getDefault().setDistributedHub(enableBox.isSelected());
-        HubSettings.getDefault().setSlaveInfo(slaveModel.slaves);
+        HubSettings settings = HubSettings.getDefault();
+        settings.setDistributedHub(enableBox.isSelected());
+        settings.setSlaveInfo(slaveModel.slaves);
         String path = launcherLocation.getText().trim();
         if (!path.isEmpty()) {
             File l = new File(path);
             l = l.getAbsoluteFile();
             if (l.exists()) {
-                HubSettings.getDefault().setLocalSlaveLauncher(l);
+                settings.setLocalSlaveLauncher(l);
             }
         } else {
-            HubSettings.getDefault().setLocalSlaveLauncher(null);
+            settings.setLocalSlaveLauncher(null);
         }
+        settings.setRunFileServer(fileServerCheckBox.isSelected());
+        settings.setPreferLocalFiles(preferLocalCheckBox.isSelected());
+        settings.setUseMasterCompiler(masterCompilerCheckBox.isSelected());
     }
 
     boolean valid() {
@@ -250,11 +284,14 @@ final class NetworkPanel extends javax.swing.JPanel {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addSlaveBtn;
+    private javax.swing.JPanel configPanel;
     private javax.swing.JCheckBox enableBox;
+    private javax.swing.JCheckBox fileServerCheckBox;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTextField launcherLocation;
     private javax.swing.JLabel launcherLocationLabel;
-    private javax.swing.JPanel localSlavePanel;
+    private javax.swing.JCheckBox masterCompilerCheckBox;
+    private javax.swing.JCheckBox preferLocalCheckBox;
     private javax.swing.JButton removeSlaveBtn;
     private javax.swing.JPanel slavePanel;
     private javax.swing.JTable slaveTable;

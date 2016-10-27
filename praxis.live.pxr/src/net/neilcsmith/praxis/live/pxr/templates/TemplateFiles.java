@@ -43,6 +43,7 @@ class TemplateFiles {
         display.put("root:gui", "Control Panel (GUI)");
         display.put("root:tinkerforge", "TinkerForge Patch");
         display.put("root:osc", "OSC Bindings");
+        display.put("root:data", "Generic Data Patch");
     }
     private final static String templateFolder = "Templates/Praxis/";
     private final static TemplateFiles INSTANCE = new TemplateFiles();

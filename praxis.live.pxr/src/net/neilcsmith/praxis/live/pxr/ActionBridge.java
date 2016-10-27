@@ -21,20 +21,33 @@
  */
 package net.neilcsmith.praxis.live.pxr;
 
+import java.awt.EventQueue;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.ClipboardOwner;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
+import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.Set;
+import java.util.stream.Collectors;
 import javax.swing.SwingUtilities;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import net.neilcsmith.praxis.core.CallArguments;
 import net.neilcsmith.praxis.core.ComponentAddress;
 import net.neilcsmith.praxis.live.core.api.Callback;
+import net.neilcsmith.praxis.live.core.api.Task;
 import net.neilcsmith.praxis.live.model.ContainerProxy;
+import net.neilcsmith.praxis.live.util.AbstractTask;
+import net.neilcsmith.praxis.live.util.SerialTasks;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.filesystems.FileChooserBuilder;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
@@ -46,13 +59,14 @@ import org.openide.util.RequestProcessor;
 public class ActionBridge {
 
     private final static ActionBridge INSTANCE = new ActionBridge();
-    
-    private final RequestProcessor RP = new RequestProcessor(ActionBridge.class);
+
+    private final static RequestProcessor RP = new RequestProcessor(ActionBridge.class);
 
     private ActionBridge() {
         // non instantiable
     }
 
+    @Deprecated
     public void copyToClipboard(ContainerProxy container, Set<String> children) {
         StringBuilder sb = new StringBuilder();
         try {
@@ -64,11 +78,153 @@ public class ActionBridge {
         }
     }
 
+    public Task createCopyTask(ContainerProxy container,
+            Set<String> children,
+            Runnable preWriteTask, Runnable postWriteTask) {
+        SubGraphTransferable empty = new SubGraphTransferable("");
+        getClipboard().setContents(empty, empty);
+        SyncTask sync = new SyncTask(
+                children.stream()
+                .map(container::getChild)
+                .filter(cmp -> cmp != null)
+                .collect(Collectors.toSet()), 250);
+        WriteClipboardTask write
+                = new WriteClipboardTask(container, children, preWriteTask, postWriteTask);
+        return new SerialTasks(sync, write);
+    }
+    
+    public Task createExportTask(ContainerProxy container,
+            Set<String> children,
+            Runnable preWriteTask, Runnable postWriteTask) {
+        SyncTask sync = new SyncTask(
+                children.stream()
+                .map(container::getChild)
+                .filter(cmp -> cmp != null)
+                .collect(Collectors.toSet()), 250);
+        ExportTask write
+                = new ExportTask(container, children, preWriteTask, postWriteTask);
+        return new SerialTasks(sync, write);
+    }
+
+    private static class WriteClipboardTask extends AbstractTask {
+
+        private final ContainerProxy container;
+        private final Set<String> children;
+        private final Runnable preWriteTask;
+        private final Runnable postWriteTask;
+
+        WriteClipboardTask(ContainerProxy container,
+                Set<String> children,
+                Runnable preWriteTask,
+                Runnable postWriteTask) {
+            this.container = container;
+            this.children = children;
+            this.preWriteTask = preWriteTask;
+            this.postWriteTask = postWriteTask;
+        }
+
+        @Override
+        protected void handleExecute() throws Exception {
+            try {
+                if (preWriteTask != null) {
+                    preWriteTask.run();
+                }
+                StringBuilder sb = new StringBuilder();
+                PXRWriter.writeSubGraph((PXRContainerProxy) container, children, sb);
+                SubGraphTransferable tf = new SubGraphTransferable(sb.toString());
+                getClipboard().setContents(tf, tf);
+            } finally {
+                if (postWriteTask != null) {
+                    postWriteTask.run();
+                }
+            }
+            updateState(State.COMPLETED);
+        }
+
+    }
+
+    private static class ExportTask extends AbstractTask {
+
+        private final ContainerProxy container;
+        private final Set<String> children;
+        private final Runnable preWriteTask;
+        private final Runnable postWriteTask;
+
+        ExportTask(ContainerProxy container,
+                Set<String> children,
+                Runnable preWriteTask,
+                Runnable postWriteTask) {
+            this.container = container;
+            this.children = children;
+            this.preWriteTask = preWriteTask;
+            this.postWriteTask = postWriteTask;
+        }
+
+        @Override
+        protected void handleExecute() throws Exception {
+            if (preWriteTask != null) {
+                preWriteTask.run();
+            }
+            StringBuilder sb = new StringBuilder();
+            PXRWriter.writeSubGraph((PXRContainerProxy) container, children, sb);
+
+            if (postWriteTask != null) {
+                postWriteTask.run();
+            }
+
+            File f = new FileChooserBuilder("export-pxg")
+                    .addFileFilter(new FileNameExtensionFilter("PXG files", "pxg"))
+                    .setAcceptAllFileFilterUsed(false)
+                    .showSaveDialog();
+
+            if (f == null) {
+                updateState(State.CANCELLED);
+                return;
+            }
+            
+            if (!f.getName().endsWith(".pxg")) {
+                f = new File(f.getParent(), f.getName() + ".pxg");
+            }
+            
+            File file = f;
+            String export = sb.toString();
+
+            RP.post(() -> {
+                if (file.exists()) {
+                    EventQueue.invokeLater(() -> {
+                        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message("File already exists.", NotifyDescriptor.ERROR_MESSAGE));
+                        updateState(State.ERROR);
+                    });
+                } else {
+                    try {
+                        Files.write(file.toPath(), export.getBytes(StandardCharsets.UTF_8));
+                        FileUtil.toFileObject(file.getParentFile()).refresh();
+                        EventQueue.invokeLater(() -> {
+                            updateState(State.COMPLETED);
+                        });
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                        EventQueue.invokeLater(() -> {
+                            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message("Failed to write file.", NotifyDescriptor.ERROR_MESSAGE));
+                            updateState(State.ERROR);
+                        });
+                    }
+                }
+
+            });
+
+        }
+
+    }
+
     public boolean pasteFromClipboard(ContainerProxy container, Callback callback) {
         Clipboard c = getClipboard();
         if (c.isDataFlavorAvailable(DataFlavor.stringFlavor)) {
             try {
                 String script = (String) c.getData(DataFlavor.stringFlavor);
+                if (script.trim().isEmpty()) {
+                    return false;
+                }
                 PXRParser.RootElement fakeRoot = PXRParser.parseInContext(container.getAddress(), script);
                 if (ImportRenameSupport.prepareForPaste(container, fakeRoot)) {
                     PXRBuilder builder = new PXRBuilder(findRootProxy(container), fakeRoot, null);
@@ -80,6 +236,14 @@ public class ActionBridge {
             }
         }
         return false;
+    }
+
+    private static Clipboard getClipboard() {
+        Clipboard c = Lookup.getDefault().lookup(Clipboard.class);
+        if (c == null) {
+            c = Toolkit.getDefaultToolkit().getSystemClipboard();
+        }
+        return c;
     }
 
     public boolean importSubgraph(final ContainerProxy container, final FileObject file, final Callback callback) {
@@ -100,29 +264,25 @@ public class ActionBridge {
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {
-                        if (root != null) {
-                            if (ImportRenameSupport.prepareForImport(container, root)) {
-                                PXRBuilder builder = new PXRBuilder(findRootProxy(container), root, null);
-                                builder.process(callback);
+                        try {
+                            if (root != null) {
+                                if (ImportRenameSupport.prepareForImport(container, root)) {
+                                    PXRBuilder builder = new PXRBuilder(findRootProxy(container), root, null);
+                                    builder.process(callback);
+                                } else {
+                                    callback.onReturn(CallArguments.EMPTY);
+                                }
                             } else {
-                                callback.onReturn(CallArguments.EMPTY);
+                                callback.onError(CallArguments.EMPTY);
                             }
-                        } else {
-                            callback.onError(CallArguments.EMPTY);
+                        } catch (Exception ex) {
+                            Exceptions.printStackTrace(ex);
                         }
                     }
                 });
             }
         });
         return true;
-    }
-
-    private Clipboard getClipboard() {
-        Clipboard c = Lookup.getDefault().lookup(Clipboard.class);
-        if (c == null) {
-            c = Toolkit.getDefaultToolkit().getSystemClipboard();
-        }
-        return c;
     }
 
     private PXRRootProxy findRootProxy(ContainerProxy container) {
@@ -138,8 +298,7 @@ public class ActionBridge {
     public static ActionBridge getDefault() {
         return INSTANCE;
     }
-    
-    
+
     private static class SubGraphTransferable implements Transferable, ClipboardOwner {
 
         private String data;
@@ -151,8 +310,8 @@ public class ActionBridge {
         @Override
         public DataFlavor[] getTransferDataFlavors() {
             return new DataFlavor[]{
-                        DataFlavor.stringFlavor
-                    };
+                DataFlavor.stringFlavor
+            };
         }
 
         @Override
@@ -178,4 +337,5 @@ public class ActionBridge {
             // no op
         }
     }
+
 }

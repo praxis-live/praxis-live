@@ -23,6 +23,7 @@ package net.neilcsmith.praxis.live.pxr.api;
 
 import java.util.Set;
 import net.neilcsmith.praxis.live.core.api.Callback;
+import net.neilcsmith.praxis.live.core.api.Task;
 import net.neilcsmith.praxis.live.model.ContainerProxy;
 import net.neilcsmith.praxis.live.pxr.ActionBridge;
 import org.openide.filesystems.FileObject;
@@ -44,9 +45,31 @@ public class ActionSupport {
         this.editor = editor;
     }
 
+    @Deprecated
     public void copyToClipboard(ContainerProxy container, Set<String> children) {
         ActionBridge.getDefault().copyToClipboard(container, children);
     }
+    
+    public Task createCopyTask(ContainerProxy container, Set<String> children) {
+        return createCopyTask(container, children, null, null);
+    }
+    
+    public Task createCopyTask(ContainerProxy container,
+            Set<String> children,
+            Runnable preWriteTask, Runnable postWriteTask) {
+        return ActionBridge.getDefault().createCopyTask(container, children, preWriteTask, postWriteTask);
+    }
+    
+    public Task createExportTask(ContainerProxy container, Set<String> children) {
+        return createExportTask(container, children, null, null);
+    }
+    
+    public Task createExportTask(ContainerProxy container,
+            Set<String> children,
+            Runnable preWriteTask, Runnable postWriteTask) {
+        return ActionBridge.getDefault().createExportTask(container, children, preWriteTask, postWriteTask);
+    }
+    
     
     public boolean pasteFromClipboard(ContainerProxy container, Callback callback) {
         return ActionBridge.getDefault().pasteFromClipboard(container, callback);

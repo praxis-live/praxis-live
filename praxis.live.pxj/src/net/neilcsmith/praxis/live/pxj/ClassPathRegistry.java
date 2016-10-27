@@ -45,7 +45,8 @@ public class ClassPathRegistry {
     private final static ClassPathRegistry INSTANCE = new ClassPathRegistry();
     
     private ClassPath classPath;
-
+    private ClassPath bootClassPath;
+    
     private ClassPathRegistry() {
         init();
     }
@@ -82,10 +83,20 @@ public class ClassPathRegistry {
             classPath = ClassPath.EMPTY;
         }
         
+        LOG.log(Level.FINE, "Initializing boot classpath");
+        String sbcp = System.getProperty("sun.boot.class.path", "");
+        bootClassPath = ClassPathSupport.createClassPath(sbcp);
+        GlobalPathRegistry.getDefault().register(ClassPath.BOOT, new ClassPath[]{bootClassPath});
+        
+        
     }
     
     ClassPath getCompileClasspath() {
         return classPath;       
+    }
+    
+    ClassPath getBootClasspath() {
+        return bootClassPath;
     }
 
     static ClassPathRegistry getInstance() {

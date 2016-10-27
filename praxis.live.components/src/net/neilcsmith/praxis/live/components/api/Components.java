@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Neil C Smith.
+ * Copyright 2016 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -124,8 +124,9 @@ public class Components {
         return ComponentSettings.getShowTest();
     }
     
+    @Deprecated
     public static boolean getShowTest() {
-        return ComponentSettings.getShowTest();
+        return false;
     }
 
     public static boolean getShowDeprecated() {
