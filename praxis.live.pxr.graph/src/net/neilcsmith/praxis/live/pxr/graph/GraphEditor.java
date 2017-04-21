@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2016 Neil C Smith.
+ * Copyright 2017 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -413,7 +413,11 @@ public class GraphEditor extends RootEditor {
         widget.getActions().addAction(ActionFactory.createEditAction(new EditProvider() {
             @Override
             public void edit(Widget widget) {
-                cmp.getNodeDelegate().getPreferredAction().actionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, "edit"));
+                if (cmp instanceof ContainerProxy) {
+                    new ContainerOpenAction((ContainerProxy) cmp).actionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, "edit"));
+                } else {
+                    cmp.getNodeDelegate().getPreferredAction().actionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, "edit"));
+                }
             }
         }));
         final CommentAction commentAction = new CommentAction(widget);
