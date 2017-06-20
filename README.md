@@ -34,7 +34,6 @@ Make sure the two repository directories are in the same parent directory. There
 
 You'll also need the correct version of the NetBeans IDE - Praxis LIVE is built on top of the NetBeans platform. It is possible to build the project from another version of NetBeans or another IDE, but it must be built against the right version of the NetBeans platform - building inside that version of the IDE is recommended.
 
-- `master` : NetBeans 8.1 : https://netbeans.org/downloads/8.1/
-- `develop` : NetBeans 8.1 : https://netbeans.org/downloads/8.1/
+- NetBeans 8.2 : https://netbeans.org/downloads/
 
 Open the Praxis (runtime) and Praxis LIVE (editor) projects in the IDE. The Praxis LIVE project should find the Praxis project dependency automatically. Build the Praxis project before the Praxis LIVE project.
