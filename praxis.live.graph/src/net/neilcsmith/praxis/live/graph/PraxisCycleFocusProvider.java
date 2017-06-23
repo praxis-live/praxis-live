@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2016 Neil C Smith.
+ * Copyright 2017 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 2 only, as
@@ -78,8 +78,10 @@ package net.neilcsmith.praxis.live.graph;
 
 import java.awt.Point;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 import org.netbeans.api.visual.action.CycleFocusProvider;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
@@ -103,8 +105,14 @@ class PraxisCycleFocusProvider implements CycleFocusProvider {
     }
     
     private boolean switchFocus(PraxisGraphScene<?> scene, boolean forward) {
+        boolean changeSelection = false;
         Object focused = scene.getFocusedObject();
-        List<Object> nodes = new ArrayList<>(scene.getNodes());
+        List<Object> nodes = scene.getSelectedObjects().stream()
+                .filter(scene::isNode).collect(Collectors.toCollection(ArrayList::new));
+        if (nodes.size() < 2) {
+            nodes = scene.getNodes().stream().collect(Collectors.toCollection(ArrayList::new));
+            changeSelection = true;
+        }
         if (nodes.isEmpty()) {
             return false;
         }
@@ -126,6 +134,9 @@ class PraxisCycleFocusProvider implements CycleFocusProvider {
             }
         }
         scene.setFocusedObject(focused);
+        if (changeSelection) {
+            scene.setSelectedObjects(Collections.singleton(focused));
+        }
         return true;
     } 
     
