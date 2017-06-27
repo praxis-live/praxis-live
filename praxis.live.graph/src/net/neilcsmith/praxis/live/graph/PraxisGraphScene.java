@@ -90,6 +90,8 @@ import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.anchor.Anchor;
 import org.netbeans.api.visual.border.BorderFactory;
 import org.netbeans.api.visual.graph.GraphPinScene;
+import org.netbeans.api.visual.layout.LayoutFactory;
+import org.netbeans.api.visual.layout.SceneLayout;
 import org.netbeans.api.visual.router.ConnectionWidgetCollisionsCollector;
 import org.netbeans.api.visual.router.Router;
 import org.netbeans.api.visual.router.RouterFactory;
@@ -111,6 +113,7 @@ public class PraxisGraphScene<N> extends GraphPinScene<N, EdgeID<N>, PinID<N>> {
     
     private Router router;
     private final WidgetAction moveAction;
+    private final SceneLayout sceneLayout;
     private LAFScheme scheme;
     private WidgetAction menuAction;
     private WidgetAction connectAction;
@@ -162,7 +165,8 @@ public class PraxisGraphScene<N> extends GraphPinScene<N, EdgeID<N>, PinID<N>> {
 
         setBackground(scheme.getBackgroundColor());
 
-        router = RouterFactory.createOrthogonalSearchRouter(new WidgetCollector());
+//        router = RouterFactory.createOrthogonalSearchRouter(new WidgetCollector());
+        router = RouterFactory.createOrthogonalSearchRouter(mainLayer, upperLayer);
 
         getActions().addAction(ActionFactory.createWheelPanAction());
         getActions().addAction(ActionFactory.createMouseCenteredZoomAction(1.2));
@@ -181,6 +185,8 @@ public class PraxisGraphScene<N> extends GraphPinScene<N, EdgeID<N>, PinID<N>> {
         
         addSceneListener(new ZoomCorrector());
 
+        sceneLayout = LayoutFactory.createSceneGraphLayout(this, new PraxisGraphLayout<>(true));
+        
     }
 
     public NodeWidget addNode(N node, String name) {
@@ -245,6 +251,18 @@ public class PraxisGraphScene<N> extends GraphPinScene<N, EdgeID<N>, PinID<N>> {
     
     public LAFScheme.Colors getSchemeColors() {
         return schemeColors;
+    }
+
+    public void setRouter(Router router) {
+        this.router = router;
+        for (EdgeID<N> e : getEdges()) {
+            ((ConnectionWidget)findWidget(e)).setRouter(router);
+        }
+        revalidate();
+    }
+    
+    public Router getRouter() {
+        return router;
     }
 
     @Override
@@ -393,13 +411,9 @@ public class PraxisGraphScene<N> extends GraphPinScene<N, EdgeID<N>, PinID<N>> {
         return commentWidget;
     }
     
-//
-//    /**
-//     * Invokes layout of the scene.
-//     */
-//    public void layoutScene() {
-//        sceneLayout.invokeLayout();
-//    }  
+    public void layoutScene() {
+        sceneLayout.invokeLayout();
+    }  
     
     private class ZoomCorrector implements SceneListener {
         
