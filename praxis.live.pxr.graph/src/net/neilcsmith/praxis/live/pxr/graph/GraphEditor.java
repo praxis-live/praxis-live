@@ -156,12 +156,12 @@ public class GraphEditor extends RootEditor {
         }
 
         deleteAction = new DeleteAction();
-        
+
         PaletteController palette = PaletteUtils.getPalette("core", category);
-        
+
         lookup = new ProxyLookup(ExplorerUtils.createLookup(manager, buildActionMap(manager)),
                 Lookups.fixed(palette));
-        
+
         addMenu = new MenuView.Menu(
                 palette.getRoot().lookup(Node.class),
                 new NodeAcceptor() {
@@ -184,7 +184,7 @@ public class GraphEditor extends RootEditor {
         });
         addMenu.setIcon(null);
         addMenu.setText("Add");
-        
+
         scene.addObjectSceneListener(new SelectionListener(),
                 ObjectSceneEventType.OBJECT_SELECTION_CHANGED);
         goUpAction = new GoUpAction();
@@ -274,7 +274,7 @@ public class GraphEditor extends RootEditor {
     private JPopupMenu getScenePopup() {
         JPopupMenu menu = new JPopupMenu();
 //        menu.add(deleteAction);
-        menu.add(addMenu);  
+        menu.add(addMenu);
         menu.addSeparator();
         JMenu colorsMenu = new JMenu("Colors");
         for (ColorsAction action : colorsActions) {
@@ -539,10 +539,19 @@ public class GraphEditor extends RootEditor {
         PinID<String> p1 = new PinID<>(connection.getChild1(), connection.getPort1());
         PinID<String> p2 = new PinID<>(connection.getChild2(), connection.getPort2());
         if (scene.isPin(p1) && scene.isPin(p2)) {
-            EdgeWidget widget = scene.connect(connection.getChild1(), connection.getPort1(),
-                    connection.getChild2(), connection.getPort2());
-            widget.setToolTipText(connection.getChild1() + "!" + connection.getPort1() + " -> "
-                    + connection.getChild2() + "!" + connection.getPort2());
+            PinWidget pw1 = (PinWidget) scene.findWidget(p1);
+            PinWidget pw2 = (PinWidget) scene.findWidget(p2);
+            if (pw1.getAlignment() == Alignment.Left && pw2.getAlignment() == Alignment.Right) {
+                EdgeWidget widget = scene.connect(connection.getChild2(), connection.getPort2(),
+                        connection.getChild1(), connection.getPort1());
+                widget.setToolTipText(connection.getChild2() + "!" + connection.getPort2() + " -> "
+                        + connection.getChild1() + "!" + connection.getPort1());
+            } else {
+                EdgeWidget widget = scene.connect(connection.getChild1(), connection.getPort1(),
+                        connection.getChild2(), connection.getPort2());
+                widget.setToolTipText(connection.getChild1() + "!" + connection.getPort1() + " -> "
+                        + connection.getChild2() + "!" + connection.getPort2());
+            }
             return true;
         } else {
             return false;
@@ -771,8 +780,15 @@ public class GraphEditor extends RootEditor {
 
         @Override
         public void createConnection(Widget sourceWidget, Widget targetWidget) {
-            PinID<String> p1 = (PinID<String>) scene.findObject(sourceWidget);
-            PinID<String> p2 = (PinID<String>) scene.findObject(targetWidget);
+            PinWidget pw1 = (PinWidget) sourceWidget;
+            PinWidget pw2 = (PinWidget) targetWidget;
+            if (pw1.getAlignment() == Alignment.Left || pw2.getAlignment() == Alignment.Right) {
+                PinWidget tmp = pw2;
+                pw2 = pw1;
+                pw1 = tmp;
+            }
+            PinID<String> p1 = (PinID<String>) scene.findObject(pw1);
+            PinID<String> p2 = (PinID<String>) scene.findObject(pw2);
             try {
                 container.connect(new Connection(p1.getParent(), p1.getName(), p2.getParent(), p2.getName()), new Callback() {
                     @Override
