@@ -135,6 +135,7 @@ public class GraphEditor extends RootEditor {
     private final JMenuItem addMenu;
 
     private JComponent panel;
+    private JComponent actionPanel;
     private ContainerProxy container;
 
     private ActionSupport actionSupport;
@@ -212,7 +213,7 @@ public class GraphEditor extends RootEditor {
         am.put(DefaultEditorKit.copyAction, copyAction);
         PasteActionPerformer pasteAction = new PasteActionPerformer(this, em);
         am.put(DefaultEditorKit.pasteAction, pasteAction);
-
+        
         return am;
     }
 
@@ -284,6 +285,10 @@ public class GraphEditor extends RootEditor {
         menu.add(new CommentAction(scene));
         return menu;
     }
+    
+    PraxisGraphScene<String> getScene() {
+        return scene;
+    }
 
     ActionSupport getActionSupport() {
         if (actionSupport == null) {
@@ -300,6 +305,23 @@ public class GraphEditor extends RootEditor {
         return new Point(activePoint);
     }
 
+    void installToActionPanel(JComponent actionComponent) {
+        actionPanel.add(actionComponent);
+        actionPanel.revalidate();
+    }
+    
+    void clearActionPanel() {
+        for (Component c : actionPanel.getComponents()) {
+            actionPanel.remove(c);
+        }
+        actionPanel.revalidate();
+        scene.getView().requestFocusInWindow();
+    }
+    
+    ExplorerManager getExplorerManager() {
+        return manager;
+    }
+    
     @Override
     public void componentActivated() {
         if (panel == null) {
@@ -342,6 +364,21 @@ public class GraphEditor extends RootEditor {
             panel = new JPanel(new BorderLayout());
             panel.add(layered, BorderLayout.CENTER);
 
+            actionPanel = new JPanel(new BorderLayout());
+            panel.add(actionPanel, BorderLayout.SOUTH);
+            
+            InputMap im = panel.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+            im.put(KeyStroke.getKeyStroke("typed /"), "select");
+            im.put(KeyStroke.getKeyStroke("typed ."), "call");
+            panel.getActionMap().put("select", new SelectAction(this));
+            panel.getActionMap().put("call", new CallAction(this));
+            im.put(KeyStroke.getKeyStroke("alt shift F"), "format");
+            panel.getActionMap().put("format", new AbstractAction("format") {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    scene.layoutScene();
+                }
+            });
             if (container != null) {
                 buildScene();
             }

@@ -23,6 +23,7 @@ package net.neilcsmith.praxis.live.pxr.graph;
 
 import java.awt.Point;
 import java.util.List;
+import java.util.regex.Pattern;
 import net.neilcsmith.praxis.live.model.ComponentProxy;
 import net.neilcsmith.praxis.live.pxr.api.Attributes;
 
@@ -102,4 +103,36 @@ class Utils {
         return ret == null ? def : ret;
     }
 
+    static Pattern globToRegex(String glob) {
+        StringBuilder regex = new StringBuilder();
+        for (char c : glob.toCharArray()) {
+            switch (c) {
+                case '*':
+                    regex.append(".*");
+                    break;
+                case '?':
+                    regex.append('.');
+                    break;
+                case '|':
+                    regex.append('|');
+                    break;
+                case '_':
+                    regex.append('_');
+                    break;
+                case '-':
+                    regex.append("\\-");
+                    break;
+                default:
+                    if (Character.isJavaIdentifierPart(c)) {
+                        regex.append(c);
+                    } else {
+                        throw new IllegalArgumentException();
+                    }
+            }
+        }
+        return Pattern.compile(regex.toString());
+    }
+    
+    
+    
 }
