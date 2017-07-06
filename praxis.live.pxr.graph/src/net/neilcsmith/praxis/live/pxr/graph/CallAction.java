@@ -21,10 +21,13 @@
  */
 package net.neilcsmith.praxis.live.pxr.graph;
 
+import java.awt.KeyboardFocusManager;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyEditor;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Set;
@@ -45,9 +48,10 @@ import javax.swing.SwingUtilities;
 import net.neilcsmith.praxis.core.info.ComponentInfo;
 import net.neilcsmith.praxis.core.info.ControlInfo;
 import net.neilcsmith.praxis.live.model.ComponentProxy;
+import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.awt.CloseButtonFactory;
+import org.openide.explorer.propertysheet.PropertyPanel;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle.Messages;
@@ -165,9 +169,10 @@ class CallAction extends AbstractAction {
         }
         return null;
     }
-    
+
     private void invokeAction(String controlID, ActionEvent e) throws Exception {
-        outer : for (Node node : editor.getExplorerManager().getSelectedNodes()) {
+        outer:
+        for (Node node : editor.getExplorerManager().getSelectedNodes()) {
             for (Action action : node.getActions(false)) {
                 if (action == null) {
                     continue;
@@ -178,23 +183,53 @@ class CallAction extends AbstractAction {
             }
         }
     }
-    
+
     private void invokePropertyChange(String controlID, String value) throws Exception {
         for (Node node : editor.getExplorerManager().getSelectedNodes()) {
             Node.Property<?> property = findProperty(node, controlID);
             if (property != null) {
                 PropertyEditor pe = property.getPropertyEditor();
                 pe.setAsText(value);
-                ((Node.Property<Object>)property).setValue(pe.getValue());
+                ((Node.Property<Object>) property).setValue(pe.getValue());
             }
         }
     }
-    
+
+    private void invokeCustomPropertyEditor(String controlID) {
+        try {
+            Node.Property<?> property = findProperty(controlID);
+            if (property != null) {
+                PropertyPanel panel = new PropertyPanel(property, PropertyPanel.PREF_CUSTOM_EDITOR);
+                panel.setChangeImmediate(false);
+                DialogDescriptor descriptor = new DialogDescriptor(
+                        panel,
+                        property.getDisplayName(),
+                        true,
+                        (e) -> {
+                            if (e.getSource() == DialogDescriptor.OK_OPTION) {
+                                panel.updateValue();
+                            }
+                        });
+                if (DialogDisplayer.getDefault().notify(descriptor) == DialogDescriptor.OK_OPTION) {
+                    Object value = property.getValue();
+                    for (Node node : editor.getExplorerManager().getSelectedNodes()) {
+                        Node.Property<Object> nodeProperty = (Node.Property<Object>) findProperty(node, property.getName());
+                        if (nodeProperty != property && nodeProperty != null) {
+                            nodeProperty.setValue(value);
+                        }
+                    }
+                }
+            }
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+
     class Panel extends JPanel {
 
         private final Window parent;
-        private JSuggestField controlField;
-        private JTextField valueField;
+        private final JSuggestField controlField;
+        private final JSuggestField valueField;
 
         Panel(Window parent) {
             this.parent = parent;
@@ -206,12 +241,13 @@ class CallAction extends AbstractAction {
             controlField.setColumns(18);
             controlField.setMaximumSize(controlField.getPreferredSize());
             controlField.setFocusTraversalKeysEnabled(false);
-//            controlField.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_TAB, 0), JTextField.notifyAction);
-//            controlField.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, 0), JTextField.notifyAction);
+            controlField.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_TAB, 0), JTextField.notifyAction);
+            controlField.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, 0), JTextField.notifyAction);
             add(controlField);
             add(Box.createHorizontalStrut(16));
-            valueField = new JTextField();
+            valueField = new JSuggestField(parent);
             valueField.setEnabled(false);
+            valueField.setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, Collections.EMPTY_SET);
             add(valueField);
             add(Box.createHorizontalStrut(16));
             JButton closeButton = CloseButtonFactory.createBigCloseButton();
@@ -232,7 +268,7 @@ class CallAction extends AbstractAction {
 
             controlField.addActionListener(this::commitControl);
             valueField.addActionListener(this::commitValue);
-            
+
             closeButton.addActionListener(close);
 
         }
@@ -246,14 +282,21 @@ class CallAction extends AbstractAction {
             Node.Property<?> property = findProperty(controlID);
             if (property != null) {
                 String valueText = property.getPropertyEditor().getAsText();
+                String[] tags = property.getPropertyEditor().getTags();
                 if (valueText != null) {
                     valueField.setEnabled(true);
                     valueField.setText(valueText);
+                    if (tags != null && tags.length > 0) {
+                        valueField.setSuggestData(new Vector<>(Arrays.asList(tags)));
+                    } else {
+                        valueField.setSuggestData(new Vector<>());
+                    }
                     valueField.selectAll();
                     valueField.requestFocusInWindow();
                 } else {
-                    DialogDisplayer.getDefault().notify(
-                            new NotifyDescriptor.Message(Bundle.ERR_noText(), NotifyDescriptor.ERROR_MESSAGE));
+//                    DialogDisplayer.getDefault().notify(
+//                            new NotifyDescriptor.Message(Bundle.ERR_noText(), NotifyDescriptor.ERROR_MESSAGE));
+                    invokeCustomPropertyEditor(controlID);
                     editor.clearActionPanel();
                 }
             } else {
@@ -265,7 +308,7 @@ class CallAction extends AbstractAction {
                 editor.clearActionPanel();
             }
         }
-        
+
         private void commitValue(ActionEvent e) {
             String controlID = controlField.getText();
             if (controlID.isEmpty()) {
