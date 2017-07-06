@@ -73,6 +73,7 @@ class SelectAction extends AbstractAction {
     private void completeSelection(String text) {
         if (text.isEmpty()) {
             editor.getScene().userSelectionSuggested(Collections.emptySet(), false);
+            editor.getScene().setFocusedObject(null);
             return;
         }
         Pattern search = Utils.globToRegex(text);
