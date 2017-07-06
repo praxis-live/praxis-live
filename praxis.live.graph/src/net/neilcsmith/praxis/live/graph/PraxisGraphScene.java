@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2016 Neil C Smith.
+ * Copyright 2017 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 2 only, as
@@ -113,6 +113,7 @@ public class PraxisGraphScene<N> extends GraphPinScene<N, EdgeID<N>, PinID<N>> {
     
     private Router router;
     private final WidgetAction moveAction;
+    private final PraxisKeyboardMoveAction keyboardMoveAction;
     private final SceneLayout sceneLayout;
     private LAFScheme scheme;
     private WidgetAction menuAction;
@@ -156,6 +157,7 @@ public class PraxisGraphScene<N> extends GraphPinScene<N, EdgeID<N>, PinID<N>> {
         
         PraxisMoveProvider mover = new PraxisMoveProvider(this, backgroundLayer);
         moveAction = ActionFactory.createMoveAction(mover, mover);
+        keyboardMoveAction = new PraxisKeyboardMoveAction(mover, mover);
         
         commentWidget = new CommentWidget(this);
         commentWidget.setPreferredLocation(new Point(32,32));
@@ -300,6 +302,7 @@ public class PraxisGraphScene<N> extends GraphPinScene<N, EdgeID<N>, PinID<N>> {
         widget.getHeader().getActions().addAction(createObjectHoverAction());
         widget.getActions().addAction(createSelectAction());
         widget.getActions().addAction(moveAction);
+        widget.getActions().addAction(keyboardMoveAction);
         if (menuAction != null) {
             widget.getActions().addAction(menuAction);
         }
