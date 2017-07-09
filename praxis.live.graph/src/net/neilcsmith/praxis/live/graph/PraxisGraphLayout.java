@@ -943,8 +943,8 @@ class PraxisGraphLayout<N> extends GraphLayout<N, EdgeID<N>> {
             initialPositions();
             for (int i = 0; i < SWEEP_ITERATIONS; i++) {
 //                sweepDown();
-                sweepUp();
-                sweepDown();
+//                sweepUp();
+//                sweepDown();
             }
 //
 //            sweepDown();
