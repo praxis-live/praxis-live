@@ -370,8 +370,12 @@ public class GraphEditor extends RootEditor {
             InputMap im = panel.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
             im.put(KeyStroke.getKeyStroke("typed /"), "select");
             im.put(KeyStroke.getKeyStroke("typed ."), "call");
+            im.put(KeyStroke.getKeyStroke("typed ~"), "connect");
+            im.put(KeyStroke.getKeyStroke("typed !"), "disconnect");
             panel.getActionMap().put("select", new SelectAction(this));
             panel.getActionMap().put("call", new CallAction(this));
+            panel.getActionMap().put("connect", new ConnectAction(this, false));
+            panel.getActionMap().put("disconnect", new ConnectAction(this, true));
             im.put(KeyStroke.getKeyStroke("alt shift F"), "format");
             panel.getActionMap().put("format", new AbstractAction("format") {
                 @Override

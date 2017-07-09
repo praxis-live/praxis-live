@@ -32,6 +32,9 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.Vector;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ActionMap;
@@ -42,7 +45,6 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import net.neilcsmith.praxis.core.info.ComponentInfo;
@@ -63,6 +65,7 @@ import org.openide.util.NbBundle.Messages;
 @Messages({
     "LBL.call=Call",
     "TXT.emptySelection=<no selection>",
+    "TXT.parent=<parent>",
     "ERR.noText=Property doesn't support text values."
 })
 class CallAction extends AbstractAction {
@@ -77,20 +80,30 @@ class CallAction extends AbstractAction {
     public void actionPerformed(ActionEvent e) {
         Panel panel = new Panel(SwingUtilities.windowForComponent(editor.getEditorComponent()));
         Node[] nodes = editor.getExplorerManager().getSelectedNodes();
-        if (nodes.length == 0) {
-            panel.controlField.setText(Bundle.TXT_emptySelection());
-            panel.controlField.setEnabled(false);
+        if (nodes.length == 0 || nodes[0] == editor.getContainer().getNodeDelegate()) {
+            panel.componentField.setText(Bundle.TXT_parent());
         } else {
-            HashSet<String> ids = new HashSet<>();
-            findProperties(nodes, ids);
-            findActions(nodes, ids);
-            Vector<String> data = new Vector<>(ids);
-            data.sort(Comparator.naturalOrder());
-            panel.controlField.setSuggestData(data);
+            panel.componentField.setText(Utils.nodesToGlob(nodes));
         }
-
+        panel.componentField.setSuggestData(editor.getScene().getNodes().stream().sorted().collect(Collectors.toCollection(Vector::new)));
         editor.installToActionPanel(panel);
-        panel.controlField.requestFocusInWindow();
+        panel.commitComponent(nodes);
+    }
+
+    private Node[] findMatchingNodes(String glob) {
+        if (glob.isEmpty() || glob.equals(Bundle.TXT_parent())) {
+            return new Node[]{editor.getContainer().getNodeDelegate()};
+        }
+        try {
+            Pattern search = Utils.globToRegex(glob);
+            return Stream.of(editor.getContainer().getChildIDs())
+                    .filter(id -> search.matcher(id).matches())
+                    .map(id -> editor.getContainer().getChild(id).getNodeDelegate())
+                    .toArray(Node[]::new);
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return new Node[0];
     }
 
     private void findProperties(Node[] nodes, Set<String> names) {
@@ -151,12 +164,13 @@ class CallAction extends AbstractAction {
         names.addAll(result);
     }
 
-    private Node.Property<?> findProperty(String name) {
-        Node[] nodes = editor.getExplorerManager().getSelectedNodes();
+    private Node.Property<?> findProperty(String componentGlob, String name) {
+        Node[] nodes = findMatchingNodes(componentGlob);
         if (nodes.length == 0) {
             return null;
+        } else {
+            return findProperty(nodes[0], name);
         }
-        return findProperty(nodes[0], name);
     }
 
     private Node.Property<?> findProperty(Node node, String name) {
@@ -170,9 +184,9 @@ class CallAction extends AbstractAction {
         return null;
     }
 
-    private void invokeAction(String controlID, ActionEvent e) throws Exception {
-        outer:
-        for (Node node : editor.getExplorerManager().getSelectedNodes()) {
+    private void invokeAction(String componentGlob, String controlID, ActionEvent e) throws Exception {
+        Node[] nodes = findMatchingNodes(componentGlob);
+        for (Node node : nodes) {
             for (Action action : node.getActions(false)) {
                 if (action == null) {
                     continue;
@@ -184,8 +198,9 @@ class CallAction extends AbstractAction {
         }
     }
 
-    private void invokePropertyChange(String controlID, String value) throws Exception {
-        for (Node node : editor.getExplorerManager().getSelectedNodes()) {
+    private void invokePropertyChange(String componentGlob, String controlID, String value) throws Exception {
+        Node[] nodes = findMatchingNodes(componentGlob);
+        for (Node node : nodes) {
             Node.Property<?> property = findProperty(node, controlID);
             if (property != null) {
                 PropertyEditor pe = property.getPropertyEditor();
@@ -195,9 +210,13 @@ class CallAction extends AbstractAction {
         }
     }
 
-    private void invokeCustomPropertyEditor(String controlID) {
+    private void invokeCustomPropertyEditor(String componentGlob, String controlID) {
+        Node[] nodes = findMatchingNodes(componentGlob);
+        if (nodes.length == 0) {
+            return;
+        }
         try {
-            Node.Property<?> property = findProperty(controlID);
+            Node.Property<?> property = findProperty(nodes[0], controlID);
             if (property != null) {
                 PropertyPanel panel = new PropertyPanel(property, PropertyPanel.PREF_CUSTOM_EDITOR);
                 panel.setChangeImmediate(false);
@@ -212,7 +231,7 @@ class CallAction extends AbstractAction {
                         });
                 if (DialogDisplayer.getDefault().notify(descriptor) == DialogDescriptor.OK_OPTION) {
                     Object value = property.getValue();
-                    for (Node node : editor.getExplorerManager().getSelectedNodes()) {
+                    for (Node node : nodes) {
                         Node.Property<Object> nodeProperty = (Node.Property<Object>) findProperty(node, property.getName());
                         if (nodeProperty != property && nodeProperty != null) {
                             nodeProperty.setValue(value);
@@ -228,6 +247,7 @@ class CallAction extends AbstractAction {
     class Panel extends JPanel {
 
         private final Window parent;
+        private final JSuggestField componentField;
         private final JSuggestField controlField;
         private final JSuggestField valueField;
 
@@ -237,14 +257,24 @@ class CallAction extends AbstractAction {
             setFocusCycleRoot(true);
             add(new JLabel(Bundle.LBL_call()));
             add(Box.createHorizontalStrut(16));
-            controlField = new JSuggestField(parent);
-            controlField.setColumns(18);
-            controlField.setMaximumSize(controlField.getPreferredSize());
-            controlField.setFocusTraversalKeysEnabled(false);
-            controlField.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_TAB, 0), JTextField.notifyAction);
-            controlField.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, 0), JTextField.notifyAction);
-            add(controlField);
+
+            componentField = new JSuggestField(parent);
+            componentField.setColumns(12);
+            componentField.setMaximumSize(componentField.getPreferredSize());
+            Utils.configureFocusActionKeys(componentField, false);
+            add(componentField);
+
             add(Box.createHorizontalStrut(16));
+
+            controlField = new JSuggestField(parent);
+            controlField.setEnabled(false);
+            controlField.setColumns(12);
+            controlField.setMaximumSize(controlField.getPreferredSize());
+            Utils.configureFocusActionKeys(controlField, false);
+            add(controlField);
+
+            add(Box.createHorizontalStrut(16));
+
             valueField = new JSuggestField(parent);
             valueField.setEnabled(false);
             valueField.setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, Collections.EMPTY_SET);
@@ -266,6 +296,7 @@ class CallAction extends AbstractAction {
             ActionMap am = getActionMap();
             am.put("close", close);
 
+            componentField.addActionListener(this::commitComponent);
             controlField.addActionListener(this::commitControl);
             valueField.addActionListener(this::commitValue);
 
@@ -273,13 +304,32 @@ class CallAction extends AbstractAction {
 
         }
 
+        private void commitComponent(ActionEvent e) {
+            Node[] nodes = findMatchingNodes(componentField.getText());
+            if (nodes.length == 0) {
+                return;
+            }
+            commitComponent(nodes);
+        }
+
+            private void commitComponent(Node[] nodes) {
+                HashSet<String> ids = new HashSet<>();
+            findProperties(nodes, ids);
+            findActions(nodes, ids);
+            Vector<String> data = new Vector<>(ids);
+            data.sort(Comparator.naturalOrder());
+            controlField.setSuggestData(data);
+        controlField.setEnabled(true);
+            controlField.requestFocusInWindow();
+        }
+
         private void commitControl(ActionEvent e) {
             String controlID = controlField.getText();
             if (controlID.isEmpty()) {
-                editor.clearActionPanel();
                 return;
             }
-            Node.Property<?> property = findProperty(controlID);
+            String componentGlob = componentField.getText();
+            Node.Property<?> property = findProperty(componentGlob, controlID);
             if (property != null) {
                 String valueText = property.getPropertyEditor().getAsText();
                 String[] tags = property.getPropertyEditor().getTags();
@@ -296,12 +346,12 @@ class CallAction extends AbstractAction {
                 } else {
 //                    DialogDisplayer.getDefault().notify(
 //                            new NotifyDescriptor.Message(Bundle.ERR_noText(), NotifyDescriptor.ERROR_MESSAGE));
-                    invokeCustomPropertyEditor(controlID);
+                    invokeCustomPropertyEditor(componentGlob, controlID);
                     editor.clearActionPanel();
                 }
             } else {
                 try {
-                    invokeAction(controlID, e);
+                    invokeAction(componentGlob, controlID, e);
                 } catch (Exception ex) {
                     Exceptions.printStackTrace(ex);
                 }
@@ -315,9 +365,10 @@ class CallAction extends AbstractAction {
                 editor.clearActionPanel();
                 return;
             }
+
             String value = valueField.getText();
             try {
-                invokePropertyChange(controlID, value);
+                invokePropertyChange(componentField.getText(), controlID, value);
             } catch (Exception ex) {
                 Exceptions.printStackTrace(ex);
             }

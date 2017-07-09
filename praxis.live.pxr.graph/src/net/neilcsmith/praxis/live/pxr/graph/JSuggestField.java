@@ -29,7 +29,6 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.Window;
-import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
@@ -266,6 +265,7 @@ class JSuggestField extends JTextField {
 //        Collections.sort(data);
         this.data = data;
         list.setListData(data);
+        suggestions.clear();
         return true;
     }
 
@@ -371,7 +371,7 @@ class JSuggestField extends JTextField {
          */
         @Override
         public void run() {
-            if (stop) {
+            if (stop || !JSuggestField.this.isVisible()) {
                 return;
             }
             try {
