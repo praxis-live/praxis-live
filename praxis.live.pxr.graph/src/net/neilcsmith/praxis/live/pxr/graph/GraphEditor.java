@@ -304,6 +304,12 @@ public class GraphEditor extends RootEditor {
     Point getActivePoint() {
         return new Point(activePoint);
     }
+    
+    void resetActivePoint() {
+        // @TODO properly layout added components
+        activePoint.x = 100;
+        activePoint.y = 100;
+    }
 
     void installToActionPanel(JComponent actionComponent) {
         actionPanel.add(actionComponent);
@@ -372,10 +378,12 @@ public class GraphEditor extends RootEditor {
             im.put(KeyStroke.getKeyStroke("typed ."), "call");
             im.put(KeyStroke.getKeyStroke("typed ~"), "connect");
             im.put(KeyStroke.getKeyStroke("typed !"), "disconnect");
+            im.put(KeyStroke.getKeyStroke("typed @"), "add-component");
             panel.getActionMap().put("select", new SelectAction(this));
             panel.getActionMap().put("call", new CallAction(this));
             panel.getActionMap().put("connect", new ConnectAction(this, false));
             panel.getActionMap().put("disconnect", new ConnectAction(this, true));
+            panel.getActionMap().put("add-component", new AddAction(this));
             im.put(KeyStroke.getKeyStroke("alt shift F"), "format");
             panel.getActionMap().put("format", new AbstractAction("format") {
                 @Override
@@ -711,7 +719,7 @@ public class GraphEditor extends RootEditor {
         return null;
     }
 
-    private void acceptComponentType(final ComponentType type) {
+    void acceptComponentType(final ComponentType type) {
         NotifyDescriptor.InputLine dlg = new NotifyDescriptor.InputLine(
                 "ID:", "Enter an ID for " + type);
         dlg.setInputText(getFreeID(type));
@@ -739,7 +747,7 @@ public class GraphEditor extends RootEditor {
         }
     }
 
-    private void acceptImport(FileObject file) {
+    void acceptImport(FileObject file) {
         if (getActionSupport().importSubgraph(container, file, new Callback() {
             @Override
             public void onReturn(CallArguments args) {
