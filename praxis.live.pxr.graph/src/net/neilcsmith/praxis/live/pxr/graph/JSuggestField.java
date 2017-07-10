@@ -23,30 +23,28 @@ package net.neilcsmith.praxis.live.pxr.graph;
 
 import java.awt.Dimension;
 import java.awt.GraphicsConfiguration;
-import java.awt.IllegalComponentStateException;
 import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.Window;
-import java.awt.event.ActionListener;
+import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
 import java.awt.event.HierarchyBoundsAdapter;
 import java.awt.event.HierarchyEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.JDialog;
 import javax.swing.JList;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
+import javax.swing.Popup;
+import javax.swing.PopupFactory;
 import javax.swing.SwingUtilities;
 
 class JSuggestField extends JTextField {
@@ -56,15 +54,7 @@ class JSuggestField extends JTextField {
      */
     private static final long serialVersionUID = 1756202080423312153L;
 
-    /**
-     * Dialog used as the drop-down list.
-     */
-    private JDialog d;
-
-    /**
-     * Location of said drop-down list.
-     */
-    private Point location;
+    private Popup popup;
 
     /**
      * List contained in the drop-down dialog.
@@ -88,23 +78,6 @@ class JSuggestField extends JTextField {
      */
     private String lastWord = "";
 
-    /**
-     * The last chosen variable which exists. Needed if user continued to type
-     * but didn't press the enter key
-     *
-     */
-    private String lastChosenExistingVariable;
-
-    /**
-     * Hint that will be displayed if the field is empty
-     */
-    private String hint;
-
-    /**
-     * Listeners, fire event when a selection as occured
-     */
-    private LinkedList<ActionListener> listeners;
-
     private Matcher suggestMatcher = (dataWord, searchWord) -> dataWord.contains(searchWord);
 
     private boolean caseSensitive = false;
@@ -118,82 +91,41 @@ class JSuggestField extends JTextField {
         super();
         data = new Vector<String>();
         suggestions = new Vector<String>();
-        listeners = new LinkedList<ActionListener>();
         addHierarchyBoundsListener(new HierarchyBoundsAdapter() {
             @Override
             public void ancestorMoved(HierarchyEvent e) {
-                d.setVisible(false);
+                hideSuggest();
             }
 
             @Override
             public void ancestorResized(HierarchyEvent e) {
-                d.setVisible(false);
+                hideSuggest();
             }
 
         });
-        addFocusListener(new FocusListener() {
+        addFocusListener(new FocusAdapter() {
             @Override
             public void focusLost(FocusEvent e) {
-                d.setVisible(false);
-//
-//                if (getText().equals("") && e.getOppositeComponent() != null && e.getOppositeComponent().getName() != null) {
-//                    if (!e.getOppositeComponent().getName().equals("suggestFieldDropdownButton")) {
-//                        setText(hint);
-//                    }
-//                } else if (getText().equals("")) {
-//                    setText(hint);
-//                }
-            }
-
-            @Override
-            public void focusGained(FocusEvent e) {
-//                if (getText().equals(hint)) {
-//                    setText("");
-//                }
-
-//                showSuggest();
+                hideSuggest();
             }
         });
-        d = new JDialog(owner);
-        d.setUndecorated(true);
-        d.setFocusableWindowState(false);
-        d.setFocusable(false);
         list = new JList();
-        list.addMouseListener(new MouseListener() {
+        list.setFocusable(false);
+        list.addMouseListener(new MouseAdapter() {
             private int selected;
-
-            @Override
-            public void mousePressed(MouseEvent e) {
-            }
 
             @Override
             public void mouseReleased(MouseEvent e) {
                 if (selected == list.getSelectedIndex()) {
                     // provide double-click for selecting a suggestion
                     setText((String) list.getSelectedValue());
-                    lastChosenExistingVariable = list.getSelectedValue().toString();
-//                    fireActionEvent();
                     fireActionPerformed();
-                    d.setVisible(false);
+                    hideSuggest();
                 }
                 selected = list.getSelectedIndex();
             }
 
-            @Override
-            public void mouseExited(MouseEvent e) {
-            }
-
-            @Override
-            public void mouseEntered(MouseEvent e) {
-            }
-
-            @Override
-            public void mouseClicked(MouseEvent e) {
-            }
         });
-        d.add(new JScrollPane(list, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
-                JScrollPane.HORIZONTAL_SCROLLBAR_NEVER));
-        d.pack();
         addKeyListener(new KeyListener() {
             @Override
             public void keyTyped(KeyEvent e) {
@@ -205,7 +137,7 @@ class JSuggestField extends JTextField {
                     return;
                 }
                 if (e.getKeyCode() == KeyEvent.VK_DOWN) {
-                    if (d.isVisible()) {
+                    if (isSuggestVisible()) {
                         list.setSelectedIndex(list.getSelectedIndex() + 1);
                         list.ensureIndexIsVisible(list.getSelectedIndex() + 1);
                         setText((String) list.getSelectedValue());
@@ -214,7 +146,7 @@ class JSuggestField extends JTextField {
                         showSuggest();
                     }
                 } else if (e.getKeyCode() == KeyEvent.VK_UP) {
-                    if (d.isVisible()) {
+                    if (isSuggestVisible()) {
                         list.setSelectedIndex(list.getSelectedIndex() - 1);
                         list.ensureIndexIsVisible(list.getSelectedIndex() - 1);
                         setText((String) list.getSelectedValue());
@@ -222,13 +154,12 @@ class JSuggestField extends JTextField {
                         showSuggest();
                     }
                     return;
-                } else if ((e.getKeyCode() == KeyEvent.VK_ENTER ||
-                        e.getKeyCode() == KeyEvent.VK_TAB)
-                        && list.getSelectedIndex() != -1 
+                } else if ((e.getKeyCode() == KeyEvent.VK_ENTER
+                        || e.getKeyCode() == KeyEvent.VK_TAB)
+                        && list.getSelectedIndex() != -1
                         && suggestions.size() > 0) {
                     setText((String) list.getSelectedValue());
-                    lastChosenExistingVariable = list.getSelectedValue().toString();
-                    d.setVisible(false);
+                    hidePopup();
                     return;
                 }
                 showSuggest();
@@ -280,33 +211,6 @@ class JSuggestField extends JTextField {
     }
 
     /**
-     * Set preferred size for the drop-down that will appear.
-     *
-     * @param size Preferred size of the drop-down list
-     */
-    public void setPreferredSuggestSize(Dimension size) {
-        d.setPreferredSize(size);
-    }
-
-    /**
-     * Set minimum size for the drop-down that will appear.
-     *
-     * @param size Minimum size of the drop-down list
-     */
-    public void setMinimumSuggestSize(Dimension size) {
-        d.setMinimumSize(size);
-    }
-
-    /**
-     * Set maximum size for the drop-down that will appear.
-     *
-     * @param size Maximum size of the drop-down list
-     */
-    public void setMaximumSuggestSize(Dimension size) {
-        d.setMaximumSize(size);
-    }
-
-    /**
      * Force the suggestions to be displayed (Useful for buttons e.g. for using
      * JSuggestionField like a ComboBox)
      */
@@ -323,7 +227,6 @@ class JSuggestField extends JTextField {
         matcher = new InterruptableMatcher();
         SwingUtilities.invokeLater(matcher);
         lastWord = getText();
-        relocate();
     }
 
     /**
@@ -331,39 +234,49 @@ class JSuggestField extends JTextField {
      * JSuggestionField like a ComboBox)
      */
     public void hideSuggest() {
-        d.setVisible(false);
+        hidePopup();
     }
 
-    /**
-     * @return boolean Visibility of the suggestion window
-     */
-    public boolean isSuggestVisible() {
-        return d.isVisible();
-    }
-
-    /**
-     * Place the suggestion window under the JTextField.
-     */
-    private void relocate() {
-        try {
-            Point location = getLocationOnScreen();
-            GraphicsConfiguration gc = getGraphicsConfiguration();
-            Rectangle screenBounds = gc.getBounds();
-            Insets screenInsets = Toolkit.getDefaultToolkit().getScreenInsets(gc);
-            int screenHeight = screenBounds.height - screenInsets.bottom;
-            if (location.y + getHeight() + d.getHeight() > screenHeight) {
-                location.y -= d.getHeight();
-            } else {
-                location.y += getHeight();
-            }
-            d.setLocation(location);
-        } catch (IllegalComponentStateException e) {
-            return; // might happen on window creation
+    private void showPopup() {
+        if (popup != null) {
+            return;
         }
+        JScrollPane scroll = new JScrollPane(list,
+                JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+                JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        Dimension dim = new Dimension(getSize().width,
+                Math.min(12, data.size()) *
+                (list.getCellRenderer().getListCellRendererComponent(list, "XXX", 0, true, true)
+                        .getPreferredSize().height + 4));
+        scroll.setPreferredSize(dim);
+        Point loc = getLocationOnScreen();
+        GraphicsConfiguration gc = getGraphicsConfiguration();
+        Rectangle screenBounds = gc.getBounds();
+        Insets screenInsets = Toolkit.getDefaultToolkit().getScreenInsets(gc);
+        int screenHeight = screenBounds.height - screenInsets.bottom;
+        if (loc.y + getHeight() + dim.getHeight() > screenHeight) {
+            loc.y -= dim.getHeight();
+        } else {
+            loc.y += getHeight();
+        }
+
+        popup = PopupFactory.getSharedInstance().getPopup(this, scroll, loc.x, loc.y);
+        popup.show();
+    }
+
+    private void hidePopup() {
+        if (popup != null) {
+            popup.hide();
+            popup = null;
+        }
+    }
+    
+    private boolean isSuggestVisible() {
+        return popup != null;
     }
 
     private class InterruptableMatcher implements Runnable {
-        
+
         private boolean stop;
 
         /**
@@ -393,11 +306,11 @@ class JSuggestField extends JTextField {
                 }
                 if (suggestions.size() > 0) {
                     list.setListData(suggestions);
+                    showPopup();
                     list.setSelectedIndex(0);
                     list.ensureIndexIsVisible(0);
-                    d.setVisible(true);
                 } else {
-                    d.setVisible(false);
+                    hidePopup();
                 }
             } catch (Exception ex) {
                 // Despite all precautions, external changes have occurred.
@@ -407,37 +320,6 @@ class JSuggestField extends JTextField {
         }
     }
 
-//    /**
-//     * Adds a listener that notifies when a selection has occured
-//     *
-//     * @param listener ActionListener to use
-//     */
-//    public void addSelectionListener(ActionListener listener) {
-//        if (listener != null) {
-//            listeners.add(listener);
-//        }
-//    }
-//
-//    /**
-//     * Removes the Listener
-//     *
-//     * @param listener ActionListener to remove
-//     */
-//    public void removeSelectionListener(ActionListener listener) {
-//        listeners.remove(listener);
-//    }
-//
-//    /**
-//     * Use ActionListener to notify on changes so we don't have to create an
-//     * extra event
-//     */
-//    private void fireActionEvent() {
-//        ActionEvent event = new ActionEvent(this, 0, getText());
-//        for (ActionListener listener : listeners) {
-//            listener.actionPerformed(event);
-//        }
-//    }
-
     @Override
     protected void fireActionPerformed() {
         if (matcher != null) {
@@ -445,36 +327,6 @@ class JSuggestField extends JTextField {
             matcher = null;
         }
         super.fireActionPerformed();
-    } 
-
-    
-    
-    /**
-     * Returns the selected value in the drop down list
-     *
-     * @return selected value from the user or null if the entered value does
-     * not exist
-     */
-    public String getLastChosenExistingVariable() {
-        return lastChosenExistingVariable;
-    }
-
-    /**
-     * Get the hint that will be displayed when the field is empty
-     *
-     * @return The hint of null if none was defined
-     */
-    public String getHint() {
-        return hint;
-    }
-
-    /**
-     * Set a text that will be displayed when the field is empty
-     *
-     * @param hint Hint such as "Search..."
-     */
-    public void setHint(String hint) {
-        this.hint = hint;
     }
 
     /**
