@@ -87,7 +87,9 @@ class CallAction extends AbstractAction {
         }
         panel.componentField.setSuggestData(editor.getScene().getNodes().stream().sorted().collect(Collectors.toCollection(Vector::new)));
         editor.installToActionPanel(panel);
-        panel.commitComponent(nodes);
+//        panel.commitComponent(nodes);
+        panel.componentField.selectAll();
+        panel.componentField.requestFocusInWindow();
     }
 
     private Node[] findMatchingNodes(String glob) {
@@ -312,14 +314,14 @@ class CallAction extends AbstractAction {
             commitComponent(nodes);
         }
 
-            private void commitComponent(Node[] nodes) {
-                HashSet<String> ids = new HashSet<>();
+        private void commitComponent(Node[] nodes) {
+            HashSet<String> ids = new HashSet<>();
             findProperties(nodes, ids);
             findActions(nodes, ids);
             Vector<String> data = new Vector<>(ids);
             data.sort(Comparator.naturalOrder());
             controlField.setSuggestData(data);
-        controlField.setEnabled(true);
+            controlField.setEnabled(true);
             controlField.requestFocusInWindow();
         }
 

@@ -85,10 +85,9 @@ class ConnectAction extends AbstractAction {
         Node[] nodes = editor.getExplorerManager().getSelectedNodes();
         if (nodes.length > 0 && nodes[0] != editor.getContainer().getNodeDelegate()) {
             panel.srcField.setText(Utils.nodesToGlob(nodes));
-            panel.commitSrc();
-        } else {
-            panel.srcField.requestFocusInWindow();
+            panel.srcField.selectAll();
         }
+        panel.srcField.requestFocusInWindow();
     }
 
     private List<String> findNodes(String glob) {
@@ -107,8 +106,8 @@ class ConnectAction extends AbstractAction {
         return nodes.stream()
                 .map(nid -> editor.getContainer().getChild(nid).getInfo())
                 .flatMap(info -> Stream.of(info.getPorts())
-                    .filter(pid -> info.getPortInfo(pid).getDirection()
-                        != (output ? PortInfo.Direction.IN : PortInfo.Direction.OUT))
+                .filter(pid -> info.getPortInfo(pid).getDirection()
+                != (output ? PortInfo.Direction.IN : PortInfo.Direction.OUT))
                 )
                 .distinct()
                 .collect(Collectors.toList());
@@ -120,8 +119,8 @@ class ConnectAction extends AbstractAction {
             return nodes.stream()
                     .map(nid -> editor.getContainer().getChild(nid).getInfo())
                     .flatMap(info -> Stream.of(info.getPorts())
-                        .filter(pid -> info.getPortInfo(pid).getDirection()
-                            != (output ? PortInfo.Direction.IN : PortInfo.Direction.OUT)))
+                    .filter(pid -> info.getPortInfo(pid).getDirection()
+                    != (output ? PortInfo.Direction.IN : PortInfo.Direction.OUT)))
                     .filter(id -> search.matcher(id).matches())
                     .distinct()
                     .collect(Collectors.toList());
