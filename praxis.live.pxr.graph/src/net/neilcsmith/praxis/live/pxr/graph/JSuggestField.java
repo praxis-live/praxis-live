@@ -143,15 +143,16 @@ class JSuggestField extends JTextField {
                         setText((String) list.getSelectedValue());
                         return;
                     } else {
-                        showSuggest();
+                        showPopup();
                     }
+                    return;
                 } else if (e.getKeyCode() == KeyEvent.VK_UP) {
                     if (isSuggestVisible()) {
                         list.setSelectedIndex(list.getSelectedIndex() - 1);
                         list.ensureIndexIsVisible(list.getSelectedIndex() - 1);
                         setText((String) list.getSelectedValue());
                     } else {
-                        showSuggest();
+                        showPopup();
                     }
                     return;
                 } else if ((e.getKeyCode() == KeyEvent.VK_ENTER
