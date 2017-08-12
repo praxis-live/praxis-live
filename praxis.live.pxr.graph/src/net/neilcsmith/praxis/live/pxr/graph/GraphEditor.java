@@ -213,7 +213,7 @@ public class GraphEditor extends RootEditor {
         am.put(DefaultEditorKit.copyAction, copyAction);
         PasteActionPerformer pasteAction = new PasteActionPerformer(this, em);
         am.put(DefaultEditorKit.pasteAction, pasteAction);
-        
+
         return am;
     }
 
@@ -285,7 +285,7 @@ public class GraphEditor extends RootEditor {
         menu.add(new CommentAction(scene));
         return menu;
     }
-    
+
     PraxisGraphScene<String> getScene() {
         return scene;
     }
@@ -304,7 +304,7 @@ public class GraphEditor extends RootEditor {
     Point getActivePoint() {
         return new Point(activePoint);
     }
-    
+
     void resetActivePoint() {
         // @TODO properly layout added components
         activePoint.x = 100;
@@ -315,7 +315,7 @@ public class GraphEditor extends RootEditor {
         actionPanel.add(actionComponent);
         actionPanel.revalidate();
     }
-    
+
     void clearActionPanel() {
         for (Component c : actionPanel.getComponents()) {
             actionPanel.remove(c);
@@ -323,11 +323,11 @@ public class GraphEditor extends RootEditor {
         actionPanel.revalidate();
         scene.getView().requestFocusInWindow();
     }
-    
+
     ExplorerManager getExplorerManager() {
         return manager;
     }
-    
+
     @Override
     public void componentActivated() {
         if (panel == null) {
@@ -372,7 +372,7 @@ public class GraphEditor extends RootEditor {
 
             actionPanel = new JPanel(new BorderLayout());
             panel.add(actionPanel, BorderLayout.SOUTH);
-            
+
             InputMap im = panel.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
             im.put(KeyStroke.getKeyStroke("typed /"), "select");
             im.put(KeyStroke.getKeyStroke("typed ."), "call");
@@ -408,7 +408,13 @@ public class GraphEditor extends RootEditor {
         return new Action[]{goUpAction, location};
     }
 
+    @Override
+    public void sync() {
+        syncAllAttributes();
+    }
+    
     private void clearScene() {
+        syncAllAttributes();
         container.removePropertyChangeListener(containerListener);
         Syncable syncable = container.getLookup().lookup(Syncable.class);
         if (syncable != null) {
@@ -433,7 +439,7 @@ public class GraphEditor extends RootEditor {
 
         container.getNodeDelegate().getChildren().getNodes();
 
-        sync(true);
+        syncGraph(true);
 
         goUpAction.setEnabled(container.getParent() != null);
         location.address.setText(container.getAddress().toString());
@@ -675,7 +681,7 @@ public class GraphEditor extends RootEditor {
         scene.validate();
     }
 
-    void sync(boolean sync) {
+    void syncGraph(boolean sync) {
         if (sync) {
             this.sync = true;
             syncChildren();
@@ -719,6 +725,32 @@ public class GraphEditor extends RootEditor {
         return null;
     }
 
+    private void syncAllAttributes() {
+        if (container == null) {
+            return;
+        }
+        for (String childID : container.getChildIDs()) {
+            syncAttributes(container.getChild(childID));
+        }
+    }
+    
+    private void syncAttributes(ComponentProxy cmp) {
+        Widget widget = scene.findWidget(cmp.getAddress().getID());
+        if (widget instanceof NodeWidget) {
+            NodeWidget nodeWidget = (NodeWidget) widget;
+            String x = Integer.toString((int) nodeWidget.getLocation().getX());
+            String y = Integer.toString((int) nodeWidget.getLocation().getY());
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.log(Level.FINE, "Setting position attributes of {0} to x:{1} y:{2}",
+                        new Object[]{cmp.getAddress(), x, y});
+            }
+            Utils.setAttr(cmp, ATTR_GRAPH_X, x);
+            Utils.setAttr(cmp, ATTR_GRAPH_Y, y);
+            Utils.setAttr(cmp, ATTR_GRAPH_MINIMIZED,
+                    nodeWidget.isMinimized() ? "true" : null);
+        }
+    }
+
     void acceptComponentType(final ComponentType type) {
         NotifyDescriptor.InputLine dlg = new NotifyDescriptor.InputLine(
                 "ID:", "Enter an ID for " + type);
@@ -751,15 +783,15 @@ public class GraphEditor extends RootEditor {
         if (getActionSupport().importSubgraph(container, file, new Callback() {
             @Override
             public void onReturn(CallArguments args) {
-                sync(true);
+                syncGraph(true);
             }
 
             @Override
             public void onError(CallArguments args) {
-                sync(true);
+                syncGraph(true);
             }
         })) {
-            sync(false);
+            syncGraph(false);
         }
     }
 
@@ -905,7 +937,7 @@ public class GraphEditor extends RootEditor {
                 if (obj instanceof String) {
                     ComponentProxy cmp = container.getChild((String) obj);
                     if (cmp != null) {
-                        syncAttributes(cmp, (String) obj);
+                        syncAttributes(cmp);
                     }
                 }
             }
@@ -930,7 +962,7 @@ public class GraphEditor extends RootEditor {
                             ComponentProxy cmp = container.getChild((String) obj);
                             if (cmp != null) {
                                 sel.add(cmp.getNodeDelegate());
-                                syncAttributes(cmp, (String) obj);
+                                syncAttributes(cmp);
                             }
                         }
 
@@ -951,22 +983,6 @@ public class GraphEditor extends RootEditor {
 
         }
 
-        private void syncAttributes(ComponentProxy cmp, String id) {
-            Widget widget = scene.findWidget(id);
-            if (widget instanceof NodeWidget) {
-                NodeWidget nodeWidget = (NodeWidget) widget;
-                String x = Integer.toString((int) nodeWidget.getLocation().getX());
-                String y = Integer.toString((int) nodeWidget.getLocation().getY());
-                if (LOG.isLoggable(Level.FINE)) {
-                    LOG.log(Level.FINE, "Setting position attributes of {0} to x:{1} y:{2}",
-                            new Object[]{cmp.getAddress(), x, y});
-                }
-                Utils.setAttr(cmp, ATTR_GRAPH_X, x);
-                Utils.setAttr(cmp, ATTR_GRAPH_Y, y);
-                Utils.setAttr(cmp, ATTR_GRAPH_MINIMIZED,
-                        nodeWidget.isMinimized() ? "true" : null);
-            }
-        }
     }
 
     private class DeleteAction extends AbstractAction {

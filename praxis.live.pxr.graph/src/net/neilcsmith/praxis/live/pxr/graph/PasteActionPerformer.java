@@ -57,13 +57,13 @@ class PasteActionPerformer extends AbstractAction implements Callback {
     public void actionPerformed(ActionEvent e) {
         assert EventQueue.isDispatchThread();
         if (editor.getActionSupport().pasteFromClipboard(editor.getContainer(), this)) {
-            editor.sync(false);
+            editor.syncGraph(false);
         }
     }
 
     @Override
     public void onReturn(CallArguments args) {
-        editor.sync(true);
+        editor.syncGraph(true);
     }
 
     @Override
@@ -71,7 +71,7 @@ class PasteActionPerformer extends AbstractAction implements Callback {
         DialogDisplayer.getDefault().notify(
                         new NotifyDescriptor.Message("Error pasting.",
                         NotifyDescriptor.ERROR_MESSAGE));
-        editor.sync(true);
+        editor.syncGraph(true);
     }
     
 }
