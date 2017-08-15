@@ -261,7 +261,7 @@ class CallAction extends AbstractAction {
             add(Box.createHorizontalStrut(16));
 
             componentField = new JSuggestField(parent);
-            componentField.setColumns(12);
+            componentField.setColumns(18);
             componentField.setMaximumSize(componentField.getPreferredSize());
             Utils.configureFocusActionKeys(componentField, false);
             add(componentField);
@@ -270,7 +270,7 @@ class CallAction extends AbstractAction {
 
             controlField = new JSuggestField(parent);
             controlField.setEnabled(false);
-            controlField.setColumns(12);
+            controlField.setColumns(18);
             controlField.setMaximumSize(controlField.getPreferredSize());
             Utils.configureFocusActionKeys(controlField, false);
             add(controlField);
@@ -279,6 +279,7 @@ class CallAction extends AbstractAction {
 
             valueField = new JSuggestField(parent);
             valueField.setEnabled(false);
+            valueField.setColumns(18);
             valueField.setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, Collections.EMPTY_SET);
             add(valueField);
             add(Box.createHorizontalStrut(16));

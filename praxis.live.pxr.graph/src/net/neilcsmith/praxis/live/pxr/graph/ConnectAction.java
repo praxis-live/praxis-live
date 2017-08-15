@@ -207,18 +207,22 @@ class ConnectAction extends AbstractAction {
 
             srcField = new JSuggestField(parent);
             Utils.configureFocusActionKeys(srcField, false);
+            srcField.setColumns(12);
             add(srcField);
 
             add(Box.createHorizontalStrut(8));
 
             srcPinField = new JSuggestField(parent);
             Utils.configureFocusActionKeys(srcPinField, false);
+            srcPinField.setColumns(12);
+            srcPinField.setEnabled(false);
             add(srcPinField);
 
             add(Box.createHorizontalStrut(8));
 
             dstField = new JSuggestField(parent);
             Utils.configureFocusActionKeys(dstField, false);
+            dstField.setColumns(12);
             dstField.setEnabled(false);
             add(dstField);
 
@@ -226,6 +230,7 @@ class ConnectAction extends AbstractAction {
 
             dstPinField = new JSuggestField(parent);
             Utils.configureFocusActionKeys(dstPinField, true);
+            dstPinField.setColumns(12);
             dstPinField.setEnabled(false);
             add(dstPinField);
 
@@ -265,7 +270,12 @@ class ConnectAction extends AbstractAction {
                 return;
             }
             srcPinField.setEnabled(true);
-            srcPinField.setSuggestData(new Vector(findPins(findNodes(srcID), true)));
+            List<String> pins = findPins(findNodes(srcID), true);
+            srcPinField.setSuggestData(new Vector(pins));
+            if (pins.size() == 1) {
+                srcPinField.setText(pins.get(0));
+                srcPinField.selectAll();
+            }
             srcPinField.requestFocusInWindow();
         }
 
@@ -277,6 +287,7 @@ class ConnectAction extends AbstractAction {
             dstField.setEnabled(true);
             if (disconnect) {
                 dstField.setText(("*"));
+                dstField.selectAll();
             }
             dstField.requestFocusInWindow();
         }
@@ -287,10 +298,15 @@ class ConnectAction extends AbstractAction {
                 return;
             }
             dstPinField.setEnabled(true);
-            if (disconnect) {
+            List<String> pins = findPins(findNodes(dstID), false);
+            if (pins.size() == 1) {
+                dstPinField.setText(pins.get(0));
+                dstPinField.selectAll();
+            } else if (disconnect) {
                 dstPinField.setText(("*"));
+                dstPinField.selectAll();
             }
-            dstPinField.setSuggestData(new Vector(findPins(findNodes(dstID), false)));
+            dstPinField.setSuggestData(new Vector(pins));
             dstPinField.requestFocusInWindow();
         }
 
