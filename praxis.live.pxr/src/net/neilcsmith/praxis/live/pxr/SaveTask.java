@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Neil C Smith.
+ * Copyright 2017 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -127,6 +127,7 @@ abstract class SaveTask implements Task {
             if (getState() != State.NEW) {
                 throw new IllegalStateException();
             }
+            dob.preSave();
             root = PXRRootRegistry.getDefault().findRootForFile(dob.getPrimaryFile());
             activeTasks.put(dob, this);
             updateState(State.RUNNING);

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2014 Neil C Smith.
+ * Copyright 2017 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -259,7 +259,7 @@ public class PXJDataObject extends MultiDataObject {
                     sb.append(imp);
                     sb.append(";");
                 }
-                sb.append("//</editor-fold>//GEN-END:imports\n");
+                sb.append("//</editor-fold> --//GEN-END:imports\n");
                 defaultImports = sb.toString();
             } else {
                 defaultImports = "";
@@ -279,7 +279,7 @@ public class PXJDataObject extends MultiDataObject {
             sb.append(context.getExtendedClass().getName());
             // @TODO support interfaces
             sb.append(" {\n");
-            sb.append("//</editor-fold>//GEN-END:classdec\n");
+            sb.append("//</editor-fold> --//GEN-END:classdec\n");
             classDeclaration = sb.toString();
         }
         return classDeclaration;

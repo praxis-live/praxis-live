@@ -21,19 +21,32 @@
  */
 package net.neilcsmith.praxis.live.pxr.graph;
 
+import java.awt.KeyboardFocusManager;
 import java.awt.Point;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
+import java.awt.event.KeyEvent;
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import javax.swing.JTextField;
+import javax.swing.KeyStroke;
 import net.neilcsmith.praxis.live.model.ComponentProxy;
 import net.neilcsmith.praxis.live.pxr.api.Attributes;
+import org.openide.nodes.Node;
 
 /**
  *
  * @author Neil C Smith
  */
 class Utils {
-    
-    private Utils() {}
-    
+
+    private Utils() {
+    }
+
     static Point findOffset(List<ComponentProxy> cmps) {
         Point pt = new Point();
         Point loc = new Point();
@@ -80,7 +93,7 @@ class Utils {
         pt.x = x;
         pt.y = y;
     }
-    
+
     static void setAttr(ComponentProxy cmp, String key, String value) {
         Attributes attrs = cmp.getLookup().lookup(Attributes.class);
         if (attrs == null) {
@@ -88,7 +101,7 @@ class Utils {
         }
         attrs.setAttribute(key, value);
     }
-    
+
     static String getAttr(ComponentProxy cmp, String key) {
         Attributes attrs = cmp.getLookup().lookup(Attributes.class);
         if (attrs == null) {
@@ -96,10 +109,64 @@ class Utils {
         }
         return attrs.getAttribute(key);
     }
-    
+
     static String getAttr(ComponentProxy cmp, String key, String def) {
         String ret = getAttr(cmp, key);
         return ret == null ? def : ret;
     }
+
+    static Pattern globToRegex(String glob) {
+        StringBuilder regex = new StringBuilder();
+        for (char c : glob.toCharArray()) {
+            switch (c) {
+                case '*':
+                    regex.append(".*");
+                    break;
+                case '?':
+                    regex.append('.');
+                    break;
+                case '|':
+                    regex.append('|');
+                    break;
+                case '_':
+                    regex.append('_');
+                    break;
+                case '-':
+                    regex.append("\\-");
+                    break;
+                default:
+                    if (Character.isJavaIdentifierPart(c)) {
+                        regex.append(c);
+                    } else {
+                        throw new IllegalArgumentException();
+                    }
+            }
+        }
+        return Pattern.compile(regex.toString());
+    }
+
+    static void configureFocusActionKeys(JTextField textField, boolean primary) {
+        if (!primary) {
+            textField.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_TAB, 0), JTextField.notifyAction);
+            textField.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, 0), JTextField.notifyAction);
+        }
+        textField.setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, Collections.EMPTY_SET);
+        textField.addFocusListener(new FocusListener() {
+            @Override
+            public void focusGained(FocusEvent e) {
+                textField.selectAll();
+            }
+
+            @Override
+            public void focusLost(FocusEvent e) {
+            }
+        });
+    }
+    
+    static String nodesToGlob(Node[] nodes) {
+        return Stream.of(nodes).map(Node::getName).collect(Collectors.joining("|"));
+    }
+    
+
 
 }

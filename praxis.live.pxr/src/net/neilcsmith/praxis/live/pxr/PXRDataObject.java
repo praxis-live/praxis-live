@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Neil C Smith.
+ * Copyright 2017 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -26,9 +26,9 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.Collections;
+import java.util.Enumeration;
 import javax.swing.SwingUtilities;
 import net.neilcsmith.praxis.core.ComponentType;
-import net.neilcsmith.praxis.live.components.api.ComponentIconProvider;
 import net.neilcsmith.praxis.live.components.api.Components;
 import net.neilcsmith.praxis.live.core.api.Task.State;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -49,20 +49,27 @@ import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.CloneableTopComponent;
+import org.openide.windows.TopComponent;
 
 public class PXRDataObject extends MultiDataObject {
 
     public final static String KEY_ATTR_ROOT_TYPE = "rootType";
     private final static RequestProcessor RP = new RequestProcessor();
+    
+    private final EditorSupport editorSupport;
+    private final SaveSupport saveSupport;
+    
     private Image icon;
     private DataNodeImpl node;
     private ComponentType type;
 
     public PXRDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException, IOException {
         super(pf, loader);
+        editorSupport = new EditorSupport();
+        saveSupport = new SaveSupport();
         CookieSet cookies = getCookieSet();
-        cookies.add(new EditorSupport());
-        cookies.add(new SaveSupport());
+        cookies.add(editorSupport);
+        cookies.add(saveSupport);
         initType(pf);
     }
 
@@ -96,6 +103,10 @@ public class PXRDataObject extends MultiDataObject {
         return type;
     }
 
+    void preSave() {
+        editorSupport.syncEditors();
+    }
+    
     @Override
     public boolean isCopyAllowed() {
         return false;
@@ -191,6 +202,18 @@ public class PXRDataObject extends MultiDataObject {
         protected CloneableTopComponent createCloneableTopComponent() {
             return new RootEditorTopComponent(PXRDataObject.this);
         }
+        
+        private void syncEditors() {
+            if (allEditors.isEmpty()) {
+                return;
+            }
+            Enumeration<CloneableTopComponent> editors = allEditors.getComponents();
+            while (editors.hasMoreElements()) {
+                RootEditorTopComponent rootEditor = (RootEditorTopComponent) editors.nextElement();
+                rootEditor.syncEditor();
+            }
+        }
+        
     }
 
     private class SaveSupport implements SaveCookie, PropertyChangeListener {
@@ -199,13 +222,6 @@ public class PXRDataObject extends MultiDataObject {
 
         @Override
         public void save() throws IOException {
-//            RootProxy root = RootRegistry.getDefault().findRootForFile(getPrimaryFile());
-//            if (root instanceof PXRRootProxy) {
-//                PXRWriter.write(PXRDataObject.this, (PXRRootProxy) root);
-//            } else {
-//                NotifyDescriptor err = new NotifyDescriptor.Message("Unable to save file " + getName(), NotifyDescriptor.ERROR_MESSAGE);
-//                DialogDisplayer.getDefault().notify(err);
-//            }
             if (task != null) {
                 return;
             }

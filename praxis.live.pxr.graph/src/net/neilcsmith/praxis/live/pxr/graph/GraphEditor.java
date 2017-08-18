@@ -135,6 +135,7 @@ public class GraphEditor extends RootEditor {
     private final JMenuItem addMenu;
 
     private JComponent panel;
+    private JComponent actionPanel;
     private ContainerProxy container;
 
     private ActionSupport actionSupport;
@@ -156,12 +157,12 @@ public class GraphEditor extends RootEditor {
         }
 
         deleteAction = new DeleteAction();
-        
+
         PaletteController palette = PaletteUtils.getPalette("core", category);
-        
+
         lookup = new ProxyLookup(ExplorerUtils.createLookup(manager, buildActionMap(manager)),
                 Lookups.fixed(palette));
-        
+
         addMenu = new MenuView.Menu(
                 palette.getRoot().lookup(Node.class),
                 new NodeAcceptor() {
@@ -184,7 +185,7 @@ public class GraphEditor extends RootEditor {
         });
         addMenu.setIcon(null);
         addMenu.setText("Add");
-        
+
         scene.addObjectSceneListener(new SelectionListener(),
                 ObjectSceneEventType.OBJECT_SELECTION_CHANGED);
         goUpAction = new GoUpAction();
@@ -274,7 +275,7 @@ public class GraphEditor extends RootEditor {
     private JPopupMenu getScenePopup() {
         JPopupMenu menu = new JPopupMenu();
 //        menu.add(deleteAction);
-        menu.add(addMenu);  
+        menu.add(addMenu);
         menu.addSeparator();
         JMenu colorsMenu = new JMenu("Colors");
         for (ColorsAction action : colorsActions) {
@@ -283,6 +284,10 @@ public class GraphEditor extends RootEditor {
         menu.add(colorsMenu);
         menu.add(new CommentAction(scene));
         return menu;
+    }
+
+    PraxisGraphScene<String> getScene() {
+        return scene;
     }
 
     ActionSupport getActionSupport() {
@@ -298,6 +303,29 @@ public class GraphEditor extends RootEditor {
 
     Point getActivePoint() {
         return new Point(activePoint);
+    }
+
+    void resetActivePoint() {
+        // @TODO properly layout added components
+        activePoint.x = 100;
+        activePoint.y = 100;
+    }
+
+    void installToActionPanel(JComponent actionComponent) {
+        actionPanel.add(actionComponent);
+        actionPanel.revalidate();
+    }
+
+    void clearActionPanel() {
+        for (Component c : actionPanel.getComponents()) {
+            actionPanel.remove(c);
+        }
+        actionPanel.revalidate();
+        scene.getView().requestFocusInWindow();
+    }
+
+    ExplorerManager getExplorerManager() {
+        return manager;
     }
 
     @Override
@@ -342,6 +370,27 @@ public class GraphEditor extends RootEditor {
             panel = new JPanel(new BorderLayout());
             panel.add(layered, BorderLayout.CENTER);
 
+            actionPanel = new JPanel(new BorderLayout());
+            panel.add(actionPanel, BorderLayout.SOUTH);
+
+            InputMap im = panel.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+            im.put(KeyStroke.getKeyStroke("typed /"), "select");
+            im.put(KeyStroke.getKeyStroke("typed ."), "call");
+            im.put(KeyStroke.getKeyStroke("typed ~"), "connect");
+            im.put(KeyStroke.getKeyStroke("typed !"), "disconnect");
+            im.put(KeyStroke.getKeyStroke("typed @"), "add-component");
+            panel.getActionMap().put("select", new SelectAction(this));
+            panel.getActionMap().put("call", new CallAction(this));
+            panel.getActionMap().put("connect", new ConnectAction(this, false));
+            panel.getActionMap().put("disconnect", new ConnectAction(this, true));
+            panel.getActionMap().put("add-component", new AddAction(this));
+            im.put(KeyStroke.getKeyStroke("alt shift F"), "format");
+            panel.getActionMap().put("format", new AbstractAction("format") {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    scene.layoutScene();
+                }
+            });
             if (container != null) {
                 buildScene();
             }
@@ -359,7 +408,13 @@ public class GraphEditor extends RootEditor {
         return new Action[]{goUpAction, location};
     }
 
+    @Override
+    public void sync() {
+        syncAllAttributes();
+    }
+    
     private void clearScene() {
+        syncAllAttributes();
         container.removePropertyChangeListener(containerListener);
         Syncable syncable = container.getLookup().lookup(Syncable.class);
         if (syncable != null) {
@@ -384,7 +439,7 @@ public class GraphEditor extends RootEditor {
 
         container.getNodeDelegate().getChildren().getNodes();
 
-        sync(true);
+        syncGraph(true);
 
         goUpAction.setEnabled(container.getParent() != null);
         location.address.setText(container.getAddress().toString());
@@ -539,10 +594,19 @@ public class GraphEditor extends RootEditor {
         PinID<String> p1 = new PinID<>(connection.getChild1(), connection.getPort1());
         PinID<String> p2 = new PinID<>(connection.getChild2(), connection.getPort2());
         if (scene.isPin(p1) && scene.isPin(p2)) {
-            EdgeWidget widget = scene.connect(connection.getChild1(), connection.getPort1(),
-                    connection.getChild2(), connection.getPort2());
-            widget.setToolTipText(connection.getChild1() + "!" + connection.getPort1() + " -> "
-                    + connection.getChild2() + "!" + connection.getPort2());
+            PinWidget pw1 = (PinWidget) scene.findWidget(p1);
+            PinWidget pw2 = (PinWidget) scene.findWidget(p2);
+            if (pw1.getAlignment() == Alignment.Left && pw2.getAlignment() == Alignment.Right) {
+                EdgeWidget widget = scene.connect(connection.getChild2(), connection.getPort2(),
+                        connection.getChild1(), connection.getPort1());
+                widget.setToolTipText(connection.getChild2() + "!" + connection.getPort2() + " -> "
+                        + connection.getChild1() + "!" + connection.getPort1());
+            } else {
+                EdgeWidget widget = scene.connect(connection.getChild1(), connection.getPort1(),
+                        connection.getChild2(), connection.getPort2());
+                widget.setToolTipText(connection.getChild1() + "!" + connection.getPort1() + " -> "
+                        + connection.getChild2() + "!" + connection.getPort2());
+            }
             return true;
         } else {
             return false;
@@ -617,7 +681,7 @@ public class GraphEditor extends RootEditor {
         scene.validate();
     }
 
-    void sync(boolean sync) {
+    void syncGraph(boolean sync) {
         if (sync) {
             this.sync = true;
             syncChildren();
@@ -661,7 +725,33 @@ public class GraphEditor extends RootEditor {
         return null;
     }
 
-    private void acceptComponentType(final ComponentType type) {
+    private void syncAllAttributes() {
+        if (container == null) {
+            return;
+        }
+        for (String childID : container.getChildIDs()) {
+            syncAttributes(container.getChild(childID));
+        }
+    }
+    
+    private void syncAttributes(ComponentProxy cmp) {
+        Widget widget = scene.findWidget(cmp.getAddress().getID());
+        if (widget instanceof NodeWidget) {
+            NodeWidget nodeWidget = (NodeWidget) widget;
+            String x = Integer.toString((int) nodeWidget.getLocation().getX());
+            String y = Integer.toString((int) nodeWidget.getLocation().getY());
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.log(Level.FINE, "Setting position attributes of {0} to x:{1} y:{2}",
+                        new Object[]{cmp.getAddress(), x, y});
+            }
+            Utils.setAttr(cmp, ATTR_GRAPH_X, x);
+            Utils.setAttr(cmp, ATTR_GRAPH_Y, y);
+            Utils.setAttr(cmp, ATTR_GRAPH_MINIMIZED,
+                    nodeWidget.isMinimized() ? "true" : null);
+        }
+    }
+
+    void acceptComponentType(final ComponentType type) {
         NotifyDescriptor.InputLine dlg = new NotifyDescriptor.InputLine(
                 "ID:", "Enter an ID for " + type);
         dlg.setInputText(getFreeID(type));
@@ -689,19 +779,19 @@ public class GraphEditor extends RootEditor {
         }
     }
 
-    private void acceptImport(FileObject file) {
+    void acceptImport(FileObject file) {
         if (getActionSupport().importSubgraph(container, file, new Callback() {
             @Override
             public void onReturn(CallArguments args) {
-                sync(true);
+                syncGraph(true);
             }
 
             @Override
             public void onError(CallArguments args) {
-                sync(true);
+                syncGraph(true);
             }
         })) {
-            sync(false);
+            syncGraph(false);
         }
     }
 
@@ -771,8 +861,15 @@ public class GraphEditor extends RootEditor {
 
         @Override
         public void createConnection(Widget sourceWidget, Widget targetWidget) {
-            PinID<String> p1 = (PinID<String>) scene.findObject(sourceWidget);
-            PinID<String> p2 = (PinID<String>) scene.findObject(targetWidget);
+            PinWidget pw1 = (PinWidget) sourceWidget;
+            PinWidget pw2 = (PinWidget) targetWidget;
+            if (pw1.getAlignment() == Alignment.Left || pw2.getAlignment() == Alignment.Right) {
+                PinWidget tmp = pw2;
+                pw2 = pw1;
+                pw1 = tmp;
+            }
+            PinID<String> p1 = (PinID<String>) scene.findObject(pw1);
+            PinID<String> p2 = (PinID<String>) scene.findObject(pw2);
             try {
                 container.connect(new Connection(p1.getParent(), p1.getName(), p2.getParent(), p2.getName()), new Callback() {
                     @Override
@@ -840,7 +937,7 @@ public class GraphEditor extends RootEditor {
                 if (obj instanceof String) {
                     ComponentProxy cmp = container.getChild((String) obj);
                     if (cmp != null) {
-                        syncAttributes(cmp, (String) obj);
+                        syncAttributes(cmp);
                     }
                 }
             }
@@ -865,7 +962,7 @@ public class GraphEditor extends RootEditor {
                             ComponentProxy cmp = container.getChild((String) obj);
                             if (cmp != null) {
                                 sel.add(cmp.getNodeDelegate());
-                                syncAttributes(cmp, (String) obj);
+                                syncAttributes(cmp);
                             }
                         }
 
@@ -886,22 +983,6 @@ public class GraphEditor extends RootEditor {
 
         }
 
-        private void syncAttributes(ComponentProxy cmp, String id) {
-            Widget widget = scene.findWidget(id);
-            if (widget instanceof NodeWidget) {
-                NodeWidget nodeWidget = (NodeWidget) widget;
-                String x = Integer.toString((int) nodeWidget.getLocation().getX());
-                String y = Integer.toString((int) nodeWidget.getLocation().getY());
-                if (LOG.isLoggable(Level.FINE)) {
-                    LOG.log(Level.FINE, "Setting position attributes of {0} to x:{1} y:{2}",
-                            new Object[]{cmp.getAddress(), x, y});
-                }
-                Utils.setAttr(cmp, ATTR_GRAPH_X, x);
-                Utils.setAttr(cmp, ATTR_GRAPH_Y, y);
-                Utils.setAttr(cmp, ATTR_GRAPH_MINIMIZED,
-                        nodeWidget.isMinimized() ? "true" : null);
-            }
-        }
     }
 
     private class DeleteAction extends AbstractAction {
