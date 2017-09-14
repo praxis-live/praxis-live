@@ -186,7 +186,7 @@ class CallAction extends AbstractAction {
         return null;
     }
 
-    private void invokeAction(String componentGlob, String controlID, ActionEvent e) throws Exception {
+    private Action findAction(String componentGlob, String controlID) {
         Node[] nodes = findMatchingNodes(componentGlob);
         for (Node node : nodes) {
             for (Action action : node.getActions(false)) {
@@ -194,10 +194,11 @@ class CallAction extends AbstractAction {
                     continue;
                 }
                 if (controlID.equals(action.getValue(Action.NAME))) {
-                    action.actionPerformed(e);
+                    return action;
                 }
             }
         }
+        return null;
     }
 
     private void invokePropertyChange(String componentGlob, String controlID, String value) throws Exception {
@@ -332,10 +333,21 @@ class CallAction extends AbstractAction {
                 return;
             }
             String componentGlob = componentField.getText();
+            Action action = findAction(componentGlob, controlID);
+            if (action != null) {
+                 try {
+                    action.actionPerformed(e);
+                } catch (Exception ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+                editor.clearActionPanel();
+                return;
+            }
             Node.Property<?> property = findProperty(componentGlob, controlID);
             if (property != null) {
-                String valueText = property.getPropertyEditor().getAsText();
-                String[] tags = property.getPropertyEditor().getTags();
+                PropertyEditor propEd = property.getPropertyEditor();
+                String valueText = propEd.getAsText();
+                String[] tags = propEd.getTags();
                 if (valueText != null) {
                     valueField.setEnabled(true);
                     valueField.setText(valueText);
@@ -347,18 +359,11 @@ class CallAction extends AbstractAction {
                     valueField.selectAll();
                     valueField.requestFocusInWindow();
                 } else {
-//                    DialogDisplayer.getDefault().notify(
-//                            new NotifyDescriptor.Message(Bundle.ERR_noText(), NotifyDescriptor.ERROR_MESSAGE));
-                    invokeCustomPropertyEditor(componentGlob, controlID);
+                    if (propEd.supportsCustomEditor()) {
+                        invokeCustomPropertyEditor(componentGlob, controlID);
+                    }
                     editor.clearActionPanel();
                 }
-            } else {
-                try {
-                    invokeAction(componentGlob, controlID, e);
-                } catch (Exception ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-                editor.clearActionPanel();
             }
         }
 
