@@ -139,6 +139,7 @@ class BoundCodeProperty extends BoundArgumentProperty {
                 writer.close();
             }
         }
+        f.setAttribute("controlAddress", getAddress());
         f.setAttribute("argumentInfo", getInfo().getOutputsInfo()[0]);
         f.addFileChangeListener(fileListener);
         return f;
