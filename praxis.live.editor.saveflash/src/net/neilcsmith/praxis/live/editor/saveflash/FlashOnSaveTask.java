@@ -22,6 +22,7 @@
 package net.neilcsmith.praxis.live.editor.saveflash;
 
 import java.util.Objects;
+import javax.swing.text.Element;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.spi.editor.document.OnSaveTask;
 
@@ -40,8 +41,9 @@ public class FlashOnSaveTask implements OnSaveTask {
     @Override
     public void performTask() {
         Object prop = context.getDocument().getProperty(FlashOnSaveHighlight.class);
-        if (prop instanceof FlashOnSaveHighlight) {
-            ((FlashOnSaveHighlight) prop).highlight(context.getModificationsRootElement());
+        Element root = context.getModificationsRootElement();
+        if (prop instanceof FlashOnSaveHighlight && root != null) {
+            ((FlashOnSaveHighlight) prop).highlight(root);
         }
     }
 

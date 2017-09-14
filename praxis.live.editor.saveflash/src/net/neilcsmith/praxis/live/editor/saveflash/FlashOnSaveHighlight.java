@@ -106,13 +106,13 @@ public class FlashOnSaveHighlight implements HighlightsContainer {
             } else {
                 for (int i = 0; i < root.getElementCount(); i++) {
                     Element e = root.getElement(i);
-                    int start = e.getStartOffset();
-                    int end = e.getEndOffset();
+                    int start = Utilities.getRowStart(component, e.getStartOffset());
+                    int end = Utilities.getRowEnd(component, e.getEndOffset());
+                    if (start < 0 || end < 0) continue;
                     String text = component.getDocument().getText(start, end - start);
                     bag.addHighlight(
-                            Utilities.getRowStart(component, e.getStartOffset()),
-                            Utilities.getRowEnd(component, e.getEndOffset())
-                            + (text.contains("\n") ? 0 : 1),
+                            start,
+                            end + (text.endsWith("\n") ? 0 : 1),
                             attributes);
                 }
             }
