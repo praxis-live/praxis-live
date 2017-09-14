@@ -34,6 +34,7 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import net.neilcsmith.praxis.compiler.ClassBodyContext;
+import net.neilcsmith.praxis.core.ControlAddress;
 import net.neilcsmith.praxis.core.info.ArgumentInfo;
 import org.netbeans.api.actions.Openable;
 import org.openide.awt.ActionID;
@@ -89,9 +90,12 @@ public class PXJDataObject extends MultiDataObject {
     private final static Logger LOG = Logger.getLogger(PXJDataObject.class.getName());
 
     final static String PXJ_DOB_KEY = "PXJ_DOB";
+    final static String CONTROL_ADDRESS_KEY = "controlAddress";
+    private final static String ARGUMENT_INFO_KEY = "argumentInfo";
 
     private final FileObject pxjFile;
     private final ClassBodyContext<?> classBodyContext;
+    private final ControlAddress controlAddress;
     private FileObject javaProxy;
     private String defaultImports;
     private String classDeclaration;
@@ -101,12 +105,13 @@ public class PXJDataObject extends MultiDataObject {
         super(pf, loader);
         this.pxjFile = pf;
         classBodyContext = findClassBodyContext(pf);
+        controlAddress = findControlAddress(pf);
         getCookieSet().add(new Open());
     }
 
     private ClassBodyContext<?> findClassBodyContext(FileObject f) {
         try {
-            Object o = f.getAttribute("argumentInfo");
+            Object o = f.getAttribute(ARGUMENT_INFO_KEY);
             if (o instanceof ArgumentInfo) {
                 o = ((ArgumentInfo) o).getProperties().get(ClassBodyContext.KEY);
                 if (o != null) {
@@ -119,6 +124,14 @@ public class PXJDataObject extends MultiDataObject {
             }
         } catch (Exception ex) {
             LOG.log(Level.WARNING, "", ex);
+        }
+        return null;
+    }
+    
+    private ControlAddress findControlAddress(FileObject f) {
+        Object o = f.getAttribute(CONTROL_ADDRESS_KEY);
+        if (o instanceof ControlAddress) {
+            return (ControlAddress) o;
         }
         return null;
     }
@@ -202,6 +215,7 @@ public class PXJDataObject extends MultiDataObject {
             }
         }
         f.setAttribute(PXJ_DOB_KEY, this);
+        f.setAttribute(CONTROL_ADDRESS_KEY, controlAddress);
         f.addFileChangeListener(new ProxyListener());
         return f;
     }
