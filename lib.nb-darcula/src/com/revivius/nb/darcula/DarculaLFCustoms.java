@@ -542,6 +542,7 @@ public class DarculaLFCustoms extends LFCustoms {
             PROPSHEET_SELECTED_SET_FOREGROUND, Color.WHITE,
             PROPSHEET_DISABLED_FOREGROUND, new Color(161, 161, 146),
             PROPSHEET_BUTTON_FOREGROUND, new Color(187, 187, 187),
+            PROPSHEET_ROWHEIGHT, 18
             
         
         };
