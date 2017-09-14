@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Neil C Smith.
+ * Copyright 2017 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -26,19 +26,13 @@ import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.Action;
-import javax.swing.JButton;
 import javax.swing.JComponent;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import net.miginfocom.swing.MigLayout;
+import javax.swing.UIManager;
 import net.neilcsmith.praxis.gui.ControlBinding;
 import net.neilcsmith.praxis.live.core.api.Syncable;
 import org.openide.DialogDescriptor;
@@ -52,21 +46,20 @@ import org.openide.nodes.Node;
  * @author Neil C Smith <http://neilcsmith.net>
  */
 class PXRComponentEditor {
-    
+
     private final static Logger LOG = Logger.getLogger(PXRComponentEditor.class.getName());
-    
+
     private PXRComponentProxy component;
     private Dialog dialog;
     private JComponent editor;
     private Listener listener;
     private Map<String, PropertyPanel> propPanels;
     private List<ControlBinding.Adaptor> adaptors;
-    
 
     PXRComponentEditor(PXRComponentProxy component) {
         this.component = component;
     }
-    
+
     void show() {
         if (dialog != null) {
             dialog.setVisible(true);
@@ -74,12 +67,12 @@ class PXRComponentEditor {
             return;
         }
 //        if (editor == null) {
-            initEditor();
+        initEditor();
 //        }
         if (listener == null) {
             listener = new Listener();
         }
-        
+
         DialogDescriptor descriptor = new DialogDescriptor(
                 editor,
                 component.getAddress().toString(),
@@ -90,7 +83,7 @@ class PXRComponentEditor {
                 null,
                 null,
                 false);
-        
+
         dialog = DialogDisplayer.getDefault().createDialog(descriptor);
         dialog.addWindowListener(listener);
 //        component.addPropertyChangeListener(listener);
@@ -100,13 +93,13 @@ class PXRComponentEditor {
             sync.addKey(this);
         }
         dialog.setVisible(true);
-        
+
     }
-    
+
     void dispose() {
         dispose(true);
     }
-    
+
     private void dispose(boolean closeDialog) {
         if (dialog != null) {
             Syncable sync = component.getLookup().lookup(Syncable.class);
@@ -115,67 +108,45 @@ class PXRComponentEditor {
                 sync.removeKey(this);
             }
             if (closeDialog) {
-               dialog.setVisible(false); 
+                dialog.setVisible(false);
             }
             dialog = null;
         }
     }
-    
+
     private void initEditor() {
         // properties       
         PropertySheet propertyPanel = new PropertySheet();
         propertyPanel.setNodes(new Node[]{component.getNodeDelegate()});
         propertyPanel.setDescriptionAreaVisible(false);
-        // SheetTable row height is 16, but 16 isn't enough on Windows.
-        propertyPanel.setPreferredSize(new Dimension(250,(component.getPropertyIDs().length * 17) + 20));
-        
-        // triggers
-        List<Action> triggers = component.getTriggerActions();
-        JPanel actionsPanel = null;
-        if (triggers.size() > 0) {
-            actionsPanel = new JPanel(new MigLayout("", ""));
-            for (Action trigger : triggers) {
-                JButton bt = new JButton(trigger);
-                actionsPanel.add(bt, "sizegroup trigger");
-            }
-        }
-        
-        editor = new JPanel(new BorderLayout(5, 5));
-        if (propertyPanel == null && actionsPanel == null) {
-            JLabel lab = new JLabel("<no editable controls>");
-            lab.setEnabled(false);
-            editor.add(lab, BorderLayout.CENTER);
-        } else {
-            if (propertyPanel != null) {
-                editor.add(new JScrollPane(propertyPanel), BorderLayout.CENTER);
-                if (actionsPanel != null) {
-                    editor.add(actionsPanel, BorderLayout.NORTH);
-                }
-            } else {
-                editor.add(actionsPanel, BorderLayout.CENTER);
-            }
-        }
-        
-    }
-    
-    
-    private class Listener extends WindowAdapter { //implements PropertyChangeListener {
+        propertyPanel.setPreferredSize(new Dimension(250, calculateHeight()));
 
-//        @Override
-//        public void propertyChange(PropertyChangeEvent pce) {
-//            if (LOG.isLoggable(Level.FINEST)) {
-//                LOG.log(Level.FINE, "Syncing {0} on {1}", new Object[]{pce.getPropertyName(), component.getAddress()});
-//            }
-//        }
+        editor = new JPanel(new BorderLayout());
+        editor.add(new JScrollPane(propertyPanel), BorderLayout.CENTER);
+    }
+
+    private int calculateHeight() {
+        int rowHeight = UIManager.getInt("netbeans.ps.rowheight");
+        if (rowHeight < 16) {
+            rowHeight = 16;
+        }
+        rowHeight += 1; // padding
+        int count = 0;
+        count += component.getPropertyIDs().length;
+        count += component.getTriggerActions().size();
+        count = Math.max(count, 4); // height of at least 4 rows?
+        return Math.min(count * rowHeight, 500); // max 500px high?
+
+    }
+
+    private class Listener extends WindowAdapter {
 
         @Override
         public void windowClosed(WindowEvent we) {
             dialog.removeWindowListener(this);
-          dispose(false);
+            dispose(false);
         }
-        
-        
-        
+
     }
-    
+
 }

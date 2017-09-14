@@ -172,6 +172,10 @@ class PXRProxyNode extends AbstractNode {
             props.put(proxyProp);
         }
 
+        for (Action action : component.getTriggerActions()) {
+            props.put(new ActionPropertyWrapper(action));
+        }
+        
         for (String id : component.getPropertyIDs()) {
             Node.Property<?> prop = component.getProperty(id);
             if (prop.canWrite() && prop instanceof BoundArgumentProperty) {
