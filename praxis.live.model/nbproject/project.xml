@@ -39,14 +39,9 @@
                     </run-dependency>
                 </dependency>
             </module-dependencies>
-            <friend-packages>
-                <friend>net.neilcsmith.praxis.live.pxr</friend>
-                <friend>net.neilcsmith.praxis.live.pxr.graph</friend>
-                <friend>net.neilcsmith.praxis.live.pxr.gui</friend>
-                <friend>net.neilcsmith.praxis.live.pxr.midi</friend>
-                <friend>net.neilcsmith.praxis.live.pxr.osc</friend>
+            <public-packages>
                 <package>net.neilcsmith.praxis.live.model</package>
-            </friend-packages>
+            </public-packages>
         </data>
     </configuration>
 </project>

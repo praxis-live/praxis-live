@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2014 Neil C Smith.
+ * Copyright 2017 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -21,6 +21,7 @@
  */
 package net.neilcsmith.praxis.live.model;
 
+import java.util.Optional;
 import net.neilcsmith.praxis.core.ComponentAddress;
 import net.neilcsmith.praxis.core.ComponentType;
 import net.neilcsmith.praxis.core.info.ComponentInfo;
@@ -36,7 +37,27 @@ public interface ComponentProxy extends Proxy {
     public ComponentType getType();
 
     public ComponentInfo getInfo();
-    
+
     public ContainerProxy getParent();
-    
+
+    public static Optional<ComponentProxy> find(ComponentAddress address) {
+        Optional<RootProxy> root = RootProxy.find(address.getRootID());
+        if (!root.isPresent()) {
+            return Optional.empty();
+        } else if (address.getDepth() == 1) {
+            return Optional.of(root.get());
+        } else {
+            ComponentProxy cmp = root.get();
+            for (int i = 1; i < address.getDepth(); i++) {
+                if (cmp instanceof ContainerProxy) {
+                    cmp = ((ContainerProxy) cmp).getChild(address.getComponentID(i));
+                } else {
+                    return Optional.empty();
+                }
+            }
+            return Optional.ofNullable(cmp);
+        }
+
+    }
+
 }

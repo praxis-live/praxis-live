@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2014 Neil C Smith.
+ * Copyright 2017 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -21,10 +21,32 @@
  */
 package net.neilcsmith.praxis.live.model;
 
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import org.openide.util.Lookup;
+
 /**
  *
  * @author Neil C Smith (http://neilcsmith.net)
  */
 public interface RootProxy extends ComponentProxy {
+
+    public static Optional<RootProxy> find(String id) {
+        Collection<? extends Registry> regs = Lookup.getDefault().lookupAll(Registry.class);
+        return regs.stream()
+                .map(reg -> reg.find(id))
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .findFirst();
+    }
+
+    public interface Registry {
+
+        public Optional<RootProxy> find(String id);
+
+        public List<RootProxy> findAll();
+
+    }
 
 }
