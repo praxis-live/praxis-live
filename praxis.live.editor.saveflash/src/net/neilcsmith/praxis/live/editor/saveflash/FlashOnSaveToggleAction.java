@@ -27,7 +27,6 @@ import javax.swing.AbstractAction;
 import org.netbeans.api.editor.EditorActionRegistration;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
-import org.openide.util.NbPreferences;
 
 /**
  *
@@ -37,7 +36,8 @@ import org.openide.util.NbPreferences;
         name = "toggle-flash-on-save",
         menuPath = "View",
         menuPosition = 995,
-        preferencesKey = FlashOnSaveHighlight.ENABLED_KEY
+        preferencesKey = FlashOnSaveHighlight.ENABLED_KEY,
+        preferencesDefault = true
 )
 public class FlashOnSaveToggleAction extends AbstractAction {
 

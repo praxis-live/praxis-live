@@ -31,7 +31,6 @@ import javax.swing.text.EditorKit;
 import javax.swing.text.Element;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.SimpleAttributeSet;
-//import javax.swing.text.StyleConstants;
 import javax.swing.text.Utilities;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
@@ -56,8 +55,7 @@ public class FlashOnSaveHighlight implements HighlightsContainer {
 
     private final static int DELAY = 500;
     final static String ENABLED_KEY = "flash-enabled";
-//    private final static Color DEFAULT_COLOR = new Color(216, 54, 53);
-    
+
     static boolean enabled = MimeLookup.getLookup(MimePath.EMPTY).lookup(Preferences.class)
                         .getBoolean(FlashOnSaveHighlight.ENABLED_KEY, false);
     
@@ -126,8 +124,6 @@ public class FlashOnSaveHighlight implements HighlightsContainer {
     private static AttributeSet getAttributes(MimePath mimePath) {
         FontColorSettings fcs = MimeLookup.getLookup(mimePath).lookup(FontColorSettings.class);
         AttributeSet attribs = fcs.getFontColors(FontColorNames.INC_SEARCH_COLORING);
-//        AttributeSet attribs = AttributesUtilities.createImmutable(
-//                    StyleConstants.Background, DEFAULT_COLOR);
         if (attribs != null) {
             return AttributesUtilities.createImmutable(attribs,
                     AttributesUtilities.createImmutable(
@@ -157,7 +153,7 @@ public class FlashOnSaveHighlight implements HighlightsContainer {
         public HighlightsLayer[] createLayers(Context context) {
 
             FlashOnSaveHighlight hl = new FlashOnSaveHighlight(context.getComponent());
-            context.getDocument().putProperty(FlashOnSaveHighlight.class, hl);
+            context.getComponent().putClientProperty(FlashOnSaveHighlight.class, hl);
 
             return new HighlightsLayer[]{
                 HighlightsLayer.create(FlashOnSaveHighlight.class.getName(),

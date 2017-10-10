@@ -22,9 +22,13 @@
 package net.neilcsmith.praxis.live.editor.saveflash;
 
 import java.util.Objects;
+import javax.swing.JEditorPane;
 import javax.swing.text.Element;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
+import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.spi.editor.document.OnSaveTask;
+import org.openide.cookies.EditorCookie;
+import org.openide.loaders.DataObject;
 
 /**
  *
@@ -33,14 +37,29 @@ import org.netbeans.spi.editor.document.OnSaveTask;
 public class FlashOnSaveTask implements OnSaveTask {
 
     private final OnSaveTask.Context context;
-    
+
     private FlashOnSaveTask(OnSaveTask.Context context) {
         this.context = context;
     }
-    
+
     @Override
     public void performTask() {
-        Object prop = context.getDocument().getProperty(FlashOnSaveHighlight.class);
+        DataObject dob = NbEditorUtilities.getDataObject(context.getDocument());
+        if (dob != null) {
+            EditorCookie ec = dob.getLookup().lookup(EditorCookie.class);
+            if (ec != null) {
+                JEditorPane[] panes = ec.getOpenedPanes();
+                if (panes != null) {
+                    for (JEditorPane pane : panes) {
+                        performTask(pane);
+                    }
+                }
+            }
+        }
+    }
+
+    private void performTask(JEditorPane pane) {
+        Object prop = pane.getClientProperty(FlashOnSaveHighlight.class);
         Element root = context.getModificationsRootElement();
         if (prop instanceof FlashOnSaveHighlight && root != null) {
             ((FlashOnSaveHighlight) prop).highlight(root);
@@ -56,7 +75,7 @@ public class FlashOnSaveTask implements OnSaveTask {
     public boolean cancel() {
         return false;
     }
-    
+
     @MimeRegistration(mimeType = "", service = OnSaveTask.Factory.class)
     public static class TaskFactory implements OnSaveTask.Factory {
 
@@ -64,9 +83,7 @@ public class FlashOnSaveTask implements OnSaveTask {
         public OnSaveTask createTask(Context context) {
             return new FlashOnSaveTask(Objects.requireNonNull(context));
         }
-        
+
     }
-    
-    
-    
+
 }
