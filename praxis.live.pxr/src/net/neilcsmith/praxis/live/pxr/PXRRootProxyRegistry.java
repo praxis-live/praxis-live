@@ -19,34 +19,29 @@
  * Please visit http://neilcsmith.net if you need additional information or
  * have any questions.
  */
-package net.neilcsmith.praxis.live.model;
+package net.neilcsmith.praxis.live.pxr;
 
-import java.util.Collection;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import org.openide.util.Lookup;
+import net.neilcsmith.praxis.live.model.RootProxy;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author Neil C Smith (http://neilcsmith.net)
  */
-public interface RootProxy extends ComponentProxy {
+@ServiceProvider(service = RootProxy.Registry.class)
+public class PXRRootProxyRegistry implements RootProxy.Registry {
 
-    public static Optional<RootProxy> find(String id) {
-        Collection<? extends Registry> regs = Lookup.getDefault().lookupAll(Registry.class);
-        return regs.stream()
-                .map(reg -> reg.find(id))
-                .filter(Optional::isPresent)
-                .map(Optional::get)
-                .findFirst();
+    @Override
+    public Optional<RootProxy> find(String id) {
+        return Optional.ofNullable(PXRRootRegistry.getDefault().getRootByID(id));
     }
 
-    public interface Registry {
-
-        public Optional<RootProxy> find(String id);
-
-        public List<RootProxy> findAll();
-
+    @Override
+    public List<RootProxy> findAll() {
+        return Arrays.asList(PXRRootRegistry.getDefault().getRoots());
     }
-
+    
 }

@@ -19,34 +19,33 @@
  * Please visit http://neilcsmith.net if you need additional information or
  * have any questions.
  */
-package net.neilcsmith.praxis.live.model;
+package net.neilcsmith.praxis.live.editor.saveflash;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import org.openide.util.Lookup;
+import java.awt.event.ActionEvent;
+import java.util.prefs.Preferences;
+import javax.swing.AbstractAction;
+import org.netbeans.api.editor.EditorActionRegistration;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.mimelookup.MimePath;
 
 /**
  *
  * @author Neil C Smith (http://neilcsmith.net)
  */
-public interface RootProxy extends ComponentProxy {
+@EditorActionRegistration(
+        name = "toggle-flash-on-save",
+        menuPath = "View",
+        menuPosition = 995,
+        preferencesKey = FlashOnSaveHighlight.ENABLED_KEY,
+        preferencesDefault = true
+)
+public class FlashOnSaveToggleAction extends AbstractAction {
 
-    public static Optional<RootProxy> find(String id) {
-        Collection<? extends Registry> regs = Lookup.getDefault().lookupAll(Registry.class);
-        return regs.stream()
-                .map(reg -> reg.find(id))
-                .filter(Optional::isPresent)
-                .map(Optional::get)
-                .findFirst();
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        FlashOnSaveHighlight.enabled = 
+                MimeLookup.getLookup(MimePath.EMPTY).lookup(Preferences.class)
+                        .getBoolean(FlashOnSaveHighlight.ENABLED_KEY, false);
     }
-
-    public interface Registry {
-
-        public Optional<RootProxy> find(String id);
-
-        public List<RootProxy> findAll();
-
-    }
-
+    
 }

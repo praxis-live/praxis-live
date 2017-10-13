@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2014 Neil C Smith.
+ * Copyright 2017 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -32,6 +32,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.EditorKit;
 import javax.swing.text.StyledDocument;
 import org.netbeans.api.queries.FileEncodingQuery;
+import org.netbeans.core.api.multiview.MultiViews;
 import org.netbeans.spi.editor.guards.GuardedEditorSupport;
 import org.netbeans.spi.editor.guards.GuardedSectionsFactory;
 import org.netbeans.spi.editor.guards.GuardedSectionsProvider;
@@ -45,6 +46,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.CookieSet;
 import org.openide.text.DataEditorSupport;
+import org.openide.windows.CloneableOpenSupport;
 
 /**
  *
@@ -60,7 +62,7 @@ class PXJavaEditorSupport extends DataEditorSupport implements
     private final SaveImpl saveCookie;
 
     PXJavaEditorSupport(PXJavaDataObject dob, CookieSet cookies) {
-        super(dob, new Env(dob));
+        super(dob, dob.getLookup(), new Env(dob));
         this.dob = dob;
         this.cookies = cookies;
         saveCookie = new SaveImpl();
@@ -108,7 +110,15 @@ class PXJavaEditorSupport extends DataEditorSupport implements
         }
     }
 
-    
+    @Override
+    protected Pane createPane() {
+        DataObject dobj = getDataObject();
+        if (dobj == null || !dobj.isValid()) {
+            return super.createPane();
+        }
+        return (Pane) MultiViews.createCloneableMultiView("text/x-java", getDataObject());
+    }
+
     
     private class SaveImpl implements SaveCookie {
 
@@ -195,6 +205,11 @@ class PXJavaEditorSupport extends DataEditorSupport implements
         @Override
         protected FileLock takeLock() throws IOException {
             return getFile().lock();
+        }
+
+        @Override
+        public CloneableOpenSupport findCloneableOpenSupport() {
+            return getDataObject().getCookie(PXJavaEditorSupport.class);
         }
 
     }
