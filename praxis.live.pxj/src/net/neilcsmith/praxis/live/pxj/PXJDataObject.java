@@ -21,11 +21,14 @@
  */
 package net.neilcsmith.praxis.live.pxj;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.StringReader;
+import java.net.URL;
 import java.nio.CharBuffer;
 import java.util.ArrayList;
 import java.util.List;
@@ -36,7 +39,11 @@ import java.util.regex.Pattern;
 import net.neilcsmith.praxis.compiler.ClassBodyContext;
 import net.neilcsmith.praxis.core.ControlAddress;
 import net.neilcsmith.praxis.core.info.ArgumentInfo;
+import net.neilcsmith.praxis.live.project.api.PraxisProject;
+import net.neilcsmith.praxis.live.project.api.PraxisProjectProperties;
 import org.netbeans.api.actions.Openable;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionReferences;
@@ -91,22 +98,37 @@ public class PXJDataObject extends MultiDataObject {
 
     final static String PXJ_DOB_KEY = "PXJ_DOB";
     final static String CONTROL_ADDRESS_KEY = "controlAddress";
+    final static String PROJECT_KEY = "project";
     private final static String ARGUMENT_INFO_KEY = "argumentInfo";
 
     private final FileObject pxjFile;
     private final ClassBodyContext<?> classBodyContext;
     private final ControlAddress controlAddress;
+    private final PraxisProject project;
+    private final PraxisProjectProperties projectProps;
+    private final LibsListener libsListener;
+    private final ClassPath sourceClasspath;
+    
     private FileObject javaProxy;
     private String defaultImports;
     private String classDeclaration;
     private String classEnding;
+    private ClassPath compileClasspath;
 
     public PXJDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException, IOException {
         super(pf, loader);
         this.pxjFile = pf;
         classBodyContext = findClassBodyContext(pf);
         controlAddress = findControlAddress(pf);
+        project = findProject(pf);
+        projectProps = project == null ? null : findProjectProperties(project);
+        libsListener = new LibsListener();
+        if (projectProps != null) {
+            projectProps.addPropertyChangeListener(libsListener);
+        }
         getCookieSet().add(new Open());
+        sourceClasspath = ClassPathSupport.createClassPath(pf.getParent());
+        compileClasspath = createCompileClasspath(projectProps);
     }
 
     private ClassBodyContext<?> findClassBodyContext(FileObject f) {
@@ -127,13 +149,41 @@ public class PXJDataObject extends MultiDataObject {
         }
         return null;
     }
-    
+
     private ControlAddress findControlAddress(FileObject f) {
         Object o = f.getAttribute(CONTROL_ADDRESS_KEY);
         if (o instanceof ControlAddress) {
             return (ControlAddress) o;
         }
         return null;
+    }
+
+    private PraxisProject findProject(FileObject f) {
+        Object o = f.getAttribute(PROJECT_KEY);
+        if (o instanceof PraxisProject) {
+            return (PraxisProject) o;
+        } else {
+            return null;
+        }
+    }
+
+    private PraxisProjectProperties findProjectProperties(PraxisProject project) {
+        return project.getLookup().lookup(PraxisProjectProperties.class);
+    }
+
+    private ClassPath createCompileClasspath(PraxisProjectProperties props) {
+        List<FileObject> libs = props.getLibraries();
+        if (libs.isEmpty()) {
+            return ClassPathRegistry.getInstance().getCompileClasspath();
+        } else {
+            ClassPath libCP = ClassPathSupport.createClassPath(
+                    libs.stream()
+                            .filter(f -> f.isData() && f.hasExt("jar"))
+                            .map(f -> FileUtil.urlForArchiveOrDir(FileUtil.toFile(f)))
+                            .toArray(URL[]::new));
+            return ClassPathSupport.createProxyClassPath(libCP,
+                    ClassPathRegistry.getInstance().getCompileClasspath());
+        }
     }
 
     @Override
@@ -160,6 +210,9 @@ public class PXJDataObject extends MultiDataObject {
     protected void dispose() {
         super.dispose();
         disposeProxy();
+        if (projectProps != null) {
+            projectProps.removePropertyChangeListener(libsListener);
+        }
     }
 
     void disposeProxy() {
@@ -170,6 +223,19 @@ public class PXJDataObject extends MultiDataObject {
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
+        }
+    }
+
+    ClassPath getClassPath(String type) {
+        switch (type) {
+            case ClassPath.BOOT:
+                return ClassPathRegistry.getInstance().getBootClasspath();
+            case ClassPath.COMPILE:
+                return compileClasspath;
+            case ClassPath.SOURCE:
+                return sourceClasspath;
+            default:
+                return null;
         }
     }
 
@@ -248,7 +314,7 @@ public class PXJDataObject extends MultiDataObject {
                 }
                 sb.append(line).append('\n');
             }
-            
+
             if (sb.charAt(sb.length() - 1) != '\n') {
                 sb.append('\n');
             }
@@ -311,30 +377,33 @@ public class PXJDataObject extends MultiDataObject {
         }
         return classEnding;
     }
-    
+
     /**
      * Copied from Janino ClassBodyEvaluator
-     * 
-     * Heuristically parse IMPORT declarations at the beginning of the character stream produced
-     * by the given {@link Reader}. After this method returns, all characters up to and including
-     * that last IMPORT declaration have been read from the {@link Reader}.
-     * <p>
-     * This method does not handle comments and string literals correctly, i.e. if a pattern that
-     * looks like an IMPORT declaration appears within a comment or a string literal, it will be
-     * taken as an IMPORT declaration.
      *
-     * @param r A {@link Reader} that supports MARK, e.g. a {@link BufferedReader}
-     * @return  The parsed imports, e.g. {@code { "java.util.*", "static java.util.Map.Entry" }}
+     * Heuristically parse IMPORT declarations at the beginning of the character
+     * stream produced by the given {@link Reader}. After this method returns,
+     * all characters up to and including that last IMPORT declaration have been
+     * read from the {@link Reader}.
+     * <p>
+     * This method does not handle comments and string literals correctly, i.e.
+     * if a pattern that looks like an IMPORT declaration appears within a
+     * comment or a string literal, it will be taken as an IMPORT declaration.
+     *
+     * @param r A {@link Reader} that supports MARK, e.g. a
+     * {@link BufferedReader}
+     * @return The parsed imports, e.g. {@code { "java.util.*", "static java.util.Map.Entry"
+     * }}
      */
     private static String[]
-    parseImportDeclarations(Reader r) throws IOException {
+            parseImportDeclarations(Reader r) throws IOException {
         final CharBuffer cb = CharBuffer.allocate(10000);
         r.mark(cb.limit());
         r.read(cb);
         cb.rewind();
 
-        List<String> imports         = new ArrayList<String>();
-        int          afterLastImport = 0;
+        List<String> imports = new ArrayList<String>();
+        int afterLastImport = 0;
         for (Matcher matcher = IMPORT_STATEMENT_PATTERN.matcher(cb); matcher.find();) {
             imports.add(matcher.group(1));
             afterLastImport = matcher.end();
@@ -344,13 +413,13 @@ public class PXJDataObject extends MultiDataObject {
         return imports.toArray(new String[imports.size()]);
     }
     private static final Pattern IMPORT_STATEMENT_PATTERN = Pattern.compile(
-        "\\bimport\\s+"
-        + "("
-        + "(?:static\\s+)?"
-        + "[\\p{javaLowerCase}\\p{javaUpperCase}_\\$][\\p{javaLowerCase}\\p{javaUpperCase}\\d_\\$]*"
-        + "(?:\\.[\\p{javaLowerCase}\\p{javaUpperCase}_\\$][\\p{javaLowerCase}\\p{javaUpperCase}\\d_\\$]*)*"
-        + "(?:\\.\\*)?"
-        + ");"
+            "\\bimport\\s+"
+            + "("
+            + "(?:static\\s+)?"
+            + "[\\p{javaLowerCase}\\p{javaUpperCase}_\\$][\\p{javaLowerCase}\\p{javaUpperCase}\\d_\\$]*"
+            + "(?:\\.[\\p{javaLowerCase}\\p{javaUpperCase}_\\$][\\p{javaLowerCase}\\p{javaUpperCase}\\d_\\$]*)*"
+            + "(?:\\.\\*)?"
+            + ");"
     );
 
     private class Open implements OpenCookie {
@@ -370,6 +439,17 @@ public class PXJDataObject extends MultiDataObject {
                 refreshDataFromProxy();
             } else {
                 fe.getFile().removeFileChangeListener(this);
+            }
+        }
+
+    }
+
+    private class LibsListener implements PropertyChangeListener {
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (PraxisProjectProperties.PROP_LIBRARIES.equals(evt.getPropertyName())) {
+                compileClasspath = createCompileClasspath(projectProps);
             }
         }
 

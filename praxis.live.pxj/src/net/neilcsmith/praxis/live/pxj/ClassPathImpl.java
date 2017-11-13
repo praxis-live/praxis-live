@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2014 Neil C Smith.
+ * Copyright 2017 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -21,12 +21,9 @@
  */
 package net.neilcsmith.praxis.live.pxj;
 
-import java.io.IOException;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
-import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -38,26 +35,10 @@ public class ClassPathImpl implements ClassPathProvider {
 
     @Override
     public ClassPath findClassPath(FileObject file, String type) {
-        if (file.getAttribute(PXJDataObject.PXJ_DOB_KEY) instanceof PXJDataObject) {
-            switch (type) {
-                case ClassPath.BOOT:
-                    return ClassPathRegistry.getInstance().getBootClasspath();
-                case ClassPath.COMPILE:
-                    return ClassPathRegistry.getInstance().getCompileClasspath();
-                case ClassPath.SOURCE:
-                    Object srcCP = file.getAttribute("source.classpath");
-                    if (srcCP instanceof ClassPath) {
-                        return (ClassPath) srcCP;
-                    } else {
-                        ClassPath cp = ClassPathSupport.createClassPath(file.getParent());
-                        try {
-                            file.setAttribute("source.classpath", cp);
-                        } catch (IOException ex) {
-                            Exceptions.printStackTrace(ex);
-                        }
-                        return cp;
-                    }
-            }
+        Object o = file.getAttribute(PXJDataObject.PXJ_DOB_KEY);
+        if (o instanceof PXJDataObject) {
+            PXJDataObject dob = (PXJDataObject) o;
+            return dob.getClassPath(type);
         }
         return null;
 
