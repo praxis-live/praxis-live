@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Neil C Smith.
+ * Copyright 2017 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -31,7 +31,6 @@ import java.util.List;
 import net.neilcsmith.praxis.core.syntax.Token;
 import net.neilcsmith.praxis.core.syntax.Tokenizer;
 import net.neilcsmith.praxis.live.project.api.ExecutionLevel;
-import net.neilcsmith.praxis.live.project.api.PraxisProjectProperties;
 import org.openide.filesystems.FileObject;
 
 import static net.neilcsmith.praxis.core.syntax.Token.Type.*;
@@ -43,17 +42,19 @@ import static net.neilcsmith.praxis.core.syntax.Token.Type.*;
 class PXPReader {
 
     final static String INCLUDE_CMD = "include";
+    final static String ADD_LIBS_CMD = "add-libs";
     final static String FILE_CMD = "file";
     final static String BUILD_LEVEL_SWITCH = "<<<BUILD>>>";
     final static String RUN_LEVEL_SWITCH = "<<<RUN>>>";
 
+    private final FileObject projectDir;
+    private final FileObject data;
+    private final ProjectPropertiesImpl props;
+    private final List<FileObject> buildFiles;
+    private final List<FileObject> runFiles;
 
-    private FileObject projectDir;
-    private FileObject data;
-    private ProjectPropertiesImpl props;
     private ExecutionLevel level;
-    private List<FileObject> buildFiles;
-    private List<FileObject> runFiles;
+    private boolean libsAdded;
 
     private PXPReader(FileObject projectDir,
             FileObject data, ProjectPropertiesImpl props) {
@@ -61,7 +62,7 @@ class PXPReader {
         this.data = data;
         this.props = props;
         buildFiles = new ArrayList<FileObject>();
-        runFiles =  new ArrayList<FileObject>();
+        runFiles = new ArrayList<FileObject>();
     }
 
     private void parse() throws Exception {
@@ -76,7 +77,7 @@ class PXPReader {
             Token first = line[0];
             switch (first.getType()) {
                 case PLAIN:
-                    parseInclude(line);
+                    parseCommand(line);
                     break;
                 case COMMENT:
                     parseComment(line);
@@ -112,10 +113,18 @@ class PXPReader {
         this.level = level;
     }
 
-    private void parseInclude(Token[] tokens) throws Exception {
-        if (! INCLUDE_CMD.equals(tokens[0].getText())) {
-            throw new IllegalArgumentException("Unexpected command in project file : " + tokens[0].getText());
+    private void parseCommand(Token[] tokens) throws Exception {
+        String command = tokens[0].getText();
+        if (INCLUDE_CMD.equals(command)) {
+            parseInclude(tokens);
+        } else if (ADD_LIBS_CMD.equals(command)) {
+            parseAddLibs(tokens);
+        } else {
+            throw new IllegalArgumentException("Unexpected command in project file : " + command);
         }
+    }
+
+    private void parseInclude(Token[] tokens) throws Exception {
         if (tokens.length != 2) {
             throw new IllegalArgumentException("Unexpected number of arguments in include command");
         }
@@ -142,6 +151,15 @@ class PXPReader {
         throw new IllegalArgumentException("Invalid file in include line : " + command);
     }
 
+    private void parseAddLibs(Token[] tokens) throws Exception {
+        if (libsAdded) {
+            throw new IllegalArgumentException("add-libs command already found");
+        }
+        if (level != null) {
+            throw new IllegalArgumentException("add-libs command found after level switch");
+        }
+        libsAdded = true;
+    }
 
     private static Token[] tokensToEOL(Iterator<Token> tokens) {
         List<Token> tks = new ArrayList<Token>();
@@ -154,7 +172,6 @@ class PXPReader {
         }
         return tks.toArray(new Token[tks.size()]);
     }
-
 
     static void initializeProjectProperties(FileObject projectDir,
             FileObject file,

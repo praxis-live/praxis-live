@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Neil C Smith.
+ * Copyright 2017 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -23,22 +23,38 @@
 package net.neilcsmith.praxis.live.project.api;
 
 import java.beans.PropertyChangeListener;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import org.openide.filesystems.FileObject;
 
 /**
  *
  * @author Neil C Smith (http://neilcsmith.net)
  */
+// @TODO v4 make interface and return lists
 public abstract class PraxisProjectProperties {
     
+    // @TODO v4 change name and string PROP_FILES - "files"?
     public final static String PROP_FILES_CHANGED = "filesChanged";
-
+    public final static String PROP_LIBRARIES = "libraries";
+    
+    @Deprecated
     public abstract boolean addProjectFile(ExecutionLevel level, FileObject file);
     
+    @Deprecated
     public abstract boolean removeProjectFile(ExecutionLevel level, FileObject file);
 
     public abstract FileObject[] getProjectFiles(ExecutionLevel level);
 
+    public List<FileObject> getFiles(ExecutionLevel level) {
+        return Arrays.asList(getProjectFiles(level));
+    }
+    
+    public List<FileObject> getLibraries() {
+        return Collections.EMPTY_LIST;
+    }
+    
     public abstract void addPropertyChangeListener(PropertyChangeListener listener);
 
     public abstract void removePropertyChangeListener(PropertyChangeListener listener);
