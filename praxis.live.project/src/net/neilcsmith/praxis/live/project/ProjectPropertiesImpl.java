@@ -141,7 +141,7 @@ public class ProjectPropertiesImpl extends PraxisProjectProperties {
         // @TODO move off EDT
         FileObject libsFolder = FileUtil.createFolder(project.getProjectDirectory(),
                 DefaultPraxisProject.LIBS_PATH);
-        FileObject projectLib = FileUtil.copyFile(lib, libsFolder, lib.getNameExt());
+        FileObject projectLib = FileUtil.copyFile(lib, libsFolder, lib.getName());
         if (project.isActive()) {
             String script = "add-lib " + projectLib.toURI();
             try {
