@@ -6,6 +6,31 @@
     <description>Builds the module suite praxis-live.</description>
     <import file="nbproject/build-impl.xml"/>
     
+    <target name="build-core-javadoc" depends="-init">
+      <!--<mkdir dir="${suite.build.dir}/core-javadoc/" />-->
+      <javadoc destdir="${suite.build.dir}/core-javadoc/" access="public" encoding="UTF-8" charset="UTF-8">
+        <sourcefiles>
+          <fileset dir="${praxis.core.project}">
+            <include name="*/src/**/*?CodeDelegate.java" />
+            <include name="*/src/**/userapi/*.java" />
+            <include name="*/src/**/praxis/core/types/*.java" />
+          </fileset>
+        </sourcefiles>
+        <classpath>
+          <fileset dir="${praxis.core.cluster}/modules/" />
+        </classpath>
+        <link href="https://docs.oracle.com/javase/8/docs/api/"/>
+      </javadoc>
+      <zip destfile="${suite.build.dir}/cluster/docs/core-javadoc.zip" basedir="${suite.build.dir}/core-javadoc/" />
+    </target>
+    
+    <target name="view-core-javadoc" depends="build-core-javadoc">
+      <nbbrowse file="${suite.build.dir}/core-javadoc/index.html" />
+    </target>
+    
+    <target name="build" depends="suite.build,build-core-javadoc">
+      
+    </target>
     
     <target name="build-launchers" depends="suite.build-launchers">
         <copy file="${build.launcher.dir}/bin/${app.name}64.exe" tofile="${build.launcher.dir}/bin/praxis64.exe"/>
