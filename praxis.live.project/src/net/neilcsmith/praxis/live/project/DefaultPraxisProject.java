@@ -74,8 +74,8 @@ import org.openide.util.lookup.Lookups;
  */
 public class DefaultPraxisProject extends PraxisProject {
 
-    public final static String LIBS_PATH = "config/libs";
-    public final static String LIBS_COMMAND = "add-libs [file-list \"" + LIBS_PATH + "\" \"*.jar\"]";
+    public final static String LIBS_PATH = "config/libs/";
+    public final static String LIBS_COMMAND = "add-libs [file-list \"" + LIBS_PATH + "*.jar\"]";
 
     private final static RequestProcessor RP = new RequestProcessor(PraxisProject.class);
 
