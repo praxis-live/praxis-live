@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Neil C Smith.
+ * Copyright 2017 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -29,9 +29,7 @@ import javax.swing.JPanel;
 import net.neilcsmith.praxis.live.project.DefaultPraxisProject;
 import net.neilcsmith.praxis.live.project.ProjectPropertiesImpl;
 import net.neilcsmith.praxis.live.project.api.ExecutionLevel;
-import net.neilcsmith.praxis.live.project.api.PraxisProjectProperties;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.spi.project.ProjectState;
 import org.netbeans.spi.project.ui.CustomizerProvider;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
@@ -45,10 +43,12 @@ public class PraxisCustomizerProvider implements CustomizerProvider,
 
     private Category build;
     private Category run;
+    private Category libraries;
     private DefaultPraxisProject project;
-    
+
     private FilesCustomizer buildFiles;
     private FilesCustomizer runFiles;
+    private LibrariesCustomizer librariesCustomizer;
 
     public PraxisCustomizerProvider(DefaultPraxisProject project) {
         this.project = project;
@@ -60,12 +60,15 @@ public class PraxisCustomizerProvider implements CustomizerProvider,
                 "run",
                 "Run Level Files",
                 null);
+        libraries = Category.create(
+                "libraries",
+                "Libraries",
+                null);
     }
-
 
     @Override
     public void showCustomizer() {
-        Category[] categories = new Category[] {build, run};
+        Category[] categories = new Category[]{build, run, libraries};
         if (buildFiles != null) {
             buildFiles.refreshList();
         }
@@ -73,7 +76,7 @@ public class PraxisCustomizerProvider implements CustomizerProvider,
             runFiles.refreshList();
         }
         Dialog dialog = ProjectCustomizer.createCustomizerDialog(categories, this,
-			null, new OKButtonListener(), null);
+                null, new OKButtonListener(), null);
         dialog.setTitle(ProjectUtils.getInformation(project).getDisplayName());
         dialog.setVisible(true);
     }
@@ -94,6 +97,11 @@ public class PraxisCustomizerProvider implements CustomizerProvider,
                 runFiles.refreshList();
             }
             return runFiles;
+        } else if (libraries.equals(category)) {
+            if (librariesCustomizer == null) {
+                librariesCustomizer = new LibrariesCustomizer(project);
+            }
+            return librariesCustomizer;
         } else {
             return new JPanel();
         }
@@ -105,7 +113,7 @@ public class PraxisCustomizerProvider implements CustomizerProvider,
         public void actionPerformed(ActionEvent e) {
             ProjectPropertiesImpl props = project.getLookup().lookup(ProjectPropertiesImpl.class);
             if (props == null) {
-               return;
+                return;
             }
             if (buildFiles != null) {
                 props.setProjectFiles(ExecutionLevel.BUILD, buildFiles.getFiles());
@@ -120,8 +128,5 @@ public class PraxisCustomizerProvider implements CustomizerProvider,
         }
 
     }
-
-
-    
 
 }

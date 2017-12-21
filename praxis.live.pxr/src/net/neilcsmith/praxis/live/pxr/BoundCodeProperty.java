@@ -34,6 +34,7 @@ import net.neilcsmith.praxis.core.ControlAddress;
 import net.neilcsmith.praxis.core.info.ArgumentInfo;
 import net.neilcsmith.praxis.core.info.ControlInfo;
 import net.neilcsmith.praxis.core.types.PString;
+import net.neilcsmith.praxis.live.project.api.PraxisProject;
 import org.netbeans.api.actions.Openable;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -58,6 +59,7 @@ class BoundCodeProperty extends BoundArgumentProperty {
         mimeToExt.put("text/x-glsl-vert", "vert");
     }
 
+    private final PraxisProject project;
     private final String mimeType;
     private final String template;
     private final FileListener fileListener;
@@ -67,8 +69,9 @@ class BoundCodeProperty extends BoundArgumentProperty {
 
     private FileObject file;
 
-    BoundCodeProperty(ControlAddress address, ControlInfo info, String mimeType) {
+    BoundCodeProperty(PraxisProject project, ControlAddress address, ControlInfo info, String mimeType) {
         super(address, info);
+        this.project = project;
         this.mimeType = mimeType;
         this.template = info.getOutputsInfo()[0].getProperties().getString(ArgumentInfo.KEY_TEMPLATE, "");
         this.fileListener = new FileListener();
@@ -139,6 +142,7 @@ class BoundCodeProperty extends BoundArgumentProperty {
                 writer.close();
             }
         }
+        f.setAttribute("project", project);
         f.setAttribute("controlAddress", getAddress());
         f.setAttribute("argumentInfo", getInfo().getOutputsInfo()[0]);
         f.addFileChangeListener(fileListener);

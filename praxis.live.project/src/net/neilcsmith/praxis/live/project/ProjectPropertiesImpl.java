@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2016 Neil C Smith.
+ * Copyright 2017 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -23,16 +23,30 @@ package net.neilcsmith.praxis.live.project;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import net.neilcsmith.praxis.core.CallArguments;
+import net.neilcsmith.praxis.core.interfaces.ServiceUnavailableException;
+import net.neilcsmith.praxis.live.core.api.Callback;
+import net.neilcsmith.praxis.live.core.api.HubUnavailableException;
 import net.neilcsmith.praxis.live.project.api.ExecutionLevel;
 import net.neilcsmith.praxis.live.project.api.PraxisProjectProperties;
+import static net.neilcsmith.praxis.live.project.api.PraxisProjectProperties.PROP_LIBRARIES;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.classpath.GlobalPathRegistry;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -115,6 +129,68 @@ public class ProjectPropertiesImpl extends PraxisProjectProperties {
             throw new IllegalArgumentException("Unknown build level");
         }
         pcs.firePropertyChange(PROP_FILES_CHANGED, null, null);
+    }
+
+    public synchronized void importLibrary(FileObject lib) throws IOException {
+        if (FileUtil.isParentOf(project.getProjectDirectory(), lib)) {
+            throw new IOException("Library file is already inside project");
+        }
+        if (!lib.hasExt("jar")) {
+            throw new IOException("Library must have a .jar extension");
+        }
+        // @TODO move off EDT
+        FileObject libsFolder = FileUtil.createFolder(project.getProjectDirectory(),
+                DefaultPraxisProject.LIBS_PATH);
+        FileObject projectLib = FileUtil.copyFile(lib, libsFolder, lib.getName());
+        if (project.isActive()) {
+            String script = "add-lib " + projectLib.toURI();
+            try {
+                ProjectHelper.getDefault().executeScript(script, new Callback() {
+                    @Override
+                    public void onReturn(CallArguments args) {
+                    }
+
+                    @Override
+                    public void onError(CallArguments args) {
+                    }
+                });
+            } catch (HubUnavailableException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (ServiceUnavailableException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        project.registerLibs();
+        pcs.firePropertyChange(PROP_LIBRARIES, null, null);
+    }
+
+    public synchronized void removeLibrary(String name) throws IOException {
+        if (project.isActive()) {
+            throw new IOException("Cannot delete library from active project");
+        }
+        // @TODO move off EDT
+        FileObject libsFolder = project.getProjectDirectory().getFileObject(DefaultPraxisProject.LIBS_PATH);
+        if (libsFolder == null) {
+            throw new IOException("No libs folder");
+        }
+        FileObject lib = libsFolder.getFileObject(name);
+        if (lib != null) {
+            lib.delete();
+        }
+        project.registerLibs();
+        pcs.firePropertyChange(PROP_LIBRARIES, null, null);
+    }
+
+    @Override
+    public synchronized List<FileObject> getLibraries() {
+        FileObject libsFolder = project.getProjectDirectory().getFileObject(DefaultPraxisProject.LIBS_PATH);
+        if (libsFolder == null || !libsFolder.isFolder()) {
+            return Collections.EMPTY_LIST;
+        } else {
+            return Stream.of(libsFolder.getChildren())
+                    .filter(f -> f.hasExt("jar"))
+                    .collect(Collectors.toList());
+        }
     }
 
     private void checkFile(FileObject file) {
