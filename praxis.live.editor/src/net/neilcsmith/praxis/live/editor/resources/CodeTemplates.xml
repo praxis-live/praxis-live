@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE codetemplates PUBLIC  "-//NetBeans//DTD Editor Code Templates settings 1.0//EN"
+                                "http://www.netbeans.org/dtds/EditorCodeTemplates-1_0.dtd">
+
+<codetemplates>
+  
+  <codetemplate abbreviation="P" contexts="CLASS,VARIABLE" descriptionId="CT_P">
+    <code>
+      <![CDATA[@P(${IDX}) 
+    ${selection}${cursor}]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="T" contexts="CLASS,VARIABLE" descriptionId="CT_T">
+    <code>
+      <![CDATA[@T(${IDX}) 
+    ${selection}${cursor}]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="I" contexts="CLASS,VARIABLE" descriptionId="CT_I">
+    <code>
+      <![CDATA[@In(${IDX}) 
+    ${selection}${cursor}]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="O" contexts="CLASS,VARIABLE" descriptionId="CT_O">
+    <code>
+      <![CDATA[@Out(${IDX}) 
+    ${selection}${cursor}]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="PTN" contexts="CLASS,VARIABLE" descriptionId="CT_PTN">
+    <code>
+      <![CDATA[@P(${IDX}) 
+    @Type.Number(min = ${MIN default="0"}, max = ${MAX default="1"}, def = ${DEF default="0"})
+    ${selection}${cursor}]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="TN" contexts="CLASS,VARIABLE" descriptionId="CT_TN">
+    <code>
+      <![CDATA[@Type.Number(min = ${MIN default="0"}, max = ${MAX default="1"}, def = ${DEF default="0"})
+    ${selection}${cursor}]]>
+    </code>
+  </codetemplate>  
+</codetemplates>
