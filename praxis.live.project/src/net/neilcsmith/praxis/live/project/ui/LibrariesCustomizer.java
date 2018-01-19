@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2017 Neil C Smith.
+ * Copyright 2018 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -72,7 +72,7 @@ class LibrariesCustomizer extends javax.swing.JPanel implements ExplorerManager.
         manager.setRootContext(root);
         manager.addPropertyChangeListener(new ManagerListener());
         initComponents();
-        ((ListView) fileList).setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+//        ((ListView) fileList).setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
     }
 
     /**
@@ -133,9 +133,11 @@ class LibrariesCustomizer extends javax.swing.JPanel implements ExplorerManager.
         fcb.setApproveText("Import");
         fcb.forceUseOfDefaultWorkingDirectory(true);
         fcb.setFileFilter(new FileNameExtensionFilter("JAR files", "jar"));
-        File add = fcb.showOpenDialog();
-        if (add != null) {
-            importLibrary(FileUtil.toFileObject(add));
+        File[] libs = fcb.showMultiOpenDialog();
+        if (libs != null) {
+            for (File lib : libs) {
+                importLibrary(FileUtil.toFileObject(lib));
+            }
         }
     }//GEN-LAST:event_importButtonActionPerformed
 
@@ -158,8 +160,10 @@ class LibrariesCustomizer extends javax.swing.JPanel implements ExplorerManager.
 
         } else {
             try {
-                FileObject lib = manager.getSelectedNodes()[0].getLookup().lookup(FileObject.class);
-                props.removeLibrary(lib.getNameExt());
+                for (Node node : manager.getSelectedNodes()) {
+                    FileObject lib = node.getLookup().lookup(FileObject.class);
+                    props.removeLibrary(lib.getNameExt());
+                }
             } catch (Exception ex) {
                 Exceptions.printStackTrace(ex);
             }
