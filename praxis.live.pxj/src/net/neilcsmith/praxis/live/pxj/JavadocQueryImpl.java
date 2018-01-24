@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2017 Neil C Smith.
+ * Copyright 2018 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -37,17 +37,18 @@ import org.openide.util.lookup.ServiceProvider;
 @ServiceProvider(service = JavadocForBinaryQueryImplementation.class)
 public class JavadocQueryImpl implements JavadocForBinaryQueryImplementation {
 
+    static final URL JAVADOC_ARCHIVE; 
     private static final JavadocForBinaryQuery.Result RESULT;
 
     static {
         File javadocZip = InstalledFileLocator.getDefault()
                 .locate("docs/core-javadoc.zip", "net.neilcsmith.praxis.live.pxj", true);
         if (javadocZip != null) {
-            final URL javadocURL = FileUtil.urlForArchiveOrDir(javadocZip);
+            JAVADOC_ARCHIVE = FileUtil.urlForArchiveOrDir(javadocZip);
             RESULT = new JavadocForBinaryQuery.Result() {
                 @Override
                 public URL[] getRoots() {
-                    return new URL[]{javadocURL};
+                    return new URL[]{JAVADOC_ARCHIVE};
                 }
 
                 @Override
@@ -60,6 +61,7 @@ public class JavadocQueryImpl implements JavadocForBinaryQueryImplementation {
                 
             };
         } else {
+            JAVADOC_ARCHIVE = null;
             RESULT = null;
         }
     }

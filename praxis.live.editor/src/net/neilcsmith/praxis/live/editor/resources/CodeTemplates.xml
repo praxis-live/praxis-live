@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE codetemplates PUBLIC  "-//NetBeans//DTD Editor Code Templates settings 1.0//EN"
+                                "http://www.netbeans.org/dtds/EditorCodeTemplates-1_0.dtd">
+
+<codetemplates>
+  
+  <codetemplate abbreviation="p" contexts="CLASS,VARIABLE" descriptionId="CT_P">
+    <code>
+      <![CDATA[@P(${IDX}) 
+    ${selection}${cursor}]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="t" contexts="CLASS,VARIABLE" descriptionId="CT_T">
+    <code>
+      <![CDATA[@T(${IDX}) 
+    ${selection}${cursor}]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="in" contexts="CLASS,VARIABLE" descriptionId="CT_IN">
+    <code>
+      <![CDATA[@In(${IDX}) 
+    ${selection}${cursor}]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="out" contexts="CLASS,VARIABLE" descriptionId="CT_OUT">
+    <code>
+      <![CDATA[@Out(${IDX}) 
+    ${selection}${cursor}]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="ptnd" contexts="CLASS,VARIABLE" descriptionId="CT_PTND">
+    <code>
+      <![CDATA[@P(${IDX}) 
+    @Type.Number(min = ${MIN default="0"}, max = ${MAX default="1"}, def = ${DEF default="0"})
+    double ${ID};
+    ${cursor}]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="ptnp" contexts="CLASS,VARIABLE" descriptionId="CT_PTNP">
+    <code>
+      <![CDATA[@P(${IDX}) 
+    @Type.Number(min = ${MIN default="0"}, max = ${MAX default="1"}, def = ${DEF default="0"})
+    Property ${ID};
+    ${cursor}]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="ptn" contexts="CLASS,VARIABLE" descriptionId="CT_PTN">
+    <code>
+      <![CDATA[@P(${IDX}) 
+    @Type.Number(min = ${MIN default="0"}, max = ${MAX default="1"}, def = ${DEF default="0"})
+    ${selection}${cursor}]]>
+    </code>
+  </codetemplate>
+  <codetemplate abbreviation="tn" contexts="CLASS,VARIABLE" descriptionId="CT_TN">
+    <code>
+      <![CDATA[@Type.Number(min = ${MIN default="0"}, max = ${MAX default="1"}, def = ${DEF default="0"})
+    ${selection}${cursor}]]>
+    </code>
+  </codetemplate>  
+</codetemplates>
