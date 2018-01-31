@@ -1,6 +1,6 @@
 Manifest-Version: 1.0
-OpenIDE-Module: net.neilcsmith.praxis.live.audio
-OpenIDE-Module-Localizing-Bundle: net/neilcsmith/praxis/live/audio/resources/Bundle.properties
+OpenIDE-Module: org.praxislive.ide.audio
+OpenIDE-Module-Localizing-Bundle: org/praxislive/ide/audio/resources/Bundle.properties
 OpenIDE-Module-Specification-Version: 1.0
 AutoUpdate-Essential-Module: true
 AutoUpdate-Show-In-Client: false

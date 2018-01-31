@@ -1,6 +1,6 @@
 Manifest-Version: 1.0
 AutoUpdate-Show-In-Client: true
-OpenIDE-Module: net.neilcsmith.praxis.live.tracker
-OpenIDE-Module-Localizing-Bundle: net/neilcsmith/praxis/live/tracker/Bundle.properties
+OpenIDE-Module: org.praxislive.ide.tracker
+OpenIDE-Module-Localizing-Bundle: org/praxislive/ide/tracker/Bundle.properties
 OpenIDE-Module-Specification-Version: 1.0
 

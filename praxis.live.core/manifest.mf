@@ -1,8 +1,8 @@
 Manifest-Version: 1.0
-OpenIDE-Module: net.neilcsmith.praxis.live.core
-OpenIDE-Module-Install: net/neilcsmith/praxis/live/core/Installer.class
-OpenIDE-Module-Layer: net/neilcsmith/praxis/live/core/resources/layer.xml
-OpenIDE-Module-Localizing-Bundle: net/neilcsmith/praxis/live/core/resources/Bundle.properties
+OpenIDE-Module: org.praxislive.ide.core
+OpenIDE-Module-Install: org/praxislive/ide/core/Installer.class
+OpenIDE-Module-Layer: org/praxislive/ide/core/resources/layer.xml
+OpenIDE-Module-Localizing-Bundle: org/praxislive/ide/core/resources/Bundle.properties
 OpenIDE-Module-Specification-Version: 1.0
 AutoUpdate-Essential-Module: true
 AutoUpdate-Show-In-Client: false
