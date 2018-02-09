@@ -6,7 +6,7 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.praxislive.core.ArgumentFormatException;
+import org.praxislive.core.ValueFormatException;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionReferences;
@@ -128,7 +128,7 @@ public class TrackerDataObject extends MultiDataObject {
                             updatePatterns(patterns);
                         }
                     });
-                } catch (IOException | ArgumentFormatException ex) {
+                } catch (IOException | ValueFormatException ex) {
                     Exceptions.printStackTrace(ex);
                 }
             }

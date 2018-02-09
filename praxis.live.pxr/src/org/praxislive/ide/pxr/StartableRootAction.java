@@ -29,7 +29,7 @@ import java.util.Collection;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JToggleButton;
-import org.praxislive.core.Argument;
+import org.praxislive.core.Value;
 import org.praxislive.core.CallArguments;
 import org.praxislive.core.ControlAddress;
 import org.praxislive.core.InterfaceDefinition;
@@ -142,7 +142,7 @@ class StartableRootAction extends AbstractAction
             @Override
             public void propertyChange(PropertyChangeEvent pce) {
                 try {
-                    PBoolean selected = PBoolean.coerce((Argument)pce.getNewValue());
+                    PBoolean selected = PBoolean.coerce((Value)pce.getNewValue());
                     putValue(SELECTED_KEY, selected.value());
                 } catch (Exception ex) {
                     // no op?

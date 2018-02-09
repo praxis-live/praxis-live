@@ -24,7 +24,7 @@ package org.praxislive.ide.pxr;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import org.praxislive.core.Argument;
+import org.praxislive.core.Value;
 import org.praxislive.core.ComponentAddress;
 import org.praxislive.core.ComponentType;
 import org.praxislive.core.PortAddress;
@@ -51,7 +51,7 @@ class PXRParser {
     private final static PropertyElement[] EMPTY_PROPS = new PropertyElement[0];
     private final static ComponentElement[] EMPTY_COMPS = new ComponentElement[0];
     private final static ConnectionElement[] EMPTY_CONS = new ConnectionElement[0];
-//    private final static Argument[] EMPTY_ARGS = new Argument[0];
+//    private final static Value[] EMPTY_ARGS = new Value[0];
     private final String script;
     private final ComponentAddress context;
     
@@ -267,7 +267,7 @@ class PXRParser {
 //        PropertyElement p = new PropertyElement();
 //        p.address = ControlAddress.create(component, property);
 
-        Argument[] args = new Argument[tokens.length];
+        Value[] args = new Value[tokens.length];
         Token t;
         for (int i = 0; i < args.length; i++) {
             t = tokens[i];
@@ -411,7 +411,7 @@ class PXRParser {
 
         public ComponentElement component;
         public String property;
-        public Argument[] args;
+        public Value[] args;
     }
 
     public static class ConnectionElement extends Element {

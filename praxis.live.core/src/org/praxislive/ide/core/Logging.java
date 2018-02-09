@@ -25,13 +25,13 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.praxislive.core.Argument;
+import org.praxislive.core.Value;
 import org.praxislive.core.Call;
 import org.praxislive.core.CallArguments;
 import org.praxislive.core.ComponentAddress;
 import org.praxislive.core.Control;
 import org.praxislive.core.PacketRouter;
-import org.praxislive.core.info.ControlInfo;
+import org.praxislive.core.ControlInfo;
 import org.praxislive.impl.AbstractSwingRoot;
 import org.praxislive.ide.core.api.LogHandler;
 import org.praxislive.logging.LogLevel;
@@ -64,7 +64,7 @@ class Logging extends AbstractSwingRoot {
         }
     }
 
-    private void dispatch(ComponentAddress src, long time, LogLevel level, Argument arg) {
+    private void dispatch(ComponentAddress src, long time, LogLevel level, Value arg) {
         for (LogHandler handler : handlers) {
             handler.log(src, time, level, arg);
         }
@@ -99,7 +99,7 @@ class Logging extends AbstractSwingRoot {
     private static class FallbackHandler extends LogHandler {
 
         @Override
-        public void log(ComponentAddress source, long time, LogLevel level, Argument arg) {
+        public void log(ComponentAddress source, long time, LogLevel level, Value arg) {
             Level jlevel = Level.SEVERE;
             switch (level) {
                 case WARNING:

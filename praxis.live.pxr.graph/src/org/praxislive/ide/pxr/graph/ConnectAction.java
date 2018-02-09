@@ -44,7 +44,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
-import org.praxislive.core.info.PortInfo;
+import org.praxislive.core.PortInfo;
 import org.praxislive.ide.pxr.graph.Bundle;
 import org.praxislive.ide.graph.PinID;
 import org.praxislive.ide.model.Connection;

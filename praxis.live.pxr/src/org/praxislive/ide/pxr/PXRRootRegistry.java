@@ -29,8 +29,8 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
-import org.praxislive.core.Argument;
-import org.praxislive.core.ArgumentFormatException;
+import org.praxislive.core.Value;
+import org.praxislive.core.ValueFormatException;
 import org.praxislive.core.ControlAddress;
 import org.praxislive.core.interfaces.RootManagerService;
 import org.praxislive.core.interfaces.ServiceUnavailableException;
@@ -100,7 +100,7 @@ public class PXRRootRegistry extends RootRegistry {
         try {
             PArray rts = PArray.coerce(rootsAdaptor.getValue());
             List<String> ids = new ArrayList<String>(rts.getSize());
-            for (Argument id : rts) {
+            for (Value id : rts) {
                 ids.add(id.toString());
             }
             Iterator<PXRRootProxy> itr = roots.iterator();
@@ -116,7 +116,7 @@ public class PXRRootRegistry extends RootRegistry {
             if (removed) {
                 fireRootsChange();
             }
-        } catch (ArgumentFormatException ex) {
+        } catch (ValueFormatException ex) {
             // @TODO what here?
         }
 

@@ -24,7 +24,7 @@ package org.praxislive.ide.pxr;
 import java.io.File;
 import org.praxislive.core.ComponentAddress;
 import org.praxislive.core.ComponentType;
-import org.praxislive.core.info.ComponentInfo;
+import org.praxislive.core.ComponentInfo;
 import org.praxislive.ide.project.api.PraxisProject;
 import org.praxislive.ide.model.RootProxy;
 import org.openide.filesystems.FileObject;

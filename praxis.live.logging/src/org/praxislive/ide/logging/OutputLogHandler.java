@@ -23,7 +23,7 @@ package org.praxislive.ide.logging;
 
 import java.util.HashMap;
 import java.util.Map;
-import org.praxislive.core.Argument;
+import org.praxislive.core.Value;
 import org.praxislive.core.ComponentAddress;
 import org.praxislive.core.types.PError;
 import org.praxislive.ide.core.api.LogHandler;
@@ -53,7 +53,7 @@ public class OutputLogHandler extends LogHandler {
             ComponentAddress source, 
             long time,
             LogLevel level,
-            Argument arg) {
+            Value arg) {
         if (!getLevel().isLoggable(level)) {
             return;
         }

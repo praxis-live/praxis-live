@@ -29,7 +29,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 import javax.swing.Action;
-import org.praxislive.core.ArgumentFormatException;
+import org.praxislive.core.ValueFormatException;
 import org.praxislive.core.ControlAddress;
 import org.praxislive.core.interfaces.RootManagerService;
 import org.praxislive.core.interfaces.ServiceUnavailableException;
@@ -93,7 +93,7 @@ public class HubProxy {
         try {
             rts = PArray.coerce(rootsAdaptor.getValue());
             LOG.finest("Roots found : " + rts);
-        } catch (ArgumentFormatException ex) {
+        } catch (ValueFormatException ex) {
             // leave list empty
         }
         for (int i = 0; i < rts.getSize(); i++) {

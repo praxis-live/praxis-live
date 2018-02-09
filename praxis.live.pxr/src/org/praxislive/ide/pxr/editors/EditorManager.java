@@ -21,10 +21,10 @@
  */
 package org.praxislive.ide.pxr.editors;
 
-import org.praxislive.core.Argument;
+import org.praxislive.core.Value;
 import org.praxislive.core.ControlAddress;
-import org.praxislive.core.info.ArgumentInfo;
-import org.praxislive.core.info.ControlInfo;
+import org.praxislive.core.ArgumentInfo;
+import org.praxislive.core.ControlInfo;
 import org.praxislive.core.types.PArray;
 import org.praxislive.core.types.PBoolean;
 import org.praxislive.core.types.PNumber;
@@ -83,7 +83,7 @@ public class EditorManager {
 //        if (info.getProperties().get(PString.KEY_ALLOWED_VALUES) != null) {
 //            return new EnumEditor(property, info);
 //        }
-////        Argument mime = info.getProperties().get(PString.KEY_MIME_TYPE);
+////        Value mime = info.getProperties().get(PString.KEY_MIME_TYPE);
 ////        if (mime != null) {
 ////            String mimetype = mime.toString();
 //////              if ("text/x-praxis-java".equals(mimetype) ||
@@ -107,10 +107,10 @@ public class EditorManager {
 
     private static boolean hasAdditionalEditors(
             PraxisProperty<?> property, ArgumentInfo info) {
-        Class<? extends Argument> type = info.getType();
+        Class<? extends Value> type = info.getType();
         if (PArray.class.isAssignableFrom(type)) {
             return true;
-        } else if (type.equals(Argument.class)) {
+        } else if (type.equals(Value.class)) {
             return true;
         }
         return false;
@@ -128,12 +128,12 @@ public class EditorManager {
 
     private static PraxisProperty.Editor[] getAdditionalEditors(
             PraxisProperty<?> property, ArgumentInfo info) {
-        Class<? extends Argument> type = info.getType();
+        Class<? extends Value> type = info.getType();
         if (PArray.class.isAssignableFrom(type)) {
             return new PraxisProperty.Editor[]{
                         new FileListEditor(property, info)
                     };
-        } else if (type.equals(Argument.class)) {
+        } else if (type.equals(Value.class)) {
             return new PraxisProperty.Editor[]{
                         new ResourceEditor(property, info),
                         new FileListEditor(property, info)

@@ -33,14 +33,14 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.praxislive.core.Argument;
-import org.praxislive.core.ArgumentFormatException;
+import org.praxislive.core.Value;
+import org.praxislive.core.ValueFormatException;
 import org.praxislive.core.CallArguments;
 import org.praxislive.core.ComponentAddress;
 import org.praxislive.core.ComponentType;
 import org.praxislive.core.ControlAddress;
 import org.praxislive.core.InterfaceDefinition;
-import org.praxislive.core.info.ComponentInfo;
+import org.praxislive.core.ComponentInfo;
 import org.praxislive.core.interfaces.ContainerInterface;
 import org.praxislive.core.types.PArray;
 import org.praxislive.gui.ControlBinding;
@@ -386,7 +386,7 @@ public class PXRContainerProxy extends PXRComponentProxy implements ContainerPro
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
             try {
-                Set<Connection> updated = externalToConnections((Argument) evt.getNewValue());
+                Set<Connection> updated = externalToConnections((Value) evt.getNewValue());
                 if (connections.equals(updated)) {
                     LOG.fine("Connections change reported but we're up to date.");
                 } else {
@@ -400,16 +400,16 @@ public class PXRContainerProxy extends PXRComponentProxy implements ContainerPro
             }
         }
 
-        private Set<Connection> externalToConnections(Argument extCons) throws ArgumentFormatException {
+        private Set<Connection> externalToConnections(Value extCons) throws ValueFormatException {
             if (extCons.isEmpty()) {
                 return Collections.emptySet();
             }
             PArray extArr = PArray.coerce(extCons);
             Set<Connection> cons = new LinkedHashSet<>(extArr.getSize());
-            for (Argument arg : extArr) {
+            for (Value arg : extArr) {
                 PArray con = PArray.coerce(arg);
                 if (con.getSize() != 4) {
-                    throw new ArgumentFormatException("Connection array has invalid number of parts\n" + extCons);
+                    throw new ValueFormatException("Connection array has invalid number of parts\n" + extCons);
                 }
                 cons.add(new Connection(con.get(0).toString(), con.get(1).toString(),
                         con.get(2).toString(), con.get(3).toString()));

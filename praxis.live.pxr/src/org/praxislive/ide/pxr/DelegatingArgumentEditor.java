@@ -29,7 +29,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.praxislive.core.info.ControlInfo;
+import org.praxislive.core.ControlInfo;
 import org.praxislive.ide.properties.EditorSupport;
 import org.praxislive.ide.properties.PraxisProperty;
 import org.praxislive.ide.pxr.editors.SubCommandEditor;

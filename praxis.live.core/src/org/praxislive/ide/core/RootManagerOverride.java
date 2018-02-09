@@ -38,7 +38,7 @@ import org.praxislive.core.CallArguments;
 import org.praxislive.core.ComponentAddress;
 import org.praxislive.core.ControlAddress;
 import org.praxislive.core.PacketRouter;
-import org.praxislive.core.info.ControlInfo;
+import org.praxislive.core.ControlInfo;
 import org.praxislive.core.interfaces.RootManagerService;
 import org.praxislive.core.interfaces.ServiceManager;
 import org.praxislive.core.interfaces.ServiceUnavailableException;

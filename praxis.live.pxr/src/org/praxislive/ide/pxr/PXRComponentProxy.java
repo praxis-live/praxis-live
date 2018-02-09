@@ -39,15 +39,15 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import org.praxislive.core.Argument;
-import org.praxislive.core.ArgumentFormatException;
+import org.praxislive.core.Value;
+import org.praxislive.core.ValueFormatException;
 import org.praxislive.core.CallArguments;
 import org.praxislive.core.ComponentAddress;
 import org.praxislive.core.ComponentType;
 import org.praxislive.core.ControlAddress;
-import org.praxislive.core.info.ArgumentInfo;
-import org.praxislive.core.info.ComponentInfo;
-import org.praxislive.core.info.ControlInfo;
+import org.praxislive.core.ArgumentInfo;
+import org.praxislive.core.ComponentInfo;
+import org.praxislive.core.ControlInfo;
 import org.praxislive.core.interfaces.ComponentInterface;
 import org.praxislive.core.types.PString;
 import org.praxislive.gui.ControlBinding;
@@ -177,8 +177,8 @@ public class PXRComponentProxy implements ComponentProxy {
             public void propertyChange(PropertyChangeEvent evt) {
                 try {
                     //                refreshInfo((ComponentInfo) evt.getNewValue());
-                    refreshInfo(ComponentInfo.coerce((Argument)evt.getNewValue()));
-                } catch (ArgumentFormatException ex) {
+                    refreshInfo(ComponentInfo.coerce((Value)evt.getNewValue()));
+                } catch (ValueFormatException ex) {
                     LOG.log(Level.WARNING, "", ex);
                 }
             }

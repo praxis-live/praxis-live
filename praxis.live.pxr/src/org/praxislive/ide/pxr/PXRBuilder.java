@@ -27,11 +27,11 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.praxislive.core.ArgumentFormatException;
+import org.praxislive.core.ValueFormatException;
 import org.praxislive.core.CallArguments;
 import org.praxislive.core.ComponentAddress;
 import org.praxislive.core.ComponentType;
-import org.praxislive.core.info.ComponentInfo;
+import org.praxislive.core.ComponentInfo;
 import org.praxislive.ide.components.api.Components;
 import org.praxislive.ide.core.api.Callback;
 import org.praxislive.ide.model.Connection;
@@ -163,7 +163,7 @@ class PXRBuilder {
                                     public void onReturn(CallArguments args) {
                                         try {
                                             cmp.refreshInfo(ComponentInfo.coerce(args.get(0)));
-                                        } catch (ArgumentFormatException ex) {
+                                        } catch (ValueFormatException ex) {
                                             Exceptions.printStackTrace(ex);
                                         }
                                         process();
@@ -303,7 +303,7 @@ class PXRBuilder {
                                     public void onReturn(CallArguments args) {
                                         try {
                                             parent.refreshInfo(ComponentInfo.coerce(args.get(0)));
-                                        } catch (ArgumentFormatException ex) {
+                                        } catch (ValueFormatException ex) {
                                             Exceptions.printStackTrace(ex);
                                         }
                                         process();

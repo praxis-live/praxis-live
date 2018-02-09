@@ -25,8 +25,8 @@ import java.awt.Component;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import org.praxislive.core.Argument;
-import org.praxislive.core.ArgumentFormatException;
+import org.praxislive.core.Value;
+import org.praxislive.core.ValueFormatException;
 import org.praxislive.core.syntax.Token;
 import org.praxislive.core.syntax.Tokenizer;
 import org.praxislive.core.types.PArray;
@@ -50,7 +50,7 @@ public class ArrayEditor extends EditorSupport
     @Override
     public void setValue(Object value) {
         try {
-            super.setValue(PArray.coerce((Argument) value));
+            super.setValue(PArray.coerce((Value) value));
             text = null;
         } catch (Exception ex) {
             throw new IllegalArgumentException(ex);
@@ -120,7 +120,7 @@ public class ArrayEditor extends EditorSupport
         if (!tokens.hasNext()) {
             return PArray.EMPTY;
         }
-        List<Argument> args = new ArrayList<Argument>();
+        List<Value> args = new ArrayList<Value>();
         boolean EOLreached = false;
         while (tokens.hasNext()) {
             if (EOLreached && !allowEOL) {
@@ -146,13 +146,13 @@ public class ArrayEditor extends EditorSupport
         return PArray.valueOf(args);
     }
 
-    private Argument parsePlainToken(String text) {
+    private Value parsePlainToken(String text) {
         // can't have empty plain token
         char c = text.charAt(0);
         if (c == '.') {
             throw new IllegalArgumentException("Can't parse relative address");
         }
-        Argument ret = null;
+        Value ret = null;
         if (Character.isDigit(c)) {
             try {
                 ret = PNumber.valueOf(text);
@@ -176,12 +176,12 @@ public class ArrayEditor extends EditorSupport
 
     private String buildValueText(boolean asCommand) {
         try {
-            PArray array = PArray.coerce((Argument) getValue());
+            PArray array = PArray.coerce((Value) getValue());
             StringBuilder sb = new StringBuilder();
             if (asCommand) {
                 sb.append("[array ");
             }
-            Argument arg;
+            Value arg;
             for (int i = 0, total = array.getSize(); i < total; i++) {
                 arg = array.get(i);
                 if (i > 0) {
@@ -193,7 +193,7 @@ public class ArrayEditor extends EditorSupport
                 sb.append("]");
             }
             return sb.toString();
-        } catch (ArgumentFormatException ex) {
+        } catch (ValueFormatException ex) {
             return null;
         }
     }

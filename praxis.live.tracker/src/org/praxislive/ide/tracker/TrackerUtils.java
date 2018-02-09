@@ -23,7 +23,7 @@ package org.praxislive.ide.tracker;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.praxislive.core.ArgumentFormatException;
+import org.praxislive.core.ValueFormatException;
 import org.praxislive.core.syntax.Token;
 import org.praxislive.core.syntax.Tokenizer;
 
@@ -33,7 +33,7 @@ import org.praxislive.core.syntax.Tokenizer;
  */
 class TrackerUtils {
 
-    static Patterns parse(String data) throws ArgumentFormatException {
+    static Patterns parse(String data) throws ValueFormatException {
         Patterns patterns = new Patterns();
         List<Object> row = new ArrayList<>();
         Pattern pattern = null;
@@ -47,7 +47,7 @@ class TrackerUtils {
                 case QUOTED:
                 case BRACED:
                     if (maxColumn > 0 && column >= maxColumn) {
-                        throw new ArgumentFormatException();
+                        throw new ValueFormatException();
                     }
                     row.add(type == Token.Type.PLAIN
                             ? parsePlainToken(t.getText())
@@ -82,7 +82,7 @@ class TrackerUtils {
                 case COMMENT:
                     break;
                 default:
-                    throw new ArgumentFormatException();
+                    throw new ValueFormatException();
             }
         }
         if (pattern != null) {

@@ -23,7 +23,7 @@ package org.praxislive.ide.util;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import org.praxislive.core.Argument;
+import org.praxislive.core.Value;
 import org.praxislive.core.CallArguments;
 import org.praxislive.core.types.PString;
 import org.praxislive.gui.ControlBinding;
@@ -37,7 +37,7 @@ public abstract class ArgumentPropertyAdaptor extends ControlBinding.Adaptor {
     private PropertyChangeSupport pcs;
     private String property;
     private boolean alwaysActive;
-    private Argument value = PString.EMPTY;
+    private Value value = PString.EMPTY;
 
     public ArgumentPropertyAdaptor(Object source, String property,
             boolean alwaysActive, ControlBinding.SyncRate rate) {
@@ -57,27 +57,27 @@ public abstract class ArgumentPropertyAdaptor extends ControlBinding.Adaptor {
         }
     }
 
-    void setValueImpl(Argument value, boolean send) {
+    void setValueImpl(Value value, boolean send) {
         if (value == null) {
             throw new NullPointerException();
         }
-        Argument oldValue = this.value;
+        Value oldValue = this.value;
         if (send) {
             send(CallArguments.create(value));
         }
         this.value = value;
-        if (!Argument.equivalent(null, oldValue, value)) {
+        if (!(oldValue.equivalent(value) || value.equivalent(oldValue))) {
             pcs.firePropertyChange(property, oldValue, value);
         }
     }
 
-    public Argument getValue() {
+    public Value getValue() {
         return value;
     }
 
     @Override
     public void update() {
-        Argument arg;
+        Value arg;
         ControlBinding binding = getBinding();
         if (binding == null) {
             arg = PString.EMPTY;
@@ -118,7 +118,7 @@ public abstract class ArgumentPropertyAdaptor extends ControlBinding.Adaptor {
             super(source, property, alwaysActive, rate);
         }
 
-        public void setValue(Argument value) {
+        public void setValue(Value value) {
             setValueImpl(value, true);
         }
     }

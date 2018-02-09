@@ -38,7 +38,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.praxislive.compiler.ClassBodyContext;
 import org.praxislive.core.ControlAddress;
-import org.praxislive.core.info.ArgumentInfo;
+import org.praxislive.core.ArgumentInfo;
 import org.praxislive.ide.project.api.PraxisProject;
 import org.praxislive.ide.project.api.PraxisProjectProperties;
 import org.netbeans.api.actions.Openable;

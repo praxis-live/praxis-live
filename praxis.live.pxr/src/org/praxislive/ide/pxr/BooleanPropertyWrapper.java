@@ -3,7 +3,7 @@
 package org.praxislive.ide.pxr;
 
 import java.lang.reflect.InvocationTargetException;
-import org.praxislive.core.ArgumentFormatException;
+import org.praxislive.core.ValueFormatException;
 import org.praxislive.core.types.PBoolean;
 import org.openide.nodes.Node;
 
@@ -28,7 +28,7 @@ class BooleanPropertyWrapper extends Node.Property<Boolean> {
     public Boolean getValue() throws IllegalAccessException, InvocationTargetException {
         try {
             return PBoolean.coerce(wrapped.getValue()).value();
-        } catch (ArgumentFormatException ex) {
+        } catch (ValueFormatException ex) {
             return false;
         }
     }

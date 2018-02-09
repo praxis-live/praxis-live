@@ -28,9 +28,9 @@ import java.awt.Graphics;
 import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.List;
-import org.praxislive.core.Argument;
-import org.praxislive.core.ArgumentFormatException;
-import org.praxislive.core.info.ArgumentInfo;
+import org.praxislive.core.Value;
+import org.praxislive.core.ValueFormatException;
+import org.praxislive.core.ArgumentInfo;
 import org.praxislive.core.types.PArray;
 import org.praxislive.core.types.PMap;
 import org.praxislive.ide.properties.EditorSupport;
@@ -62,7 +62,7 @@ public class StringEditor extends EditorSupport
         }
         PMap props = info.getProperties();
         emptyIsDefault = props.getBoolean(ArgumentInfo.KEY_EMPTY_IS_DEFAULT, false);
-        Argument tagArray = props.get(ArgumentInfo.KEY_ALLOWED_VALUES);
+        Value tagArray = props.get(ArgumentInfo.KEY_ALLOWED_VALUES);
         if (tagArray != null) {
             limitToTags = true;
         } else {
@@ -73,11 +73,11 @@ public class StringEditor extends EditorSupport
         }
     }
 
-    private void createTagList(Argument tagArray) {
+    private void createTagList(Value tagArray) {
         try {
             PArray arr = PArray.coerce(tagArray);
             tags = new ArrayList<>(arr.getSize());
-            for (Argument val : arr) {
+            for (Value val : arr) {
                 tags.add(val.toString());
             }
             if (emptyIsDefault && tags.contains("")
@@ -86,7 +86,7 @@ public class StringEditor extends EditorSupport
                 tags.add(0, EMPTY_DEFAULT_STRING);
                 rewriteDefaultTag = true;
             }
-        } catch (ArgumentFormatException ex) {
+        } catch (ValueFormatException ex) {
             // no op
         }
     }

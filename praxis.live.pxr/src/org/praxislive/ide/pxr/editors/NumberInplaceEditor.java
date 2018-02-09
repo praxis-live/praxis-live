@@ -45,7 +45,7 @@ import javax.swing.JComponent;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.border.EmptyBorder;
-import org.praxislive.core.Argument;
+import org.praxislive.core.Value;
 import org.praxislive.core.types.PNumber;
 import org.openide.explorer.propertysheet.InplaceEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
@@ -171,7 +171,7 @@ class NumberInplaceEditor extends JComponent implements InplaceEditor {
     @Override
     public void setValue(Object o) {
         try {
-            currentValue = PNumber.coerce((Argument) o);
+            currentValue = PNumber.coerce((Value) o);
         } catch (Exception ex) {
             LOG.log(Level.FINE, "Exception in setValue()", ex);
             if (currentValue == null) {

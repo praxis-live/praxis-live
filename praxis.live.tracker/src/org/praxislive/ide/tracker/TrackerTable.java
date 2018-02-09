@@ -39,7 +39,7 @@ import javax.swing.JTable;
 import javax.swing.KeyStroke;
 import javax.swing.TransferHandler;
 import javax.swing.text.DefaultEditorKit;
-import org.praxislive.core.ArgumentFormatException;
+import org.praxislive.core.ValueFormatException;
 import org.openide.util.Exceptions;
 
 /**
@@ -228,7 +228,7 @@ class TrackerTable extends JTable {
                     }
                     
 
-                } catch (UnsupportedFlavorException | IOException | ArgumentFormatException ex) {
+                } catch (UnsupportedFlavorException | IOException | ValueFormatException ex) {
                     Exceptions.printStackTrace(ex);
                 }
             }

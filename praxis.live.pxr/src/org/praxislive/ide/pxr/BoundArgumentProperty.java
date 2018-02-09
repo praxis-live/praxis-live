@@ -26,10 +26,10 @@ import java.beans.PropertyChangeSupport;
 import java.beans.PropertyEditor;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.praxislive.core.Argument;
+import org.praxislive.core.Value;
 import org.praxislive.core.CallArguments;
 import org.praxislive.core.ControlAddress;
-import org.praxislive.core.info.ControlInfo;
+import org.praxislive.core.ControlInfo;
 import org.praxislive.core.types.PString;
 import org.praxislive.gui.ControlBinding;
 import org.praxislive.ide.core.api.Callback;
@@ -40,7 +40,7 @@ import org.praxislive.ide.properties.PraxisProperty;
  * @author Neil C Smith (http://neilcsmith.net)
  */
 public class BoundArgumentProperty extends
-        PraxisProperty<Argument> {
+        PraxisProperty<Value> {
 
     private final static Logger LOG = Logger.getLogger(BoundArgumentProperty.class.getName());
 
@@ -50,14 +50,14 @@ public class BoundArgumentProperty extends
     private final ControlInfo info;
     private final boolean writable;
     private final boolean isTransient;
-    private final Argument defaultValue;
+    private final Value defaultValue;
 
     private DelegatingArgumentEditor editor;
-    private Argument value;
+    private Value value;
     
 
     BoundArgumentProperty(ControlAddress address, ControlInfo info) {
-        super(Argument.class);
+        super(Value.class);
         if (address == null || info == null) {
             throw new NullPointerException();
         }
@@ -94,9 +94,9 @@ public class BoundArgumentProperty extends
         return rw;
     }
 
-    private Argument getDefault(ControlInfo info) {
-        Argument[] defs = info.getDefaults();
-        Argument def = null;
+    private Value getDefault(ControlInfo info) {
+        Value[] defs = info.getDefaults();
+        Value def = null;
         if (defs != null && defs.length > 0) {
             def = defs[0];
         }
@@ -121,12 +121,12 @@ public class BoundArgumentProperty extends
     }
 
     @Override
-    public Argument getValue() {
+    public Value getValue() {
         return value;
     }
 
     @Override
-    public void setValue(Argument value) {
+    public void setValue(Value value) {
         if (!writable) {
             throw new UnsupportedOperationException("Read only property");
         }
@@ -136,7 +136,7 @@ public class BoundArgumentProperty extends
         setValueImpl(value, true, null);
     }
 
-    public void setValue(Argument value, Callback callback) {
+    public void setValue(Value value, Callback callback) {
         setValueImpl(value, true, callback);
     }
 
@@ -155,7 +155,7 @@ public class BoundArgumentProperty extends
 
     @Override
     public boolean isDefaultValue() {
-        return Argument.equivalent(null, defaultValue, value);
+        return equivalent(defaultValue, value);
     }
 
     @Override
@@ -200,7 +200,7 @@ public class BoundArgumentProperty extends
         PXRHelper.getDefault().unbind(adaptor);
     }
 
-    Class<? extends Argument> getArgumentType() {
+    Class<? extends Value> getArgumentType() {
         return info.getOutputsInfo()[0].getType();
     }
     
@@ -212,7 +212,7 @@ public class BoundArgumentProperty extends
         return info;
     }
 
-    private void setValueImpl(Argument value, boolean send, Callback callback) {
+    private void setValueImpl(Value value, boolean send, Callback callback) {
         if (value == null) {
             throw new NullPointerException();
         }
@@ -220,14 +220,14 @@ public class BoundArgumentProperty extends
             LOG.finest("Delegating to Property Editor");
             PropertyEditor ed = getPropertyEditor();
             ed.setValue(value);
-            value = (Argument) ed.getValue();
+            value = (Value) ed.getValue();
         }
-        Argument oldValue = this.value;
+        Value oldValue = this.value;
         if (send) {
             adaptor.sendValue(value, callback);
         }
         this.value = value;
-        if (!Argument.equivalent(null, oldValue, value)) {
+        if (!equivalent(oldValue, value)) {
             pcs.firePropertyChange(address.getID(), oldValue, value);
         }
     }
@@ -240,6 +240,10 @@ public class BoundArgumentProperty extends
     @Override
     public boolean canWrite() {
         return writable;
+    }
+    
+    private boolean equivalent(Value v1, Value v2) {
+        return v1.equivalent(v2) || v2.equivalent(v1);
     }
 
     @Deprecated
@@ -258,7 +262,7 @@ public class BoundArgumentProperty extends
 
         @Override
         public void update() {
-            Argument arg = null;
+            Value arg = null;
             ControlBinding binding = getBinding();
             if (binding != null) {
                 CallArguments args = binding.getArguments();
@@ -271,7 +275,7 @@ public class BoundArgumentProperty extends
             }
         }
 
-        void sendValue(Argument val, Callback callback) {
+        void sendValue(Value val, Callback callback) {
             send(CallArguments.create(val));
             if (callback != null) {
                 if (this.callback != null) {

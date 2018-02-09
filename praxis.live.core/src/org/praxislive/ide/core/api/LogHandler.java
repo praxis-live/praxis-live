@@ -21,7 +21,7 @@
  */
 package org.praxislive.ide.core.api;
 
-import org.praxislive.core.Argument;
+import org.praxislive.core.Value;
 import org.praxislive.core.ComponentAddress;
 import org.praxislive.logging.LogLevel;
 
@@ -34,7 +34,7 @@ public abstract class LogHandler {
     public abstract void log(ComponentAddress source,
             long time,
             LogLevel level,
-            Argument arg);
+            Value arg);
     
     public LogLevel getLevel() {
         return LogLevel.ERROR;

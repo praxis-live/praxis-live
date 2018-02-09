@@ -22,10 +22,10 @@
 package org.praxislive.ide.pxr.editors;
 
 import java.awt.Component;
-import org.praxislive.core.Argument;
-import org.praxislive.core.ArgumentFormatException;
+import org.praxislive.core.Value;
+import org.praxislive.core.ValueFormatException;
 import org.praxislive.core.ControlAddress;
-import org.praxislive.core.info.ArgumentInfo;
+import org.praxislive.core.ArgumentInfo;
 import org.praxislive.core.types.PString;
 import org.praxislive.ide.properties.EditorSupport;
 import org.praxislive.ide.properties.PraxisProperty;
@@ -59,7 +59,7 @@ public class ControlAddressEditor extends EditorSupport
         } else {
             try {
                 setValue(ControlAddress.valueOf(val));
-            } catch (ArgumentFormatException ex) {
+            } catch (ValueFormatException ex) {
                 throw new IllegalArgumentException(ex);
             }
         }
@@ -67,7 +67,7 @@ public class ControlAddressEditor extends EditorSupport
     
     private ControlAddress getAddress() {
         try {
-            Argument arg = (Argument) getValue();
+            Value arg = (Value) getValue();
             if (arg.isEmpty()) {
                 return null;
             } else {

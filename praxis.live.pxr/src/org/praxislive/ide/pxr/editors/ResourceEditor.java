@@ -31,8 +31,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.praxislive.core.Argument;
-import org.praxislive.core.info.ArgumentInfo;
+import org.praxislive.core.Value;
+import org.praxislive.core.ArgumentInfo;
 import org.praxislive.core.syntax.Token;
 import org.praxislive.core.syntax.Tokenizer;
 import org.praxislive.core.types.*;
@@ -65,12 +65,12 @@ public class ResourceEditor extends EditorSupport
         PMap props = info.getProperties();
         allowEmpty = true;
 //        property.setValue("canEditAsText", Boolean.FALSE);
-//        Argument arg = props.get(ArgumentInfo.KEY_SUGGESTED_VALUES);
+//        Value arg = props.get(ArgumentInfo.KEY_SUGGESTED_VALUES);
 //        if (arg != null) {
 //            try {
 //                PArray arr = PArray.coerce(arg);
 //                suggested = new ArrayList<String>(arr.getSize());
-//                for (Argument val : arr) {
+//                for (Value val : arr) {
 //                    suggested.add(val.toString());
 //                }
 //                 property.setValue("canEditAsText", Boolean.TRUE);
@@ -103,7 +103,7 @@ public class ResourceEditor extends EditorSupport
 
     private URI getURI() {
         try {
-            Argument arg = (Argument) getValue();
+            Value arg = (Value) getValue();
             if (arg.isEmpty()) {
                 return null;
             } else {

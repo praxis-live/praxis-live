@@ -22,13 +22,13 @@
 
 package org.praxislive.ide.pxr;
 
-import org.praxislive.core.Argument;
+import org.praxislive.core.Value;
 
 /**
  *
  * @author Neil C Smith (http://neilcsmith.net)
  */
-public class SubCommandArgument extends Argument {
+public class SubCommandArgument extends Value {
 
     private String commandLine;
 

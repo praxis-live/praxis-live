@@ -26,9 +26,9 @@ import java.awt.Graphics;
 import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.List;
-import org.praxislive.core.Argument;
-import org.praxislive.core.ArgumentFormatException;
-import org.praxislive.core.info.ArgumentInfo;
+import org.praxislive.core.Value;
+import org.praxislive.core.ValueFormatException;
+import org.praxislive.core.ArgumentInfo;
 import org.praxislive.core.types.PArray;
 import org.praxislive.core.types.PMap;
 import org.praxislive.core.types.PNumber;
@@ -83,15 +83,15 @@ public class NumberEditor extends EditorSupport implements
 
     private void initInt() {
         PMap props = info.getProperties();
-        Argument arg = props.get(ArgumentInfo.KEY_SUGGESTED_VALUES);
+        Value arg = props.get(ArgumentInfo.KEY_SUGGESTED_VALUES);
         if (arg != null) {
             try {
                 PArray arr = PArray.coerce(arg);
                 suggested = new ArrayList<>(arr.getSize());
-                for (Argument val : arr) {
+                for (Value val : arr) {
                     suggested.add(val.toString());
                 }
-            } catch (ArgumentFormatException ex) {
+            } catch (ValueFormatException ex) {
                 // no op
             }
         }
@@ -115,7 +115,7 @@ public class NumberEditor extends EditorSupport implements
     public void setAsText(String text) throws IllegalArgumentException {
         try {
             setValue(PNumber.valueOf(text));
-        } catch (ArgumentFormatException ex) {
+        } catch (ValueFormatException ex) {
             throw new IllegalArgumentException(ex);
         }
     }
@@ -123,7 +123,7 @@ public class NumberEditor extends EditorSupport implements
     @Override
     public String getPraxisInitializationString() {
         try {
-            return PNumber.coerce((Argument) getValue()).toString();
+            return PNumber.coerce((Value) getValue()).toString();
         } catch (Exception ex) {
             return null;
         }
@@ -154,7 +154,7 @@ public class NumberEditor extends EditorSupport implements
     public void paintValue(Graphics g, Rectangle box) {
         double value;
         try {
-            value = PNumber.coerce((Argument) getValue()).value();
+            value = PNumber.coerce((Value) getValue()).value();
         } catch (Exception ex) {
             value = 0;
         }

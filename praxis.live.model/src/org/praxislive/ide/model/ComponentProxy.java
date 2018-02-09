@@ -24,7 +24,7 @@ package org.praxislive.ide.model;
 import java.util.Optional;
 import org.praxislive.core.ComponentAddress;
 import org.praxislive.core.ComponentType;
-import org.praxislive.core.info.ComponentInfo;
+import org.praxislive.core.ComponentInfo;
 
 /**
  *

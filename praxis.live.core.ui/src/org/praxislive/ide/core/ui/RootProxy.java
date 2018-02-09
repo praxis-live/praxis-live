@@ -27,12 +27,12 @@ import java.beans.PropertyChangeListener;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import org.praxislive.core.ArgumentFormatException;
+import org.praxislive.core.ValueFormatException;
 import org.praxislive.core.CallArguments;
 import org.praxislive.core.ComponentAddress;
 import org.praxislive.core.ControlAddress;
 import org.praxislive.core.InterfaceDefinition;
-import org.praxislive.core.info.ComponentInfo;
+import org.praxislive.core.ComponentInfo;
 import org.praxislive.core.interfaces.ComponentInterface;
 import org.praxislive.core.interfaces.RootManagerService;
 import org.praxislive.core.interfaces.ServiceUnavailableException;
@@ -93,7 +93,7 @@ public class RootProxy {
                 LOG.info("Found Startable");
                 return;
             }
-        } catch (ArgumentFormatException ex) {
+        } catch (ValueFormatException ex) {
             // fall through
         }
         setStartable(false);
@@ -104,7 +104,7 @@ public class RootProxy {
         try {
             PBoolean running = PBoolean.coerce(runningAdaptor.getValue());
             this.running = running.value();
-        } catch (ArgumentFormatException ex) {
+        } catch (ValueFormatException ex) {
             running = false;
         }
         refreshNode();

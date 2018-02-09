@@ -22,7 +22,7 @@
 
 package org.praxislive.ide.pxr.editors;
 
-import org.praxislive.core.info.ArgumentInfo;
+import org.praxislive.core.ArgumentInfo;
 import org.praxislive.ide.properties.PraxisProperty;
 
 /**
@@ -37,7 +37,7 @@ public class ArgumentEditor extends StringEditor {
 
     @Override
     public String getDisplayName() {
-        return "Argument Editor";
+        return "Value Editor";
     }
 
 

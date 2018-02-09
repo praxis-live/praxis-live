@@ -21,8 +21,8 @@
  */
 package org.praxislive.ide.pxr.editors;
 
-import org.praxislive.core.Argument;
-import org.praxislive.core.ArgumentFormatException;
+import org.praxislive.core.Value;
+import org.praxislive.core.ValueFormatException;
 import org.praxislive.core.types.PBoolean;
 import org.praxislive.ide.properties.EditorSupport;
 
@@ -36,7 +36,7 @@ public class BooleanEditor extends EditorSupport {
     @Override
     public void setValue(Object value) {
         try {
-            Argument val = (Argument) value;
+            Value val = (Value) value;
             super.setValue(PBoolean.coerce(val));
         } catch (Exception ex) {
             throw new IllegalArgumentException(ex);
@@ -47,7 +47,7 @@ public class BooleanEditor extends EditorSupport {
     public void setAsText(String text) throws IllegalArgumentException {
         try {
             setValue(PBoolean.valueOf(text));
-        } catch (ArgumentFormatException ex) {
+        } catch (ValueFormatException ex) {
             throw new IllegalArgumentException(ex);
         }
     }
@@ -60,7 +60,7 @@ public class BooleanEditor extends EditorSupport {
     @Override
     public String getPraxisInitializationString() {
         try {
-            return PBoolean.coerce((Argument) getValue()).toString();
+            return PBoolean.coerce((Value) getValue()).toString();
         } catch (Exception ex) {
             return null;
         }
