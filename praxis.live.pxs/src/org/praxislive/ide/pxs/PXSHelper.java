@@ -6,8 +6,8 @@ package org.praxislive.ide.pxs;
 
 import org.praxislive.core.CallArguments;
 import org.praxislive.core.Component;
-import org.praxislive.core.interfaces.ScriptService;
-import org.praxislive.core.interfaces.ServiceUnavailableException;
+import org.praxislive.core.services.ScriptService;
+import org.praxislive.core.services.ServiceUnavailableException;
 import org.praxislive.core.types.PString;
 import org.praxislive.ide.core.api.ExtensionProvider;
 import org.praxislive.ide.core.api.HubUnavailableException;

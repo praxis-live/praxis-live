@@ -29,7 +29,7 @@ import org.praxislive.core.ControlAddress;
 import org.praxislive.core.InterfaceDefinition;
 import org.praxislive.core.PacketRouter;
 import org.praxislive.core.ControlInfo;
-import org.praxislive.core.interfaces.ServiceUnavailableException;
+import org.praxislive.core.services.ServiceUnavailableException;
 import org.praxislive.impl.AbstractControl;
 import org.praxislive.ide.core.api.Callback;
 import org.praxislive.ide.core.api.HubUnavailableException;

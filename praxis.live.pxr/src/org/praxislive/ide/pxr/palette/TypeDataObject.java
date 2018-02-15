@@ -25,7 +25,7 @@ import java.awt.Image;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.praxislive.core.ComponentFactory;
+import org.praxislive.core.services.ComponentFactory;
 import org.praxislive.core.ComponentType;
 import org.praxislive.ide.components.api.Components;
 import org.openide.filesystems.FileObject;

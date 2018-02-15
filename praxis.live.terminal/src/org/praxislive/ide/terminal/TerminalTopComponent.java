@@ -6,7 +6,7 @@ package org.praxislive.ide.terminal;
 
 import java.util.logging.Logger;
 import org.praxislive.core.CallArguments;
-import org.praxislive.core.interfaces.ScriptService;
+import org.praxislive.core.services.ScriptService;
 import org.praxislive.core.types.PString;
 import org.praxislive.ide.core.api.Callback;
 import org.praxislive.terminal.Terminal;

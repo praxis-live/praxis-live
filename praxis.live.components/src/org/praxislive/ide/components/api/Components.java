@@ -24,7 +24,7 @@ package org.praxislive.ide.components.api;
 import java.awt.Image;
 import javax.swing.Action;
 import org.praxislive.core.Component;
-import org.praxislive.core.ComponentFactory.MetaData;
+import org.praxislive.core.services.ComponentFactory.MetaData;
 import org.praxislive.core.ComponentType;
 import org.praxislive.core.Root;
 import org.praxislive.ide.components.CategoryChildren;

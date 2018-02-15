@@ -25,7 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeMap;
 import org.praxislive.core.Component;
-import org.praxislive.core.ComponentFactory.MetaData;
+import org.praxislive.core.services.ComponentFactory.MetaData;
 import org.praxislive.core.ComponentType;
 import org.praxislive.core.Root;
 import org.openide.nodes.Children;

@@ -21,7 +21,7 @@
  */
 package org.praxislive.ide.core;
 
-import org.praxislive.core.ComponentFactory;
+import org.praxislive.core.services.ComponentFactory;
 
 /**
  *

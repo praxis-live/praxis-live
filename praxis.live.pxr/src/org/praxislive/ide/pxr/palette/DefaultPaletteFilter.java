@@ -22,7 +22,7 @@
 
 package org.praxislive.ide.pxr.palette;
 
-import org.praxislive.core.ComponentFactory;
+import org.praxislive.core.services.ComponentFactory;
 import org.praxislive.ide.components.api.Components;
 import org.praxislive.meta.TypeRewriter;
 import org.netbeans.spi.palette.PaletteFilter;

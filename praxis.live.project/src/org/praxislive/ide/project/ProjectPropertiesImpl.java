@@ -32,7 +32,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.praxislive.core.CallArguments;
-import org.praxislive.core.interfaces.ServiceUnavailableException;
+import org.praxislive.core.services.ServiceUnavailableException;
 import org.praxislive.ide.core.api.Callback;
 import org.praxislive.ide.core.api.HubUnavailableException;
 import org.praxislive.ide.project.api.ExecutionLevel;

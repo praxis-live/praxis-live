@@ -21,7 +21,7 @@
  */
 package org.praxislive.ide.audio;
 
-import org.praxislive.core.ComponentFactory.MetaData;
+import org.praxislive.core.services.ComponentFactory.MetaData;
 import org.praxislive.core.ComponentType;
 import org.praxislive.ide.components.api.MetaDataDecorator;
 import org.praxislive.ide.components.api.MetaDataRewriter;

@@ -22,7 +22,7 @@
 package org.praxislive.ide.components.api;
 
 import java.awt.Image;
-import org.praxislive.core.ComponentFactory;
+import org.praxislive.core.services.ComponentFactory;
 import org.praxislive.core.ComponentType;
 import org.praxislive.core.Lookup;
 import org.praxislive.impl.InstanceLookup;

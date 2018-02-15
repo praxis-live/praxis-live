@@ -28,7 +28,7 @@ import org.praxislive.core.ComponentType;
 import org.praxislive.core.ControlAddress;
 import org.praxislive.core.interfaces.ComponentInterface;
 import org.praxislive.core.interfaces.ContainerInterface;
-import org.praxislive.core.interfaces.RootManagerService;
+import org.praxislive.core.services.RootManagerService;
 import org.praxislive.core.types.PString;
 import org.praxislive.ide.core.api.Callback;
 import org.praxislive.ide.core.api.ExtensionProvider;

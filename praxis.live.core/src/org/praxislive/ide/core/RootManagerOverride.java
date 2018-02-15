@@ -39,18 +39,17 @@ import org.praxislive.core.ComponentAddress;
 import org.praxislive.core.ControlAddress;
 import org.praxislive.core.PacketRouter;
 import org.praxislive.core.ControlInfo;
-import org.praxislive.core.interfaces.RootManagerService;
-import org.praxislive.core.interfaces.ServiceManager;
-import org.praxislive.core.interfaces.ServiceUnavailableException;
-import org.praxislive.core.interfaces.SystemManagerService;
+import org.praxislive.core.services.RootManagerService;
+import org.praxislive.core.services.ServiceUnavailableException;
+import org.praxislive.core.services.SystemManagerService;
 import org.praxislive.impl.AbstractAsyncControl;
 import org.praxislive.impl.AbstractControl;
 import org.praxislive.impl.AbstractSwingRoot;
-import org.praxislive.impl.SimpleControl;
 import org.praxislive.ide.core.api.Task;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.Exceptions;
+import org.praxislive.core.services.Services;
 
 /**
  *
@@ -67,9 +66,9 @@ class RootManagerOverride extends AbstractSwingRoot {
         registerControl(RootManagerService.ADD_ROOT, new AddRootControl());
         registerControl(RootManagerService.REMOVE_ROOT, new RemoveRootControl());
         registerControl(RootManagerService.ROOTS, new RootsControl());
-        registerInterface(RootManagerService.INSTANCE);
+        registerInterface(RootManagerService.class);
         registerControl(SystemManagerService.SYSTEM_EXIT, new ExitControl());
-        registerInterface(SystemManagerService.INSTANCE);
+        registerInterface(SystemManagerService.class);
         knownRoots = new LinkedHashSet<String>();
     }
 
@@ -79,11 +78,12 @@ class RootManagerOverride extends AbstractSwingRoot {
 
     private ComponentAddress getDefaultServiceAddress() throws ServiceUnavailableException {
         if (defaultService == null) {
-            ServiceManager manager = getLookup().get(ServiceManager.class);
+            Services manager = getLookup().get(Services.class);
             if (manager == null) {
                 throw new ServiceUnavailableException();
             }
-            ComponentAddress[] services = manager.findAllServices(RootManagerService.INSTANCE);
+            ComponentAddress[] services = manager.locateAll(RootManagerService.class)
+                    .toArray(new ComponentAddress[0]);
             defaultService = services[services.length - 1];
         }
         return defaultService;

@@ -26,7 +26,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import org.praxislive.core.Component;
-import org.praxislive.core.ComponentFactory;
+import org.praxislive.core.services.ComponentFactory;
 import org.praxislive.ide.core.api.ExtensionProvider;
 import org.praxislive.ide.core.api.LogHandler;
 import org.praxislive.ide.core.api.RootLifecycleHandler;

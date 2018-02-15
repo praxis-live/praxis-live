@@ -25,7 +25,7 @@ package org.praxislive.ide.components;
 import java.util.Set;
 import java.util.TreeMap;
 import org.praxislive.core.Component;
-import org.praxislive.core.ComponentFactory.MetaData;
+import org.praxislive.core.services.ComponentFactory.MetaData;
 import org.praxislive.core.ComponentType;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;

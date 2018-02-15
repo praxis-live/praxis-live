@@ -27,7 +27,7 @@ import java.util.Comparator;
 import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.praxislive.core.ComponentFactory;
+import org.praxislive.core.services.ComponentFactory;
 import org.praxislive.core.ComponentType;
 import org.praxislive.ide.components.api.Components;
 import org.praxislive.ide.core.api.DynamicFileSystem;

@@ -22,8 +22,8 @@
 
 package org.praxislive.ide.pxr.gui;
 
-import org.praxislive.core.ComponentFactory;
-import org.praxislive.core.ComponentFactoryProvider;
+import org.praxislive.core.services.ComponentFactory;
+import org.praxislive.core.services.ComponentFactoryProvider;
 import org.praxislive.core.ComponentType;
 import org.praxislive.impl.AbstractComponentFactory;
 import org.openide.util.lookup.ServiceProvider;

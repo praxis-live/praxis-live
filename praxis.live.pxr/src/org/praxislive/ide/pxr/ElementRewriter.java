@@ -25,7 +25,7 @@ package org.praxislive.ide.pxr;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.praxislive.core.ComponentFactory;
+import org.praxislive.core.services.ComponentFactory;
 import org.praxislive.core.ComponentType;
 import org.praxislive.ide.components.api.Components;
 import org.praxislive.meta.TypeRewriter;

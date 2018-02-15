@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.praxislive.core.ComponentFactory.MetaData;
+import org.praxislive.core.services.ComponentFactory.MetaData;
 import org.praxislive.core.ComponentType;
 import org.praxislive.core.Root;
 import org.praxislive.ide.components.api.Components;

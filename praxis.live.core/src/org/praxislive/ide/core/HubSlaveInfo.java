@@ -29,7 +29,7 @@ import java.util.Objects;
 import java.util.regex.Pattern;
 import org.praxislive.code.CodeCompilerService;
 import org.praxislive.core.ComponentType;
-import org.praxislive.core.interfaces.Service;
+import org.praxislive.core.services.Service;
 import org.praxislive.hub.net.SlaveInfo;
 import org.praxislive.logging.LogService;
 

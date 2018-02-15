@@ -22,7 +22,7 @@
 
 package org.praxislive.ide.components.api;
 
-import org.praxislive.core.ComponentFactory;
+import org.praxislive.core.services.ComponentFactory;
 import org.praxislive.core.ComponentType;
 
 /**
