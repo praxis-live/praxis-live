@@ -12,6 +12,12 @@ See [www.praxislive.org](http://www.praxislive.org) for more information and dow
 
 For general support or to discuss usage and development of Praxis LIVE, please sign up to the [mailing list](http://groups.google.com/d/forum/praxis-live). Please report bugs or make specfic feature requests on the [issue queue](https://github.com/praxis-live/support/issues) if possible.
 
+## License
+
+Praxis LIVE v3.x is released under the terms of the GPLv3 - see [license](LICENSE.md) for more details.
+
+Praxis CORE v3.x (runtime) is also released under the terms of the GPLv3. The currently in development v4.x will see Praxis CORE relicensed under LGPL.
+
 ## Contribute
 
 Non-code contributions are always welcomed - make example projects, help with documentation, assist new users, talk about Praxis LIVE, or just make something great with it!
@@ -22,7 +28,7 @@ You can also get involved with building the main project itself ...
 
 ## Building the source code
 
-To build Praxis LIVE you'll need to clone the two repositories that make up the overall project - the core runtime and the editor.
+To build Praxis LIVE you'll need to clone the two repositories that make up the overall project - the Praxis CORE runtime and the Praxis LIVE editor.
 
 ```
 git clone https://github.com/praxis-live/praxis.git
