@@ -36,7 +36,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.praxislive.compiler.ClassBodyContext;
+import org.praxislive.code.ClassBodyContext;
 import org.praxislive.core.ControlAddress;
 import org.praxislive.core.ArgumentInfo;
 import org.praxislive.ide.project.api.PraxisProject;
