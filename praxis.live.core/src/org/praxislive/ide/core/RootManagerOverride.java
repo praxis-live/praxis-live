@@ -78,12 +78,10 @@ class RootManagerOverride extends AbstractSwingRoot {
 
     private ComponentAddress getDefaultServiceAddress() throws ServiceUnavailableException {
         if (defaultService == null) {
-            Services manager = getLookup().get(Services.class);
-            if (manager == null) {
-                throw new ServiceUnavailableException();
-            }
-            ComponentAddress[] services = manager.locateAll(RootManagerService.class)
-                    .toArray(new ComponentAddress[0]);
+            ComponentAddress[] services = getLookup().find(Services.class)
+                    .map(s -> s.locateAll(RootManagerService.class).toArray(ComponentAddress[]::new))
+                    .orElseThrow(ServiceUnavailableException::new);
+                    
             defaultService = services[services.length - 1];
         }
         return defaultService;
@@ -201,8 +199,8 @@ class RootManagerOverride extends AbstractSwingRoot {
                     LOG.log(Level.FINE, "No tasks found for root removal /{0}", rootID);
                     Object ret = DialogDisplayer.getDefault().notify(
                             new NotifyDescriptor.Confirmation("Remove root " + call.getArgs().get(0).toString(),
-                            "Remove Root?",
-                            NotifyDescriptor.YES_NO_OPTION));
+                                    "Remove Root?",
+                                    NotifyDescriptor.YES_NO_OPTION));
                     if (ret == NotifyDescriptor.YES_OPTION) {
                         forwardCall(rootID, call, router);
                     } else {
@@ -236,7 +234,6 @@ class RootManagerOverride extends AbstractSwingRoot {
                 LOG.log(Level.FINE, "Pending call found for root removal /{0}", rootID);
                 calls.add(call);
             }
-
 
         }
 
@@ -309,7 +306,6 @@ class RootManagerOverride extends AbstractSwingRoot {
 
     private class ExitControl extends AbstractControl {
 
-
         @Override
         public void call(Call call, PacketRouter router) throws Exception {
             if (call.getType() == Call.Type.INVOKE || call.getType() == Call.Type.INVOKE_QUIET) {
@@ -321,7 +317,6 @@ class RootManagerOverride extends AbstractSwingRoot {
             } else {
                 // no op?
             }
-
 
         }
 
