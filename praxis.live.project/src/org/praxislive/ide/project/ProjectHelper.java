@@ -42,7 +42,7 @@ public class ProjectHelper extends AbstractHelperComponent {
 
 
     public void executeScript(String script, Callback callback) throws HubUnavailableException, ServiceUnavailableException {
-        send(ScriptService.INSTANCE, ScriptService.EVAL, CallArguments.create(PString.valueOf(script)), callback);
+        send(ScriptService.class, ScriptService.EVAL, CallArguments.create(PString.valueOf(script)), callback);
     }
 
     public static ProjectHelper getDefault() {

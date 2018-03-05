@@ -56,8 +56,8 @@ import org.praxislive.core.CallArguments;
 import org.praxislive.core.ComponentType;
 import org.praxislive.core.ComponentInfo;
 import org.praxislive.core.PortInfo;
-import org.praxislive.core.interfaces.ComponentInterface;
-import org.praxislive.core.interfaces.ContainerInterface;
+import org.praxislive.core.protocols.ComponentProtocol;
+import org.praxislive.core.protocols.ContainerProtocol;
 import org.praxislive.ide.core.api.Callback;
 import org.praxislive.ide.core.api.Syncable;
 import org.praxislive.ide.graph.Alignment;
@@ -806,9 +806,9 @@ public class GraphEditor extends RootEditor {
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
             if (sync) {
-                if (ContainerInterface.CHILDREN.equals(evt.getPropertyName())) {
+                if (ContainerProtocol.CHILDREN.equals(evt.getPropertyName())) {
                     syncChildren();
-                } else if (ContainerInterface.CONNECTIONS.equals(evt.getPropertyName())) {
+                } else if (ContainerProtocol.CONNECTIONS.equals(evt.getPropertyName())) {
                     syncConnections();
                 }
             }
@@ -820,7 +820,7 @@ public class GraphEditor extends RootEditor {
 
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
-            if (ComponentInterface.INFO.equals(evt.getPropertyName())) {
+            if (ComponentProtocol.INFO.equals(evt.getPropertyName())) {
                 Object src = evt.getSource();
                 assert src instanceof ComponentProxy;
                 if (src instanceof ComponentProxy) {

@@ -53,7 +53,7 @@ class Logging extends AbstractSwingRoot {
             this.handlers = handlers.toArray(new LogHandler[handlers.size()]);
         }
         registerControl(LogService.LOG, new LogControl());
-        registerInterface(LogService.class);
+        registerProtocol(LogService.class);
     }
 
     @Override

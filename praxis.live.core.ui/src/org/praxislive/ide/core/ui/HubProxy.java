@@ -116,7 +116,7 @@ public class HubProxy {
         try {
             CoreHelper hlp = CoreHelper.getDefault();
             hlp.bind(
-                    ControlAddress.create(hlp.findService(RootManagerService.INSTANCE),
+                    ControlAddress.create(hlp.findService(RootManagerService.class),
                     RootManagerService.ROOTS), rootsAdaptor);
         } catch (ServiceUnavailableException ex) {
         }

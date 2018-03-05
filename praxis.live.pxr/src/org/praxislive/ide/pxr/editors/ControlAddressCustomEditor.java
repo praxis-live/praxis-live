@@ -43,8 +43,8 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.tree.TreeSelectionModel;
 import org.praxislive.core.ComponentAddress;
 import org.praxislive.core.ControlAddress;
-import org.praxislive.core.interfaces.ComponentInterface;
-import org.praxislive.core.interfaces.ContainerInterface;
+import org.praxislive.core.protocols.ComponentProtocol;
+import org.praxislive.core.protocols.ContainerProtocol;
 import org.praxislive.core.types.PString;
 import org.praxislive.ide.model.ComponentProxy;
 import org.praxislive.ide.model.RootProxy;
@@ -70,13 +70,13 @@ class ControlAddressCustomEditor extends javax.swing.JPanel
 
     private final static Set<String> SYS_CTRLS = new HashSet<String>();
     static {
-        SYS_CTRLS.add(ComponentInterface.INFO);
-        SYS_CTRLS.add(ContainerInterface.ADD_CHILD);
-        SYS_CTRLS.add(ContainerInterface.CHILDREN);
-        SYS_CTRLS.add(ContainerInterface.CONNECT);
-        SYS_CTRLS.add(ContainerInterface.CONNECTIONS);
-        SYS_CTRLS.add(ContainerInterface.DISCONNECT);
-        SYS_CTRLS.add(ContainerInterface.REMOVE_CHILD);
+        SYS_CTRLS.add(ComponentProtocol.INFO);
+        SYS_CTRLS.add(ContainerProtocol.ADD_CHILD);
+        SYS_CTRLS.add(ContainerProtocol.CHILDREN);
+        SYS_CTRLS.add(ContainerProtocol.CONNECT);
+        SYS_CTRLS.add(ContainerProtocol.CONNECTIONS);
+        SYS_CTRLS.add(ContainerProtocol.DISCONNECT);
+        SYS_CTRLS.add(ContainerProtocol.REMOVE_CHILD);
     }
     
     private static final Logger LOG = Logger.getLogger(ControlAddressCustomEditor.class.getName());

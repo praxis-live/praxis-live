@@ -66,9 +66,9 @@ class RootManagerOverride extends AbstractSwingRoot {
         registerControl(RootManagerService.ADD_ROOT, new AddRootControl());
         registerControl(RootManagerService.REMOVE_ROOT, new RemoveRootControl());
         registerControl(RootManagerService.ROOTS, new RootsControl());
-        registerInterface(RootManagerService.class);
+        registerProtocol(RootManagerService.class);
         registerControl(SystemManagerService.SYSTEM_EXIT, new ExitControl());
-        registerInterface(SystemManagerService.class);
+        registerProtocol(SystemManagerService.class);
         knownRoots = new LinkedHashSet<String>();
     }
 

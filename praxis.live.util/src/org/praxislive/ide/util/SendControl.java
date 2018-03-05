@@ -26,9 +26,9 @@ import java.util.Map;
 import org.praxislive.core.Call;
 import org.praxislive.core.CallArguments;
 import org.praxislive.core.ControlAddress;
-import org.praxislive.core.InterfaceDefinition;
 import org.praxislive.core.PacketRouter;
 import org.praxislive.core.ControlInfo;
+import org.praxislive.core.services.Service;
 import org.praxislive.core.services.ServiceUnavailableException;
 import org.praxislive.impl.AbstractControl;
 import org.praxislive.ide.core.api.Callback;
@@ -63,7 +63,7 @@ public class SendControl extends AbstractControl {
         }
     }
 
-    public void send(InterfaceDefinition service, String control,
+    public void send(Class<? extends Service> service, String control,
             CallArguments args, Callback callback)
             throws HubUnavailableException, ServiceUnavailableException {
         ControlAddress to = ControlAddress.create(findService(service), control);

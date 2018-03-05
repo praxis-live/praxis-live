@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2014 Neil C Smith.
+ * Copyright 2018 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -26,8 +26,8 @@ import org.praxislive.core.Component;
 import org.praxislive.core.ComponentAddress;
 import org.praxislive.core.ComponentType;
 import org.praxislive.core.ControlAddress;
-import org.praxislive.core.interfaces.ComponentInterface;
-import org.praxislive.core.interfaces.ContainerInterface;
+import org.praxislive.core.protocols.ComponentProtocol;
+import org.praxislive.core.protocols.ContainerProtocol;
 import org.praxislive.core.services.RootManagerService;
 import org.praxislive.core.types.PString;
 import org.praxislive.ide.core.api.Callback;
@@ -55,12 +55,12 @@ public class PXRHelper extends AbstractHelperComponent {
         try {
             if (address.getDepth() == 1) {
                 String id = address.getRootID();
-                send(RootManagerService.INSTANCE, RootManagerService.ADD_ROOT,
+                send(RootManagerService.class, RootManagerService.ADD_ROOT,
                         CallArguments.create(PString.valueOf(id), type),
                         new GetInfoCallback(address, callback));
             } else {
                 String id = address.getComponentID(address.getDepth() - 1);
-                send(ControlAddress.create(address.getParentAddress(), ContainerInterface.ADD_CHILD),
+                send(ControlAddress.create(address.getParentAddress(), ContainerProtocol.ADD_CHILD),
                         CallArguments.create(PString.valueOf(id), type),
                         new GetInfoCallback(address, callback));
             }
@@ -73,12 +73,12 @@ public class PXRHelper extends AbstractHelperComponent {
         try {
             if (address.getDepth() == 1) {
                 String id = address.getRootID();
-                send(RootManagerService.INSTANCE, RootManagerService.REMOVE_ROOT,
+                send(RootManagerService.class, RootManagerService.REMOVE_ROOT,
                         CallArguments.create(PString.valueOf(id)),
                         callback);
             } else {
                 String id = address.getComponentID(address.getDepth() - 1);
-                send(ControlAddress.create(address.getParentAddress(), ContainerInterface.REMOVE_CHILD),
+                send(ControlAddress.create(address.getParentAddress(), ContainerProtocol.REMOVE_CHILD),
                         CallArguments.create(PString.valueOf(id)),
                         callback);
             }
@@ -107,7 +107,7 @@ public class PXRHelper extends AbstractHelperComponent {
             PString p2ID = PString.valueOf(connection.getPort2());
 
             send(ControlAddress.create(container,
-                    connect ? ContainerInterface.CONNECT : ContainerInterface.DISCONNECT),
+                    connect ? ContainerProtocol.CONNECT : ContainerProtocol.DISCONNECT),
                     CallArguments.create(c1ID, p1ID, c2ID, p2ID),
                     callback);
         } catch (Exception ex) {
@@ -128,7 +128,7 @@ public class PXRHelper extends AbstractHelperComponent {
 
         @Override
         public void onReturn(CallArguments args) {
-            ControlAddress to = ControlAddress.create(address, ComponentInterface.INFO);
+            ControlAddress to = ControlAddress.create(address, ComponentProtocol.INFO);
             try {
                 INSTANCE.send(to, CallArguments.EMPTY, infoCallback);
             } catch (HubUnavailableException ex) {

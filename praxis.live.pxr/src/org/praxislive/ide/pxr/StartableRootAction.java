@@ -32,8 +32,7 @@ import javax.swing.JToggleButton;
 import org.praxislive.core.Value;
 import org.praxislive.core.CallArguments;
 import org.praxislive.core.ControlAddress;
-import org.praxislive.core.InterfaceDefinition;
-import org.praxislive.core.interfaces.StartableInterface;
+import org.praxislive.core.protocols.StartableProtocol;
 import org.praxislive.core.types.PBoolean;
 import org.praxislive.gui.ControlBinding.SyncRate;
 import org.praxislive.ide.core.api.HubUnavailableException;
@@ -82,9 +81,9 @@ class StartableRootAction extends AbstractAction
         try {
             ControlAddress to;
             if (getValue(SELECTED_KEY) == Boolean.TRUE) {
-                to = ControlAddress.create(root.getAddress(), StartableInterface.START);
+                to = ControlAddress.create(root.getAddress(), StartableProtocol.START);
             } else {
-                to = ControlAddress.create(root.getAddress(), StartableInterface.STOP);
+                to = ControlAddress.create(root.getAddress(), StartableProtocol.STOP);
             }
             PXRHelper.getDefault().send(to, CallArguments.EMPTY, null);
         } catch (HubUnavailableException ex) {
@@ -136,7 +135,7 @@ class StartableRootAction extends AbstractAction
         }
         setEnabled(true);
         runningAdaptor = new ArgumentPropertyAdaptor.ReadOnly(this, 
-                StartableInterface.IS_RUNNING, false, SyncRate.Low);
+                StartableProtocol.IS_RUNNING, false, SyncRate.Low);
         runningAdaptor.addPropertyChangeListener(new PropertyChangeListener() {
 
             @Override
@@ -149,15 +148,14 @@ class StartableRootAction extends AbstractAction
                 }             
             }
         });
-        PXRHelper.getDefault().bind(
-                ControlAddress.create(root.getAddress(), StartableInterface.IS_RUNNING),
+        PXRHelper.getDefault().bind(ControlAddress.create(root.getAddress(), StartableProtocol.IS_RUNNING),
                 runningAdaptor);
     }
     
 
     
     private boolean isStartable(PXRRootProxy root) {
-        return root.getInfo().hasInterface(StartableInterface.class);
+        return root.getInfo().hasProtocol(StartableProtocol.class);
     }
     
 }

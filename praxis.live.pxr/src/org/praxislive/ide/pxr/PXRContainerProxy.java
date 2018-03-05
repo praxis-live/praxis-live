@@ -39,9 +39,8 @@ import org.praxislive.core.CallArguments;
 import org.praxislive.core.ComponentAddress;
 import org.praxislive.core.ComponentType;
 import org.praxislive.core.ControlAddress;
-import org.praxislive.core.InterfaceDefinition;
 import org.praxislive.core.ComponentInfo;
-import org.praxislive.core.interfaces.ContainerInterface;
+import org.praxislive.core.protocols.ContainerProtocol;
 import org.praxislive.core.types.PArray;
 import org.praxislive.gui.ControlBinding;
 import org.praxislive.ide.core.api.Callback;
@@ -117,7 +116,7 @@ public class PXRContainerProxy extends PXRComponentProxy implements ContainerPro
                     if (node != null) {
                         node.refreshChildren();
                     }
-                    firePropertyChange(ContainerInterface.CHILDREN, null, null);
+                    firePropertyChange(ContainerProtocol.CHILDREN, null, null);
                     if (callback != null) {
                         callback.onReturn(args);
                     }
@@ -138,7 +137,7 @@ public class PXRContainerProxy extends PXRComponentProxy implements ContainerPro
     }
 
     private boolean isContainer(ComponentInfo info) {
-        return info.hasInterface(ContainerInterface.class);
+        return info.hasProtocol(ContainerProtocol.class);
     }
 
     @Override
@@ -163,12 +162,12 @@ public class PXRContainerProxy extends PXRComponentProxy implements ContainerPro
                     }
                 }
                 if (conChanged) {
-                    firePropertyChange(ContainerInterface.CONNECTIONS, null, null);
+                    firePropertyChange(ContainerProtocol.CONNECTIONS, null, null);
                 }
                 if (node != null) {
                     node.refreshChildren();
                 }
-                firePropertyChange(ContainerInterface.CHILDREN, null, null);
+                firePropertyChange(ContainerProtocol.CHILDREN, null, null);
                 if (callback != null) {
                     callback.onReturn(args);
                 }
@@ -191,7 +190,7 @@ public class PXRContainerProxy extends PXRComponentProxy implements ContainerPro
             @Override
             public void onReturn(CallArguments args) {
                 connections.add(connection);
-                firePropertyChange(ContainerInterface.CONNECTIONS, null, null);
+                firePropertyChange(ContainerProtocol.CONNECTIONS, null, null);
                 if (callback != null) {
                     callback.onReturn(args);
                 }
@@ -213,7 +212,7 @@ public class PXRContainerProxy extends PXRComponentProxy implements ContainerPro
             @Override
             public void onReturn(CallArguments args) {
                 connections.remove(connection);
-                firePropertyChange(ContainerInterface.CONNECTIONS, null, null);
+                firePropertyChange(ContainerProtocol.CONNECTIONS, null, null);
                 if (callback != null) {
                     callback.onReturn(args);
                 }
@@ -263,8 +262,8 @@ public class PXRContainerProxy extends PXRComponentProxy implements ContainerPro
     @Override
     protected boolean isProxiedProperty(String id) {
         return super.isProxiedProperty(id)
-                || ContainerInterface.CHILDREN.equals(id)
-                || ContainerInterface.CONNECTIONS.equals(id);
+                || ContainerProtocol.CHILDREN.equals(id)
+                || ContainerProtocol.CONNECTIONS.equals(id);
 
     }
 
@@ -326,10 +325,10 @@ public class PXRContainerProxy extends PXRComponentProxy implements ContainerPro
 
     private void initConAdaptor() {
         conAdaptor = new ArgumentPropertyAdaptor.ReadOnly(this,
-                ContainerInterface.CONNECTIONS, true, ControlBinding.SyncRate.None);
+                ContainerProtocol.CONNECTIONS, true, ControlBinding.SyncRate.None);
         conAdaptor.addPropertyChangeListener(new ConnectionsListener());
         PXRHelper.getDefault().bind(ControlAddress.create(getAddress(),
-                ContainerInterface.CONNECTIONS), conAdaptor);
+                ContainerProtocol.CONNECTIONS), conAdaptor);
     }
 
     @Override
@@ -347,7 +346,7 @@ public class PXRContainerProxy extends PXRComponentProxy implements ContainerPro
 
         private ChildrenProperty() {
             super(String[].class);
-            setName(ContainerInterface.CHILDREN);
+            setName(ContainerProtocol.CHILDREN);
         }
 
         @Override
@@ -366,7 +365,7 @@ public class PXRContainerProxy extends PXRComponentProxy implements ContainerPro
 
         private ConnectionsProperty() {
             super(Connection[].class);
-            setName(ContainerInterface.CONNECTIONS);
+            setName(ContainerProtocol.CONNECTIONS);
         }
 
         @Override
@@ -393,7 +392,7 @@ public class PXRContainerProxy extends PXRComponentProxy implements ContainerPro
                     LOG.fine("Connections change reported - updating.");
                     connections.clear();
                     connections.addAll(updated);
-                    firePropertyChange(ContainerInterface.CONNECTIONS, null, null);
+                    firePropertyChange(ContainerProtocol.CONNECTIONS, null, null);
                 }
             } catch (Exception ex) {
                 LOG.log(Level.WARNING, "Invalid Connection list", ex);

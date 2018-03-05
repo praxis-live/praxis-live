@@ -137,7 +137,7 @@ public final class TerminalTopComponent extends TopComponent {
         public void eval(String script) throws Exception {
             PString scr = PString.valueOf(script);
             TerminalHelper.getDefault().send(
-                    ScriptService.INSTANCE,
+                    ScriptService.class,
                     ScriptService.EVAL,
                     CallArguments.create(scr),
                     new Callback() {
@@ -157,7 +157,7 @@ public final class TerminalTopComponent extends TopComponent {
         @Override
         public void clear() throws Exception {
             TerminalHelper.getDefault().send(
-                    ScriptService.INSTANCE,
+                    ScriptService.class,
                     ScriptService.CLEAR,
                     CallArguments.EMPTY,
                     null);

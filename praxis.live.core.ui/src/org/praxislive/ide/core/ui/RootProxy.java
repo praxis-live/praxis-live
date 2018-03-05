@@ -31,12 +31,10 @@ import org.praxislive.core.ValueFormatException;
 import org.praxislive.core.CallArguments;
 import org.praxislive.core.ComponentAddress;
 import org.praxislive.core.ControlAddress;
-import org.praxislive.core.InterfaceDefinition;
 import org.praxislive.core.ComponentInfo;
-import org.praxislive.core.interfaces.ComponentInterface;
+import org.praxislive.core.protocols.ComponentProtocol;
 import org.praxislive.core.services.RootManagerService;
-import org.praxislive.core.services.ServiceUnavailableException;
-import org.praxislive.core.interfaces.StartableInterface;
+import org.praxislive.core.protocols.StartableProtocol;
 import org.praxislive.core.types.PBoolean;
 import org.praxislive.core.types.PString;
 import org.praxislive.gui.ControlBinding;
@@ -70,8 +68,8 @@ public class RootProxy {
     RootProxy(String id) {
         this.id = id;
         address = ComponentAddress.create("/" + id);
-        infoAddress = ControlAddress.create(address, ComponentInterface.INFO);
-        infoAdaptor = new ArgumentPropertyAdaptor.ReadOnly(null, ComponentInterface.INFO, true, ControlBinding.SyncRate.Low);
+        infoAddress = ControlAddress.create(address, ComponentProtocol.INFO);
+        infoAdaptor = new ArgumentPropertyAdaptor.ReadOnly(null, ComponentProtocol.INFO, true, ControlBinding.SyncRate.Low);
         infoAdaptor.addPropertyChangeListener(new PropertyChangeListener() {
 
             @Override
@@ -80,7 +78,7 @@ public class RootProxy {
             }
         });
         CoreHelper.getDefault().bind(infoAddress, infoAdaptor);
-        runningAddress = ControlAddress.create(address, StartableInterface.IS_RUNNING);
+        runningAddress = ControlAddress.create(address, StartableProtocol.IS_RUNNING);
         updateInfo();
     }
 
@@ -88,7 +86,7 @@ public class RootProxy {
         LOG.info("RootProxy received Root Info");
         try {
             ComponentInfo info = ComponentInfo.coerce(infoAdaptor.getValue());
-            if (info.hasInterface(StartableInterface.class)) {
+            if (info.hasProtocol(StartableProtocol.class)) {
                 setStartable(true);
                 LOG.info("Found Startable");
                 return;
@@ -228,7 +226,7 @@ public class RootProxy {
             private StartableAction(String name, boolean start) {
                 super(name);
                 to = ControlAddress.create(root.address,
-                        start ? StartableInterface.START : StartableInterface.STOP);
+                        start ? StartableProtocol.START : StartableProtocol.STOP);
             }
 
             @Override
@@ -251,7 +249,7 @@ public class RootProxy {
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
-                    CoreHelper.getDefault().send(RootManagerService.INSTANCE,
+                    CoreHelper.getDefault().send(RootManagerService.class,
                             RootManagerService.REMOVE_ROOT,
                             CallArguments.create(PString.valueOf(root.id)), null);
                 } catch (Exception ex) {

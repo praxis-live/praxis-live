@@ -48,7 +48,7 @@ import org.praxislive.core.ControlAddress;
 import org.praxislive.core.ArgumentInfo;
 import org.praxislive.core.ComponentInfo;
 import org.praxislive.core.ControlInfo;
-import org.praxislive.core.interfaces.ComponentInterface;
+import org.praxislive.core.protocols.ComponentProtocol;
 import org.praxislive.core.types.PString;
 import org.praxislive.gui.ControlBinding;
 import org.praxislive.ide.core.api.Callback;
@@ -183,7 +183,7 @@ public class PXRComponentProxy implements ComponentProxy {
                 }
             }
         });
-        PXRHelper.getDefault().bind(ControlAddress.create(getAddress(), ComponentInterface.INFO), dynInfoAdaptor);
+        PXRHelper.getDefault().bind(ControlAddress.create(getAddress(), ComponentProtocol.INFO), dynInfoAdaptor);
     }
 
     void refreshInfo(ComponentInfo info) {
@@ -205,7 +205,7 @@ public class PXRComponentProxy implements ComponentProxy {
 //        if (parent != null) {
 //            parent.revalidate(this);
 //        }
-        firePropertyChange(ComponentInterface.INFO, null, null);
+        firePropertyChange(ComponentProtocol.INFO, null, null);
     }
 
     boolean isDynamic() {
@@ -397,7 +397,7 @@ public class PXRComponentProxy implements ComponentProxy {
     }
 
     protected boolean isProxiedProperty(String id) {
-        return ComponentInterface.INFO.equals(id);
+        return ComponentProtocol.INFO.equals(id);
     }
 
     PXRRootProxy getRoot() {
@@ -548,7 +548,7 @@ public class PXRComponentProxy implements ComponentProxy {
 
         private InfoProperty() {
             super(ComponentInfo.class);
-            setName(ComponentInterface.INFO);
+            setName(ComponentProtocol.INFO);
         }
 
         @Override

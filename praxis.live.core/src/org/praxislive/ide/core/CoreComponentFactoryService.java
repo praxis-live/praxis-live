@@ -46,8 +46,8 @@ class CoreComponentFactoryService extends AbstractRoot {
         factory = Utils.findCoreFactory();
         registerControl(ComponentFactoryService.NEW_INSTANCE, new NewInstanceControl());
         registerControl(RootFactoryService.NEW_ROOT_INSTANCE, new NewRootInstanceControl());
-        registerInterface(ComponentFactoryService.class);
-        registerInterface(RootFactoryService.class);
+        registerProtocol(ComponentFactoryService.class);
+        registerProtocol(RootFactoryService.class);
     }
     
     

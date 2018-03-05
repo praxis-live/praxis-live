@@ -30,8 +30,7 @@ import java.util.Map;
 import java.util.logging.Logger;
 import org.praxislive.core.CallArguments;
 import org.praxislive.core.ControlAddress;
-import org.praxislive.core.InterfaceDefinition;
-import org.praxislive.core.PacketRouter;
+import org.praxislive.core.services.Service;
 import org.praxislive.core.services.ServiceUnavailableException;
 import org.praxislive.gui.BindingContext;
 import org.praxislive.gui.ControlBinding;
@@ -94,7 +93,7 @@ public class AbstractHelperComponent extends AbstractComponent {
     }
 
     @Override
-    public ComponentAddress findService(InterfaceDefinition service) throws ServiceUnavailableException {
+    public ComponentAddress findService(Class<? extends Service> service) throws ServiceUnavailableException {
         return super.findService(service);
     }
 
@@ -104,7 +103,7 @@ public class AbstractHelperComponent extends AbstractComponent {
         sender.send(to, args, callback);
     }
 
-    public void send(InterfaceDefinition service, String control,
+    public void send(Class<? extends Service> service, String control,
             CallArguments args, Callback callback)
             throws HubUnavailableException, ServiceUnavailableException {
         sender.send(service, control, args, callback);
