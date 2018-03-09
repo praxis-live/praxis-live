@@ -70,7 +70,7 @@ class Logging extends AbstractSwingRoot {
         }
     }
 
-    private class LogControl implements Control {
+    private class LogControl implements ControlEx {
 
         @Override
         public void call(Call call, PacketRouter router) throws Exception {
