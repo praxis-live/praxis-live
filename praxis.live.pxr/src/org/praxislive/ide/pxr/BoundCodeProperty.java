@@ -45,6 +45,8 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
+import org.praxislive.core.Value;
+import org.praxislive.ide.core.api.Callback;
 
 class BoundCodeProperty extends BoundArgumentProperty {
 
@@ -98,6 +100,20 @@ class BoundCodeProperty extends BoundArgumentProperty {
     public void dispose() {
         super.dispose();
         deleteFile();
+    }
+
+    @Override
+    public void setValue(Value value, Callback callback) {
+        if ("text/x-praxis-java".equals(this.mimeType) &&
+                "code".equals(getName())) {
+            super.setValue(rewriteV3toV4(value), callback);
+        } else {
+            super.setValue(value, callback);
+        }
+    }
+    
+    private PString rewriteV3toV4(Value value) {
+        return PString.valueOf(value.toString().replace("@Port", "@Config.Port"));
     }
 
     Action getEditAction() {
