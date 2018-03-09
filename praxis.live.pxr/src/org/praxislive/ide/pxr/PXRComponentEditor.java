@@ -33,7 +33,7 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.UIManager;
-import org.praxislive.gui.ControlBinding;
+import org.praxislive.impl.swing.ControlBinding;
 import org.praxislive.ide.core.api.Syncable;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;

@@ -26,7 +26,7 @@ import java.beans.PropertyChangeSupport;
 import org.praxislive.core.Value;
 import org.praxislive.core.CallArguments;
 import org.praxislive.core.types.PString;
-import org.praxislive.gui.ControlBinding;
+import org.praxislive.impl.swing.ControlBinding;
 
 /**
  *

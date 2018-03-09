@@ -32,8 +32,8 @@ import org.praxislive.core.CallArguments;
 import org.praxislive.core.ControlAddress;
 import org.praxislive.core.services.Service;
 import org.praxislive.core.services.ServiceUnavailableException;
-import org.praxislive.gui.BindingContext;
-import org.praxislive.gui.ControlBinding;
+import org.praxislive.impl.swing.BindingContext;
+import org.praxislive.impl.swing.ControlBinding;
 import org.praxislive.impl.AbstractComponent;
 import org.praxislive.ide.core.api.HubUnavailableException;
 

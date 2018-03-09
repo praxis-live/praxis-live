@@ -30,12 +30,12 @@ import org.praxislive.core.Component;
 import org.praxislive.core.ControlAddress;
 import org.praxislive.core.Lookup;
 import org.praxislive.core.VetoException;
-import org.praxislive.gui.BindingContext;
-import org.praxislive.gui.ControlBinding;
-import org.praxislive.gui.ControlBinding.Adaptor;
-import org.praxislive.gui.impl.DefaultBindingControl;
+import org.praxislive.impl.swing.BindingContext;
+import org.praxislive.impl.swing.ControlBinding;
+import org.praxislive.impl.swing.ControlBinding.Adaptor;
+import org.praxislive.impl.swing.DefaultBindingControl;
 import org.praxislive.impl.AbstractRoot.Caps;
-import org.praxislive.impl.AbstractSwingRoot;
+import org.praxislive.impl.swing.AbstractSwingRoot;
 import org.praxislive.impl.InstanceLookup;
 import org.openide.util.Exceptions;
 

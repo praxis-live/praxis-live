@@ -34,7 +34,7 @@ import org.praxislive.core.ControlAddress;
 import org.praxislive.core.services.RootManagerService;
 import org.praxislive.core.services.ServiceUnavailableException;
 import org.praxislive.core.types.PArray;
-import org.praxislive.gui.ControlBinding.SyncRate;
+import org.praxislive.impl.swing.ControlBinding.SyncRate;
 import org.praxislive.ide.util.ArgumentPropertyAdaptor;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;

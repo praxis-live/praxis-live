@@ -34,7 +34,7 @@ import org.praxislive.core.CallArguments;
 import org.praxislive.core.ControlAddress;
 import org.praxislive.core.protocols.StartableProtocol;
 import org.praxislive.core.types.PBoolean;
-import org.praxislive.gui.ControlBinding.SyncRate;
+import org.praxislive.impl.swing.ControlBinding.SyncRate;
 import org.praxislive.ide.core.api.HubUnavailableException;
 import org.praxislive.ide.model.RootProxy;
 import org.praxislive.ide.util.ArgumentPropertyAdaptor;

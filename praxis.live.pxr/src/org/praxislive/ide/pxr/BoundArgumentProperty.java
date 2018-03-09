@@ -31,7 +31,7 @@ import org.praxislive.core.CallArguments;
 import org.praxislive.core.ControlAddress;
 import org.praxislive.core.ControlInfo;
 import org.praxislive.core.types.PString;
-import org.praxislive.gui.ControlBinding;
+import org.praxislive.impl.swing.ControlBinding;
 import org.praxislive.ide.core.api.Callback;
 import org.praxislive.ide.properties.PraxisProperty;
 

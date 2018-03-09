@@ -37,7 +37,7 @@ import org.praxislive.core.services.RootManagerService;
 import org.praxislive.core.protocols.StartableProtocol;
 import org.praxislive.core.types.PBoolean;
 import org.praxislive.core.types.PString;
-import org.praxislive.gui.ControlBinding;
+import org.praxislive.impl.swing.ControlBinding;
 import org.praxislive.ide.core.api.HubUnavailableException;
 import org.praxislive.ide.util.ArgumentPropertyAdaptor;
 import org.openide.nodes.AbstractNode;

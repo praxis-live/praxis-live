@@ -41,11 +41,11 @@ import net.miginfocom.swing.MigLayout;
 import org.praxislive.core.ControlAddress;
 import org.praxislive.core.IllegalRootStateException;
 import org.praxislive.core.Lookup;
-import org.praxislive.gui.BindingContext;
-import org.praxislive.gui.ControlBinding.Adaptor;
+import org.praxislive.impl.swing.BindingContext;
+import org.praxislive.impl.swing.ControlBinding.Adaptor;
 import org.praxislive.gui.GuiContext;
 import org.praxislive.gui.Keys;
-import org.praxislive.impl.AbstractSwingRoot;
+import org.praxislive.impl.swing.AbstractSwingRoot;
 import org.praxislive.impl.InstanceLookup;
 import org.praxislive.impl.RootState;
 

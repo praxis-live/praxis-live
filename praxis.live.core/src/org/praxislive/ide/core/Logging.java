@@ -32,7 +32,7 @@ import org.praxislive.core.ComponentAddress;
 import org.praxislive.core.Control;
 import org.praxislive.core.PacketRouter;
 import org.praxislive.core.ControlInfo;
-import org.praxislive.impl.AbstractSwingRoot;
+import org.praxislive.impl.swing.AbstractSwingRoot;
 import org.praxislive.ide.core.api.LogHandler;
 import org.praxislive.logging.LogLevel;
 import org.praxislive.logging.LogService;

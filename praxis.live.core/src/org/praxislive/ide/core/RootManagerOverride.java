@@ -44,7 +44,7 @@ import org.praxislive.core.services.ServiceUnavailableException;
 import org.praxislive.core.services.SystemManagerService;
 import org.praxislive.impl.AbstractAsyncControl;
 import org.praxislive.impl.AbstractControl;
-import org.praxislive.impl.AbstractSwingRoot;
+import org.praxislive.impl.swing.AbstractSwingRoot;
 import org.praxislive.ide.core.api.Task;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
