@@ -188,11 +188,6 @@ public class ComponentRegistry implements ComponentFactory {
             return delegate.getLookup();
         }
 
-        @Override
-        public Class<T> getComponentClass() {
-            return delegate.getComponentClass();
-        }
-
         private ComponentFactory getFactory() {
             return factory;
         }

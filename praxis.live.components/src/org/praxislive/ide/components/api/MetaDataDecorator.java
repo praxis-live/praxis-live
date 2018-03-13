@@ -49,11 +49,6 @@ public class MetaDataDecorator<T> extends ComponentFactory.MetaData<T> {
     }
 
     @Override
-    public Class<T> getComponentClass() {
-        return delegate.getComponentClass();
-    }
-
-    @Override
     public boolean isTest() {
         return delegate.isTest();
     }
