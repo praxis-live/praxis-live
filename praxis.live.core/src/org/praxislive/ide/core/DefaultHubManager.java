@@ -285,9 +285,7 @@ public class DefaultHubManager {
         hub.shutdown();
         try {
             hub.await();
-        } catch (InterruptedException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (ExecutionException ex) {
+        } catch (Exception ex) {
             Exceptions.printStackTrace(ex);
         }
         container = null;

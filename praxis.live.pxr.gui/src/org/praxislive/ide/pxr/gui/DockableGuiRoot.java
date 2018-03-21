@@ -39,7 +39,6 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import net.miginfocom.swing.MigLayout;
 import org.praxislive.core.ControlAddress;
-import org.praxislive.core.IllegalRootStateException;
 import org.praxislive.core.Lookup;
 import org.praxislive.impl.swing.BindingContext;
 import org.praxislive.impl.swing.ControlBinding.Adaptor;
@@ -86,7 +85,7 @@ public class DockableGuiRoot extends AbstractSwingRoot {
                     if (activeEditor == null) {
                         setIdle();
                     }
-                } catch (IllegalRootStateException ex) {
+                } catch (Exception ex) {
                     Logger.getLogger(DockableGuiRoot.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
