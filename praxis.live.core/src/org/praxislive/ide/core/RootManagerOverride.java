@@ -311,7 +311,8 @@ class RootManagerOverride extends AbstractSwingRoot {
             if (call.getType() == Call.Type.INVOKE || call.getType() == Call.Type.INVOKE_QUIET) {
                 for (String id : knownRoots) {
                     ControlAddress to = ControlAddress.create("/" + id + ".stop");
-                    Call msg = Call.createQuietCall(to, getAddress(), getTime(), CallArguments.EMPTY);
+                    Call msg = Call.createQuietCall(to, getAddress(),
+                            getExecutionContext().getTime(), CallArguments.EMPTY);
                     getPacketRouter().route(msg);
                 }
             } else {

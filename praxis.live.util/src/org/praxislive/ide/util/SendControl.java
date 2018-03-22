@@ -28,6 +28,7 @@ import org.praxislive.core.CallArguments;
 import org.praxislive.core.ControlAddress;
 import org.praxislive.core.PacketRouter;
 import org.praxislive.core.ControlInfo;
+import org.praxislive.core.ExecutionContext;
 import org.praxislive.core.services.Service;
 import org.praxislive.core.services.ServiceUnavailableException;
 import org.praxislive.impl.AbstractControl;
@@ -42,6 +43,7 @@ public class SendControl extends AbstractControl {
 
     private Map<Integer, Callback> pending;
     private PacketRouter router;
+    private ExecutionContext context;
 
     public SendControl() {
         pending = new HashMap<Integer, Callback>();
@@ -53,11 +55,11 @@ public class SendControl extends AbstractControl {
         boolean quiet = callback == null;
         Call call;
         if (quiet) {
-            call = Call.createQuietCall(to, from, System.nanoTime(), args);
+            call = Call.createQuietCall(to, from, context.getTime(), args);
         } else {
-            call = Call.createCall(to, from, System.nanoTime(), args);
+            call = Call.createCall(to, from, context.getTime(), args);
         }
-        getPacketRouter().route(call);
+        router.route(call);
         if (!quiet) {
             pending.put(call.getID(), callback);
         }
@@ -70,27 +72,16 @@ public class SendControl extends AbstractControl {
         send(to, args, callback);
     }
 
-    private PacketRouter getPacketRouter() throws HubUnavailableException {
-        if (router == null) {
-            router = getLookup().get(PacketRouter.class);
-            if (router == null) {
-                throw new HubUnavailableException("No PacketRouter available");
-            }
-        }
-        return router;
-    }
-
     @Override
     public void hierarchyChanged() {
         super.hierarchyChanged();
-        router = null;
+        router = getLookup().find(PacketRouter.class).orElse(null);
+        context = getLookup().find(ExecutionContext.class).orElse(null);
         for (Callback callback : pending.values()) {
             callback.onError(CallArguments.EMPTY);
         }
         pending.clear();
     }
-
-
 
     @Override
     public void call(Call call, PacketRouter router) throws Exception {
