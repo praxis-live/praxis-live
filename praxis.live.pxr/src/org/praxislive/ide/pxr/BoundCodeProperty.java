@@ -113,7 +113,10 @@ class BoundCodeProperty extends BoundArgumentProperty {
     }
     
     private PString rewriteV3toV4(Value value) {
-        return PString.valueOf(value.toString().replace("@Port", "@Config.Port"));
+        String code = value.toString();
+        code = code.replace("@Port", "@Config.Port");
+        code = code.replace(" Table ", " AudioTable ");
+        return PString.valueOf(code);
     }
 
     Action getEditAction() {
