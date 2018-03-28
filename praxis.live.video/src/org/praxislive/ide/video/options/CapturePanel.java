@@ -23,7 +23,7 @@ package org.praxislive.ide.video.options;
 
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import org.praxislive.video.gst1.GStreamerSettings;
+import org.praxislive.video.gstreamer.configuration.GStreamerSettings;
 
 
 
