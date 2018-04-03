@@ -76,14 +76,15 @@
  */
 package org.praxislive.ide.graph;
 
+import java.awt.Point;
+import java.awt.Rectangle;
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.model.ObjectState;
 import org.netbeans.api.visual.widget.LabelWidget;
 import org.netbeans.api.visual.widget.Widget;
 
-import java.awt.*;
-import java.util.List;
 import org.netbeans.api.visual.anchor.Anchor;
+import org.netbeans.api.visual.widget.Scene;
 
 /**
  * This class represents a pin widget in the VMD visualization style.
@@ -94,33 +95,38 @@ import org.netbeans.api.visual.anchor.Anchor;
 public class PinWidget extends Widget {
 
     public final static String DEFAULT_CATEGORY = "";
+    
     private final PraxisGraphScene scene;
+    private final SceneListenerImpl sceneListener;
+    private final NodeWidget node;
+    private final LabelWidget nameWidget;
+    
     private LAFScheme scheme;
-    private LabelWidget nameWidget;
-    private GlyphSetWidget glyphsWidget;
+    private LAFScheme.Colors schemeColors;
     private Alignment alignment;
     private String category;
 
     /**
-     * Creates a pin widget with a specific color scheme.
+     * Creates a pin widget with a specific name.
      * @param scene the scene
-     * @param scheme the color scheme
+     * @param name pin ID
      */
-    public PinWidget(PraxisGraphScene scene, String name) {
+    public PinWidget(PraxisGraphScene scene, NodeWidget node, String name) {
         super(scene);
         this.scene = scene;
+        this.sceneListener = new SceneListenerImpl();
+        this.node = node;
         this.scheme = scene.getLookAndFeel();
+        this.schemeColors = node.getSchemeColors();
 //        setLayout (LayoutFactory.createHorizontalFlowLayout (LayoutFactory.SerialAlignment.CENTER, 8));
         this.alignment = Alignment.Center;
         this.category = DEFAULT_CATEGORY;
         setLayout(LayoutFactory.createOverlayLayout());
         addChild(nameWidget = new LabelWidget(scene));
-        nameWidget.setForeground(Color.BLACK);
+//        nameWidget.setForeground(Color.BLACK);
         nameWidget.setLabel(name);
-        addChild(glyphsWidget = new GlyphSetWidget(scene));
         nameWidget.setAlignment(LabelWidget.Alignment.CENTER);
         scheme.installUI(this);
-
     }
 
     /**
@@ -131,22 +137,25 @@ public class PinWidget extends Widget {
     protected void notifyStateChanged(ObjectState previousState, ObjectState state) {
         scheme.updateUI(this);
     }
-//
-//    /**
-//     * Returns a pin name widget.
-//     * @return the pin name widget
-//     */
-//    public Widget getPinNameWidget () {
-//        return nameWidget;
-//    }
 
-//    /**
-//     * Sets a pin name.
-//     * @param name the pin name
-//     */
-//    public void setPinName (String name) {
-//        nameWidget.setLabel (name);
-//    }
+    @Override
+    protected void notifyAdded() {
+        scene.addSceneListener(sceneListener);
+    }
+
+    @Override
+    protected void notifyRemoved() {
+        scene.removeSceneListener(sceneListener);
+    }
+    
+    /**
+     * Returns a pin name widget.
+     * @return the pin name widget
+     */
+    public Widget getPinNameWidget () {
+        return nameWidget;
+    }
+
     /**
      * Returns a pin name.
      * @return the pin name
@@ -155,12 +164,13 @@ public class PinWidget extends Widget {
         return nameWidget.getLabel();
     }
 
-    /**
-     * Sets pin glyphs.
-     * @param glyphs the list of images
-     */
-    public void setGlyphs(List<Image> glyphs) {
-        glyphsWidget.setGlyphs(glyphs);
+    public void setSchemeColors(LAFScheme.Colors colors) {
+        this.schemeColors = colors;
+        revalidate();
+    }
+    
+    public LAFScheme.Colors getSchemeColors() {
+        return schemeColors == null ? node.getSchemeColors() : schemeColors;
     }
 
     public void setAlignment(Alignment alignment) {
@@ -187,18 +197,6 @@ public class PinWidget extends Widget {
         }
     }
 
-    public void setCategory(String category) {
-        if (category == null) {
-            throw new NullPointerException();
-        }
-        this.category = category;
-        scheme.updateUI(this);
-    }
-
-    public String getCategory() {
-        return this.category;
-    }
-
     public Anchor createAnchor() {
         return new AlignedAnchor();
     }
@@ -211,8 +209,6 @@ public class PinWidget extends Widget {
             return super.isHitAt(localLocation);
         }   
     }
-    
-    
 
     private class AlignedAnchor extends Anchor {
 
@@ -253,4 +249,22 @@ public class PinWidget extends Widget {
             }
         }
     }
+    
+    private class SceneListenerImpl implements Scene.SceneListener {
+
+        @Override
+        public void sceneRepaint() {
+        }
+
+        @Override
+        public void sceneValidating() {
+            scheme.updateUI(PinWidget.this);
+        }
+
+        @Override
+        public void sceneValidated() {
+        }
+        
+    }
+    
 }

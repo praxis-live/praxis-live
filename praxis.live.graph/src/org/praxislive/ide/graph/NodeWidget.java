@@ -95,17 +95,7 @@ import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 
 /**
- * This class represents a node widget in the VMD visualization style. It
- * implements the minimize ability. It allows to add pin widgets into the widget
- * using <code>attachPinWidget</code> method.
- * <p>
- * The node widget consists of a header (with an image, a name, secondary name
- * and a glyph set) and the content. The content contains pin widgets. Pin
- * widgets can be organized in pin-categories defined by calling
- * <code>sortPins</code> method. The <code>sortPins</code> method has to be
- * called refresh the order after adding a pin widget.
- *
- * @author David Kaspar
+ * This class represents a node widget.
  */
 public class NodeWidget extends Widget implements StateModel.Listener, MinimizeAbility {
 
@@ -118,6 +108,7 @@ public class NodeWidget extends Widget implements StateModel.Listener, MinimizeA
     private final StateModel stateModel;
     private final LAFScheme scheme;
     private final PraxisGraphScene scene;
+    private final SceneListenerImpl sceneListener;
     private final CommentWidget commentWidget;
     
     private LAFScheme.Colors schemeColors;
@@ -130,7 +121,7 @@ public class NodeWidget extends Widget implements StateModel.Listener, MinimizeA
     public NodeWidget(PraxisGraphScene<?> scene) {
         super(scene);
         this.scene = scene;
-        scene.addSceneListener(new SceneListenerImpl());
+        this.sceneListener = new SceneListenerImpl();
         this.scheme = scene.getLookAndFeel();
 
         stateModel = new StateModel();
@@ -170,6 +161,16 @@ public class NodeWidget extends Widget implements StateModel.Listener, MinimizeA
 
         scheme.installUI(this);
 
+    }
+
+    @Override
+    protected void notifyAdded() {
+        scene.addSceneListener(sceneListener);
+    }
+
+    @Override
+    protected void notifyRemoved() {
+        scene.removeSceneListener(sceneListener);
     }
 
     /**
@@ -394,6 +395,7 @@ public class NodeWidget extends Widget implements StateModel.Listener, MinimizeA
     
     public void setSchemeColors(LAFScheme.Colors colors) {
         this.schemeColors = colors;
+        revalidate();
     }
     
     public LAFScheme.Colors getSchemeColors() {

@@ -133,6 +133,8 @@ public class GraphEditor extends RootEditor {
     private final Action sceneCommentAction;
     private final Action exportAction;
     private final JMenuItem addMenu;
+    
+    private final boolean customColours;
 
     private JComponent panel;
     private JComponent actionPanel;
@@ -150,6 +152,8 @@ public class GraphEditor extends RootEditor {
         knownConnections = new LinkedHashSet<>();
 
         scene = new PraxisGraphScene<>(new ConnectProviderImpl(), new MenuProviderImpl());
+        scene.setOrthogonalRouting(false);
+        this.customColours = false;
         manager = new ExplorerManager();
         manager.setRootContext(root.getNodeDelegate());
         if (root instanceof ContainerProxy) {
@@ -257,11 +261,13 @@ public class GraphEditor extends RootEditor {
         menu.addSeparator();
         menu.add(exportAction);
         menu.addSeparator();
-        JMenu colorsMenu = new JMenu("Colors");
-        for (ColorsAction action : colorsActions) {
-            colorsMenu.add(action);
+        if (customColours) {
+            JMenu colorsMenu = new JMenu("Colors");
+            for (ColorsAction action : colorsActions) {
+                colorsMenu.add(action);
+            }
+            menu.add(colorsMenu);
         }
-        menu.add(colorsMenu);
         menu.add(new CommentAction(widget));
         return menu;
     }
@@ -456,7 +462,11 @@ public class GraphEditor extends RootEditor {
         }
         String name = cmp instanceof ContainerProxy ? id + "/.." : id;
         NodeWidget widget = scene.addNode(id, name);
-        widget.setSchemeColors(getColorsFromAttribute(cmp).getSchemeColors());
+        if (customColours) {
+            widget.setSchemeColors(getColorsFromAttribute(cmp).getSchemeColors());
+        } else {
+            widget.setSchemeColors(Utils.colorsForComponent(cmp).getSchemeColors());
+        }
         widget.setToolTipText(cmp.getType().toString());
         widget.setPreferredLocation(resolveLocation(id, cmp));
         if ("true".equals(Utils.getAttr(cmp, ATTR_GRAPH_MINIMIZED))) {
@@ -568,15 +578,17 @@ public class GraphEditor extends RootEditor {
     }
 
     private void buildPin(String cmpID, String pinID, PortInfo info) {
-        boolean primary = info.getType().getSimpleName().startsWith("Audio")
-                || info.getType().getSimpleName().startsWith("Video");
-        PinWidget pin = scene.addPin(cmpID, pinID, "", getPinAlignment(info));
+        boolean primary = info.getPortType().name().startsWith("Audio")
+                || info.getPortType().name().startsWith("Video");
+        PinWidget pin = scene.addPin(cmpID, pinID, getPinAlignment(info));
+        pin.setSchemeColors(Utils.colorsForPortType(info.getPortType()).getSchemeColors());
+        Font font = scene.getDefaultFont();
         if (primary) {
-            pin.setFont(scene.getDefaultFont().deriveFont(Font.BOLD, 11.0f));
+            pin.setFont(font.deriveFont(Font.BOLD));
         } else {
-            pin.setFont(scene.getDefaultFont().deriveFont(11.0f));
+//            pin.setFont(font.deriveFont(font.getSize2D() * 0.85f));
         }
-        pin.setToolTipText(pinID + " : " + info.getType().getSimpleName());
+        pin.setToolTipText(pinID + " : " + info.getPortType().name());
     }
 
     private Alignment getPinAlignment(PortInfo info) {

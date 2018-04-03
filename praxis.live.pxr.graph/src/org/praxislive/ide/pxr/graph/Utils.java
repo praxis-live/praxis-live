@@ -37,6 +37,9 @@ import javax.swing.KeyStroke;
 import org.praxislive.ide.model.ComponentProxy;
 import org.praxislive.ide.pxr.api.Attributes;
 import org.openide.nodes.Node;
+import org.praxislive.core.ComponentType;
+import org.praxislive.core.Port;
+import org.praxislive.ide.model.ContainerProxy;
 
 /**
  *
@@ -167,6 +170,30 @@ class Utils {
         return Stream.of(nodes).map(Node::getName).collect(Collectors.joining("|"));
     }
     
-
+    static Colors colorsForPortType(Port.Type<?> type) {
+        return colorsForString(type.name());
+    }
+    
+    static Colors colorsForComponent(ComponentProxy cmp) {
+        if (cmp instanceof ContainerProxy) {
+            return Colors.Orange;
+        } else {
+            return colorsForString(cmp.getType().toString());
+        }
+    }
+    
+    private static Colors colorsForString(String string) {
+        String test = string.toLowerCase();
+        if (test.startsWith("audio")) {
+            return Colors.Green;
+        }
+        if (test.startsWith("video")) {
+            return Colors.Purple;
+        }
+        if (test.startsWith("tinkerforge") || test.startsWith("data")) {
+            return Colors.Yellow;
+        }
+        return Colors.Blue;
+    }
 
 }

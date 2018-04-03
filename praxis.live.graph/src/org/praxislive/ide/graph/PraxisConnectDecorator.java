@@ -49,20 +49,29 @@ import org.netbeans.api.visual.widget.Widget;
  *
  * @author Neil C Smith (http://neilcsmith.net)
  */
-public class PraxisConnectDecorator implements ConnectDecorator {
+class PraxisConnectDecorator implements ConnectDecorator {
 
+    private EdgeWidget widget;
+    
     @Override
     public ConnectionWidget createConnectionWidget(Scene scene) {
-        ConnectionWidget widget = new ConnectionWidget(scene);
-        widget.setForeground(Color.WHITE);
+        widget = new EdgeWidget((PraxisGraphScene) scene);
         return widget;
     }
 
     @Override
     public Anchor createSourceAnchor(Widget sourceWidget) {
         if (sourceWidget instanceof PinWidget) {
+            if (widget != null) {
+                widget.srcPin = (PinWidget) sourceWidget;
+                widget.revalidate();
+            }
             return ((PinWidget) sourceWidget).createAnchor();
         } else {
+            if (widget != null) {
+                widget.srcPin = null;
+                widget.revalidate();
+            }
             return AnchorFactory.createCenterAnchor(sourceWidget);
         }
         

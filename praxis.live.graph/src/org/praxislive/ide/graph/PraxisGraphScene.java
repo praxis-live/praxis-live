@@ -82,6 +82,7 @@ import java.awt.Rectangle;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.action.ConnectProvider;
@@ -111,6 +112,7 @@ public class PraxisGraphScene<N> extends GraphPinScene<N, EdgeID<N>, PinID<N>> {
     
     private final CommentWidget commentWidget;
     
+    private boolean orthogonal;
     private Router router;
     private final WidgetAction moveAction;
     private final PraxisKeyboardMoveAction keyboardMoveAction;
@@ -147,7 +149,6 @@ public class PraxisGraphScene<N> extends GraphPinScene<N, EdgeID<N>, PinID<N>> {
         }
         this.scheme = scheme;
 
-
         setKeyEventProcessingType(EventProcessingType.FOCUSED_WIDGET_AND_ITS_PARENTS);
 
         addChild(backgroundLayer);
@@ -161,14 +162,13 @@ public class PraxisGraphScene<N> extends GraphPinScene<N, EdgeID<N>, PinID<N>> {
         
         commentWidget = new CommentWidget(this);
         commentWidget.setPreferredLocation(new Point(32,32));
-        commentWidget.setBorder(BorderFactory.createRoundedBorder(8, 8, 8, 8, new Color(0xffff7a), null));
+        commentWidget.setBorder(BorderFactory.createRoundedBorder(8, 8, 8, 8, Color.LIGHT_GRAY, null));
         commentWidget.setVisible(false);
         mainLayer.addChild(commentWidget);
 
         setBackground(scheme.getBackgroundColor());
 
-//        router = RouterFactory.createOrthogonalSearchRouter(new WidgetCollector());
-        router = RouterFactory.createOrthogonalSearchRouter(mainLayer, upperLayer);
+        router = RouterFactory.createDirectRouter();
 
         getActions().addAction(ActionFactory.createWheelPanAction());
         getActions().addAction(ActionFactory.createMouseCenteredZoomAction(1.2));
@@ -204,20 +204,19 @@ public class PraxisGraphScene<N> extends GraphPinScene<N, EdgeID<N>, PinID<N>> {
     }
 
     public PinWidget addPin(N node, String name) {
-        return addPin(new PinID<N>(node, name), PinWidget.DEFAULT_CATEGORY,
+        return addPin(new PinID<N>(node, name),
                 Alignment.Center);
     }
 
-    public PinWidget addPin(N node, String name, String category, Alignment alignment) {
-        return addPin(new PinID<N>(node, name), category, alignment);
+    public PinWidget addPin(N node, String name, Alignment alignment) {
+        return addPin(new PinID<N>(node, name), alignment);
     }
 
-    public PinWidget addPin(PinID<N> pin, String category, Alignment alignment) {
-        if (pin == null || category == null || alignment == null) {
+    public PinWidget addPin(PinID<N> pin, Alignment alignment) {
+        if (pin == null || alignment == null) {
             throw new NullPointerException();
         }
         PinWidget p = (PinWidget) super.addPin(pin.getParent(), pin);
-        p.setCategory(category);
         p.setAlignment(alignment);
         return p;
     }
@@ -255,7 +254,20 @@ public class PraxisGraphScene<N> extends GraphPinScene<N, EdgeID<N>, PinID<N>> {
         return schemeColors;
     }
 
-    public void setRouter(Router router) {
+    public void setOrthogonalRouting(boolean orthogonal) {
+        if (this.orthogonal != orthogonal) {
+            this.orthogonal = orthogonal;
+            setRouter(orthogonal ?
+                    RouterFactory.createOrthogonalSearchRouter(mainLayer, upperLayer) :
+                    RouterFactory.createDirectRouter());
+        }
+    }
+    
+    public boolean isOrthogonalRouting() {
+        return orthogonal;
+    }
+    
+    void setRouter(Router router) {
         this.router = router;
         for (EdgeID<N> e : getEdges()) {
             ((ConnectionWidget)findWidget(e)).setRouter(router);
@@ -263,7 +275,7 @@ public class PraxisGraphScene<N> extends GraphPinScene<N, EdgeID<N>, PinID<N>> {
         revalidate();
     }
     
-    public Router getRouter() {
+    Router getRouter() {
         return router;
     }
 
@@ -310,18 +322,17 @@ public class PraxisGraphScene<N> extends GraphPinScene<N, EdgeID<N>, PinID<N>> {
     }
 
     /**
-     * Implements attaching a widget to a pin. The widget is PinWidget and has
-     * object-hover and select action. The the node id ends with "#default" then
-     * the pin is the default pin of a node and therefore it is non-visual.
+     * Implements attaching a widget to a pin.
      *
      * @param node the node
      * @param pin the pin
-     * @return the widget attached to the pin, null, if it is a default pin
+     * @return the widget attached to the pin
      */
     @Override
     protected Widget attachPinWidget(N node, PinID<N> pin) {
-        PinWidget widget = new PinWidget(this, pin.getName());
-        ((NodeWidget) findWidget(node)).attachPinWidget(widget);
+        NodeWidget nodeWidget = (NodeWidget) findWidget(node);
+        PinWidget widget = new PinWidget(this, nodeWidget, pin.getName());
+        nodeWidget.attachPinWidget(widget);
         widget.getActions().addAction(createObjectHoverAction());
         if (connectAction != null) {
             widget.getActions().addAction(connectAction);
@@ -333,15 +344,16 @@ public class PraxisGraphScene<N> extends GraphPinScene<N, EdgeID<N>, PinID<N>> {
     }
 
     /**
-     * Implements attaching a widget to an edge. the widget is EdgeWidget and
-     * has object-hover, select and move-control-point actions.
+     * Implements attaching a widget to an edge.
      *
      * @param edge the edge
      * @return the widget attached to the edge
      */
     @Override
     protected Widget attachEdgeWidget(final EdgeID<N> edge) {
-        EdgeWidget edgeWidget = new EdgeWidget(this);
+        PinWidget src = (PinWidget) findWidget(edge.getPin1());
+        PinWidget dst = (PinWidget) findWidget(edge.getPin2());
+        EdgeWidget edgeWidget = new EdgeWidget(this, src, dst);
         edgeWidget.setRouter(router);
         connectionLayer.addChild(edgeWidget);
         edgeWidget.getActions().addAction(createObjectHoverAction());
