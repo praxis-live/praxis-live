@@ -156,11 +156,11 @@ public class DefaultPraxisProject extends PraxisProject {
         if (libsFolder != null) {
             buildFiles.add(libsFolder);
         }
-        buildFiles.addAll(Arrays.asList(properties.getProjectFiles(ExecutionLevel.BUILD)));
+        buildFiles.addAll(properties.getFiles(ExecutionLevel.BUILD));
         buildFiles.removeAll(executedBuildFiles);
 
         List<FileObject> runFiles = level == ExecutionLevel.RUN
-                ? Arrays.asList(properties.getProjectFiles(ExecutionLevel.RUN))
+                ? properties.getFiles(ExecutionLevel.RUN)
                 : Collections.EMPTY_LIST;
 
         FileHandlerIterator itr = new FileHandlerIterator(buildFiles, runFiles);

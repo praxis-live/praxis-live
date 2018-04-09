@@ -157,9 +157,9 @@ public final class PXRWizardIterator implements WizardDescriptor.InstantiatingIt
 
             PraxisProjectProperties props = project.getLookup().lookup(PraxisProjectProperties.class);
             if (props != null) {
-                props.addProjectFile(ExecutionLevel.BUILD, fileObj);
+                props.addFile(ExecutionLevel.BUILD, fileObj);
                 if (autostart) {
-                    props.addProjectFile(ExecutionLevel.RUN, autostarter);
+                    props.addFile(ExecutionLevel.RUN, autostarter);
                 }
 
             }

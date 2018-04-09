@@ -55,11 +55,11 @@ public class PXPWriter {
             writer = new OutputStreamWriter(projectFile.getOutputStream());
             writeConfig(writer);
             writeLevel(writer, ExecutionLevel.BUILD);
-            for (FileObject file : props.getProjectFiles(ExecutionLevel.BUILD)) {
+            for (FileObject file : props.getFiles(ExecutionLevel.BUILD)) {
                 writeFile(writer, file);
             }
             writeLevel(writer, ExecutionLevel.RUN);
-            for (FileObject file : props.getProjectFiles(ExecutionLevel.RUN)) {
+            for (FileObject file : props.getFiles(ExecutionLevel.RUN)) {
                 writeFile(writer, file);
             }
         } finally {

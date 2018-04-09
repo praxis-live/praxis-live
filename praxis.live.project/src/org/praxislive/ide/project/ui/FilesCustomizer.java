@@ -70,8 +70,7 @@ class FilesCustomizer extends javax.swing.JPanel implements ExplorerManager.Prov
     final void refreshList() {
         files.clear();
         if (props != null) {
-            FileObject[] f = props.getProjectFiles(level);
-            files.addAll(Arrays.asList(f));
+            files.addAll(props.getFiles(level));
         }
         refreshView();
     }

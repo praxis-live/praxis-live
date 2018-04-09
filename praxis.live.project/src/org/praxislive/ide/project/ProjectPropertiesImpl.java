@@ -24,6 +24,7 @@ package org.praxislive.ide.project;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashSet;
@@ -52,7 +53,7 @@ import org.openide.util.Exceptions;
  *
  * @author Neil C Smith (http://neilcsmith.net)
  */
-public class ProjectPropertiesImpl extends PraxisProjectProperties {
+public class ProjectPropertiesImpl implements PraxisProjectProperties {
 
     private final static FileObject[] FILEOBJECT_ARRAY = new FileObject[0];
     private final Set<FileObject> buildFiles;
@@ -71,7 +72,7 @@ public class ProjectPropertiesImpl extends PraxisProjectProperties {
     }
 
     @Override
-    public synchronized boolean addProjectFile(ExecutionLevel level, FileObject file) {
+    public synchronized boolean addFile(ExecutionLevel level, FileObject file) {
         Set<FileObject> set;
         if (level == ExecutionLevel.BUILD) {
             set = buildFiles;
@@ -82,13 +83,13 @@ public class ProjectPropertiesImpl extends PraxisProjectProperties {
         }
         boolean changed = set.add(file);
         if (changed) {
-            pcs.firePropertyChange(PROP_FILES_CHANGED, null, null);
+            pcs.firePropertyChange(PROP_FILES, null, null);
         }
         return changed;
     }
 
     @Override
-    public synchronized boolean removeProjectFile(ExecutionLevel level, FileObject file) {
+    public synchronized boolean removeFile(ExecutionLevel level, FileObject file) {
         Set<FileObject> set;
         if (level == ExecutionLevel.BUILD) {
             set = buildFiles;
@@ -99,17 +100,17 @@ public class ProjectPropertiesImpl extends PraxisProjectProperties {
         }
         boolean changed = set.remove(file);
         if (changed) {
-            pcs.firePropertyChange(PROP_FILES_CHANGED, null, null);
+            pcs.firePropertyChange(PROP_FILES, null, null);
         }
         return changed;
     }
 
     @Override
-    public synchronized FileObject[] getProjectFiles(ExecutionLevel level) {
+    public synchronized List<FileObject> getFiles(ExecutionLevel level) {
         if (level == ExecutionLevel.BUILD) {
-            return buildFiles.toArray(FILEOBJECT_ARRAY);
+            return new ArrayList<>(buildFiles);
         } else if (level == ExecutionLevel.RUN) {
-            return runFiles.toArray(FILEOBJECT_ARRAY);
+            return new ArrayList<>(runFiles);
         } else {
             throw new IllegalArgumentException();
         }
@@ -128,7 +129,7 @@ public class ProjectPropertiesImpl extends PraxisProjectProperties {
         } else {
             throw new IllegalArgumentException("Unknown build level");
         }
-        pcs.firePropertyChange(PROP_FILES_CHANGED, null, null);
+        pcs.firePropertyChange(PROP_FILES, null, null);
     }
 
     public synchronized void importLibrary(FileObject lib) throws IOException {
@@ -223,7 +224,7 @@ public class ProjectPropertiesImpl extends PraxisProjectProperties {
                     changed = true;
                 }
                 if (changed) {
-                    pcs.firePropertyChange(PROP_FILES_CHANGED, null, null);
+                    pcs.firePropertyChange(PROP_FILES, null, null);
                 }
             }
 
@@ -232,7 +233,7 @@ public class ProjectPropertiesImpl extends PraxisProjectProperties {
         @Override
         public void fileRenamed(FileRenameEvent fe) {
             synchronized (ProjectPropertiesImpl.this) {
-                pcs.firePropertyChange(PROP_FILES_CHANGED, null, null);
+                pcs.firePropertyChange(PROP_FILES, null, null);
             }
         }
     }
