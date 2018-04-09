@@ -582,7 +582,7 @@ public class GraphEditor extends RootEditor {
                 || info.getPortType().name().startsWith("Video");
         PinWidget pin = scene.addPin(cmpID, pinID, getPinAlignment(info));
         pin.setSchemeColors(Utils.colorsForPortType(info.getPortType()).getSchemeColors());
-        Font font = scene.getDefaultFont();
+        Font font = pin.getFont();
         if (primary) {
             pin.setFont(font.deriveFont(Font.BOLD));
         } else {

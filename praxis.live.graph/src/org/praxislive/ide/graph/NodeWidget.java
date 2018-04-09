@@ -143,7 +143,7 @@ public class NodeWidget extends Widget implements StateModel.Listener, MinimizeA
         header.addChild(imageWidget);
 
         nameWidget = new LabelWidget(scene);
-        nameWidget.setFont(scene.getDefaultFont().deriveFont(Font.BOLD));
+        nameWidget.setFont(scene.getFont().deriveFont(Font.BOLD));
         nameWidget.setForeground(Color.BLACK);
         header.addChild(nameWidget);
 
