@@ -39,7 +39,7 @@ import org.openide.util.NbPreferences;
 public class DarculaLFCustoms extends LFCustoms {
 
     private static final String FONT_DEFAULT_NAME = "Dialog";
-    private static final int FONT_DEFAULT_SIZE = 12;
+    private static final int FONT_DEFAULT_SIZE = 14;
     public static final String DEFAULT_FONT = FONT_DEFAULT_NAME + " " + FONT_DEFAULT_SIZE;
 
     private static final String TAB_FOCUS_FILL_UPPER = "tab_focus_fill_upper"; //NOI18N
@@ -542,7 +542,7 @@ public class DarculaLFCustoms extends LFCustoms {
             PROPSHEET_SELECTED_SET_FOREGROUND, Color.WHITE,
             PROPSHEET_DISABLED_FOREGROUND, new Color(161, 161, 146),
             PROPSHEET_BUTTON_FOREGROUND, new Color(187, 187, 187),
-            PROPSHEET_ROWHEIGHT, 18
+            PROPSHEET_ROWHEIGHT, getPropertySheetRowHeight()
             
         
         };
@@ -552,6 +552,15 @@ public class DarculaLFCustoms extends LFCustoms {
         return result;
     }
 
+    private int getPropertySheetRowHeight() {
+        Integer in = (Integer) UIManager.get(CUSTOM_FONT_SIZE);
+        if (in != null) {
+            return (int) (in * 2);
+        } else {
+            return FONT_DEFAULT_SIZE * 2;
+        }
+    }
+    
     /**
      * Enables invert filter for icons if user requested. 
      */
