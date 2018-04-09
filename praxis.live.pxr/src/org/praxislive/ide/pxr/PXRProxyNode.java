@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2014 Neil C Smith.
+ * Copyright 2018 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -41,6 +41,8 @@ import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
+import org.praxislive.core.ComponentInfo;
+import org.praxislive.core.ControlInfo;
 
 /**
  *
@@ -58,7 +60,7 @@ class PXRProxyNode extends AbstractNode {
     PXRProxyNode(final PXRComponentProxy component) {
         this(component,
                 component instanceof PXRContainerProxy
-                ? new ContainerChildren((PXRContainerProxy) component) : Children.LEAF,
+                        ? new ContainerChildren((PXRContainerProxy) component) : Children.LEAF,
                 new ProxyLookup(Lookups.singleton(component), component.getLookup()));
 
     }
@@ -172,10 +174,14 @@ class PXRProxyNode extends AbstractNode {
             props.put(proxyProp);
         }
 
+        for (String input : inputControls()) {
+            props.put(new InputPropertyWrapper(component, input));
+        }
+
         for (Action action : component.getTriggerActions()) {
             props.put(new ActionPropertyWrapper(action));
         }
-        
+
         for (String id : component.getPropertyIDs()) {
             Node.Property<?> prop = component.getProperty(id);
             if (prop.canWrite() && prop instanceof BoundArgumentProperty) {
@@ -188,6 +194,20 @@ class PXRProxyNode extends AbstractNode {
             props.put(prop);
         }
         return sheet;
+    }
+
+    private List<String> inputControls() {
+        ComponentInfo info = component.getInfo();
+        List<String> inputs = new ArrayList<>();
+        for (String id : info.getControls()) {
+            ControlInfo ci = info.getControlInfo(id);
+            if (ci.getType() == ControlInfo.Type.Function &&
+                    ci.getInputsInfo().length == 1 &&
+                    ci.getOutputsInfo().length == 0) {
+                inputs.add(id);
+            }
+        }
+        return inputs;
     }
 
     @Override
