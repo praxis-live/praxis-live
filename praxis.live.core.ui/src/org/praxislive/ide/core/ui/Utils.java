@@ -38,16 +38,13 @@ import org.openide.NotifyDescriptor;
 class Utils {
     
     final static URI WEBSITE_LINK = 
-            URI.create("http://www.praxislive.org");
+            URI.create("https://www.praxislive.org");
     final static URI DOWNLOAD_LINK = 
             WEBSITE_LINK.resolve("/download/");
     final static URI DOCUMENTATION_LINK = 
             WEBSITE_LINK.resolve("/documentation/");
     final static URI ISSUES_LINK = 
             WEBSITE_LINK.resolve("/issues/");
-    
-    final static String START_PAGE_KEY = 
-            "start-page";
     
     private final static Preferences CORE_PREFS =
             Core.getInstance().getInternalPreferences();

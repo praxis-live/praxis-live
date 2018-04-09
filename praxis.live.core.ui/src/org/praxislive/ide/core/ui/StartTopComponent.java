@@ -21,33 +21,30 @@
  */
 package org.praxislive.ide.core.ui;
 
+import java.awt.Color;
 import java.awt.EventQueue;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.io.IOException;
-import java.net.URL;
-import java.util.Objects;
+import java.awt.Font;
+import java.awt.GridBagConstraints;
+import java.awt.Insets;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
-import javax.swing.JButton;
+import javax.swing.Box;
 import javax.swing.JLabel;
-import javax.swing.event.HyperlinkEvent;
-import javax.swing.event.HyperlinkListener;
-import javax.swing.text.Style;
-import javax.swing.text.html.HTMLDocument;
-import org.praxislive.ide.core.ui.Bundle;
+import javax.swing.JPanel;
+import javax.swing.UIManager;
 import org.praxislive.ide.core.Core;
 import org.netbeans.api.settings.ConvertAsProperties;
 import org.openide.awt.ActionID;
-import org.openide.awt.NotificationDisplayer;
-import org.openide.util.Exceptions;
-import org.openide.util.ImageUtilities;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
 import org.openide.windows.OnShowing;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 import org.openide.windows.WindowSystemEvent;
 import org.openide.windows.WindowSystemListener;
+import org.praxislive.ide.core.ui.api.StartPagePanelProvider;
 
 /**
  * Welcome Page
@@ -69,72 +66,68 @@ import org.openide.windows.WindowSystemListener;
     "CTL_StartAction=Start",
     "CTL_StartTopComponent=Praxis LIVE",
     "HINT_StartTopComponent=Welcome to Praxis LIVE",
-    "# {0} - version",
-    "LBL_Version=version {0}",
-    "LBL_NewVersion=New version available",
-    "LBL_NewVersionInfo=A new version of Praxis LIVE is available to download",
-    "LBL_Download=Download",
 })
 public final class StartTopComponent extends TopComponent {
 
-    private final JLabel updateLabel;
-    private final JButton downloadButton;
+    private final List<StartPagePanelProvider> panelProviders;
+    private final Font headerFont;
 
     public StartTopComponent() {
         initComponents();
         setName(Bundle.CTL_StartTopComponent());
-        versionLabel.setText(Bundle.LBL_Version(Core.getInstance().getVersion()));
         setToolTipText(Bundle.HINT_StartTopComponent());
         putClientProperty("activateAtStartup", Boolean.TRUE);
         putClientProperty(TopComponent.PROP_DRAGGING_DISABLED, true);
         putClientProperty(TopComponent.PROP_UNDOCKING_DISABLED, true);
 
-        initHTMLPane();
+        Font defFont = UIManager.getFont("controlFont");
+        if (defFont != null) {
+            headerFont = defFont.deriveFont(Font.PLAIN, defFont.getSize2D() * 1.6f);
+        } else {
+            headerFont = null;
+        }
+        
+        panelProviders = new ArrayList<>();
+        initPanels();
 
-        updateLabel = new JLabel(Bundle.LBL_NewVersion());
-        downloadButton = new JButton(Bundle.LBL_Download());
-        downloadButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                Utils.openExternalLink(Utils.DOWNLOAD_LINK);
-            }
-        });
     }
 
-    private void initHTMLPane() {
-        URL defPage = getClass().getResource("resources/defaultStart.html");
-        if (defPage != null) {
-            try {
-                htmlPane.setPage(defPage);
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
+    
+    private void initPanels() {
+        
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.anchor = GridBagConstraints.NORTH;
+        gbc.gridx = 0;
+        gbc.fill = GridBagConstraints.BOTH;
+        gbc.weightx = 1;
+        gbc.insets = new Insets(4, 2, 4, 2);
+        
+        panelProviders.add(new VersionCheckStartPanel.Provider());
+        panelProviders.add(new InfoStartPanel.Provider());
+        
+        panelProviders.addAll(Lookup.getDefault().lookupAll(StartPagePanelProvider.class));
+        
+        panelProviders.forEach(pp -> {
+            String title = pp.getTitle();
+            if (title != null && !title.isEmpty()) {
+                container.add(createTitleLabel(pp.getTitle()), gbc);
             }
-        }
-        htmlPane.addHyperlinkListener(new HyperlinkListener() {
-
-            @Override
-            public void hyperlinkUpdate(HyperlinkEvent e) {
-                if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
-                    Utils.openExternalLink(e.getURL());
-                } else {
-                    String styleName;
-                    if (e.getEventType() == HyperlinkEvent.EventType.ENTERED) {
-                        styleName = "a:hover";
-                    } else {
-                        styleName = "a";
-                    }
-                    HTMLDocument doc = (HTMLDocument) htmlPane.getDocument();
-                    Style newStyle = doc.getStyleSheet().getStyle(styleName);
-                    if (newStyle == null) {
-                        newStyle = doc.getStyleSheet().getRule("a");
-                    }
-                    int start = e.getSourceElement().getStartOffset();
-                    int end = e.getSourceElement().getEndOffset();
-                    doc.setCharacterAttributes(start, end - start, newStyle, false);
-                }
-
-            }
+            JPanel panel = pp.getPanel();
+            panel.setBackground(Color.BLACK);
+            panel.setAlignmentX(LEFT_ALIGNMENT);
+            container.add(panel, gbc);
         });
+        
+        gbc.weighty = 1;
+        container.add(Box.createVerticalGlue(), gbc);
+    }
+    
+    private JLabel createTitleLabel(String title) {
+        JLabel label = new JLabel(title);
+        label.setFont(headerFont);
+        label.setBackground(Color.BLACK);
+        label.setAlignmentX(LEFT_ALIGNMENT);
+        return label;
     }
 
     /**
@@ -147,10 +140,8 @@ public final class StartTopComponent extends TopComponent {
 
         mainPanel = new javax.swing.JPanel();
         logo = new javax.swing.JButton();
-        updatePanel = new javax.swing.JPanel();
         scrollPane = new javax.swing.JScrollPane();
-        htmlPane = new javax.swing.JEditorPane();
-        versionLabel = new javax.swing.JLabel();
+        container = new javax.swing.JPanel();
 
         setBackground(java.awt.Color.black);
         setOpaque(true);
@@ -168,22 +159,13 @@ public final class StartTopComponent extends TopComponent {
             }
         });
 
-        updatePanel.setBackground(new java.awt.Color(0, 0, 0));
-        updatePanel.setForeground(new java.awt.Color(204, 204, 204));
-        updatePanel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT));
-
         scrollPane.setBackground(new java.awt.Color(0, 0, 0));
+        scrollPane.setBorder(null);
 
-        htmlPane.setEditable(false);
-        htmlPane.setBackground(new java.awt.Color(0, 0, 0));
-        htmlPane.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
-        htmlPane.setContentType("text/html"); // NOI18N
-        htmlPane.setFocusable(false);
-        scrollPane.setViewportView(htmlPane);
-
-        versionLabel.setBackground(new java.awt.Color(0, 0, 0));
-        versionLabel.setFont(versionLabel.getFont().deriveFont(versionLabel.getFont().getSize()+2f));
-        versionLabel.setForeground(new java.awt.Color(204, 204, 204));
+        container.setBackground(new java.awt.Color(0, 0, 0));
+        container.setBorder(null);
+        container.setLayout(new java.awt.GridBagLayout());
+        scrollPane.setViewportView(container);
 
         javax.swing.GroupLayout mainPanelLayout = new javax.swing.GroupLayout(mainPanel);
         mainPanel.setLayout(mainPanelLayout);
@@ -194,26 +176,18 @@ public final class StartTopComponent extends TopComponent {
                 .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(scrollPane)
                     .addGroup(mainPanelLayout.createSequentialGroup()
-                        .addComponent(updatePanel, javax.swing.GroupLayout.DEFAULT_SIZE, 554, Short.MAX_VALUE)
-                        .addGap(234, 234, 234))
-                    .addGroup(mainPanelLayout.createSequentialGroup()
                         .addComponent(logo)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(versionLabel)))
+                        .addGap(0, 560, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         mainPanelLayout.setVerticalGroup(
             mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, mainPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(logo)
-                    .addComponent(versionLabel, javax.swing.GroupLayout.Alignment.TRAILING))
+                .addComponent(logo)
                 .addGap(18, 18, 18)
                 .addComponent(scrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 442, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(updatePanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
+                .addGap(22, 22, 22))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
@@ -233,39 +207,31 @@ public final class StartTopComponent extends TopComponent {
     }//GEN-LAST:event_logoActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JEditorPane htmlPane;
+    private javax.swing.JPanel container;
     private javax.swing.JButton logo;
     private javax.swing.JPanel mainPanel;
     private javax.swing.JScrollPane scrollPane;
-    private javax.swing.JPanel updatePanel;
-    private javax.swing.JLabel versionLabel;
     // End of variables declaration//GEN-END:variables
 
     @Override
     public void componentOpened() {
-        configureUpdatePanel();
-        configureStartPage();
+        refresh();
     }
 
-    void configureUpdatePanel() {
-        updatePanel.removeAll();
-        if (isUpdateAvailable()) {
-            updatePanel.add(updateLabel);
-            updatePanel.add(downloadButton);
-            updatePanel.revalidate();
-        }
+    private void refresh() {
+        panelProviders.forEach(StartPagePanelProvider::refresh);
     }
-
-    void configureStartPage() {
-        String startPage = Core.getInstance().getPreferences().get("start-page", null);
-        if (startPage != null) {
-            try {
-                htmlPane.setPage(startPage);
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
-    }
+    
+//    void configureStartPage() {
+//        String startPage = Core.getInstance().getPreferences().get("start-page", null);
+//        if (startPage != null) {
+//            try {
+//                htmlPane.setPage(startPage);
+//            } catch (IOException ex) {
+//                Exceptions.printStackTrace(ex);
+//            }
+//        }
+//    }
 
     void writeProperties(java.util.Properties p) {
         // better to version settings since initial version as advocated at
@@ -282,31 +248,24 @@ public final class StartTopComponent extends TopComponent {
     private static void checkInfo() {
         StartTopComponent start = StartTopComponent.find();
         if (start != null && start.isVisible()) {
-            start.configureUpdatePanel();
-            start.configureStartPage();
+            start.refresh();
         }
-        if (isUpdateAvailable()) {
-            NotificationDisplayer.getDefault().notify(
-                    Bundle.LBL_NewVersion(),
-                    ImageUtilities.loadImageIcon(
-                            "org/praxislive/ide/core/ui/resources/info_icon.png", true),
-                    Bundle.LBL_NewVersionInfo(),
-                    null);
-        }
+//        if (isUpdateAvailable()) {
+//            NotificationDisplayer.getDefault().notify(
+//                    Bundle.LBL_NewVersion(),
+//                    ImageUtilities.loadImageIcon(
+//                            "org/praxislive/ide/core/ui/resources/info_icon.png", true),
+//                    Bundle.LBL_NewVersionInfo(),
+//                    null);
+//        }
     }
 
-    private static boolean isUpdateAvailable() {
-        Core core = Core.getInstance();
-        String current = core.getBuildVersion();
-        String latest = core.getLatestBuild();
-        try {
-            int cur = Integer.parseInt(current);
-            int lat = Integer.parseInt(latest);
-            return lat > cur;
-        } catch (Exception ex) {
-            return !Objects.equals(current, latest);
-        }
-    }
+//    private static boolean isUpdateAvailable() {
+//        Core core = Core.getInstance();
+//        String current = core.getVersion();
+//        String latest = core.getLatestAvailableVersion();
+//        return !Objects.equals(current, latest);
+//    }
 
     static StartTopComponent find() {
         TopComponent tc = WindowManager.getDefault().findTopComponent("StartTopComponent");

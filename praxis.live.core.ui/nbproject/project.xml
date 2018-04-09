@@ -143,7 +143,9 @@
                     </run-dependency>
                 </dependency>
             </module-dependencies>
-            <public-packages/>
+            <public-packages>
+                <package>org.praxislive.ide.core.ui.api</package>
+            </public-packages>
         </data>
     </configuration>
 </project>
