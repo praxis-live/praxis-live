@@ -38,12 +38,14 @@ import org.openide.util.RequestProcessor;
  * @author Neil C Smith (http://neilcsmith.net)
  */
 @NbBundle.Messages({
-    "LINK_ReleaseProperties=http://www.praxislive.org/release.properties"
+    "LINK_ReleaseProperties=https://www.praxislive.org/v4/info.properties"
 })
 public class Core extends CoreInfo {
 
+    @Deprecated
     public final static String KEY_LATEST_BUILD = "latest-build";
-    
+    public final static String KEY_LATEST_VERSION = "latest-version";
+
     private static final Core INSTANCE = new Core();
 
     private final static RequestProcessor RP = new RequestProcessor(Core.class);
@@ -52,6 +54,7 @@ public class Core extends CoreInfo {
     private final static Preferences INTERNAL = NbPreferences.forModule(Core.class);
 
     private String version;
+    @Deprecated
     private String build;
 
     @Override
@@ -59,24 +62,30 @@ public class Core extends CoreInfo {
         return version;
     }
 
+    public String getLatestAvailableVersion() {
+        return GLOBALS.get(KEY_LATEST_VERSION, version);
+    }
+
     @Override
+    @Deprecated
     public String getBuildVersion() {
         return build;
     }
 
+    @Deprecated
     public String getLatestBuild() {
         return GLOBALS.get(KEY_LATEST_BUILD, getBuildVersion());
     }
-    
+
     @Override
     public Preferences getPreferences() {
         return GLOBALS;
     }
-    
+
     public Preferences getInternalPreferences() {
         return INTERNAL;
     }
-    
+
     void setVersion(String version) {
         this.version = version;
     }
@@ -101,7 +110,10 @@ public class Core extends CoreInfo {
         @Override
         public void run() {
             Properties releaseProperties = new Properties();
-            try (InputStreamReader reader = new InputStreamReader(new URL(Bundle.LINK_ReleaseProperties()).openStream())) {
+            try (InputStreamReader reader = new InputStreamReader(
+                    new URL(
+                            System.getProperty("praxislive.start.infoURL",
+                                    Bundle.LINK_ReleaseProperties())).openStream())) {
                 releaseProperties.load(reader);
                 for (String key : releaseProperties.stringPropertyNames()) {
                     String value = releaseProperties.getProperty(key);
@@ -111,8 +123,6 @@ public class Core extends CoreInfo {
                         GLOBALS.put(key, value);
                     }
                 }
-            } catch (MalformedURLException ex) {
-                Exceptions.printStackTrace(ex);
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }

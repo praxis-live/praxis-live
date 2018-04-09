@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 2016 Neil C Smith.
+ * Copyright 2018 Neil C Smith.
  * 
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -30,10 +30,13 @@ import org.praxislive.ide.core.Core;
  */
 public abstract class CoreInfo {
     
-    public String getVersion() {
-        return getBuildVersion();
+    public abstract String getVersion();
+
+    public String getLatestAvailableVersion() {
+        return getVersion();
     }
     
+    @Deprecated
     public abstract String getBuildVersion();
     
     public abstract Preferences getPreferences();
