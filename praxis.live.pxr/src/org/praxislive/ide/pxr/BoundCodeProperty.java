@@ -45,6 +45,7 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
+import org.praxislive.core.CallArguments;
 import org.praxislive.core.Value;
 import org.praxislive.ide.core.api.Callback;
 
@@ -106,7 +107,21 @@ class BoundCodeProperty extends BoundArgumentProperty {
     public void setValue(Value value, Callback callback) {
         if ("text/x-praxis-java".equals(this.mimeType) &&
                 "code".equals(getName())) {
-            super.setValue(rewriteV3toV4(value), callback);
+            super.setValue(value, new Callback() {
+                @Override
+                public void onReturn(CallArguments args) {
+                    callback.onReturn(args);
+                }
+
+                @Override
+                public void onError(CallArguments args) {
+                    // doing this directly in the callback doesn't work?!
+                    // possibly DefaultBindingControl - removes active adaptor after callback?
+                    EventQueue.invokeLater(() -> {
+                        BoundCodeProperty.super.setValue(rewriteV3toV4(value), callback);
+                    });
+                }
+            });
         } else {
             super.setValue(value, callback);
         }
