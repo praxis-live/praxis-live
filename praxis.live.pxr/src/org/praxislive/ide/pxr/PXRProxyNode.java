@@ -202,8 +202,7 @@ class PXRProxyNode extends AbstractNode {
         for (String id : info.getControls()) {
             ControlInfo ci = info.getControlInfo(id);
             if (ci.getType() == ControlInfo.Type.Function &&
-                    ci.getInputsInfo().length == 1 &&
-                    ci.getOutputsInfo().length == 0) {
+                    ci.getProperties().getString("input-port", "").equals(id)) {
                 inputs.add(id);
             }
         }
