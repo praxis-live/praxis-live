@@ -34,7 +34,7 @@ import org.openide.util.lookup.ServiceProvider;
  *
  * @author Neil C Smith (http://neilcsmith.net)
  */
-@ServiceProvider(service=OptionProcessor.class, supersedes={"org.praxislive.player.CLIProcessor"})
+@ServiceProvider(service=OptionProcessor.class, supersedes={"org.praxislive.nb.launcher.CLIProcessor"})
 public class CLIOverride extends OptionProcessor {
 
     private final static Option ALWAYS = Option.always();
