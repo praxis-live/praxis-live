@@ -66,7 +66,7 @@ class DefaultPaletteFilter extends PaletteFilter {
             if (data != null) {
                 if (data.isDeprecated()) {
                     if (Components.getShowDeprecated()) {
-                        TypeRewriter rw = data.getLookup().get(TypeRewriter.class);
+                        TypeRewriter rw = data.getLookup().find(TypeRewriter.class).orElse(null);
                         if (rw == null || !TypeRewriter.isIdentity(rw)) {
                             return true;
                         }

@@ -75,7 +75,7 @@ public class AbstractHelperComponent extends AbstractComponent {
     @Override
     public void hierarchyChanged() {
         super.hierarchyChanged();
-        bindingContext = getLookup().get(BindingContext.class);
+        bindingContext = getLookup().find(BindingContext.class).orElse(null);
         if (connected) {
             if (bindingContext == null) {
                 connected = false;

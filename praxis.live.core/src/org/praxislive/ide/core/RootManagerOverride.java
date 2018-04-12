@@ -130,37 +130,6 @@ class RootManagerOverride extends AbstractSwingRoot {
         }
     }
 
-//    private class RemoveRootControl extends AbstractAsyncControl {
-//
-//        @Override
-//        protected Call processInvoke(final Call call) throws Exception {
-//
-//            Object ret = DialogDisplayer.getDefault().notify(
-//                    new NotifyDescriptor.Confirmation("Remove root " + call.getArgs().get(0).toString()));
-//            if (ret == NotifyDescriptor.YES_OPTION) {
-//                ControlAddress to = ControlAddress.create(getDefaultServiceAddress(), RootManagerService.REMOVE_ROOT);
-//                return Call.createCall(to, getAddress(), call.getTimecode(), call.getArgs());
-//            } else {
-//                return Call.createErrorCall(call, CallArguments.EMPTY);
-//            }
-//
-//        }
-//
-//        @Override
-//        protected Call processResponse(Call call) throws Exception {
-//            if (call.getType() == Call.Type.RETURN) {
-//                // sucessfully added
-//                Call active = getActiveCall();
-//                knownRoots.remove(active.getArgs().get(0).toString());
-//            }
-//            return Call.createReturnCall(getActiveCall(), call.getArgs());
-//        }
-//
-//        @Override
-//        public ControlInfo getInfo() {
-//            return RootManagerService.REMOVE_ROOT_INFO;
-//        }
-//    }
     private class RemoveRootControl extends AbstractControl {
 
         private Map<String, List<Call>> pending;

@@ -60,7 +60,7 @@ public class Components {
             data = getMetaData(type);
         }
         if (data != null) {
-            IconProvider ip = data.getLookup().get(IconProvider.class);
+            IconProvider ip = data.getLookup().find(IconProvider.class).orElse(null);
             if (ip != null) {
                 Image img = ip.getIcon(16, 16);
                 if (img != null) {

@@ -383,13 +383,11 @@ public class PXRComponentProxy implements ComponentProxy {
         if (args.length != 1) {
             return null;
         }
-        if (args[0].getType() == PString.class) {
+        if (args[0].type().asClass() == PString.class) {
             String mime = args[0].getProperties().getString(PString.KEY_MIME_TYPE, null);
-//            if (BoundCodeProperty.isSupportedMimeType(mime)) {
             if (mime != null) {
                 return new BoundCodeProperty(getRoot().getProject(), address, info, mime);
             }
-//            }
         }
 
         return new BoundArgumentProperty(address, info);
