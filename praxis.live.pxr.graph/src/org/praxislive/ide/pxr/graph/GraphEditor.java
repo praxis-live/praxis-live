@@ -49,6 +49,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import javax.swing.*;
 import javax.swing.border.LineBorder;
 import javax.swing.text.DefaultEditorKit;
@@ -792,15 +793,24 @@ public class GraphEditor extends RootEditor {
     }
 
     void acceptImport(FileObject file) {
-        if (getActionSupport().importSubgraph(container, file, new Callback() {
+        List<String> warnings = new ArrayList<>(1);
+        if (getActionSupport().importSubgraph(container, file, warnings, new Callback() {
             @Override
             public void onReturn(CallArguments args) {
                 syncGraph(true);
+                if (!warnings.isEmpty()) {
+                    String errors = warnings.stream().collect(Collectors.joining("\n"));
+                    DialogDisplayer.getDefault().notify(
+                            new NotifyDescriptor.Message(errors, NotifyDescriptor.WARNING_MESSAGE));
+                }
             }
 
             @Override
             public void onError(CallArguments args) {
                 syncGraph(true);
+                String errors = warnings.stream().collect(Collectors.joining("\n"));
+                DialogDisplayer.getDefault().notify(
+                            new NotifyDescriptor.Message(errors, NotifyDescriptor.ERROR_MESSAGE));
             }
         })) {
             syncGraph(false);
