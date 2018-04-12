@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Neil C Smith.
+ * Copyright 2018 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -21,20 +21,16 @@
  */
 package org.praxislive.ide.pxr.wizard;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.File;
-import java.util.Set;
 import javax.swing.JPanel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.praxislive.core.ComponentType;
-import org.praxislive.ide.components.api.Components;
 import org.openide.filesystems.FileChooserBuilder;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
-final class PXRVisualPanel1 extends JPanel implements DocumentListener, ActionListener {
+final class PXRVisualPanel1 extends JPanel implements DocumentListener {
 
     private PXRWizardPanel1 wizardPanel;
     private FileChooserBuilder fileChooser;
@@ -66,7 +62,6 @@ final class PXRVisualPanel1 extends JPanel implements DocumentListener, ActionLi
             typeField.addItem(ComponentType.create("root:audio"));
             typeField.addItem(ComponentType.create("root:video"));
             typeField.addItem(ComponentType.create("root:tinkerforge"));
-            typeField.addActionListener(this);
         } else {
             typeField.addItem(type);
             typeField.setEnabled(false);
@@ -74,8 +69,6 @@ final class PXRVisualPanel1 extends JPanel implements DocumentListener, ActionLi
         
         idField.getDocument().addDocumentListener(this);
              
-        autostartField.addActionListener(this);
-        buildField.addActionListener(this);
     }
 
     @Override
@@ -127,8 +120,6 @@ final class PXRVisualPanel1 extends JPanel implements DocumentListener, ActionLi
         fileLabel = new javax.swing.JLabel();
         typeField = new javax.swing.JComboBox();
         typeLabel = new javax.swing.JLabel();
-        buildField = new javax.swing.JCheckBox();
-        autostartField = new javax.swing.JCheckBox();
 
         idField.setText(org.openide.util.NbBundle.getMessage(PXRVisualPanel1.class, "PXRVisualPanel1.idField.text")); // NOI18N
 
@@ -151,12 +142,6 @@ final class PXRVisualPanel1 extends JPanel implements DocumentListener, ActionLi
 
         org.openide.awt.Mnemonics.setLocalizedText(typeLabel, org.openide.util.NbBundle.getMessage(PXRVisualPanel1.class, "PXRVisualPanel1.typeLabel.text")); // NOI18N
 
-        buildField.setSelected(true);
-        org.openide.awt.Mnemonics.setLocalizedText(buildField, org.openide.util.NbBundle.getMessage(PXRVisualPanel1.class, "PXRVisualPanel1.buildField.text")); // NOI18N
-
-        autostartField.setSelected(true);
-        org.openide.awt.Mnemonics.setLocalizedText(autostartField, org.openide.util.NbBundle.getMessage(PXRVisualPanel1.class, "PXRVisualPanel1.autostartField.text")); // NOI18N
-
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -169,17 +154,14 @@ final class PXRVisualPanel1 extends JPanel implements DocumentListener, ActionLi
                     .addComponent(fileLabel)
                     .addComponent(typeLabel))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(autostartField)
-                    .addComponent(buildField)
-                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                        .addComponent(typeField, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(fileField)
-                        .addGroup(layout.createSequentialGroup()
-                            .addComponent(locationField, javax.swing.GroupLayout.PREFERRED_SIZE, 277, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                            .addComponent(browseButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                        .addComponent(idField)))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(typeField, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(fileField)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(locationField, javax.swing.GroupLayout.PREFERRED_SIZE, 277, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(browseButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(idField))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -202,11 +184,7 @@ final class PXRVisualPanel1 extends JPanel implements DocumentListener, ActionLi
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(fileField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(fileLabel))
-                .addGap(18, 18, 18)
-                .addComponent(buildField)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(autostartField)
-                .addContainerGap(92, Short.MAX_VALUE))
+                .addContainerGap(152, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -218,9 +196,7 @@ final class PXRVisualPanel1 extends JPanel implements DocumentListener, ActionLi
         }
     }//GEN-LAST:event_browseButtonActionPerformed
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JCheckBox autostartField;
     private javax.swing.JButton browseButton;
-    private javax.swing.JCheckBox buildField;
     private javax.swing.JTextField fileField;
     private javax.swing.JLabel fileLabel;
     private javax.swing.JTextField idField;
@@ -237,14 +213,6 @@ final class PXRVisualPanel1 extends JPanel implements DocumentListener, ActionLi
 
     String getRootID() {
         return idField.getText();
-    }
-
-    boolean getBuild() {
-        return buildField.isSelected();
-    }
-
-    boolean getAutostart() {
-        return autostartField.isSelected();
     }
 
     ComponentType getType() {
@@ -273,8 +241,4 @@ final class PXRVisualPanel1 extends JPanel implements DocumentListener, ActionLi
         wizardPanel.validate();
     }
 
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        wizardPanel.validate();
-    }
 }

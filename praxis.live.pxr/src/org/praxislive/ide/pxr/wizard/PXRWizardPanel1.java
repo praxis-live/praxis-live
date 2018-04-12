@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Neil C Smith.
+ * Copyright 2018 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -42,8 +42,6 @@ class PXRWizardPanel1 implements WizardDescriptor.Panel {
     private String id;
     private File file;
     ComponentType type;
-    private boolean build;
-    private boolean autostart;
 
     PXRWizardPanel1() {
         cs = new ChangeSupport(this);
@@ -116,8 +114,6 @@ class PXRWizardPanel1 implements WizardDescriptor.Panel {
             nowValid = false;
         }
         
-        autostart = component.getAutostart();
-        build = component.getBuild();
         if (nowValid != valid) {
             valid = nowValid;
             cs.fireChange();
@@ -160,8 +156,6 @@ class PXRWizardPanel1 implements WizardDescriptor.Panel {
             wizard.putProperty(PXRWizardIterator.PROP_PXR_ID, id);
             wizard.putProperty(PXRWizardIterator.PROP_PXR_FILE, file);
             wizard.putProperty(PXRWizardIterator.PROP_PXR_TYPE, type);
-            wizard.putProperty(PXRWizardIterator.PROP_PXR_BUILD, build);
-            wizard.putProperty(PXRWizardIterator.PROP_PXR_AUTOSTART, autostart);
         }
     }
 }

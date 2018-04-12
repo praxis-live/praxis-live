@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Neil C Smith.
+ * Copyright 2018 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -21,19 +21,14 @@
  */
 package org.praxislive.ide.pxr.wizard;
 
-import java.awt.Component;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.logging.Logger;
-import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.praxislive.core.CallArguments;
 import org.praxislive.core.ComponentType;
@@ -52,36 +47,32 @@ import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
 
 public final class PXRWizardIterator implements WizardDescriptor.InstantiatingIterator {
-    
+
     final static Logger LOG = Logger.getLogger(PXRWizardIterator.class.getName());
 
     public final static String PROP_PXR_ID = "PXR.id";
     public final static String PROP_PXR_FILE = "PXR.file";
     public final static String PROP_PXR_TYPE = "PXR.type";
-    public final static String PROP_PXR_BUILD = "PXR.build";
-    public final static String PROP_PXR_AUTOSTART = "PXR.autostart";
     private int index;
     private WizardDescriptor wizard;
     private WizardDescriptor.Panel[] panels;
     private ComponentType rootType;
 
-    
     public PXRWizardIterator() {
         LOG.fine("Creating PXRWizardIterator");
     }
-    
+
     /**
-     * Initialize panels representing individual wizard's steps and sets
-     * various properties for them influencing wizard appearance.
+     * Initialize panels representing individual wizard's steps and sets various
+     * properties for them influencing wizard appearance.
      */
     private WizardDescriptor.Panel[] getPanels() {
         if (panels == null) {
-            panels = new WizardDescriptor.Panel[] {
+            panels = new WizardDescriptor.Panel[]{
                 new PXRWizardPanel1(rootType)
             };
 
             // @TODO - this seems to break Templates.getTargetFolder() ???
-
 //            String[] steps = createSteps();
 //            for (int i = 0; i < panels.length; i++) {
 //                Component c = panels[i].getComponent();
@@ -136,16 +127,8 @@ public final class PXRWizardIterator implements WizardDescriptor.InstantiatingIt
         } else {
             throw new IOException("No type in wizard");
         }
-        boolean build = false;
-        obj = wizard.getProperty(PROP_PXR_BUILD);
-        if (obj instanceof Boolean) {
-            build = ((Boolean) obj).booleanValue();
-        }
-        boolean autostart = false;
-        obj = wizard.getProperty(PROP_PXR_AUTOSTART);
-        if (obj instanceof Boolean) {
-            autostart = ((Boolean) obj).booleanValue();
-        }
+        boolean build = true;
+        boolean autostart = true;
 
         FileObject fileObj = FileUtil.createData(file);
         writeFile(fileObj, id, type, autostart);
@@ -163,7 +146,7 @@ public final class PXRWizardIterator implements WizardDescriptor.InstantiatingIt
                 }
 
             }
-            
+
             if (build) {
                 buildFile(project, fileObj);
             }
@@ -172,17 +155,18 @@ public final class PXRWizardIterator implements WizardDescriptor.InstantiatingIt
             LOG.warning("No project found for wizard");
         }
 
-
-
         return Collections.singleton(fileObj);
     }
 
     private void writeFile(FileObject file, String id, ComponentType type, boolean autostart) throws IOException {
-        StringBuilder code = new StringBuilder();
-        code.append("@ /").append(id).append(" ").append(type).append(" {\n");
-//        code.append("  ").append("#%autostart ").append(autostart).append("\n");
-        code.append("}");
-
+        CharSequence code;
+        if ("root:video".equals(type.toString())) {
+            code = getVideoFileTemplate(id);
+        } else if ("root:audio".equals(type.toString())) {
+            code = getAudioFileTemplate(id);
+        } else {
+            code = getDefaultFileTemplate(id, type);
+        }
         Writer writer = null;
         try {
             writer = new OutputStreamWriter(file.getOutputStream());
@@ -192,6 +176,43 @@ public final class PXRWizardIterator implements WizardDescriptor.InstantiatingIt
                 writer.close();
             }
         }
+    }
+
+    private CharSequence getDefaultFileTemplate(String id, ComponentType type) {
+        StringBuilder code = new StringBuilder();
+        code.append("@ /").append(id).append(" ").append(type).append(" {\n");
+        code.append("}");
+        return code;
+    }
+
+    private CharSequence getVideoFileTemplate(String id) {
+        String template = "@ /video root:video {\n"
+                + "  #%pxr.format 4\n"
+                + "  #%autostart true\n"
+                + "  .width 800\n"
+                + "  .height 600\n"
+                + "  .fps 60.0\n"
+                + "  .renderer OpenGL\n"
+                + "  @ ./screen video:output {\n"
+                + "    #%graph.x 600\n"
+                + "    #%graph.y 200\n"
+                + "    .always-on-top true\n"
+                + "    .show-cursor true\n"
+                + "  }\n"
+                + "}";
+        return template.replace("/video", "/" + id);
+    }
+    
+    private CharSequence getAudioFileTemplate(String id) {
+        String template = "@ /audio root:audio {\n"
+                + "  #%pxr.format 4\n"
+                + "  #%autostart true\n"
+                + "  @ ./output audio:output {\n"
+                + "    #%graph.x 600\n"
+                + "    #%graph.y 200\n"
+                + "  }\n"
+                + "}";
+        return template.replace("/video", "/" + id);
     }
 
     private FileObject writeAutostartFile(Project base, String id) throws IOException {
@@ -252,7 +273,7 @@ public final class PXRWizardIterator implements WizardDescriptor.InstantiatingIt
             } catch (Exception ex) {
                 // do nothing
             }
-        }      
+        }
     }
 
     @Override

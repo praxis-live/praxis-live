@@ -25,19 +25,15 @@
                   <Component id="typeLabel" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="autostartField" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="buildField" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Group type="103" alignment="0" groupAlignment="0" max="-2" attributes="0">
-                      <Component id="typeField" max="32767" attributes="1"/>
-                      <Component id="fileField" alignment="0" max="32767" attributes="1"/>
-                      <Group type="102" alignment="0" attributes="1">
-                          <Component id="locationField" min="-2" pref="277" max="-2" attributes="0"/>
-                          <EmptySpace max="-2" attributes="0"/>
-                          <Component id="browseButton" max="32767" attributes="0"/>
-                      </Group>
-                      <Component id="idField" alignment="0" max="32767" attributes="1"/>
+              <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                  <Component id="typeField" max="32767" attributes="1"/>
+                  <Component id="fileField" alignment="0" max="32767" attributes="1"/>
+                  <Group type="102" alignment="0" attributes="1">
+                      <Component id="locationField" min="-2" pref="277" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="browseButton" max="32767" attributes="0"/>
                   </Group>
+                  <Component id="idField" alignment="0" max="32767" attributes="1"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
@@ -67,11 +63,7 @@
                   <Component id="fileField" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="fileLabel" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace type="separate" max="-2" attributes="0"/>
-              <Component id="buildField" min="-2" max="-2" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
-              <Component id="autostartField" min="-2" max="-2" attributes="0"/>
-              <EmptySpace pref="92" max="32767" attributes="0"/>
+              <EmptySpace pref="152" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -136,22 +128,6 @@
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/praxislive/ide/pxr/wizard/Bundle.properties" key="PXRVisualPanel1.typeLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
-    </Component>
-    <Component class="javax.swing.JCheckBox" name="buildField">
-      <Properties>
-        <Property name="selected" type="boolean" value="true"/>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/praxislive/ide/pxr/wizard/Bundle.properties" key="PXRVisualPanel1.buildField.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
-    </Component>
-    <Component class="javax.swing.JCheckBox" name="autostartField">
-      <Properties>
-        <Property name="selected" type="boolean" value="true"/>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/praxislive/ide/pxr/wizard/Bundle.properties" key="PXRVisualPanel1.autostartField.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
     </Component>
