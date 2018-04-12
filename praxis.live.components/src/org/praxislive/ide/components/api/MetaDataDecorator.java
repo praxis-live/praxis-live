@@ -22,6 +22,7 @@
 package org.praxislive.ide.components.api;
 
 import java.awt.Image;
+import java.util.Optional;
 import org.praxislive.core.services.ComponentFactory;
 import org.praxislive.core.ComponentType;
 import org.praxislive.core.Lookup;
@@ -49,18 +50,13 @@ public class MetaDataDecorator<T> extends ComponentFactory.MetaData<T> {
     }
 
     @Override
-    public boolean isTest() {
-        return delegate.isTest();
-    }
-
-    @Override
     public boolean isDeprecated() {
         return delegate.isDeprecated();
     }
 
     @Override
-    public ComponentType getReplacement() {
-        return delegate.getReplacement();
+    public Optional<ComponentType> findReplacement() {
+        return delegate.findReplacement();
     }
 
     @Override

@@ -66,8 +66,6 @@ public class TypeNode extends AbstractNode {
         if (data != null) {
             if (data.isDeprecated()) {
                 return "<s>" + type.toString() + "</s>";
-            } else if (data.isTest()) {
-                return "<i>" + type.toString() + "</i>";
             }
         }
         return super.getHtmlDisplayName();

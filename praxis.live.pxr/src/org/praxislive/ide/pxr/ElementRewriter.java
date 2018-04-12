@@ -85,8 +85,8 @@ class ElementRewriter {
         if (info == null) {
             ComponentFactory.MetaData<?> data =
                     Components.getMetaData(component.type);
-            if (data != null && data.isDeprecated() && data.getReplacement() != null) {
-                ComponentType newType = data.getReplacement();
+            if (data != null && data.isDeprecated() && data.findReplacement().isPresent()) {
+                ComponentType newType = data.findReplacement().get();
                 TypeRewriter rewriter = data.getLookup().find(TypeRewriter.class).orElse(null);
                 if (newType != null && rewriter != null && TypeRewriter.isIdentity(rewriter)) {
                     info = new Info();

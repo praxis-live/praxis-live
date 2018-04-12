@@ -69,7 +69,7 @@ class TemplateFiles {
             buildTemplateFile(sb, type, filename);
 
             MetaData<? extends Root> data = Components.getRootMetaData(type);
-            if (data != null && !data.isTest() && !data.isDeprecated()) {
+            if (data != null && !data.isDeprecated()) {
                 privileged.add(templateFolder + filename);
             }
         }

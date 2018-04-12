@@ -42,7 +42,8 @@ public class CategoryChildren extends Children.Keys<String> {
     private List<String> forceTestFilters;
     private TreeMap<String, TreeMap<ComponentType, MetaData<? extends Component>>> core;
     private TreeMap<String, TreeMap<ComponentType, MetaData<? extends Component>>>  others;
-    private boolean includeTest = ComponentSettings.getShowTest();
+//    private boolean includeTest = ComponentSettings.getShowTest();
+    private boolean includeTest = false;
     
 
     public CategoryChildren() {
@@ -65,9 +66,9 @@ public class CategoryChildren extends Children.Keys<String> {
             try {
                 ComponentType type = ComponentType.create("root:" + filter);
                 MetaData<? extends Root> data = ComponentRegistry.getDefault().getRootMetaData(type);
-                if (data != null && data.isTest()) {
-                    forceTestFilters.add(filter);
-                }
+//                if (data != null && data.isTest()) {
+//                    forceTestFilters.add(filter);
+//                }
             } catch (Exception ex) {
                 continue;
             }
@@ -103,23 +104,23 @@ public class CategoryChildren extends Children.Keys<String> {
     }
 
     private boolean include(String type, MetaData<? extends Component> data) {
-        if (data != null && data.isTest()) {
-            if (data.isDeprecated()) {
-                return false;
-            }
-            if (!includeTest) {
-                boolean forced = false;
-                for (String forceFilter : forceTestFilters) {
-                    if (type.startsWith(forceFilter)) {
-                        forced = true;
-                        break;
-                    }
-                }
-                if (!forced) {
-                    return false;
-                }
-            }
-        }
+//        if (data != null && data.isTest()) {
+//            if (data.isDeprecated()) {
+//                return false;
+//            }
+//            if (!includeTest) {
+//                boolean forced = false;
+//                for (String forceFilter : forceTestFilters) {
+//                    if (type.startsWith(forceFilter)) {
+//                        forced = true;
+//                        break;
+//                    }
+//                }
+//                if (!forced) {
+//                    return false;
+//                }
+//            }
+//        }
 
         if (filters == null) {
             return true;

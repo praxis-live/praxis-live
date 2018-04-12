@@ -27,6 +27,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -169,20 +170,15 @@ public class ComponentRegistry implements ComponentFactory {
         }
 
         @Override
-        public boolean isTest() {
-            return delegate.isTest();
-        }
-
-        @Override
         public boolean isDeprecated() {
             return delegate.isDeprecated();
         }
 
         @Override
-        public ComponentType getReplacement() {
-            return delegate.getReplacement();
+        public Optional<ComponentType> findReplacement() {
+            return delegate.findReplacement();
         }
-
+        
         @Override
         public org.praxislive.core.Lookup getLookup() {
             return delegate.getLookup();

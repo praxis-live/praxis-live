@@ -73,9 +73,6 @@ class DefaultPaletteFilter extends PaletteFilter {
                     }
                     return false;
                 }
-                if (data.isTest()) {
-                    return Components.getShowTest();
-                }
             }
             return true;
         }
