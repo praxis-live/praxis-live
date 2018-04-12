@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2014 Neil C Smith.
+ * Copyright 2018 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -26,6 +26,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.praxislive.core.ComponentAddress;
+import org.praxislive.ide.core.api.CoreInfo;
 import org.praxislive.ide.model.Connection;
 import org.praxislive.ide.properties.PraxisProperty;
 //import org.openide.util.RequestProcessor;
@@ -34,7 +35,6 @@ import org.praxislive.ide.properties.PraxisProperty;
  *
  * @author Neil C Smith (http://neilcsmith.net)
  */
-@SuppressWarnings("deprecation")
 class PXRWriter {
 
     private final static Logger LOG = Logger.getLogger(PXRWriter.class.getName());
@@ -60,10 +60,11 @@ class PXRWriter {
     private void doWrite(Appendable target) throws IOException {
         if (root != null) {
             // full graph
+            root.setAttr(PXRParser.VERSION_ATTR, CoreInfo.getDefault().getVersion());
             writeComponent(target, root, 0);
         } else {
             // sub graph
-            /// attributes?
+            writeAttribute(target, PXRParser.VERSION_ATTR, CoreInfo.getDefault().getVersion());
             writeChildren(target, container, 0);
             writeConnections(target, container, 0);
         }
@@ -75,10 +76,6 @@ class PXRWriter {
         sb.append(AT).append(' ');
         writeComponentID(sb, cmp);
         sb.append(' ').append(cmp.getType().toString()).append(" {\n");
-        if (cmp instanceof PXRRootProxy) {
-            writeIndent(sb, level + 1);
-            writeFormat(sb, 2);
-        }
         writeAttributes(sb, cmp, level + 1);
         writeProperties(sb, cmp, level + 1);
         if (cmp instanceof PXRContainerProxy) {
@@ -114,11 +111,6 @@ class PXRWriter {
         sb.append(AttrUtils.escape(value)).append('\n');
     }
     
-    private void writeFormat(Appendable sb, int format) throws IOException {
-        sb.append("#%").append(PXRParser.FORMAT_KEY).append(' ');
-        sb.append(Integer.toString(format)).append('\n');
-    }
-
     private void writeProperties(Appendable sb, PXRComponentProxy cmp, int level) {
         String[] propIDs = cmp.getPropertyIDs();
         for (String id : propIDs) {

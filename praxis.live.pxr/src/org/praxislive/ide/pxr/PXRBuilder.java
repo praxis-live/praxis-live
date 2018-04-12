@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2014 Neil C Smith.
+ * Copyright 2018 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -21,6 +21,7 @@
  */
 package org.praxislive.ide.pxr;
 
+import com.vdurmont.semver4j.Semver;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -45,11 +46,17 @@ import org.praxislive.ide.pxr.PXRParser.Element;
 import org.praxislive.ide.pxr.PXRParser.PropertyElement;
 import org.praxislive.ide.pxr.PXRParser.RootElement;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
+import org.praxislive.ide.core.api.CoreInfo;
 
 /**
  *
  * @author Neil C Smith (http://neilcsmith.net)
  */
+
+@NbBundle.Messages({
+    "MSG_versionWarning=File was created with a newer version of Praxis LIVE"
+})
 class PXRBuilder {
 
     private final static Logger LOG = Logger.getLogger(PXRBuilder.class.getName());
@@ -57,11 +64,12 @@ class PXRBuilder {
     private final PXRDataObject source;
     private final RootElement root;
     private final List<String> warnings;
+    private final boolean registerRoot;
+
     private Iterator<Element> iterator;
     private Callback processCallback;
     private PXRRootProxy rootProxy;
     private boolean processed;
-    private boolean registerRoot;
 
     PXRBuilder(PraxisProject project,
             PXRDataObject source,
@@ -94,8 +102,28 @@ class PXRBuilder {
             ElementRewriter rewriter = new ElementRewriter(root, warnings);
             rewriter.process();
         }
+        checkVersion();
         buildElementIterator();
         process();
+    }
+
+    private void checkVersion() {
+        try {
+            for (AttributeElement attr : root.attributes) {
+                if (PXRParser.VERSION_ATTR.equals(attr.key)) {
+                    Semver fileVersion = new Semver(attr.value, Semver.SemverType.LOOSE);
+                    Semver runningVersion = new Semver(
+                            CoreInfo.getDefault().getVersion(),
+                            Semver.SemverType.LOOSE);
+                    if (fileVersion.isGreaterThan(runningVersion)) {
+                        warn(Bundle.MSG_versionWarning());
+                    }
+                }
+            }
+        } catch (Exception ex) {
+            LOG.log(Level.WARNING, "Exception during checkVersion()", ex);
+        }
+
     }
 
     private void process() {
@@ -219,17 +247,17 @@ class PXRBuilder {
                 ((PXRContainerProxy) parent).connect(
                         new Connection(con.component1, con.port1, con.component2, con.port2),
                         new Callback() {
-                            @Override
-                            public void onReturn(CallArguments args) {
-                                process();
-                            }
+                    @Override
+                    public void onReturn(CallArguments args) {
+                        process();
+                    }
 
-                            @Override
-                            public void onError(CallArguments args) {
-                                connectionError(con, args);
-                                process();
-                            }
-                        });
+                    @Override
+                    public void onError(CallArguments args) {
+                        connectionError(con, args);
+                        process();
+                    }
+                });
                 return false;
             }
         } catch (Exception ex) {

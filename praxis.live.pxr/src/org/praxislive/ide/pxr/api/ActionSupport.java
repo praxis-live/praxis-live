@@ -21,6 +21,7 @@
  */
 package org.praxislive.ide.pxr.api;
 
+import java.util.List;
 import java.util.Set;
 import org.praxislive.ide.core.api.Callback;
 import org.praxislive.ide.core.api.Task;
@@ -76,7 +77,11 @@ public class ActionSupport {
     }
     
     public boolean importSubgraph(ContainerProxy container, FileObject file, Callback callback) {
-        return ActionBridge.getDefault().importSubgraph(container, file, callback);
+        return ActionBridge.getDefault().importSubgraph(container, file, null, callback);
+    }
+    
+    public boolean importSubgraph(ContainerProxy container, FileObject file, List<String> warnings, Callback callback) {
+        return ActionBridge.getDefault().importSubgraph(container, file, warnings, callback);
     }
 
 }

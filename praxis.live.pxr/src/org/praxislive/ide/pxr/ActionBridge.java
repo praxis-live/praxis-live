@@ -32,6 +32,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import javax.swing.SwingUtilities;
@@ -246,7 +247,10 @@ public class ActionBridge {
         return c;
     }
 
-    public boolean importSubgraph(final ContainerProxy container, final FileObject file, final Callback callback) {
+    public boolean importSubgraph(final ContainerProxy container,
+            final FileObject file,
+            final List<String> warnings,
+            final Callback callback) {
         if (!file.hasExt("pxg")) {
             return false;
         }
@@ -267,7 +271,7 @@ public class ActionBridge {
                         try {
                             if (root != null) {
                                 if (ImportRenameSupport.prepareForImport(container, root)) {
-                                    PXRBuilder builder = new PXRBuilder(findRootProxy(container), root, null);
+                                    PXRBuilder builder = new PXRBuilder(findRootProxy(container), root, warnings);
                                     builder.process(callback);
                                 } else {
                                     callback.onReturn(CallArguments.EMPTY);
