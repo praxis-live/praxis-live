@@ -213,7 +213,8 @@ class Examples {
         sb.append("<filesystem>\n");
         sb.append("<folder name=\"Templates\">\n");
         sb.append("<folder name=\"Project\">\n");
-        sb.append("<folder name=\"Examples\" position=\"1000\">\n");
+        sb.append("<folder name=\"Examples\">\n");
+        sb.append("<attr name=\"position\" intvalue=\"1000\" />\n");
     }
 
     private static void writeTemplateFile(StringBuilder sb, FileObject project) {
