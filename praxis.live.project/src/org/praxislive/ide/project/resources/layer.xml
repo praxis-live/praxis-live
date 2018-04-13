@@ -46,8 +46,9 @@
 
     <folder name="Templates">
         <folder name="Project">
-            <folder name="Praxis">
-                <file name="PraxisProject">
+            <folder name="Praxis CORE">
+              <attr name="position" intvalue="0" />
+              <file name="PraxisProject">
                     <attr name="displayName" bundlevalue="org.praxislive.ide.project.resources.Bundle#Templates/Project/PraxisProject"/>
                     <attr name="instantiatingIterator" newvalue="org.praxislive.ide.project.wizard.PraxisProjectWizardIterator"/>
                     <attr name="template" boolvalue="true"/>
