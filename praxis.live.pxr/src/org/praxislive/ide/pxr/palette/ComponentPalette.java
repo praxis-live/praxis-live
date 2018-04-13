@@ -50,7 +50,7 @@ public class ComponentPalette {
 
     private final static Logger LOG = Logger.getLogger(ComponentPalette.class.getName());
 
-    private final static String FOLDER = "PXR/Palette/";
+    final static String FOLDER = "PXR/Palette/";
 
     private final static ComponentPalette INSTANCE = new ComponentPalette();
 
@@ -147,8 +147,8 @@ public class ComponentPalette {
         sb.append("<file name=\"")
                 .append(safeFileName(type.toString()))
                 .append(".type\">\n");
-        sb.append("<attr name=\"displayName\" stringvalue=\"")
-                .append(type.toString()).append("\"/>\n");
+//        sb.append("<attr name=\"displayName\" stringvalue=\"")
+//                .append(type.toString()).append("\"/>\n");
         sb.append("<attr name=\"").append(TypeDataObject.TYPE_ATTR_KEY)
                 .append("\" stringvalue=\"")
                 .append(type).append("\"/>\n");
@@ -166,7 +166,7 @@ public class ComponentPalette {
     }
 
     private String safeFileName(String fileName) {
-        return fileName.replace(":", "__");
+        return fileName.replace(":", "_");
     }
 
     private FileObject writeLayer(StringBuilder sb) {

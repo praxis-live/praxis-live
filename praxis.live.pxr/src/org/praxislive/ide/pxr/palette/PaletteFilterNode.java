@@ -26,7 +26,7 @@ class PaletteFilterNode extends FilterNode {
             if (html != null) {
                 return "<html>" + html;
             } else {
-                String name = super.getDisplayName();
+                String name = super.getDisplayName().replace("_", ":");
                 int index = name.lastIndexOf(":");
                 if (isLeaf() && index > 0 && index < name.length() - 1) {
                     return name.substring(index + 1);
