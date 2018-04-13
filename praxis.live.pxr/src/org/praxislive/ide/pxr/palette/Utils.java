@@ -44,7 +44,7 @@ class Utils {
     static final RequestProcessor RP = new RequestProcessor("PXG");
 
     static final String KEY_PXG_LINK = "pxg-components-link";
-    static final String KEY_PXG_LINK_INSTALLED = "project-examples-link-installed";
+    static final String KEY_PXG_LINK_INSTALLED = "pxg-components-link-installed";
 
     static final String PXG_FILE_NAME = "pxg.zip";
     static final String PXR_DOWNLOAD_FOLDER = "PXR/Downloads";
