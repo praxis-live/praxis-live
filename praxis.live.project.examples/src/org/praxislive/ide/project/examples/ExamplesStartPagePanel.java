@@ -84,6 +84,8 @@ public class ExamplesStartPagePanel extends javax.swing.JPanel {
         infoScrollPane = new javax.swing.JScrollPane();
         infoTextArea = new javax.swing.JTextArea();
 
+        setPreferredSize(new java.awt.Dimension(400, 100));
+
         org.openide.awt.Mnemonics.setLocalizedText(updateStatus, org.openide.util.NbBundle.getMessage(ExamplesStartPagePanel.class, "LBL_CheckingForUpdates")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(actionButton, org.openide.util.NbBundle.getMessage(ExamplesStartPagePanel.class, "BTN_DownloadExamples")); // NOI18N
@@ -125,7 +127,7 @@ public class ExamplesStartPagePanel extends javax.swing.JPanel {
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addComponent(infoScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(actionButton)
                     .addComponent(updateStatus))
                 .addContainerGap())
