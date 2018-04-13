@@ -37,6 +37,7 @@ import javax.swing.UIManager;
 import org.praxislive.ide.core.Core;
 import org.netbeans.api.settings.ConvertAsProperties;
 import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
 import org.openide.windows.OnShowing;
@@ -58,12 +59,12 @@ import org.praxislive.ide.core.ui.api.StartPagePanelProvider;
         persistenceType = TopComponent.PERSISTENCE_ALWAYS)
 @TopComponent.Registration(mode = "editor", openAtStartup = true)
 @ActionID(category = "Window", id = "org.praxislive.ide.core.ui.StartTopComponent")
-//@ActionReference(path = "Menu/Window" /*, position = 333 */)
+@ActionReference(path = "Menu/Window", position = 2000)
 @TopComponent.OpenActionRegistration(
         displayName = "#CTL_StartAction",
         preferredID = "StartTopComponent")
 @Messages({
-    "CTL_StartAction=Start",
+    "CTL_StartAction=Start Page",
     "CTL_StartTopComponent=Praxis LIVE",
     "HINT_StartTopComponent=Welcome to Praxis LIVE",
 })
@@ -74,6 +75,7 @@ public final class StartTopComponent extends TopComponent {
 
     public StartTopComponent() {
         initComponents();
+        setFocusable(true);
         setName(Bundle.CTL_StartTopComponent());
         setToolTipText(Bundle.HINT_StartTopComponent());
         putClientProperty("activateAtStartup", Boolean.TRUE);
@@ -216,6 +218,7 @@ public final class StartTopComponent extends TopComponent {
     @Override
     public void componentOpened() {
         refresh();
+        requestFocusInWindow();
     }
 
     private void refresh() {
