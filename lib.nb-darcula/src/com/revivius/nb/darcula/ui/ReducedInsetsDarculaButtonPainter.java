@@ -52,9 +52,10 @@ public class ReducedInsetsDarculaButtonPainter implements Border, UIResource {
     @Override
     public Insets getBorderInsets(Component c) {
         if (DarculaButtonUI.isSquare(c)) {
-            return new InsetsUIResource(2, 0, 2, 0);
+//            return new InsetsUIResource(2, 0, 2, 0);
+            return new InsetsUIResource(4, 4, 4, 4);
         }
-        return new InsetsUIResource(4, 6, 4, 6);
+        return new InsetsUIResource(6, 8, 6, 8);
     }
 
     @Override

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
+<filesystem>
+    <folder name="Actions">
+        <folder name="Window">
+            <file name="org-praxislive-ide-terminal-TerminalAction.instance">
+                <attr name="component" methodvalue="org.praxislive.ide.terminal.TerminalTopComponent.findInstance"/>
+                <attr name="displayName" bundlevalue="org.praxislive.ide.terminal.Bundle#CTL_TerminalAction"/>
+                <attr name="instanceCreate" methodvalue="org.openide.windows.TopComponent.openAction"/>
+            </file>
+        </folder>
+    </folder>
+    <folder name="Menu">
+        <folder name="Tools">
+            <file name="TerminalAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-praxislive-ide-terminal-TerminalAction.instance"/>
+                <attr name="position" intvalue="0"/>
+            </file>
+        </folder>
+    </folder>
+    <folder name="Windows2">
+        <folder name="Components">
+            <file name="TerminalTopComponent.settings" url="TerminalTopComponentSettings.xml"/>
+        </folder>
+        <folder name="Modes">
+            <folder name="praxisTerminal">
+                <file name="TerminalTopComponent.wstcref" url="TerminalTopComponentWstcref.xml"/>
+            </folder>
+            <file name="praxisTerminal.wsmode" url="TerminalModeWSMode.xml"/>
+        </folder>
+    </folder>
+</filesystem>

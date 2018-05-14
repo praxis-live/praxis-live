@@ -3,7 +3,7 @@
     <type>org.netbeans.modules.apisupport.project</type>
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/3">
-            <code-name-base>net.neilcsmith.praxis.live.graph</code-name-base>
+            <code-name-base>org.praxislive.ide.graph</code-name-base>
             <suite-component/>
             <module-dependencies>
                 <dependency>
@@ -40,8 +40,8 @@
                 </dependency>
             </module-dependencies>
             <friend-packages>
-                <friend>net.neilcsmith.praxis.live.pxr.graph</friend>
-                <package>net.neilcsmith.praxis.live.graph</package>
+                <friend>org.praxislive.ide.pxr.graph</friend>
+                <package>org.praxislive.ide.graph</package>
             </friend-packages>
         </data>
     </configuration>

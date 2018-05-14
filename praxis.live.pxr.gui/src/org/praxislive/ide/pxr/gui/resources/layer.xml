@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
+<filesystem>
+<!--    <folder name="Templates">
+        <folder name="Praxis">
+            <file name="GUITemplate.pxr">
+                <attr name="displayName" bundlevalue="org.praxislive.ide.pxr.gui.resources.Bundle#Templates/Praxis/GUITemplate.pxr"/>
+                <attr name="instantiatingIterator" newvalue="org.praxislive.ide.pxr.wizard.PXRWizardIterator"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/praxislive/ide/pxr/resources/PXRinfo.html"/>
+                <attr name="rootType" stringvalue="root:gui"/>
+            </file>
+        </folder>
+    </folder>-->
+</filesystem>

@@ -3,11 +3,11 @@
     <type>org.netbeans.modules.apisupport.project</type>
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/3">
-            <code-name-base>net.neilcsmith.praxis.live.properties</code-name-base>
+            <code-name-base>org.praxislive.ide.properties</code-name-base>
             <suite-component/>
             <module-dependencies>
                 <dependency>
-                    <code-name-base>net.neilcsmith.praxis.core</code-name-base>
+                    <code-name-base>org.praxislive.core</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
@@ -15,7 +15,7 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>net.neilcsmith.praxis.live.core</code-name-base>
+                    <code-name-base>org.praxislive.ide.core</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
@@ -64,11 +64,11 @@
                 </dependency>
             </module-dependencies>
             <friend-packages>
-                <friend>net.neilcsmith.praxis.live.pxr</friend>
-                <friend>net.neilcsmith.praxis.live.pxr.gui</friend>
-                <friend>net.neilcsmith.praxis.live.pxr.midi</friend>
-                <friend>net.neilcsmith.praxis.live.pxr.osc</friend>
-                <package>net.neilcsmith.praxis.live.properties</package>
+                <friend>org.praxislive.ide.pxr</friend>
+                <friend>org.praxislive.ide.pxr.gui</friend>
+                <friend>org.praxislive.ide.pxr.midi</friend>
+                <friend>org.praxislive.ide.pxr.osc</friend>
+                <package>org.praxislive.ide.properties</package>
             </friend-packages>
         </data>
     </configuration>

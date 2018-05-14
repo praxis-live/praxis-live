@@ -1,6 +1,6 @@
 Manifest-Version: 1.0
-OpenIDE-Module: net.neilcsmith.praxis.live.pxj
-OpenIDE-Module-Localizing-Bundle: net/neilcsmith/praxis/live/pxj/resources/Bundle.properties
+OpenIDE-Module: org.praxislive.ide.pxj
+OpenIDE-Module-Localizing-Bundle: org/praxislive/ide/pxj/resources/Bundle.properties
 OpenIDE-Module-Specification-Version: 1.0
 AutoUpdate-Essential-Module: true
 AutoUpdate-Show-In-Client: false

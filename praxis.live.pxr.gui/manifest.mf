@@ -1,8 +1,8 @@
 Manifest-Version: 1.0
-OpenIDE-Module: net.neilcsmith.praxis.live.pxr.gui/2
-OpenIDE-Module-Install: net/neilcsmith/praxis/live/pxr/gui/Installer.class
-OpenIDE-Module-Layer: net/neilcsmith/praxis/live/pxr/gui/resources/layer.xml
-OpenIDE-Module-Localizing-Bundle: net/neilcsmith/praxis/live/pxr/gui/resources/Bundle.properties
+OpenIDE-Module: org.praxislive.ide.pxr.gui/2
+OpenIDE-Module-Install: org/praxislive/ide/pxr/gui/Installer.class
+OpenIDE-Module-Layer: org/praxislive/ide/pxr/gui/resources/layer.xml
+OpenIDE-Module-Localizing-Bundle: org/praxislive/ide/pxr/gui/resources/Bundle.properties
 OpenIDE-Module-Specification-Version: 1.0
 AutoUpdate-Essential-Module: true
 AutoUpdate-Show-In-Client: false
