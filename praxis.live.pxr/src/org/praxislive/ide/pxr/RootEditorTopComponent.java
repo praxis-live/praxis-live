@@ -162,6 +162,9 @@ public class RootEditorTopComponent extends CloneableTopComponent {
         uninstall(this.root);
         this.root = root;
         install(root);
+        if (root == null) {
+            close();
+        }
     }
 
     private void install(PXRRootProxy root) {

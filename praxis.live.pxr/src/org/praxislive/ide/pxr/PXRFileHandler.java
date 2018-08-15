@@ -22,9 +22,9 @@
 package org.praxislive.ide.pxr;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import javax.swing.SwingUtilities;
+import org.netbeans.api.actions.Openable;
 import org.praxislive.core.CallArguments;
 import org.praxislive.ide.core.api.Callback;
 import org.praxislive.ide.project.api.ExecutionLevel;
@@ -113,6 +113,10 @@ public class PXRFileHandler extends FileHandler {
 
             @Override
             public void onReturn(CallArguments args) {
+                Openable open = source.getLookup().lookup(Openable.class);
+                if (open != null) {
+                    open.open();
+                }
                 callback.onReturn(args);
             }
 
