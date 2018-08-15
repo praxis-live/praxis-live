@@ -589,7 +589,12 @@ public class GraphEditor extends RootEditor {
         } else {
 //            pin.setFont(font.deriveFont(font.getSize2D() * 0.85f));
         }
-        pin.setToolTipText(pinID + " : " + info.getPortType().name());
+        String category = info.getProperties().getString("category", "");
+        if (category.isEmpty()) {
+            pin.setToolTipText(pinID + " : " + info.getPortType().name());
+        } else {
+            pin.setToolTipText(pinID + " : " + info.getPortType().name() + " : " + category);
+        }
     }
 
     private Alignment getPinAlignment(PortInfo info) {
