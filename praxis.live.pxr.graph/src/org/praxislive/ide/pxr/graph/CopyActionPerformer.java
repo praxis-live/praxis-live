@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2016 Neil C Smith.
+ * Copyright 2018 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -50,6 +50,7 @@ class CopyActionPerformer extends AbstractAction {
     private ExplorerManager em;
     
     CopyActionPerformer(GraphEditor editor, ExplorerManager em) {
+        super("Copy");
         this.editor = editor;
         this.em = em;
         em.addPropertyChangeListener(new PropertyChangeListener() {
