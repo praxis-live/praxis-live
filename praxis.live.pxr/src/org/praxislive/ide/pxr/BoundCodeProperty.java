@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2015 Neil C Smith.
+ * Copyright 2018 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -36,6 +36,7 @@ import org.praxislive.core.ControlInfo;
 import org.praxislive.core.types.PString;
 import org.praxislive.ide.project.api.PraxisProject;
 import org.netbeans.api.actions.Openable;
+import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileChangeAdapter;
@@ -51,6 +52,7 @@ import org.praxislive.ide.core.api.Callback;
 
 class BoundCodeProperty extends BoundArgumentProperty {
 
+    static final String KEY_LAST_SAVED = "last-saved";
     private static final Map<String, String> mimeToExt = new HashMap<>();
 
     static {
@@ -276,15 +278,15 @@ class BoundCodeProperty extends BoundArgumentProperty {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            NotifyDescriptor nd = new NotifyDescriptor(
-                    "Reset " + id + "? Changes will be lost.",
-                    "Reset " + id + "?",
-                    NotifyDescriptor.YES_NO_OPTION,
-                    NotifyDescriptor.WARNING_MESSAGE, 
-                    null,
-                    null);
-            if (DialogDisplayer.getDefault().notify(nd) == NotifyDescriptor.YES_OPTION) {
-                restoreDefaultValue();
+            Object last = BoundCodeProperty.this.getValue(KEY_LAST_SAVED);
+            BoundCodeResetPanel panel = new BoundCodeResetPanel(last instanceof Value);
+            DialogDescriptor dialog = new DialogDescriptor(panel, "Reset " + id + "?");
+            if (DialogDisplayer.getDefault().notify(dialog) == NotifyDescriptor.OK_OPTION) {
+                if (panel.isLastSavedOption()) {
+                    setValue((Value) last);
+                } else {
+                    restoreDefaultValue();
+                }
             }
         }
         

@@ -136,6 +136,9 @@ class PXRWriter {
                 }
                 writeIndent(sb, level);
                 writeProperty(sb, id, code);
+                if (prop instanceof BoundCodeProperty && root != null /*actual save*/) {
+                    prop.setValue(BoundCodeProperty.KEY_LAST_SAVED, prop.getValue());
+                }
             } catch (Exception e) {
                 // continue ???
                 LOG.log(Level.INFO, "Error writing property.", e);
