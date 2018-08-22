@@ -174,7 +174,9 @@ public class DarculaLFCustoms extends LFCustoms {
             "Menu.acceleratorFont", controlFont,
             "Menu.font", controlFont,
 
+            "TableUI", "com.revivius.nb.darcula.ui.DarculaTableUI",
             "Table.font", controlFont,
+            "Table.rowHeight", getTableRowHeight(),
             "Table.ascendingSortIcon", new ImageIcon(DarculaLFCustoms.class.getResource("column-asc.png")),
             "Table.descendingSortIcon", new ImageIcon(DarculaLFCustoms.class.getResource("column-desc.png")),
             "Table.focusCellHighlightBorder", BorderFactory.createEmptyBorder(),
@@ -552,6 +554,15 @@ public class DarculaLFCustoms extends LFCustoms {
         return result;
     }
 
+    private int getTableRowHeight() {
+        Integer in = (Integer) UIManager.get(CUSTOM_FONT_SIZE);
+        if (in != null) {
+            return (int) (in * 1.6);
+        } else {
+            return (int) (FONT_DEFAULT_SIZE * 1.6);
+        }
+    }
+    
     private int getPropertySheetRowHeight() {
         Integer in = (Integer) UIManager.get(CUSTOM_FONT_SIZE);
         if (in != null) {
