@@ -84,8 +84,6 @@ public class PXGStartPagePanel extends javax.swing.JPanel {
         infoScrollPane = new javax.swing.JScrollPane();
         infoTextArea = new javax.swing.JTextArea();
 
-        setPreferredSize(new java.awt.Dimension(400, 100));
-
         org.openide.awt.Mnemonics.setLocalizedText(updateStatus, org.openide.util.NbBundle.getMessage(PXGStartPagePanel.class, "LBL_CheckingForUpdates")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(actionButton, org.openide.util.NbBundle.getMessage(PXGStartPagePanel.class, "BTN_DownloadPXG")); // NOI18N
