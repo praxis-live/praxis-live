@@ -67,7 +67,7 @@ class Utils {
 
     private Utils() {
     }
-
+    
     static boolean isInstalled() {
         return ((!info.get(KEY_PXG_LINK_INSTALLED, "").isEmpty())
                 && FileUtil.getConfigFile(PXG_FILE_PATH) != null);
