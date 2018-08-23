@@ -290,7 +290,9 @@ public class GraphEditor extends RootEditor {
         for (ColorsAction action : colorsActions) {
             colorsMenu.add(action);
         }
-        menu.add(colorsMenu);
+        if (customColours) {
+            menu.add(colorsMenu);
+        }
         menu.add(new CommentAction(scene));
         return menu;
     }
