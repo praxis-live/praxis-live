@@ -47,10 +47,10 @@ class DefaultPaletteFilter extends PaletteFilter {
         public boolean isValidCategory(Lookup lkp) {
             Node categoryNode = lkp.lookup(Node.class);
             DataFolder folder = categoryNode.getCookie(DataFolder.class);
-            if (folder == null || folder.getChildren().length == 0) {
-                return true;
-            }
             if (isValidCategory(categoryNode.getName())) {
+                if (folder == null || folder.getChildren().length == 0) {
+                    return true;
+                }
                 for (DataObject file : folder.getChildren()) {
                     if (isValidItem(file.getLookup())) {
                         return true;

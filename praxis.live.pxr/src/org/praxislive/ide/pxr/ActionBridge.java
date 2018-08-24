@@ -46,12 +46,14 @@ import org.praxislive.ide.util.AbstractTask;
 import org.praxislive.ide.util.SerialTasks;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileChooserBuilder;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
+import org.praxislive.ide.pxr.wizard.PXGExportWizard;
 
 /**
  *
@@ -86,22 +88,22 @@ public class ActionBridge {
         getClipboard().setContents(empty, empty);
         SyncTask sync = new SyncTask(
                 children.stream()
-                .map(container::getChild)
-                .filter(cmp -> cmp != null)
-                .collect(Collectors.toSet()), 250);
+                        .map(container::getChild)
+                        .filter(cmp -> cmp != null)
+                        .collect(Collectors.toSet()), 250);
         WriteClipboardTask write
                 = new WriteClipboardTask(container, children, preWriteTask, postWriteTask);
         return new SerialTasks(sync, write);
     }
-    
+
     public Task createExportTask(ContainerProxy container,
             Set<String> children,
             Runnable preWriteTask, Runnable postWriteTask) {
         SyncTask sync = new SyncTask(
                 children.stream()
-                .map(container::getChild)
-                .filter(cmp -> cmp != null)
-                .collect(Collectors.toSet()), 250);
+                        .map(container::getChild)
+                        .filter(cmp -> cmp != null)
+                        .collect(Collectors.toSet()), 250);
         ExportTask write
                 = new ExportTask(container, children, preWriteTask, postWriteTask);
         return new SerialTasks(sync, write);
@@ -173,22 +175,19 @@ public class ActionBridge {
                 postWriteTask.run();
             }
 
-            File f = new FileChooserBuilder("export-pxg")
-                    .addFileFilter(new FileNameExtensionFilter("PXG files", "pxg"))
-                    .setAcceptAllFileFilterUsed(false)
-                    .showSaveDialog();
-
-            if (f == null) {
+            String export = sb.toString();
+            PXGExportWizard wizard = new PXGExportWizard();
+            PXRParser.RootElement root = PXRParser.parseInContext(container.getAddress(), export);
+            wizard.setSuggestedFileName(findSuggestedName(root));
+            wizard.setSuggestedPaletteCategory(findPaletteCategory(root));
+            
+            if (wizard.display() != WizardDescriptor.FINISH_OPTION) {
                 updateState(State.CANCELLED);
                 return;
             }
-            
-            if (!f.getName().endsWith(".pxg")) {
-                f = new File(f.getParent(), f.getName() + ".pxg");
-            }
-            
-            File file = f;
-            String export = sb.toString();
+
+            File file = wizard.getExportFile();
+            String paletteCategory = wizard.getPaletteCategory().replace(":", "_");
 
             RP.post(() -> {
                 if (file.exists()) {
@@ -200,20 +199,63 @@ public class ActionBridge {
                     try {
                         Files.write(file.toPath(), export.getBytes(StandardCharsets.UTF_8));
                         FileUtil.toFileObject(file.getParentFile()).refresh();
-                        EventQueue.invokeLater(() -> {
-                            updateState(State.COMPLETED);
-                        });
                     } catch (IOException ex) {
                         Exceptions.printStackTrace(ex);
                         EventQueue.invokeLater(() -> {
-                            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message("Failed to write file.", NotifyDescriptor.ERROR_MESSAGE));
                             updateState(State.ERROR);
                         });
+                        return;
                     }
+                    try {
+                        if (!paletteCategory.isEmpty()) {
+                            FileObject src = FileUtil.toFileObject(file);
+                            FileObject dst = FileUtil.createFolder(
+                                    FileUtil.getConfigRoot(), "PXR/Palette/" + paletteCategory);
+                            FileUtil.copyFile(src, dst, src.getName());
+                        }
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                        EventQueue.invokeLater(() -> {
+                            updateState(State.ERROR);
+                        });
+                        return;
+                    }
+
+                    EventQueue.invokeLater(() -> {
+                        updateState(State.COMPLETED);
+                    });
+
                 }
 
             });
 
+        }
+
+        private String findSuggestedName(PXRParser.RootElement root) {
+            if (root.children.length == 1) {
+                return root.children[0].address.getID();
+            } else {
+                return "";
+            }
+        }
+
+        private String findPaletteCategory(PXRParser.RootElement root) {
+            String ret = "core:custom";
+            for (PXRParser.ComponentElement cmp : root.children) {
+                if (cmp.children.length > 0) {
+                    // container ??
+                    return "";
+                }
+                String type = cmp.type.toString();
+                if (type.startsWith("video:gl:")) {
+                    // short circuit for GL
+                    return "video:gl:custom";
+                } else if (!type.startsWith("core")) {
+                    String base = type.substring(0, type.indexOf(":"));
+                    ret = base + ":custom";
+                }
+            }
+            return ret;
         }
 
     }

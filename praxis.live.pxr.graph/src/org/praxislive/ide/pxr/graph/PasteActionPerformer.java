@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Neil C Smith.
+ * Copyright 2018 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -42,6 +42,7 @@ class PasteActionPerformer extends AbstractAction implements Callback {
     private ExplorerManager em;
 
     PasteActionPerformer(GraphEditor editor, ExplorerManager em) {
+        super("Paste");
         this.editor = editor;
         this.em = em;
 //        em.addPropertyChangeListener(new PropertyChangeListener() {
@@ -56,9 +57,12 @@ class PasteActionPerformer extends AbstractAction implements Callback {
     @Override
     public void actionPerformed(ActionEvent e) {
         assert EventQueue.isDispatchThread();
-        if (editor.getActionSupport().pasteFromClipboard(editor.getContainer(), this)) {
-            editor.syncGraph(false);
-        }
+        EventQueue.invokeLater(() -> {
+            if (editor.getActionSupport().pasteFromClipboard(editor.getContainer(), this)) {
+                editor.syncGraph(false);
+            }
+        });
+
     }
 
     @Override
@@ -69,9 +73,9 @@ class PasteActionPerformer extends AbstractAction implements Callback {
     @Override
     public void onError(CallArguments args) {
         DialogDisplayer.getDefault().notify(
-                        new NotifyDescriptor.Message("Error pasting.",
+                new NotifyDescriptor.Message("Error pasting.",
                         NotifyDescriptor.ERROR_MESSAGE));
         editor.syncGraph(true);
     }
-    
+
 }

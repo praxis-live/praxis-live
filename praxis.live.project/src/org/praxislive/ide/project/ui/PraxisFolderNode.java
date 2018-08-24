@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Neil C Smith.
+ * Copyright 2018 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -22,6 +22,7 @@
 
 package org.praxislive.ide.project.ui;
 
+import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.praxislive.ide.project.api.PraxisProject;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
@@ -36,9 +37,19 @@ class PraxisFolderNode extends FilterNode {
 
     public PraxisFolderNode(PraxisProject project, Node original) {
         super(original, new PraxisFolderChildren(project, original),
-                new ProxyLookup(original.getLookup(), Lookups.singleton(project)));
+                new ProxyLookup(original.getLookup(), Lookups.singleton(new BaseTemplates())));
     }
 
+    private static class BaseTemplates implements PrivilegedTemplates {
 
+        @Override
+        public String[] getPrivilegedTemplates() {
+            return new String[]{
+                "Templates/Other/Folder",
+                "Templates/Other/org-netbeans-modules-project-ui-NewFileIterator-folderIterator"
+            };
+        }
+    }
+    
 
 }

@@ -21,6 +21,7 @@
  */
 package org.praxislive.ide.core;
 
+import java.awt.EventQueue;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.logging.Level;
@@ -51,6 +52,10 @@ public class LifecycleManagerImpl extends LifecycleManager {
 
     @Override
     public void exit() {
+        if (!EventQueue.isDispatchThread()) {
+            EventQueue.invokeLater(this::exit);
+            return;
+        }
         DefaultHubManager hub = DefaultHubManager.getInstance();
         if (hub.getState() == DefaultHubManager.State.Stopped) {
             delegateExit();

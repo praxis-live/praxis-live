@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2017 Neil C Smith.
+ * Copyright 2018 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -133,6 +133,8 @@ public class GraphEditor extends RootEditor {
     private final Action deleteAction;
     private final Action sceneCommentAction;
     private final Action exportAction;
+    private final Action copyAction;
+    private final Action pasteAction;
     private final JMenuItem addMenu;
     
     private final boolean customColours;
@@ -162,10 +164,12 @@ public class GraphEditor extends RootEditor {
         }
 
         deleteAction = new DeleteAction();
+        copyAction = new CopyActionPerformer(this, manager);
+        pasteAction = new PasteActionPerformer(this, manager);
 
         PaletteController palette = PaletteUtils.getPalette("core", category);
 
-        lookup = new ProxyLookup(ExplorerUtils.createLookup(manager, buildActionMap(manager)),
+        lookup = new ProxyLookup(ExplorerUtils.createLookup(manager, buildActionMap()),
                 Lookups.fixed(palette));
 
         addMenu = new MenuView.Menu(
@@ -209,16 +213,12 @@ public class GraphEditor extends RootEditor {
         setupSceneActions();
     }
 
-    private ActionMap buildActionMap(ExplorerManager em) {
+    private ActionMap buildActionMap() {
         ActionMap am = new ActionMap();
         deleteAction.setEnabled(false);
         am.put("delete", deleteAction);
-
-        CopyActionPerformer copyAction = new CopyActionPerformer(this, em);
         am.put(DefaultEditorKit.copyAction, copyAction);
-        PasteActionPerformer pasteAction = new PasteActionPerformer(this, em);
         am.put(DefaultEditorKit.pasteAction, pasteAction);
-
         return am;
     }
 
@@ -258,6 +258,7 @@ public class GraphEditor extends RootEditor {
                 }
             }
         }
+        menu.add(copyAction);
         menu.add(deleteAction);
         menu.addSeparator();
         menu.add(exportAction);
@@ -283,12 +284,15 @@ public class GraphEditor extends RootEditor {
         JPopupMenu menu = new JPopupMenu();
 //        menu.add(deleteAction);
         menu.add(addMenu);
+        menu.add(pasteAction);
         menu.addSeparator();
         JMenu colorsMenu = new JMenu("Colors");
         for (ColorsAction action : colorsActions) {
             colorsMenu.add(action);
         }
-        menu.add(colorsMenu);
+        if (customColours) {
+            menu.add(colorsMenu);
+        }
         menu.add(new CommentAction(scene));
         return menu;
     }
@@ -589,7 +593,12 @@ public class GraphEditor extends RootEditor {
         } else {
 //            pin.setFont(font.deriveFont(font.getSize2D() * 0.85f));
         }
-        pin.setToolTipText(pinID + " : " + info.getPortType().name());
+        String category = info.getProperties().getString("category", "");
+        if (category.isEmpty()) {
+            pin.setToolTipText(pinID + " : " + info.getPortType().name());
+        } else {
+            pin.setToolTipText(pinID + " : " + info.getPortType().name() + " : " + category);
+        }
     }
 
     private Alignment getPinAlignment(PortInfo info) {

@@ -84,8 +84,6 @@ public class ExamplesStartPagePanel extends javax.swing.JPanel {
         infoScrollPane = new javax.swing.JScrollPane();
         infoTextArea = new javax.swing.JTextArea();
 
-        setPreferredSize(new java.awt.Dimension(400, 100));
-
         org.openide.awt.Mnemonics.setLocalizedText(updateStatus, org.openide.util.NbBundle.getMessage(ExamplesStartPagePanel.class, "LBL_CheckingForUpdates")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(actionButton, org.openide.util.NbBundle.getMessage(ExamplesStartPagePanel.class, "BTN_DownloadExamples")); // NOI18N

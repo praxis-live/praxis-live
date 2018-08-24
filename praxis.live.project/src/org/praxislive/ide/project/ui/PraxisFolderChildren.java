@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Neil C Smith.
+ * Copyright 2018 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -22,9 +22,9 @@
 
 package org.praxislive.ide.project.ui;
 
+import org.netbeans.api.queries.VisibilityQuery;
 import org.praxislive.ide.project.api.PraxisProject;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 
@@ -50,6 +50,11 @@ class PraxisFolderChildren extends FilterNode.Children {
         FileObject fob = original.getLookup().lookup(FileObject.class);
         
         if (fob != null) {
+            
+            if (!VisibilityQuery.getDefault().isVisible(fob)) {
+                return EMPTY_NODES;
+            }
+            
             if (fob.isFolder()) {
                 // hide config
                 if (CONFIG_FOLDER_NAME.equals(fob.getName()) &&

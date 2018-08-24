@@ -184,6 +184,9 @@ class PXRBuilder {
                 ((BoundArgumentProperty) p).setValue(prop.args[0], new Callback() {
                     @Override
                     public void onReturn(CallArguments args) {
+                        if (p instanceof BoundCodeProperty) {
+                            p.setValue(BoundCodeProperty.KEY_LAST_SAVED, prop.args[0]);
+                        }
                         if (cmp.isDynamic()) {
                             try {
                                 cmp.call("info", CallArguments.EMPTY, new Callback() {

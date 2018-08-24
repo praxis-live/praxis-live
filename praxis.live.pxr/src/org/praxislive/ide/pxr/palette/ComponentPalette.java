@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2014 Neil C Smith.
+ * Copyright 2018 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -23,7 +23,9 @@ package org.praxislive.ide.pxr.palette;
 
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.util.Collections;
 import java.util.Comparator;
+import java.util.Map;
 import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -66,9 +68,9 @@ public class ComponentPalette {
     }
 
     private FileSystem init() {
-        TreeMap<String, TreeMap<ComponentType, ComponentFactory.MetaData<?>>> core
+        Map<String, Map<ComponentType, ComponentFactory.MetaData<?>>> core
                 = new TreeMap<>();
-        TreeMap<String, TreeMap<ComponentType, ComponentFactory.MetaData<?>>> others
+        Map<String, Map<ComponentType, ComponentFactory.MetaData<?>>> others
                 = new TreeMap<>();
         buildMaps(core, others);
 
@@ -93,15 +95,15 @@ public class ComponentPalette {
     }
 
     private void buildMaps(
-            TreeMap<String, TreeMap<ComponentType, ComponentFactory.MetaData<?>>> core,
-            TreeMap<String, TreeMap<ComponentType, ComponentFactory.MetaData<?>>> others) {
+            Map<String, Map<ComponentType, ComponentFactory.MetaData<?>>> core,
+            Map<String, Map<ComponentType, ComponentFactory.MetaData<?>>> others) {
         ComponentType[] types = Components.getComponentTypes();
         for (ComponentType type : types) {
             String str = type.toString();
             ComponentFactory.MetaData<?> data = Components.getMetaData(type);
             str = str.substring(0, str.lastIndexOf(':'));
             boolean cr = str.startsWith("core");
-            TreeMap<ComponentType, ComponentFactory.MetaData<?>> children = cr ? core.get(str) : others.get(str);
+            Map<ComponentType, ComponentFactory.MetaData<?>> children = cr ? core.get(str) : others.get(str);
             if (children == null) {
                 children = new TreeMap<>(TypeComparator.INSTANCE);
                 if (cr) {
@@ -112,6 +114,20 @@ public class ComponentPalette {
             }
             children.put(type, data);
         }
+        core.putIfAbsent("core:custom", Collections.emptyMap());
+        
+        String[] knownCustom = new String[]{
+            "audio:custom",
+            "data:custom",
+            "tinkerforge:custom",
+            "video:custom",
+            "video:gl:custom"
+        };
+        
+        for (String folder : knownCustom) {
+            others.putIfAbsent(folder, Collections.emptyMap());
+        }
+        
     }
 
     private void buildLayerPrefix(StringBuilder sb) {
@@ -123,7 +139,7 @@ public class ComponentPalette {
     }
 
     private void writeMap(StringBuilder sb,
-            TreeMap<String, TreeMap<ComponentType, ComponentFactory.MetaData<?>>> map,
+            Map<String, Map<ComponentType, ComponentFactory.MetaData<?>>> map,
             int position) {
         for (String category : map.keySet()) {
             startCategoryFolder(sb, category, position);
