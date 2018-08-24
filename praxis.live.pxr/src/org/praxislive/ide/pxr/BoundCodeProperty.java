@@ -284,6 +284,7 @@ class BoundCodeProperty extends BoundArgumentProperty {
             if (DialogDisplayer.getDefault().notify(dialog) == NotifyDescriptor.OK_OPTION) {
                 if (panel.isLastSavedOption()) {
                     setValue((Value) last);
+                    deleteFile();
                 } else {
                     restoreDefaultValue();
                 }
