@@ -37,7 +37,7 @@ class PraxisFolderNode extends FilterNode {
 
     public PraxisFolderNode(PraxisProject project, Node original) {
         super(original, new PraxisFolderChildren(project, original),
-                new ProxyLookup(original.getLookup(), Lookups.singleton(new BaseTemplates())));
+                new ProxyLookup(original.getLookup(), Lookups.fixed(new BaseTemplates(), project)));
     }
 
     private static class BaseTemplates implements PrivilegedTemplates {
