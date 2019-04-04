@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2017 Neil C Smith.
+ * Copyright 2019 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -45,7 +45,6 @@ import javax.swing.JPanel;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import org.praxislive.core.PortInfo;
-import org.praxislive.ide.pxr.graph.Bundle;
 import org.praxislive.ide.graph.PinID;
 import org.praxislive.ide.model.Connection;
 import org.praxislive.ide.model.ProxyException;
@@ -86,9 +85,10 @@ class ConnectAction extends AbstractAction {
         Node[] nodes = editor.getExplorerManager().getSelectedNodes();
         if (nodes.length > 0 && nodes[0] != editor.getContainer().getNodeDelegate()) {
             panel.srcField.setText(Utils.nodesToGlob(nodes));
-            panel.srcField.selectAll();
+            panel.commitSrc();
+        } else {
+            panel.srcField.requestFocusInWindow();
         }
-        panel.srcField.requestFocusInWindow();
     }
 
     private List<String> findNodes(String glob) {

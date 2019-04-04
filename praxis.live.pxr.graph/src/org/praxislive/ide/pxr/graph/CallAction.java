@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2017 Neil C Smith.
+ * Copyright 2019 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -81,16 +81,16 @@ class CallAction extends AbstractAction {
     public void actionPerformed(ActionEvent e) {
         Panel panel = new Panel(SwingUtilities.windowForComponent(editor.getEditorComponent()));
         Node[] nodes = editor.getExplorerManager().getSelectedNodes();
-        if (nodes.length == 0 || nodes[0] == editor.getContainer().getNodeDelegate()) {
-            panel.componentField.setText(Bundle.TXT_parent());
-        } else {
-            panel.componentField.setText(Utils.nodesToGlob(nodes));
-        }
         panel.componentField.setSuggestData(editor.getScene().getNodes().stream().sorted().collect(Collectors.toCollection(Vector::new)));
         editor.installToActionPanel(panel);
-//        panel.commitComponent(nodes);
-        panel.componentField.selectAll();
-        panel.componentField.requestFocusInWindow();
+        if (nodes.length == 0 || nodes[0] == editor.getContainer().getNodeDelegate()) {
+            panel.componentField.setText(Bundle.TXT_parent());
+            panel.componentField.selectAll();
+            panel.componentField.requestFocusInWindow();
+        } else {
+            panel.componentField.setText(Utils.nodesToGlob(nodes));
+            panel.commitComponent(nodes);
+        }
     }
 
     private Node[] findMatchingNodes(String glob) {
