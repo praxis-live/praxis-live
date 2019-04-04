@@ -40,6 +40,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -649,7 +650,7 @@ public class GraphEditor extends RootEditor {
 
     }
 
-    private void syncChildren() {
+    private void syncChildren(boolean updateSelection) {
         if (container == null) {
             return;
         }
@@ -672,6 +673,10 @@ public class GraphEditor extends RootEditor {
                 buildChild(id, cmp);
                 knownChildren.put(id, cmp);
             }
+        }
+        if (updateSelection && !tmp.isEmpty()) {
+            scene.userSelectionSuggested(tmp, false);
+            scene.setFocusedObject(tmp.iterator().next());
         }
         scene.validate();
     }
@@ -704,14 +709,19 @@ public class GraphEditor extends RootEditor {
     }
 
     void syncGraph(boolean sync) {
+        syncGraph(sync, false);
+    }
+    
+    void syncGraph(boolean sync, boolean updateSelection) {
         if (sync) {
             this.sync = true;
-            syncChildren();
+            syncChildren(updateSelection);
             syncConnections();
         } else {
             this.sync = false;
         }
     }
+    
 
     private void updateWidgetComment(final NodeWidget widget, final String text, final boolean container) {
 
@@ -784,20 +794,20 @@ public class GraphEditor extends RootEditor {
                 container.addChild(id, type, new Callback() {
                     @Override
                     public void onReturn(CallArguments args) {
-                        // nothing wait for sync
+                        syncGraph(true, true);
                     }
 
                     @Override
                     public void onError(CallArguments args) {
-//                                        pointMap.remove(id);
+                        syncGraph(true);
                         DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message("Error creating component", NotifyDescriptor.ERROR_MESSAGE));
                     }
                 });
+                syncGraph(false);
             } catch (ProxyException ex) {
                 Exceptions.printStackTrace(ex);
             }
-//                            pointMap.put(id, point);
-
+            
         }
     }
 
@@ -806,7 +816,7 @@ public class GraphEditor extends RootEditor {
         if (getActionSupport().importSubgraph(container, file, warnings, new Callback() {
             @Override
             public void onReturn(CallArguments args) {
-                syncGraph(true);
+                syncGraph(true, true);
                 if (!warnings.isEmpty()) {
                     String errors = warnings.stream().collect(Collectors.joining("\n"));
                     DialogDisplayer.getDefault().notify(
@@ -819,7 +829,7 @@ public class GraphEditor extends RootEditor {
                 syncGraph(true);
                 String errors = warnings.stream().collect(Collectors.joining("\n"));
                 DialogDisplayer.getDefault().notify(
-                            new NotifyDescriptor.Message(errors, NotifyDescriptor.ERROR_MESSAGE));
+                        new NotifyDescriptor.Message(errors, NotifyDescriptor.ERROR_MESSAGE));
             }
         })) {
             syncGraph(false);
@@ -838,7 +848,7 @@ public class GraphEditor extends RootEditor {
         public void propertyChange(PropertyChangeEvent evt) {
             if (sync) {
                 if (ContainerProtocol.CHILDREN.equals(evt.getPropertyName())) {
-                    syncChildren();
+                    syncChildren(false);
                 } else if (ContainerProtocol.CONNECTIONS.equals(evt.getPropertyName())) {
                     syncConnections();
                 }

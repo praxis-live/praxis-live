@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2017 Neil C Smith / David von Ah
+ * Copyright 2019 Neil C Smith / David von Ah
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -37,6 +37,7 @@ import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.Iterator;
+import java.util.Locale;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -77,10 +78,6 @@ class JSuggestField extends JTextField {
      * Needed for the new narrowing search, so we know when to reset the list
      */
     private String lastWord = "";
-
-    private Matcher suggestMatcher = (dataWord, searchWord) -> dataWord.contains(searchWord);
-
-    private boolean caseSensitive = false;
 
     /**
      * Create a new JSuggestField.
@@ -289,22 +286,34 @@ class JSuggestField extends JTextField {
                 return;
             }
             try {
-                Iterator<String> it = suggestions.iterator();
-                String word = getText();
-                while (it.hasNext()) {
-                    // rather than using the entire list, let's rather remove
-                    // the words that don't match, thus narrowing
-                    // the search and making it faster
-                    if (caseSensitive) {
-                        if (!suggestMatcher.matches(it.next(), word)) {
-                            it.remove();
-                        }
-                    } else {
-                        if (!suggestMatcher.matches(it.next().toLowerCase(), word.toLowerCase())) {
-                            it.remove();
-                        }
-                    }
-                }
+//                Iterator<String> it = suggestions.iterator();
+//                String word = getText();
+//                while (it.hasNext()) {
+//                    // rather than using the entire list, let's rather remove
+//                    // the words that don't match, thus narrowing
+//                    // the search and making it faster
+//                    if (caseSensitive) {
+//                        if (!suggestMatcher.matches(it.next(), word)) {
+//                            it.remove();
+//                        }
+//                    } else {
+//                        if (!suggestMatcher.matches(it.next().toLowerCase(), word.toLowerCase())) {
+//                            it.remove();
+//                        }
+//                    }
+//                }
+
+                String word = getText().toLowerCase(Locale.ROOT);
+                suggestions.clear();
+                data.stream()
+                        .map(s -> s.toLowerCase(Locale.ROOT))
+                        .filter(s -> s.startsWith(word))
+                        .forEachOrdered(suggestions::add);
+                data.stream()
+                        .map(s -> s.toLowerCase(Locale.ROOT))
+                        .filter(s -> !s.startsWith(word) && s.contains(word))
+                        .forEachOrdered(suggestions::add);
+
                 if (suggestions.size() > 0) {
                     list.setListData(suggestions);
                     showPopup();
@@ -330,28 +339,5 @@ class JSuggestField extends JTextField {
         super.fireActionPerformed();
     }
 
-    /**
-     * Determine how the suggestions are generated. Default is the simple
-     * {@link ContainsMatcher}
-     *
-     * @param suggestMatcher matcher that determines if a data word may be
-     * suggested for the current search word.
-     */
-    public void setSuggestMatcher(Matcher suggestMatcher) {
-        this.suggestMatcher = suggestMatcher;
-    }
-
-    public boolean isCaseSensitive() {
-        return caseSensitive;
-    }
-
-    public void setCaseSensitive(boolean caseSensitive) {
-        this.caseSensitive = caseSensitive;
-    }
-
-    public static interface Matcher {
-
-        public boolean matches(String dataWord, String searchWord);
-    }
 
 }
