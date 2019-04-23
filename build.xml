@@ -7,30 +7,43 @@
     <import file="nbproject/build-impl.xml"/>
     
     <target name="build-core-javadoc" depends="-init">
-      <!--<mkdir dir="${suite.build.dir}/core-javadoc/" />-->
-      <javadoc destdir="${suite.build.dir}/core-javadoc/" access="public" encoding="UTF-8" charset="UTF-8">
-        <sourcefiles>
-          <fileset dir="${praxis.core.project}">
-            <include name="*/src/**/*?CodeDelegate.java" />
-            <include name="*/src/**/userapi/*.java" />
-            <include name="*/src/**/praxis/core/types/*.java" />
-          </fileset>
-        </sourcefiles>
-        <classpath>
-          <fileset dir="${praxis.core.cluster}/modules/" />
-        </classpath>
-        <link href="https://docs.oracle.com/javase/8/docs/api/"/>
-      </javadoc>
-      <zip destfile="${suite.build.dir}/cluster/docs/core-javadoc.zip" basedir="${suite.build.dir}/core-javadoc/" />
+        <javadoc destdir="${suite.build.dir}/core-javadoc/" access="public" encoding="UTF-8" charset="UTF-8">
+            <sourcefiles>
+                <fileset dir="${praxis.core.project}">
+                    <include name="*/src/**/*?CodeDelegate.java" />
+                    <include name="*/src/**/userapi/*.java" />
+                    <include name="*/src/**/praxis/core/types/*.java" />
+                </fileset>
+            </sourcefiles>
+            <classpath>
+                <fileset dir="${praxis.core.cluster}/modules/" />
+            </classpath>
+            <link href="https://docs.oracle.com/javase/8/docs/api/"/>
+        </javadoc>
+        <zip destfile="${suite.build.dir}/cluster/docs/core-javadoc.zip" basedir="${suite.build.dir}/core-javadoc/" />
     </target>
     
     <target name="view-core-javadoc" depends="build-core-javadoc">
-      <nbbrowse file="${suite.build.dir}/core-javadoc/index.html" />
+        <nbbrowse file="${suite.build.dir}/core-javadoc/index.html" />
     </target>
     
-    <target name="build" depends="suite.build,build-core-javadoc">
-      
+    <target name="build" depends="suite.build">
+        <condition property="build.install.nbjavac">
+            <and>
+                <not>
+                    <available file="${nbplatform.active.dir}/java/modules/org-netbeans-modules-nbjavac.jar"/>
+                </not>
+                <isset property="nbjavac.catalog.url"/>
+            </and>
+        </condition>
+        <antcall target="-install-nbjavac"/>
     </target>
+    
+    <target name="build-zip" depends="build,build-launchers,build-core-javadoc,suite.build-zip">
+        
+    </target>
+    
+    <target name="init-platform"></target>
     
     <target name="build-launchers" depends="suite.build-launchers">
         <copy file="${build.launcher.dir}/bin/${app.name}64.exe" tofile="${build.launcher.dir}/bin/praxis64.exe"/>
@@ -41,5 +54,12 @@
         <copy file="uninstaller.conf" todir="${build.launcher.dir}/etc/"/>
         <replace dir="${build.launcher.dir}/etc/" token="$${app.version}" value="${app.version}"/>
     </target>
-   
+    
+    <target name="-install-nbjavac" if="build.install.nbjavac">
+        <echo>Installing nbjavac in cluster</echo>
+        <autoupdate todir="${suite.build.dir}/cluster/" updatecenter="${nbjavac.catalog.url}">
+            <modules includes=".*nbjavac.*" />
+        </autoupdate>
+    </target>
+    
 </project>

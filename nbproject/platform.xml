@@ -9,6 +9,9 @@
             <isset property="autoupdate.catalog.url"/>
         </and>
     </condition>
+    <condition property="download.nbjavac.required">
+        <isset property="nbjavac.catalog.url"/>
+    </condition>
     <target name="download" if="download.required">
         <mkdir dir="${harness.dir}"/>
         <pathconvert pathsep="|" property="download.clusters">
@@ -29,6 +32,13 @@
         <autoupdate installdir="${nbplatform.active.dir}" updatecenter="${autoupdate.catalog.url}">
             <modules includes="${module.includes}.*" clusters="${download.clusters}"/>
             <modules includes="org[.]netbeans[.]modules[.]apisupport[.]harness" clusters="harness"/>
+        </autoupdate>
+        <antcall target="-download-nbjavac" />
+    </target>
+    
+    <target name="-download-nbjavac" if="download.nbjavac.required">
+        <autoupdate todir="${nbplatform.active.dir}/java/" updatecenter="${nbjavac.catalog.url}">
+            <modules includes=".*nbjavac.*" />
         </autoupdate>
     </target>
 </project>
