@@ -43,6 +43,7 @@ import org.praxislive.ide.project.api.PraxisProject;
 import org.praxislive.ide.project.api.PraxisProjectProperties;
 import org.netbeans.api.actions.Openable;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.classpath.JavaClassPathConstants;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
@@ -139,7 +140,7 @@ public class PXJDataObject extends MultiDataObject {
                 if (o != null) {
                     Class<?> cls = Class.forName(o.toString(), true, Thread.currentThread().getContextClassLoader());
                     if (cls != null && ClassBodyContext.class.isAssignableFrom(cls)) {
-                        o = cls.newInstance();
+                        o = cls.getDeclaredConstructor().newInstance();
                         return (ClassBodyContext<?>) o;
                     }
                 }
@@ -226,9 +227,14 @@ public class PXJDataObject extends MultiDataObject {
         }
     }
 
+    int getJavaRelease() {
+        return projectProps.getJavaRelease();
+    }
+    
     ClassPath getClassPath(String type) {
         switch (type) {
             case ClassPath.BOOT:
+            case JavaClassPathConstants.MODULE_BOOT_PATH:
                 return ClassPathRegistry.getInstance().getBootClasspath();
             case ClassPath.COMPILE:
                 return compileClasspath;

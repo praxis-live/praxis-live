@@ -29,6 +29,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
+import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
@@ -83,9 +84,10 @@ public class ClassPathRegistry {
             classPath = ClassPath.EMPTY;
         }
         
-        LOG.log(Level.FINE, "Initializing boot classpath");
-        String sbcp = System.getProperty("sun.boot.class.path", "");
-        bootClassPath = ClassPathSupport.createClassPath(sbcp);
+//        LOG.log(Level.FINE, "Initializing boot classpath");
+//        String sbcp = System.getProperty("sun.boot.class.path", "");
+//        bootClassPath = ClassPathSupport.createClassPath(sbcp);
+        bootClassPath = JavaPlatform.getDefault().getBootstrapLibraries();
         GlobalPathRegistry.getDefault().register(ClassPath.BOOT, new ClassPath[]{bootClassPath});
         
         
