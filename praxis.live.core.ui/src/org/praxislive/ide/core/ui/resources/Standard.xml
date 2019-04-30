@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+
+<!DOCTYPE Configuration PUBLIC "-//NetBeans IDE//DTD toolbar 1.1//EN" "http://www.netbeans.org/dtds/toolbar1_1.dtd">
+
+<Configuration>
+    <Row>
+        <Toolbar name="File" />
+        <!--<Toolbar name="Clipboard" visible="false"/>-->
+        <!--<Toolbar name="UndoRedo" />-->
+        <!--<Toolbar name="Remote" visible="false"/>-->
+        <Toolbar name="Build" />
+        <!--<Toolbar name="Debug" visible="false" />-->
+        <Toolbar name="Memory" visible="false" />
+        <!--<Toolbar name="Git" visible="false"/>-->
+        <Toolbar name="QuickSearch" align="right" />
+    </Row>
+
+</Configuration>
