@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2017 Neil C Smith.
+ * Copyright 2019 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -27,7 +27,6 @@ import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -36,13 +35,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
+import javax.lang.model.SourceVersion;
 import javax.swing.Icon;
 import org.praxislive.core.CallArguments;
 import org.praxislive.ide.core.api.Callback;
 import org.praxislive.ide.project.api.ExecutionLevel;
 import org.praxislive.ide.project.api.FileHandler;
 import org.praxislive.ide.project.api.PraxisProject;
-import org.praxislive.ide.project.api.PraxisProjectProperties;
 import org.praxislive.ide.project.ui.PraxisLogicalViewProvider;
 import org.praxislive.ide.project.ui.ProjectDialogManager;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -58,12 +57,15 @@ import org.netbeans.spi.project.support.LookupProviderSupport;
 import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.netbeans.spi.project.ui.support.UILookupMergerSupport;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Cancellable;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 import org.openide.util.lookup.Lookups;
@@ -72,16 +74,28 @@ import org.openide.util.lookup.Lookups;
  *
  * @author Neil C Smith (http://neilcsmith.net)
  */
+@NbBundle.Messages({
+    "# {0} - required Java release",
+    "PraxisProject.javaVersionError=This project requires Java {0}"
+})
 public class DefaultPraxisProject extends PraxisProject {
 
     public final static String LIBS_PATH = "config/libs/";
     public final static String LIBS_COMMAND = "add-libs [file-list \"" + LIBS_PATH + "*.jar\"]";
+    
+    public static final int MIN_JAVA_VERSION = 8;
+    public static final int MAX_JAVA_VERSION;
+    
+    static {
+        int max = SourceVersion.latest().ordinal();
+        MAX_JAVA_VERSION = max < 8 ? 8 : max;
+    }
 
     private final static RequestProcessor RP = new RequestProcessor(PraxisProject.class);
 
     private final FileObject directory;
     private final FileObject projectFile;
-    private final PraxisProjectProperties properties;
+    private final ProjectPropertiesImpl properties;
     private final Lookup lookup;
     private final HelperListener helperListener;
     private final PropertiesListener propsListener;
@@ -148,10 +162,20 @@ public class DefaultPraxisProject extends PraxisProject {
     }
 
     private void execute(ExecutionLevel level) {
+        
+        if (properties.getJavaRelease() > MAX_JAVA_VERSION) {
+            NotifyDescriptor nd = new NotifyDescriptor.Message(
+                    Bundle.PraxisProject_javaVersionError(properties.getJavaRelease()),
+                    NotifyDescriptor.ERROR_MESSAGE);
+            DialogDisplayer.getDefault().notify(nd);
+            return;
+        }
+        
         if (!active) {
             registerLibs();
         }
         List<FileObject> buildFiles = new ArrayList<>();
+        buildFiles.add(projectFile);
         FileObject libsFolder = directory.getFileObject(LIBS_PATH);
         if (libsFolder != null) {
             buildFiles.add(libsFolder);
@@ -168,7 +192,7 @@ public class DefaultPraxisProject extends PraxisProject {
         actionsEnabled = false;
         itr.start();
     }
-
+    
     void registerLibs() {
         clearLibs();
         libsCP = buildLibsClasspath();
@@ -316,6 +340,16 @@ public class DefaultPraxisProject extends PraxisProject {
 
         }
     }
+    
+    private class ProjectFileHandler extends FileHandler {
+
+        @Override
+        public void process(Callback callback) throws Exception {
+            String script = "java-compiler-release " + properties.getJavaRelease();
+            ProjectHelper.getDefault().executeScript(script, callback);
+        }
+        
+    }
 
     private class LibrariesFileHandler extends FileHandler {
 
@@ -416,6 +450,10 @@ public class DefaultPraxisProject extends PraxisProject {
 
         private FileHandler findHandler(ExecutionLevel level, FileObject file) {
 
+            if (projectFile.equals(file)) {
+                return new ProjectFileHandler();
+            }
+            
             if (file.isFolder()
                     && file.equals(directory.getFileObject(LIBS_PATH))) {
                 return new LibrariesFileHandler();
