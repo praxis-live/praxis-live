@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2016 Neil C Smith.
+ * Copyright 2019 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -89,6 +89,7 @@ public class PXRComponentProxy implements ComponentProxy {
     private PropPropListener propertyListener;
     private List<Action> triggers;
     private List<Action> propActions;
+    private Action codeAction;
     private EditorAction editorAction;
     boolean syncing;
 //    private int listenerCount = 0;
@@ -322,6 +323,11 @@ public class PXRComponentProxy implements ComponentProxy {
         }
         return propActions;
     }
+     
+     Action getCodeEditAction() {
+         getPropertyActions(); // ensure initialized
+         return codeAction;
+     }
     
     private void initPropertyActions() {
         if (properties == null) {
@@ -346,6 +352,7 @@ public class PXRComponentProxy implements ComponentProxy {
             }
             propActions.add(code.getEditAction());
             propActions.add(code.getResetAction());
+            codeAction = code.getEditAction();
         }
         propActions = Collections.unmodifiableList(propActions);
     }
