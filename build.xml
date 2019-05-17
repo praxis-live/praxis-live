@@ -4,42 +4,159 @@
 <!-- If you delete this file and reopen the project it will be recreated. -->
 <project name="praxis-live" basedir=".">
     <description>Builds the module suite praxis-live.</description>
+    
     <import file="nbproject/build-impl.xml"/>
     
-    <target name="build-core-javadoc" depends="-init">
-      <!--<mkdir dir="${suite.build.dir}/core-javadoc/" />-->
-      <javadoc destdir="${suite.build.dir}/core-javadoc/" access="public" encoding="UTF-8" charset="UTF-8">
-        <sourcefiles>
-          <fileset dir="${praxis.core.project}">
-            <include name="*/src/**/*?CodeDelegate.java" />
-            <include name="*/src/**/userapi/*.java" />
-            <include name="*/src/**/praxis/core/types/*.java" />
-          </fileset>
-        </sourcefiles>
-        <classpath>
-          <fileset dir="${praxis.core.cluster}/modules/" />
-        </classpath>
-        <link href="https://docs.oracle.com/javase/8/docs/api/"/>
-      </javadoc>
-      <zip destfile="${suite.build.dir}/cluster/docs/core-javadoc.zip" basedir="${suite.build.dir}/core-javadoc/" />
+    <target name="build-core-javadoc" depends="-init, -check-core-javadoc" unless="core.javadoc.exists">
+        <javadoc destdir="${suite.build.dir}/core-javadoc/" access="public" encoding="UTF-8" charset="UTF-8">
+            <sourcefiles>
+                <fileset dir="${praxis.core.project}">
+                    <include name="*/src/**/*?CodeDelegate.java" />
+                    <include name="*/src/**/userapi/*.java" />
+                    <include name="*/src/**/praxis/core/types/*.java" />
+                </fileset>
+            </sourcefiles>
+            <classpath>
+                <fileset dir="${praxis.core.cluster}/modules/" />
+            </classpath>
+            <link href="https://docs.oracle.com/javase/8/docs/api/"/>
+        </javadoc>
+        <zip destfile="${suite.build.dir}/cluster/docs/core-javadoc.zip" basedir="${suite.build.dir}/core-javadoc/" />
+    </target>
+    
+    <target name="-check-core-javadoc" >
+        <available file="${suite.build.dir}/cluster/docs/core-javadoc.zip" property="core.javadoc.exists" />
+        <echo message="JavaDoc already build : ${core.javadoc.exists}" />
     </target>
     
     <target name="view-core-javadoc" depends="build-core-javadoc">
-      <nbbrowse file="${suite.build.dir}/core-javadoc/index.html" />
+        <nbbrowse file="${suite.build.dir}/core-javadoc/index.html" />
     </target>
     
-    <target name="build" depends="suite.build,build-core-javadoc">
-      
+    <target name="build" depends="suite.build">
+        <condition property="build.install.nbjavac">
+            <and>
+                <not>
+                    <available file="${nbplatform.active.dir}/java/modules/org-netbeans-modules-nbjavac.jar"/>
+                </not>
+                <isset property="nbjavac.catalog.url"/>
+            </and>
+        </condition>
+        <antcall target="-install-nbjavac"/>
     </target>
+    
+    <target name="build-zip" depends="build,build-launchers,build-core-javadoc,suite.build-zip">
+        
+    </target>
+    
+    <target name="init-platform"></target>
     
     <target name="build-launchers" depends="suite.build-launchers">
         <copy file="${build.launcher.dir}/bin/${app.name}64.exe" tofile="${build.launcher.dir}/bin/praxis64.exe"/>
         <copy file="${build.launcher.dir}/bin/${app.name}.exe" tofile="${build.launcher.dir}/bin/praxis.exe"/>
         <copy file="${build.launcher.dir}/bin/${app.name}" tofile="${build.launcher.dir}/bin/praxis"/>
-        <copy file="praxis.conf" todir="${build.launcher.dir}/etc/"/>
-        <copy file="praxis.clusters" todir="${build.launcher.dir}/etc/"/>
-        <copy file="uninstaller.conf" todir="${build.launcher.dir}/etc/"/>
+        <copy file="${basedir}/resources/praxis.conf" todir="${build.launcher.dir}/etc/"/>
+        <copy file="${basedir}/resources/praxis.clusters" todir="${build.launcher.dir}/etc/"/>
         <replace dir="${build.launcher.dir}/etc/" token="$${app.version}" value="${app.version}"/>
     </target>
-   
+    
+    <target name="-install-nbjavac" if="build.install.nbjavac">
+        <echo>Installing nbjavac in cluster</echo>
+        <autoupdate todir="${suite.build.dir}/cluster/" updatecenter="${nbjavac.catalog.url}">
+            <modules includes=".*nbjavac.*" />
+        </autoupdate>
+    </target>
+    
+    <target name="build-windows" depends="build,build-launchers,build-core-javadoc" if="release.windows.issc" description="Builds a Windows installer">
+        <mkdir dir="${dist.dir}"/>
+        <mkdir dir="${dist.dir}/windows"/>
+        <mkdir dir="${dist.dir}/windows/${app.name}"/>
+
+        <copy todir="${dist.dir}/windows/${app.name}/bin">
+            <fileset dir="${build.launcher.dir}/bin/" />
+        </copy>
+        <copy todir="${dist.dir}/windows/${app.name}/etc">
+            <fileset dir="${build.launcher.dir}/etc/" />
+        </copy>
+        <subant genericantfile="${harness.dir}/suite.xml" target="copy-cluster" inheritrefs="true">
+            <property name="dest.dir" value="${dist.dir}/windows/${app.name}"/>
+            <property name="nbexec.dir" value="${dist.dir}/windows/${app.name}"/>
+            <property name="build.dir" value="${suite.build.dir}"/>
+            <resources refid="zip.platform.clusters"/>
+        </subant>
+
+        <copy todir="${dist.dir}/windows/${app.name}/${app.name}">
+            <fileset dir="${cluster}"/>
+        </copy>
+        
+        <copy file="${basedir}/resources/praxislive.ico" todir="${dist.dir}/windows/${app.name}/etc" />
+        
+        <antcall target="-bundle-windows-jdk" />
+        
+        <copy file="resources/pl-installer.iss.template" tofile="${dist.dir}/windows/pl-installer.iss" >
+            <filterchain>
+                <replacestring from="$${app.version}" to="${app.version}"/>
+            </filterchain>
+        </copy>
+        
+        <exec dir="${dist.dir}/windows" command="${release.windows.issc}">
+            <arg value="pl-installer.iss" />
+        </exec>       
+        
+    </target>
+    
+    <target name="-bundle-windows-jdk" if="release.windows.jdk">
+        <mkdir dir="${dist.dir}/windows/${app.name}/jdk" />
+        <unzip src="${release.windows.jdk}" dest="${dist.dir}/windows/${app.name}/jdk">
+            <cutdirsmapper dirs="1" />
+        </unzip>
+        
+        <replace dir="${dist.dir}/windows/${app.name}/etc" includes="*.conf" token='#jdkhome="/path/to/jdk"' value='jdkhome="jdk"'/>
+        
+    </target>
+    
+    
+    <target name="build-mac" depends="build,build-launchers,build-core-javadoc,suite.build-mac,-bundle-macos-jdk,-build-mac-archive">
+        <!--<chmod file="${dist.dir}/${app.name}.app/Contents/Resources/${app.name}/bin/praxis" perm="755"/>-->
+    </target>
+    
+    <target name="-build-mac-archive" depends="suite.build-mac">
+        <zip destfile="${dist.dir}/PraxisLIVE-${app.version}-macOS.zip">
+            <zipfileset dir="${dist.dir}/${app.name}.app" prefix="PraxisLIVE.app">
+                <exclude name="Contents/MacOS/${app.name}" />
+                <exclude name="Contents/Resources/${app.name}/bin/*" />
+                <exclude name="Contents/Resources/${app.name}/platform*/lib/nbexec" />
+                <exclude name="Contents/Resources/${app.name}/jdk/bin/*" />
+                <exclude name="Contents/Resources/${app.name}/jdk/lib/jspawnhelper" />
+                <!-- following required for JDK 8 -->
+                <exclude name="Contents/Resources/${app.name}/jdk/jre/bin/*" />
+                <exclude name="Contents/Resources/${app.name}/jdk/jre/lib/jspawnhelper" />
+            </zipfileset>
+            <zipfileset dir="${dist.dir}/${app.name}.app" prefix="PraxisLIVE.app" filemode="755">
+                <include name="Contents/MacOS/${app.name}" />
+                <include name="Contents/Resources/${app.name}/bin/praxis" />
+                <include name="Contents/Resources/${app.name}/bin/${app.name}" />
+                <include name="Contents/Resources/${app.name}/platform*/lib/nbexec" />
+                <include name="Contents/Resources/${app.name}/jdk/bin/*" />
+                <include name="Contents/Resources/${app.name}/jdk/lib/jspawnhelper" />
+                <!-- following required for JDK 8 -->
+                <include name="Contents/Resources/${app.name}/jdk/jre/bin/*" />
+                <include name="Contents/Resources/${app.name}/jdk/jre/lib/jspawnhelper" />
+            </zipfileset>
+        </zip>
+        
+        
+    </target>
+    
+    <target name="-bundle-macos-jdk" depends="suite.build-mac" if="release.macos.jdk">
+        <mkdir dir="${dist.dir}/${app.name}.app/Contents/Resources/${app.name}/jdk" />
+        <unzip src="${release.macos.jdk}" dest="${dist.dir}/${app.name}.app/Contents/Resources/${app.name}/jdk">
+            <cutdirsmapper dirs="1" />
+        </unzip>
+        
+        <replace dir="${dist.dir}/${app.name}.app/Contents/Resources/${app.name}/etc" includes="*.conf" token='#jdkhome="/path/to/jdk"' value='jdkhome="jdk"'/>
+    </target>
+    
+        
+    
 </project>

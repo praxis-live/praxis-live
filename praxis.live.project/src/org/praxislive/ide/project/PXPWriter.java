@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2017 Neil C Smith.
+ * Copyright 2019 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -70,6 +70,10 @@ public class PXPWriter {
     }
     
     private void writeConfig(Writer writer) throws IOException {
+        writer.write(PXPReader.JAVA_RELEASE_CMD);
+        writer.write(" ");
+        writer.write(String.valueOf(props.getJavaRelease()));
+        writer.write("\n");
         writer.write(DefaultPraxisProject.LIBS_COMMAND);
         writer.write("\n");
     }

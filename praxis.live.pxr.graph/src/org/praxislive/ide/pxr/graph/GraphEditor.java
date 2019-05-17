@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2018 Neil C Smith.
+ * Copyright 2019 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -79,6 +79,8 @@ import org.praxislive.ide.pxr.api.ActionSupport;
 import org.praxislive.ide.pxr.api.EditorUtils;
 import org.praxislive.ide.pxr.api.PaletteUtils;
 import org.praxislive.ide.pxr.api.RootEditor;
+import java.awt.AWTEvent;
+import java.awt.event.InputEvent;
 import org.netbeans.api.visual.action.AcceptProvider;
 import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.action.ConnectProvider;
@@ -481,16 +483,23 @@ public class GraphEditor extends RootEditor {
         updateWidgetComment(widget,
                 Utils.getAttr(cmp, ATTR_GRAPH_COMMENT, ""),
                 cmp instanceof ContainerProxy);
-        widget.getActions().addAction(ActionFactory.createEditAction(new EditProvider() {
-            @Override
-            public void edit(Widget widget) {
-                if (cmp instanceof ContainerProxy) {
-                    new ContainerOpenAction((ContainerProxy) cmp).actionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, "edit"));
-                } else {
-                    cmp.getNodeDelegate().getPreferredAction().actionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, "edit"));
-                }
-            }
-        }));
+        if (cmp instanceof ContainerProxy) {
+            ContainerOpenAction containerOpenAction = new ContainerOpenAction((ContainerProxy) cmp);
+            widget.getActions().addAction(ActionFactory.createEditAction(w -> {
+                containerOpenAction.actionPerformed(new ActionEvent(this,
+                        ActionEvent.ACTION_PERFORMED,
+                        "edit"));
+            }));
+        } else {
+            widget.getActions().addAction(ActionFactory.createEditAction(w -> {
+                AWTEvent current = EventQueue.getCurrentEvent();
+                int modifiers = (current instanceof InputEvent) ?
+                        ((InputEvent) current).getModifiers() : 0;
+                cmp.getNodeDelegate().getPreferredAction().actionPerformed(
+                        new ActionEvent(this, ActionEvent.ACTION_PERFORMED, "edit", modifiers)
+                );
+            }));
+        }
         final CommentAction commentAction = new CommentAction(widget);
         widget.getCommentWidget().getActions().addAction(ActionFactory.createEditAction(new EditProvider() {
 

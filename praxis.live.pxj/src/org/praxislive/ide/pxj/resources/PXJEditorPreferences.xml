@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE editor-preferences PUBLIC "-//NetBeans//DTD Editor Preferences 1.0//EN" "http://www.netbeans.org/dtds/EditorPreferences-1_0.dtd">
+<editor-preferences>
+    <entry javaType="java.lang.String" name="importGroupsOrder" xml:space="preserve"><value><![CDATA[java.util;org.praxislive;*]]></value></entry>
+    <entry javaType="java.lang.Boolean" name="separateImportGroups" xml:space="preserve"><value><![CDATA[false]]></value></entry>
+    <entry javaType="java.lang.String" name="wrapAnnotations" xml:space="preserve"><value><![CDATA[WRAP_NEVER]]></value></entry>
+</editor-preferences>

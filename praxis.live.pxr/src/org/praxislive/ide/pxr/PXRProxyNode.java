@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2018 Neil C Smith.
+ * Copyright 2019 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -43,6 +43,8 @@ import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 import org.praxislive.core.ComponentInfo;
 import org.praxislive.core.ControlInfo;
+import java.awt.event.ActionEvent;
+import javax.swing.AbstractAction;
 
 /**
  *
@@ -52,6 +54,7 @@ class PXRProxyNode extends AbstractNode {
 
 //    private final static Logger LOG = Logger.getLogger(PXRProxyNode.class.getName());
     private final PXRComponentProxy component;
+    private final Action preferredAction;
 
     private Action[] actions;
     private Image icon;
@@ -68,6 +71,7 @@ class PXRProxyNode extends AbstractNode {
     private PXRProxyNode(PXRComponentProxy component, Children children, Lookup lookup) {
         super(children, lookup);
         this.component = component;
+        this.preferredAction = new PreferredAction();
         setName(component.getAddress().getID());
         refreshProperties();
         refreshActions();
@@ -113,7 +117,7 @@ class PXRProxyNode extends AbstractNode {
 
     @Override
     public Action getPreferredAction() {
-        return component.getEditorAction();
+        return preferredAction;
     }
 
     @Override
@@ -218,18 +222,23 @@ class PXRProxyNode extends AbstractNode {
         firePropertyChange(property, oldValue, newValue);
     }
 
-//    class ComponentPropListener implements PropertyChangeListener {
-//
-//        @Override
-//        public void propertyChange(PropertyChangeEvent evt) {
-//            String property = evt.getPropertyName();
-////            if (!component.isProxiedProperty(property)) {
-//                firePropertyChange(property, null, null);
-////            }
-//            
-//        }
-//
-//    }
+    private class PreferredAction extends AbstractAction {
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            if ((e.getModifiers() & ActionEvent.SHIFT_MASK) != 0) {
+                Action codeAction = component.getCodeEditAction();
+                if (codeAction != null) {
+                    codeAction.actionPerformed(e);
+                    return;
+                }
+            }
+            component.getEditorAction().actionPerformed(e);
+        }
+        
+    }
+    
+    
     static class ContainerChildren extends Children.Keys<String> {
 
         final PXRContainerProxy container;

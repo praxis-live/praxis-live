@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2017 Neil C Smith.
+ * Copyright 2019 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -24,6 +24,7 @@ package org.praxislive.ide.project.api;
 
 import java.beans.PropertyChangeListener;
 import java.util.List;
+import javax.lang.model.SourceVersion;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -34,6 +35,7 @@ public interface PraxisProjectProperties {
     
     public final static String PROP_FILES = "files";
     public final static String PROP_LIBRARIES = "libraries";
+    public final static String PROP_JAVA_RELEASE = "java-release";
     
     public boolean addFile(ExecutionLevel level, FileObject file);
     
@@ -42,6 +44,10 @@ public interface PraxisProjectProperties {
     public List<FileObject> getFiles(ExecutionLevel level);
     
     public List<FileObject> getLibraries();
+    
+    public default int getJavaRelease() {
+        return 8;
+    }
     
     public void addPropertyChangeListener(PropertyChangeListener listener);
 

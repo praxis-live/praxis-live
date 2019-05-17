@@ -277,42 +277,26 @@ class JSuggestField extends JTextField {
 
         private boolean stop;
 
-        /**
-         * Standard run method used in threads responsible for the actual search
-         */
         @Override
         public void run() {
             if (stop || !JSuggestField.this.isVisible()) {
                 return;
             }
             try {
-//                Iterator<String> it = suggestions.iterator();
-//                String word = getText();
-//                while (it.hasNext()) {
-//                    // rather than using the entire list, let's rather remove
-//                    // the words that don't match, thus narrowing
-//                    // the search and making it faster
-//                    if (caseSensitive) {
-//                        if (!suggestMatcher.matches(it.next(), word)) {
-//                            it.remove();
-//                        }
-//                    } else {
-//                        if (!suggestMatcher.matches(it.next().toLowerCase(), word.toLowerCase())) {
-//                            it.remove();
-//                        }
-//                    }
-//                }
 
                 String word = getText().toLowerCase(Locale.ROOT);
                 suggestions.clear();
-                data.stream()
-                        .map(s -> s.toLowerCase(Locale.ROOT))
-                        .filter(s -> s.startsWith(word))
-                        .forEachOrdered(suggestions::add);
-                data.stream()
-                        .map(s -> s.toLowerCase(Locale.ROOT))
-                        .filter(s -> !s.startsWith(word) && s.contains(word))
-                        .forEachOrdered(suggestions::add);
+                data.forEach(datum -> {
+                    if (datum.toLowerCase(Locale.ROOT).startsWith(word)) {
+                        suggestions.add(datum);
+                    }
+                });
+                data.forEach(datum -> {
+                    String lower = datum.toLowerCase(Locale.ROOT);
+                    if (!lower.startsWith(word) && lower.contains(word)) {
+                        suggestions.add(datum);
+                    }
+                });
 
                 if (suggestions.size() > 0) {
                     list.setListData(suggestions);

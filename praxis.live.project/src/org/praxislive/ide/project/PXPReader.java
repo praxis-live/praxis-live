@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2017 Neil C Smith.
+ * Copyright 2019 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -42,6 +42,7 @@ import static org.praxislive.core.syntax.Token.Type.*;
 class PXPReader {
 
     final static String INCLUDE_CMD = "include";
+    final static String JAVA_RELEASE_CMD = "java-compiler-release";
     final static String ADD_LIBS_CMD = "add-libs";
     final static String FILE_CMD = "file";
     final static String BUILD_LEVEL_SWITCH = "<<<BUILD>>>";
@@ -119,6 +120,8 @@ class PXPReader {
             parseInclude(tokens);
         } else if (ADD_LIBS_CMD.equals(command)) {
             parseAddLibs(tokens);
+        } else if (JAVA_RELEASE_CMD.equals(command)) {
+            parseJavaRelease(tokens);
         } else {
             throw new IllegalArgumentException("Unexpected command in project file : " + command);
         }
@@ -159,6 +162,19 @@ class PXPReader {
             throw new IllegalArgumentException("add-libs command found after level switch");
         }
         libsAdded = true;
+    }
+    
+    private void parseJavaRelease(Token[] tokens) throws Exception {
+        if (tokens.length != 2) {
+            throw new IllegalArgumentException("Unexpected number of arguments in java-compiler-release command");
+        }
+        try {
+            int release = Integer.parseInt(tokens[1].getText());
+            props.setJavaRelease(release);
+        } catch (Exception ex) {
+            // fall through?
+        }
+        
     }
 
     private static Token[] tokensToEOL(Iterator<Token> tokens) {

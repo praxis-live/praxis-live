@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2017 Neil C Smith.
+ * Copyright 2019 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import javax.lang.model.SourceVersion;
 import org.praxislive.core.CallArguments;
 import org.praxislive.core.services.ServiceUnavailableException;
 import org.praxislive.ide.core.api.Callback;
@@ -39,9 +40,6 @@ import org.praxislive.ide.core.api.HubUnavailableException;
 import org.praxislive.ide.project.api.ExecutionLevel;
 import org.praxislive.ide.project.api.PraxisProjectProperties;
 import static org.praxislive.ide.project.api.PraxisProjectProperties.PROP_LIBRARIES;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.classpath.GlobalPathRegistry;
-import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
@@ -55,13 +53,14 @@ import org.openide.util.Exceptions;
  */
 public class ProjectPropertiesImpl implements PraxisProjectProperties {
 
-    private final static FileObject[] FILEOBJECT_ARRAY = new FileObject[0];
     private final Set<FileObject> buildFiles;
     private final Set<FileObject> runFiles;
     private final PropertyChangeSupport pcs;
     private final DefaultPraxisProject project;
     private final FileListener listener;
 
+    private int javaRelease = 8;
+    
     ProjectPropertiesImpl(DefaultPraxisProject project) {
         this.project = project;
         buildFiles = new LinkedHashSet<>();
@@ -192,6 +191,24 @@ public class ProjectPropertiesImpl implements PraxisProjectProperties {
                     .filter(f -> f.hasExt("jar"))
                     .collect(Collectors.toList());
         }
+    }
+    
+    public synchronized void setJavaRelease(int release) {
+        if (project.isActive()) {
+            throw new IllegalStateException("Cannot change source version for active project");
+        }
+        if (release < 8) {
+            throw new IllegalArgumentException();
+        }
+        if (javaRelease != release) {
+            javaRelease = release;
+            pcs.firePropertyChange(PROP_JAVA_RELEASE, null, null);
+        }
+    }
+    
+    @Override
+    public synchronized int getJavaRelease() {
+        return javaRelease;
     }
 
     private void checkFile(FileObject file) {
