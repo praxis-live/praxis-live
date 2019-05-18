@@ -62,6 +62,7 @@ import org.praxislive.core.protocols.ComponentProtocol;
 import org.praxislive.core.protocols.ContainerProtocol;
 import org.praxislive.ide.core.api.Callback;
 import org.praxislive.ide.core.api.Syncable;
+import org.praxislive.ide.core.ui.api.Actions;
 import org.praxislive.ide.graph.Alignment;
 import org.praxislive.ide.graph.EdgeID;
 import org.praxislive.ide.graph.EdgeWidget;
@@ -138,6 +139,7 @@ public class GraphEditor extends RootEditor {
     private final Action exportAction;
     private final Action copyAction;
     private final Action pasteAction;
+    private final Action duplicateAction;
     private final JMenuItem addMenu;
     
     private final boolean customColours;
@@ -169,6 +171,7 @@ public class GraphEditor extends RootEditor {
         deleteAction = new DeleteAction();
         copyAction = new CopyActionPerformer(this, manager);
         pasteAction = new PasteActionPerformer(this, manager);
+        duplicateAction = new DuplicateActionPerformer(this, manager);
 
         PaletteController palette = PaletteUtils.getPalette("core", category);
 
@@ -222,6 +225,7 @@ public class GraphEditor extends RootEditor {
         am.put("delete", deleteAction);
         am.put(DefaultEditorKit.copyAction, copyAction);
         am.put(DefaultEditorKit.pasteAction, pasteAction);
+        am.put(Actions.DUPLICATE_KEY, duplicateAction);
         return am;
     }
 
@@ -262,6 +266,7 @@ public class GraphEditor extends RootEditor {
             }
         }
         menu.add(copyAction);
+        menu.add(duplicateAction);
         menu.add(deleteAction);
         menu.addSeparator();
         menu.add(exportAction);
