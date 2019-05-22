@@ -7,7 +7,7 @@
     
     <import file="nbproject/build-impl.xml"/>
     
-    <target name="build-core-javadoc" depends="-init, -check-core-javadoc" unless="core.javadoc.exists">
+    <target name="build-core-javadoc" depends="-check-core-javadoc, -init, -jdk-init" unless="core.javadoc.exists">
         <javadoc destdir="${suite.build.dir}/core-javadoc/" access="public" encoding="UTF-8" charset="UTF-8">
             <sourcefiles>
                 <fileset dir="${praxis.core.project}">
