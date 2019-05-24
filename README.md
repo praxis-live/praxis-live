@@ -38,7 +38,7 @@ You can also get involved with building the main projects themselves - see infor
 
 ## Building the source code
 
-To build PraxisLIVE you'll need to clone the two repositories that make up the overall project - the PraxisCORE runtime and the PraxisLIVE editor.
+To build PraxisLIVE you'll need to clone the two repositories that make up the overall project - the PraxisCORE runtime and the PraxisLIVE IDE.
 
 ```
 git clone https://github.com/praxis-live/praxis.git
@@ -48,10 +48,19 @@ git clone https://github.com/praxis-live/praxis-live.git
 
 Make sure the two repository directories are in the same parent directory. There are two main branches in both repositories - `master` is for the current release and urgent bug fixes, `develop` is for development of the next release.
 
-You'll also need the correct version of the NetBeans IDE - PraxisLIVE is built on top of the NetBeans platform. It is possible to build the project from another version of NetBeans or another IDE, but it must be built against the right version of the NetBeans platform - building inside that version of the IDE is recommended.
+PraxisLIVE is built on top of the [Apache NetBeans](https://netbeans.apache.org/) platform and IDE. As of v4.3 the build scripts will download Apache NetBeans dependencies, so it is possible to run the build from another IDE or the command line.
 
-- NetBeans 8.2 : https://netbeans.org/downloads/
+Before the first build, you must run the `init-platform` target on the PraxisLIVE build script. This requires an internet connection and may take a few minutes. The Apache NetBeans dependencies will be downloaded to `nbplatform` alongside the `praxis` and `praxis-live` folders. Subsequent builds will not require additional downloads unless you delete the `nbplatform` folder.
 
-**NB. the development branch is currently in the process of transitioning to [Apache NetBeans 11](https://netbeans.apache.org/).**
+The PraxisCORE project must be built before the PraxisLIVE project.
 
-Open the PraxisCORE (runtime) and PraxisLIVE (editor) projects in the IDE. The PraxisLIVE project should find the PraxisCORE project dependency automatically. Build the PraxisCORE project before the PraxisLIVE project.
+If you have Ant installed you can run the following commands to build and run PraxisLIVE. From an IDE follow the equivalent steps. (NB. `clean` will also trigger `init-platform`).
+
+```
+ant -f praxis-live/build.xml init-platform
+ant -f praxis/build.xml build
+ant -f praxis-live/build.xml build
+ant -f praxis-live/build.xml run
+```
+
+Ant targets also exist to build a Zip distribution, as well as a macOS application bundle and Windows installer with optional bundled JDK. See the properties documented in `nbproject/project.properties` which will need configuring locally.
