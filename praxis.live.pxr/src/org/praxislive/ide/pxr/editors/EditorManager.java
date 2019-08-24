@@ -131,7 +131,8 @@ public class EditorManager {
         Class<? extends Value> type = info.getType();
         if (PArray.class.isAssignableFrom(type)) {
             return new PraxisProperty.Editor[]{
-                        new FileListEditor(property, info)
+                        new FileListEditor(property, info),
+                        new ArgumentEditor(property, info)
                     };
         } else if (type.equals(Value.class)) {
             return new PraxisProperty.Editor[]{
