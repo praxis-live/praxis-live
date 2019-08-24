@@ -82,6 +82,7 @@ import org.praxislive.ide.pxr.api.PaletteUtils;
 import org.praxislive.ide.pxr.api.RootEditor;
 import java.awt.AWTEvent;
 import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
 import org.netbeans.api.visual.action.AcceptProvider;
 import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.action.ConnectProvider;
@@ -287,6 +288,16 @@ public class GraphEditor extends RootEditor {
         menu.add(deleteAction);
         return menu;
     }
+    
+    private JPopupMenu getPinPopup(PinWidget widget) {
+        JPopupMenu menu = new JPopupMenu();
+        PinID<String> pin = (PinID<String>) scene.findObject(widget);
+        boolean enabled = (container.getInfo().controls().contains("ports"));
+        Action action = new AddPortToParentAction(this, pin);
+        action.setEnabled(enabled);
+        menu.add(action);
+        return menu;
+    }
 
     private JPopupMenu getScenePopup() {
         JPopupMenu menu = new JPopupMenu();
@@ -393,23 +404,28 @@ public class GraphEditor extends RootEditor {
             panel.add(actionPanel, BorderLayout.SOUTH);
 
             InputMap im = panel.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+            ActionMap am = panel.getActionMap();
             im.put(KeyStroke.getKeyStroke("typed /"), "select");
             im.put(KeyStroke.getKeyStroke("typed ."), "call");
             im.put(KeyStroke.getKeyStroke("typed ~"), "connect");
             im.put(KeyStroke.getKeyStroke("typed !"), "disconnect");
             im.put(KeyStroke.getKeyStroke("typed @"), "add-component");
-            panel.getActionMap().put("select", new SelectAction(this));
-            panel.getActionMap().put("call", new CallAction(this));
-            panel.getActionMap().put("connect", new ConnectAction(this, false));
-            panel.getActionMap().put("disconnect", new ConnectAction(this, true));
-            panel.getActionMap().put("add-component", new AddAction(this));
+            am.put("select", new SelectAction(this));
+            am.put("call", new CallAction(this));
+            am.put("connect", new ConnectAction(this, false));
+            am.put("disconnect", new ConnectAction(this, true));
+            am.put("add-component", new AddAction(this));
+
             im.put(KeyStroke.getKeyStroke("alt shift F"), "format");
-            panel.getActionMap().put("format", new AbstractAction("format") {
+            am.put("format", new AbstractAction("format") {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     scene.layoutScene();
                 }
             });
+            im.put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "escape");
+            am.put("escape", goUpAction);
+            
             if (container != null) {
                 buildScene();
             }
@@ -949,6 +965,8 @@ public class GraphEditor extends RootEditor {
                 return getComponentPopup((NodeWidget) widget);
             } else if (widget instanceof EdgeWidget) {
                 return getConnectionPopup();
+            } else if (widget instanceof PinWidget) {
+                return getPinPopup((PinWidget) widget);
             } else if (widget == scene) {
                 return getScenePopup();
             } else {

@@ -65,6 +65,7 @@
             </module-dependencies>
             <friend-packages>
                 <friend>org.praxislive.ide.pxr</friend>
+                <friend>org.praxislive.ide.pxr.graph</friend>
                 <friend>org.praxislive.ide.pxr.gui</friend>
                 <friend>org.praxislive.ide.pxr.midi</friend>
                 <friend>org.praxislive.ide.pxr.osc</friend>
