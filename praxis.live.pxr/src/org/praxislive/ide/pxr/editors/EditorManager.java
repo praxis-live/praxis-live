@@ -27,6 +27,7 @@ import org.praxislive.core.ArgumentInfo;
 import org.praxislive.core.ControlInfo;
 import org.praxislive.core.types.PArray;
 import org.praxislive.core.types.PBoolean;
+import org.praxislive.core.types.PMap;
 import org.praxislive.core.types.PNumber;
 import org.praxislive.core.types.PResource;
 import org.praxislive.core.types.PString;
@@ -47,7 +48,6 @@ public class EditorManager {
             throw new UnsupportedOperationException(
                     "EditorManager cannot currently handle properties with multiple arguments.");
         }
-
 
     }
 
@@ -73,6 +73,9 @@ public class EditorManager {
         if (ControlAddress.class.isAssignableFrom(type)) {
             return new ControlAddressEditor(property, info);
         }
+        if (PMap.class.isAssignableFrom(type)) {
+            return new MapEditor(property, info);
+        }
 
         return new ArgumentEditor(property, info);
 
@@ -94,7 +97,6 @@ public class EditorManager {
 ////        }
 //        return new StringEditor(property, info);
 //    }
-
     public static boolean hasAdditionalEditors(
             PraxisProperty property, ControlInfo info) {
         if (info.getOutputsInfo().length == 1) {
@@ -109,6 +111,8 @@ public class EditorManager {
             PraxisProperty<?> property, ArgumentInfo info) {
         Class<? extends Value> type = info.getType();
         if (PArray.class.isAssignableFrom(type)) {
+            return true;
+        } else if (PMap.class.isAssignableFrom(type)) {
             return true;
         } else if (type.equals(Value.class)) {
             return true;
@@ -131,14 +135,18 @@ public class EditorManager {
         Class<? extends Value> type = info.getType();
         if (PArray.class.isAssignableFrom(type)) {
             return new PraxisProperty.Editor[]{
-                        new FileListEditor(property, info),
-                        new ArgumentEditor(property, info)
-                    };
+                new FileListEditor(property, info),
+                new ArgumentEditor(property, info)
+            };
+        } else if (PMap.class.isAssignableFrom(type)) {
+            return new PraxisProperty.Editor[]{
+                new ArgumentEditor(property, info)
+            };
         } else if (type.equals(Value.class)) {
             return new PraxisProperty.Editor[]{
-                        new ResourceEditor(property, info),
-                        new FileListEditor(property, info)
-                    };
+                new ResourceEditor(property, info),
+                new FileListEditor(property, info)
+            };
         }
         return new PraxisProperty.Editor[0];
     }
