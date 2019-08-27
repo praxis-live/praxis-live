@@ -179,7 +179,8 @@ public class DarculaLFCustoms extends LFCustoms {
             "Table.rowHeight", getTableRowHeight(),
             "Table.ascendingSortIcon", new ImageIcon(DarculaLFCustoms.class.getResource("column-asc.png")),
             "Table.descendingSortIcon", new ImageIcon(DarculaLFCustoms.class.getResource("column-desc.png")),
-            "Table.focusCellHighlightBorder", BorderFactory.createEmptyBorder(),
+//            "Table.focusCellHighlightBorder", BorderFactory.createEmptyBorder(),
+            "Table.focusCellHighlightBorder", BorderFactory.createLineBorder(new Color(187, 187, 187), 1),
             
             "TableHeader.cellBorder", new IncreasedInsetsTableHeaderBorder(),
             "TableHeader.font", controlFont,
