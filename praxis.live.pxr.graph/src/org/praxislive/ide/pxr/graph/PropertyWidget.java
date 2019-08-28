@@ -125,9 +125,6 @@ class PropertyWidget extends LabelWidget {
         boolean inplace = false;
         if (PNumber.class == type) {
             inplace = true;
-        } else if (PBoolean.class == type) {
-            suggested = Arrays.asList("true", "false");
-            inplace = true;
         } else {
             Value allowed = args.get(0).properties().get(ArgumentInfo.KEY_ALLOWED_VALUES);
             if (allowed != null) {
@@ -141,7 +138,11 @@ class PropertyWidget extends LabelWidget {
             getActions().addAction(ActionFactory.createInplaceEditorAction(
                     new SuggestFieldInplaceEditorProvider(new InplaceEditor(suggested))));
         } else {
-            getActions().addAction(ActionFactory.createEditAction(new PropertyEditHandler()));
+            if (PBoolean.class == type) {
+                getActions().addAction(ActionFactory.createEditAction(new BooleanEditHandler()));
+            } else {
+                getActions().addAction(ActionFactory.createEditAction(new PropertyEditHandler()));
+            }
         }
     }
 
@@ -253,9 +254,6 @@ class PropertyWidget extends LabelWidget {
         @Override
         public void edit(Widget widget) {
             PropertyEditor ed = property.getPropertyEditor();
-            if (!ed.supportsCustomEditor()) {
-                return;
-            }
             PropertyPanel panel = new PropertyPanel(property, PropertyPanel.PREF_CUSTOM_EDITOR);
             panel.setChangeImmediate(false);
             DialogDescriptor descriptor = new DialogDescriptor(
@@ -270,6 +268,30 @@ class PropertyWidget extends LabelWidget {
             DialogDisplayer.getDefault().notifyLater(descriptor);
         }
 
+    }
+    
+    private class BooleanEditHandler implements EditProvider {
+
+        @Override
+        public void edit(Widget widget) {
+            try {
+                boolean isBoolean = ((Class<?>) property.getValueType()) == Boolean.class;
+                if (isBoolean) {
+                    boolean value = (boolean) property.getValue();
+                    value = !value;
+                    property.setValue(value);
+                } else {
+                    PropertyEditor ed = property.getPropertyEditor();
+                    boolean value = "true".equalsIgnoreCase(ed.getAsText());
+                    value = !value;
+                    ed.setAsText("" + value);
+                    property.setValue(ed.getValue());
+                }
+            } catch (Exception ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        
     }
 
 }

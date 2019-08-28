@@ -360,9 +360,9 @@ class CallAction extends AbstractAction {
                     valueField.selectAll();
                     valueField.requestFocusInWindow();
                 } else {
-                    if (propEd.supportsCustomEditor()) {
+//                    if (propEd.supportsCustomEditor()) {
                         invokeCustomPropertyEditor(componentGlob, controlID);
-                    }
+//                    }
                     editor.clearActionPanel();
                 }
             }
