@@ -40,7 +40,6 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -57,6 +56,7 @@ import javax.swing.text.DefaultEditorKit;
 import org.praxislive.core.CallArguments;
 import org.praxislive.core.ComponentType;
 import org.praxislive.core.ComponentInfo;
+import org.praxislive.core.ControlInfo;
 import org.praxislive.core.PortInfo;
 import org.praxislive.core.protocols.ComponentProtocol;
 import org.praxislive.core.protocols.ContainerProtocol;
@@ -123,6 +123,7 @@ public class GraphEditor extends RootEditor {
     final static String ATTR_GRAPH_MINIMIZED = "graph.minimized";
     final static String ATTR_GRAPH_COLORS = "graph.colors";
     final static String ATTR_GRAPH_COMMENT = "graph.comment";
+    final static String ATTR_GRAPH_PROPERTIES = "graph.properties";
     private final RootProxy root;
     private final Map<String, ComponentProxy> knownChildren;
     private final Set<Connection> knownConnections;
@@ -142,7 +143,7 @@ public class GraphEditor extends RootEditor {
     private final Action pasteAction;
     private final Action duplicateAction;
     private final JMenuItem addMenu;
-    
+
     private final boolean customColours;
 
     private JComponent panel;
@@ -151,6 +152,7 @@ public class GraphEditor extends RootEditor {
 
     private ActionSupport actionSupport;
     private final Point activePoint = new Point();
+    private PropertyMode propertyMode = PropertyMode.Default;
     private boolean sync;
 
     private final ColorsAction[] colorsActions;
@@ -288,7 +290,7 @@ public class GraphEditor extends RootEditor {
         menu.add(deleteAction);
         return menu;
     }
-    
+
     private JPopupMenu getPinPopup(PinWidget widget) {
         JPopupMenu menu = new JPopupMenu();
         PinID<String> pin = (PinID<String>) scene.findObject(widget);
@@ -305,13 +307,19 @@ public class GraphEditor extends RootEditor {
         menu.add(addMenu);
         menu.add(pasteAction);
         menu.addSeparator();
-        JMenu colorsMenu = new JMenu("Colors");
-        for (ColorsAction action : colorsActions) {
-            colorsMenu.add(action);
-        }
         if (customColours) {
+            JMenu colorsMenu = new JMenu("Colors");
+            for (ColorsAction action : colorsActions) {
+                colorsMenu.add(action);
+            }
             menu.add(colorsMenu);
         }
+        JMenu propertyModeMenu = new JMenu("Properties");
+        propertyModeMenu.add(new PropertyModeAction("Default", PropertyMode.Default));
+        propertyModeMenu.add(new PropertyModeAction("Show all", PropertyMode.Show));
+        propertyModeMenu.add(new PropertyModeAction("Hide all", PropertyMode.Hide));
+        menu.add(propertyModeMenu);
+        
         menu.add(new CommentAction(scene));
         return menu;
     }
@@ -425,7 +433,7 @@ public class GraphEditor extends RootEditor {
             });
             im.put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "escape");
             am.put("escape", goUpAction);
-            
+
             if (container != null) {
                 buildScene();
             }
@@ -447,7 +455,7 @@ public class GraphEditor extends RootEditor {
     public void sync() {
         syncAllAttributes();
     }
-    
+
     private void clearScene() {
         syncAllAttributes();
         container.removePropertyChangeListener(containerListener);
@@ -470,6 +478,15 @@ public class GraphEditor extends RootEditor {
         Syncable syncable = container.getLookup().lookup(Syncable.class);
         if (syncable != null) {
             syncable.addKey(this);
+        }
+
+        try {
+            propertyMode = PropertyMode.valueOf(
+                    Utils.getAttr(root, ATTR_GRAPH_PROPERTIES, "Default"));
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
+            propertyMode = PropertyMode.Default;
+            Utils.setAttr(root, ATTR_GRAPH_PROPERTIES, null);
         }
 
         container.getNodeDelegate().getChildren().getNodes();
@@ -514,8 +531,8 @@ public class GraphEditor extends RootEditor {
         } else {
             widget.getActions().addAction(ActionFactory.createEditAction(w -> {
                 AWTEvent current = EventQueue.getCurrentEvent();
-                int modifiers = (current instanceof InputEvent) ?
-                        ((InputEvent) current).getModifiers() : 0;
+                int modifiers = (current instanceof InputEvent)
+                        ? ((InputEvent) current).getModifiers() : 0;
                 cmp.getNodeDelegate().getPreferredAction().actionPerformed(
                         new ActionEvent(this, ActionEvent.ACTION_PERFORMED, "edit", modifiers)
                 );
@@ -535,7 +552,7 @@ public class GraphEditor extends RootEditor {
             if (LOG.isLoggable(Level.FINEST)) {
                 LOG.finest("Building port " + portID);
             }
-            buildPin(id, portID, pi);
+            buildPin(id, cmp, portID, pi);
         }
         cmp.addPropertyChangeListener(infoListener);
     }
@@ -566,7 +583,7 @@ public class GraphEditor extends RootEditor {
             if (LOG.isLoggable(Level.FINEST)) {
                 LOG.finest("Building port " + portID);
             }
-            buildPin(id, portID, pi);
+            buildPin(id, cmp, portID, pi);
         }
         syncConnections();
     }
@@ -613,23 +630,39 @@ public class GraphEditor extends RootEditor {
         return Colors.Default;
     }
 
-    private void buildPin(String cmpID, String pinID, PortInfo info) {
-        boolean primary = info.getPortType().name().startsWith("Audio")
-                || info.getPortType().name().startsWith("Video");
+    private void buildPin(String cmpID, ComponentProxy cmp, String pinID, PortInfo info) {
+        boolean primary = info.portType().name().startsWith("Audio")
+                || info.portType().name().startsWith("Video");
         PinWidget pin = scene.addPin(cmpID, pinID, getPinAlignment(info));
-        pin.setSchemeColors(Utils.colorsForPortType(info.getPortType()).getSchemeColors());
+        pin.setSchemeColors(Utils.colorsForPortType(info.portType()).getSchemeColors());
         Font font = pin.getFont();
         if (primary) {
             pin.setFont(font.deriveFont(Font.BOLD));
         } else {
 //            pin.setFont(font.deriveFont(font.getSize2D() * 0.85f));
         }
-        String category = info.getProperties().getString("category", "");
+        String category = info.properties().getString("category", "");
         if (category.isEmpty()) {
-            pin.setToolTipText(pinID + " : " + info.getPortType().name());
+            pin.setToolTipText(pinID + " : " + info.portType().name());
         } else {
-            pin.setToolTipText(pinID + " : " + info.getPortType().name() + " : " + category);
+            pin.setToolTipText(pinID + " : " + info.portType().name() + " : " + category);
         }
+
+        if (propertyMode == PropertyMode.Hide) {
+            return;
+        }
+
+        ControlInfo control = cmp.getInfo().controls().contains(pinID)
+                ? cmp.getInfo().controlInfo(pinID) : null;
+        if (control != null && control.isProperty()
+                && (propertyMode == PropertyMode.Show
+                || control.properties().getBoolean("preferred", false))) {
+            Node.Property<?> matchingProp = Utils.findMatchingProperty(cmp, pinID);
+            if (matchingProp != null) {
+                pin.addChild(new PropertyWidget(scene, control, cmp.getNodeDelegate(), matchingProp));
+            }
+        }
+
     }
 
     private Alignment getPinAlignment(PortInfo info) {
@@ -741,7 +774,7 @@ public class GraphEditor extends RootEditor {
     void syncGraph(boolean sync) {
         syncGraph(sync, false);
     }
-    
+
     void syncGraph(boolean sync, boolean updateSelection) {
         if (sync) {
             this.sync = true;
@@ -751,7 +784,6 @@ public class GraphEditor extends RootEditor {
             this.sync = false;
         }
     }
-    
 
     private void updateWidgetComment(final NodeWidget widget, final String text, final boolean container) {
 
@@ -795,7 +827,7 @@ public class GraphEditor extends RootEditor {
             syncAttributes(container.getChild(childID));
         }
     }
-    
+
     private void syncAttributes(ComponentProxy cmp) {
         Widget widget = scene.findWidget(cmp.getAddress().getID());
         if (widget instanceof NodeWidget) {
@@ -837,7 +869,7 @@ public class GraphEditor extends RootEditor {
             } catch (ProxyException ex) {
                 Exceptions.printStackTrace(ex);
             }
-            
+
         }
     }
 
@@ -1178,6 +1210,27 @@ public class GraphEditor extends RootEditor {
             } else {
                 Utils.setAttr(cmp, ATTR_GRAPH_COLORS, colors.name());
             }
+        }
+
+    }
+
+    private class PropertyModeAction extends AbstractAction {
+
+        private final PropertyMode mode;
+
+        private PropertyModeAction(String text, PropertyMode mode) {
+            super(text);
+            this.mode = mode;
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            if (container == null || propertyMode == mode) {
+                return;
+            }
+            clearScene();
+            Utils.setAttr(root, ATTR_GRAPH_PROPERTIES, mode.toString());
+            buildScene();
         }
 
     }

@@ -262,7 +262,7 @@ class CallAction extends AbstractAction {
             add(new JLabel(Bundle.LBL_call()));
             add(Box.createHorizontalStrut(16));
 
-            componentField = new JSuggestField(parent);
+            componentField = new JSuggestField();
             componentField.setColumns(18);
             componentField.setMaximumSize(componentField.getPreferredSize());
             Utils.configureFocusActionKeys(componentField, false);
@@ -270,7 +270,7 @@ class CallAction extends AbstractAction {
 
             add(Box.createHorizontalStrut(16));
 
-            controlField = new JSuggestField(parent);
+            controlField = new JSuggestField();
             controlField.setEnabled(false);
             controlField.setColumns(18);
             controlField.setMaximumSize(controlField.getPreferredSize());
@@ -279,7 +279,7 @@ class CallAction extends AbstractAction {
 
             add(Box.createHorizontalStrut(16));
 
-            valueField = new JSuggestField(parent);
+            valueField = new JSuggestField();
             valueField.setEnabled(false);
             valueField.setColumns(18);
             valueField.setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, Collections.EMPTY_SET);

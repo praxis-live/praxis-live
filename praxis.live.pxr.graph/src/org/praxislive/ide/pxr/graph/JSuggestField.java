@@ -82,10 +82,8 @@ class JSuggestField extends JTextField {
     /**
      * Create a new JSuggestField.
      *
-     * @param owner Frame containing this JSuggestField
      */
-    public JSuggestField(Window owner) {
-        super();
+    public JSuggestField() {
         data = new Vector<String>();
         suggestions = new Vector<String>();
         addHierarchyBoundsListener(new HierarchyBoundsAdapter() {
@@ -113,13 +111,13 @@ class JSuggestField extends JTextField {
 
             @Override
             public void mouseReleased(MouseEvent e) {
-                if (selected == list.getSelectedIndex()) {
+//                if (selected == list.getSelectedIndex()) {
                     // provide double-click for selecting a suggestion
                     setText((String) list.getSelectedValue());
                     fireActionPerformed();
                     hideSuggest();
-                }
-                selected = list.getSelectedIndex();
+//                }
+//                selected = list.getSelectedIndex();
             }
 
         });
@@ -176,8 +174,8 @@ class JSuggestField extends JTextField {
      * @param owner Frame containing this JSuggestField
      * @param data Available suggestions
      */
-    public JSuggestField(Window owner, Vector<String> data) {
-        this(owner);
+    public JSuggestField(Vector<String> data) {
+        this();
         setSuggestData(data);
     }
 

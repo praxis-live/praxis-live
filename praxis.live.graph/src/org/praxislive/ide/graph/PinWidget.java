@@ -118,10 +118,10 @@ public class PinWidget extends Widget {
         this.node = node;
         this.scheme = scene.getLookAndFeel();
         this.schemeColors = node.getSchemeColors();
-//        setLayout (LayoutFactory.createHorizontalFlowLayout (LayoutFactory.SerialAlignment.CENTER, 8));
         this.alignment = Alignment.Center;
         this.category = DEFAULT_CATEGORY;
-        setLayout(LayoutFactory.createOverlayLayout());
+//        setLayout(LayoutFactory.createOverlayLayout());
+        setLayout(LayoutFactory.createVerticalFlowLayout());
         addChild(nameWidget = new LabelWidget(scene));
 //        nameWidget.setForeground(Color.BLACK);
         nameWidget.setLabel(name);

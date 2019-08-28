@@ -124,7 +124,7 @@ class AddAction extends AbstractAction {
             setFocusCycleRoot(true);
             add(new JLabel(Bundle.LBL_add()));
             add(Box.createHorizontalStrut(16));
-            typeField = new JSuggestField(parent);
+            typeField = new JSuggestField();
             typeField.setColumns(24);
             typeField.setMaximumSize(typeField.getPreferredSize());
             add(typeField);

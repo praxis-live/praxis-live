@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Neil C Smith.
+ * Copyright 2019 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -40,6 +40,7 @@ import org.openide.nodes.Node;
 import org.praxislive.core.ComponentType;
 import org.praxislive.core.Port;
 import org.praxislive.ide.model.ContainerProxy;
+import org.praxislive.ide.properties.PraxisProperty;
 
 /**
  *
@@ -196,4 +197,16 @@ class Utils {
         return Colors.Blue;
     }
 
+    static Node.Property<?> findMatchingProperty(ComponentProxy cmp, String id) {
+        Node node = cmp.getNodeDelegate();
+        for (Node.PropertySet ps : node.getPropertySets()) {
+            for (Node.Property<?> p : ps.getProperties()) {
+                if (p.getName().equals(id)) {
+                    return p;
+                } 
+            }
+        }
+        return null;
+    }
+    
 }

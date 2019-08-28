@@ -100,7 +100,7 @@ class SelectAction extends AbstractAction {
             setFocusCycleRoot(true);
             add(new JLabel(Bundle.LBL_select()));
             add(Box.createHorizontalStrut(16));
-            idField = new JSuggestField(parent);
+            idField = new JSuggestField();
             idField.setColumns(18);
             idField.setMaximumSize(idField.getPreferredSize());
             add(idField);

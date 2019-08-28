@@ -206,14 +206,14 @@ class ConnectAction extends AbstractAction {
             add(new JLabel(disconnect ? Bundle.LBL_disconnect() : Bundle.LBL_connect()));
             add(Box.createHorizontalStrut(16));
 
-            srcField = new JSuggestField(parent);
+            srcField = new JSuggestField();
             Utils.configureFocusActionKeys(srcField, false);
             srcField.setColumns(12);
             add(srcField);
 
             add(Box.createHorizontalStrut(8));
 
-            srcPinField = new JSuggestField(parent);
+            srcPinField = new JSuggestField();
             Utils.configureFocusActionKeys(srcPinField, false);
             srcPinField.setColumns(12);
             srcPinField.setEnabled(false);
@@ -221,7 +221,7 @@ class ConnectAction extends AbstractAction {
 
             add(Box.createHorizontalStrut(8));
 
-            dstField = new JSuggestField(parent);
+            dstField = new JSuggestField();
             Utils.configureFocusActionKeys(dstField, false);
             dstField.setColumns(12);
             dstField.setEnabled(false);
@@ -229,7 +229,7 @@ class ConnectAction extends AbstractAction {
 
             add(Box.createHorizontalStrut(8));
 
-            dstPinField = new JSuggestField(parent);
+            dstPinField = new JSuggestField();
             Utils.configureFocusActionKeys(dstPinField, true);
             dstPinField.setColumns(12);
             dstPinField.setEnabled(false);
