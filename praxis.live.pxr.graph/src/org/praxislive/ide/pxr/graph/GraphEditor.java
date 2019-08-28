@@ -40,6 +40,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -315,9 +316,9 @@ public class GraphEditor extends RootEditor {
             menu.add(colorsMenu);
         }
         JMenu propertyModeMenu = new JMenu("Properties");
-        propertyModeMenu.add(new PropertyModeAction("Default", PropertyMode.Default));
-        propertyModeMenu.add(new PropertyModeAction("Show all", PropertyMode.Show));
-        propertyModeMenu.add(new PropertyModeAction("Hide all", PropertyMode.Hide));
+        propertyModeMenu.add(new JRadioButtonMenuItem(new PropertyModeAction("Default", PropertyMode.Default)));
+        propertyModeMenu.add(new JRadioButtonMenuItem(new PropertyModeAction("Show all", PropertyMode.Show)));
+        propertyModeMenu.add(new JRadioButtonMenuItem(new PropertyModeAction("Hide all", PropertyMode.Hide)));
         menu.add(propertyModeMenu);
         
         menu.add(new CommentAction(scene));
@@ -431,7 +432,7 @@ public class GraphEditor extends RootEditor {
                     scene.layoutScene();
                 }
             });
-            im.put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "escape");
+            im.put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0, true), "escape");
             am.put("escape", goUpAction);
 
             if (container != null) {
@@ -1233,6 +1234,17 @@ public class GraphEditor extends RootEditor {
             buildScene();
         }
 
+        @Override
+        public Object getValue(String key) {
+            if (Action.SELECTED_KEY.equals(key)) {
+                return propertyMode == mode;
+            } else {
+                return super.getValue(key);
+            }
+        }
+
+        
+        
     }
 
     private class CommentAction extends AbstractAction {
@@ -1313,8 +1325,11 @@ public class GraphEditor extends RootEditor {
             ContainerProxy parent = container.getParent();
             if (parent != null) {
                 clearScene();
+                String childID = container.getAddress().componentID();
                 container = parent;
                 buildScene();
+                scene.setSelectedObjects(Collections.singleton(childID));
+                scene.setFocusedObject(childID);
             }
         }
     }
