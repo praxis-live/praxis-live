@@ -8,6 +8,7 @@
       <module-dependencies/>
       <public-packages>
         <subpackages>org.praxislive</subpackages>
+        <subpackages>org.jaudiolibs</subpackages>
       </public-packages>
       <class-path-extension>
         <runtime-relative-path>../../praxiscore/repo/audioops-api-1.0.0.jar</runtime-relative-path>
