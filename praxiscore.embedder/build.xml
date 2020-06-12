@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- You may freely edit this file. See harness/README in the NetBeans platform -->
+<!-- for some information on what you could do (e.g. targets to override). -->
+<!-- If you delete this file and reopen the project it will be recreated. -->
+<project name="org.praxislive.ide.core.embedder" default="netbeans" basedir=".">
+  <description>Builds, tests, and runs the project org.praxislive.ide.core.embedder.</description>
+    
+  <import file="nbproject/build-impl.xml"/>
+    
+  <target name="build-init" depends="praxiscore-embed,harness.build-init"/>
+    
+  <target name="praxiscore-embed" depends="-check-praxiscore-embed" unless="praxiscore.exists">
+    <echo message="Checking for PraxisCORE"/>
+    <property name="praxiscore.dist.dir" value="../../praxiscore/praxiscore-bin/target/appassembler/" />
+    <available file="${praxiscore.dist.dir}/repo/praxiscore-api-${praxiscore.version}.jar"
+               property="praxiscore.dist.dir.exists" />
+    <fail unless="praxiscore.dist.dir.exists"
+          message="PraxisCORE distribution not found for version ${praxiscore.version}" />
+    <copy todir="${suite.build.dir}/cluster/praxiscore/" verbose="true">
+      <fileset dir="${praxiscore.dist.dir}" />
+    </copy>
+  </target>
+    
+  <target name="-check-praxiscore-embed" >
+    <available file="${suite.build.dir}/cluster/praxiscore/repo/praxiscore-api-${praxiscore.version}.jar"
+               property="praxiscore.exists" />
+  </target>
+    
+</project>
