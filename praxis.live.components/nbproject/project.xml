@@ -73,14 +73,6 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.praxislive.ide.core</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <implementation-version/>
-                    </run-dependency>
-                </dependency>
-                <dependency>
                     <code-name-base>org.praxislive.ide.core.embedder</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>

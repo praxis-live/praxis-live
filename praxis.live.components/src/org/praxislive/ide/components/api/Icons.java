@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Neil C Smith.
+ * Copyright 2020 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -19,28 +19,28 @@
  * Please visit http://neilcsmith.net if you need additional information or
  * have any questions.
  */
-
 package org.praxislive.ide.components.api;
 
-import org.praxislive.core.services.ComponentFactory;
+import java.awt.Image;
+import org.openide.util.ImageUtilities;
+import org.openide.util.Lookup;
 import org.praxislive.core.ComponentType;
 
 /**
- * Service interface that allows the extension of ComponentFactory.MetaData attached
- * to a component type. Implementation should be registered as service providers.
- * @author Neil C Smith
+ *
  */
-public interface MetaDataRewriter {
-    
-    /**
-     * Creates a ComponentFactory.MetaData instance that extends the passed in 
-     * data. The implementation should return the passed in data unchanged if it
-     * does not want to extend the data for the passed in type.
-     * 
-     * @param type ComponentType the MetaData is for
-     * @param data Existing MetaData
-     * @return Extended MetaData or the passed in data
-     */
-    public <T> ComponentFactory.MetaData<T> rewrite(ComponentType type, ComponentFactory.MetaData<T> data);
+class Icons {
+
+     private static final Image DEFAULT_ICON = ImageUtilities.loadImage(
+            "org/praxislive/ide/components/resources/default-icon.png", true);
+     
+     
+     static Image getIcon(ComponentType type) {
+        return Lookup.getDefault().lookupAll(ComponentIconProvider.class).stream()
+                .flatMap(p -> p.getIcon(type).stream())
+                .findFirst()
+                .orElse(DEFAULT_ICON);
+    }
+     
     
 }
