@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 2015 Neil C Smith.
+ * Copyright 2020 Neil C Smith.
  * 
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -21,27 +21,26 @@
  */
 package org.praxislive.ide.core.api;
 
-import org.praxislive.core.Value;
-import org.praxislive.core.ComponentAddress;
-import org.praxislive.logging.LogLevel;
+import java.util.prefs.Preferences;
+import org.praxislive.ide.core.Core;
 
 /**
  *
- * @author Neil C Smith <http://neilcsmith.net>
  */
-public abstract class LogHandler {
+public final class IDE {
     
-    public abstract void log(ComponentAddress source,
-            long time,
-            LogLevel level,
-            Value arg);
+    private IDE() {}
     
-    public LogLevel getLevel() {
-        return LogLevel.ERROR;
+    public static String getVersion() {
+        return Core.getInstance().getVersion();
     }
 
-    public void close() {
-        // no op hook
+    public static String getLatestAvailableVersion() {
+        return Core.getInstance().getLatestAvailableVersion();
+    }
+    
+    public static Preferences getPreferences() {
+        return Core.getInstance().getPreferences();
     }
     
 }

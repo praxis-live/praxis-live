@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 2016 Neil C Smith.
+ * Copyright 2020 Neil C Smith.
  * 
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -22,17 +22,17 @@
 package org.praxislive.ide.core;
 
 import org.openide.modules.ModuleInfo;
-import org.openide.modules.ModuleInstall;
+import org.openide.modules.OnStart;
 import org.openide.util.Lookup;
 
 /**
- * Manages a module's lifecycle. Remember that an installer is optional and
- * often not needed at all.
+ *
  */
-public class Installer extends ModuleInstall {
+@OnStart
+public class Installer implements Runnable {
     
     @Override
-    public void restored() {
+    public void run() {
 
         String build = null;
 
@@ -50,8 +50,6 @@ public class Installer extends ModuleInstall {
         System.setProperty("netbeans.productversion", "Praxis LIVE " + version);
         
         coreInfo.checkForUpdates();
-        
-        DefaultHubManager.getInstance().start();
         
     }
     

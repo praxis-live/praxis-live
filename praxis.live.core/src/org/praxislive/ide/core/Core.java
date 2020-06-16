@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 2016 Neil C Smith.
+ * Copyright 2020 Neil C Smith.
  * 
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -23,11 +23,9 @@ package org.praxislive.ide.core;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Properties;
 import java.util.prefs.Preferences;
-import org.praxislive.ide.core.api.CoreInfo;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
@@ -35,12 +33,11 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author Neil C Smith (http://neilcsmith.net)
  */
 @NbBundle.Messages({
     "LINK_ReleaseProperties=https://www.praxislive.org/v4/info.properties"
 })
-public class Core extends CoreInfo {
+public class Core {
 
     @Deprecated
     public final static String KEY_LATEST_BUILD = "latest-build";
@@ -57,7 +54,6 @@ public class Core extends CoreInfo {
     @Deprecated
     private String build;
 
-    @Override
     public String getVersion() {
         return version;
     }
@@ -66,18 +62,6 @@ public class Core extends CoreInfo {
         return GLOBALS.get(KEY_LATEST_VERSION, version);
     }
 
-    @Override
-    @Deprecated
-    public String getBuildVersion() {
-        return build;
-    }
-
-    @Deprecated
-    public String getLatestBuild() {
-        return GLOBALS.get(KEY_LATEST_BUILD, getBuildVersion());
-    }
-
-    @Override
     public Preferences getPreferences() {
         return GLOBALS;
     }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 2018 Neil C Smith.
+ * Copyright 2020 Neil C Smith.
  * 
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -19,30 +19,36 @@
  * Please visit http://neilcsmith.net if you need additional information or
  * have any questions.
  */
-package org.praxislive.ide.core.api;
+package org.praxislive.ide.core.spi;
 
-import java.util.prefs.Preferences;
-import org.praxislive.ide.core.Core;
+import java.util.Optional;
+import org.openide.util.Lookup;
+import org.praxislive.core.Value;
+import org.praxislive.core.ComponentAddress;
+import org.praxislive.core.services.LogLevel;
 
 /**
  *
- * @author Neil C Smith (http://neilcsmith.net)
  */
-public abstract class CoreInfo {
+public interface LogHandler {
     
-    public abstract String getVersion();
+    public void log(ComponentAddress source,
+            long time,
+            LogLevel level,
+            Value message);
+    
+    public default LogLevel getLevel() {
+        return LogLevel.ERROR;
+    }
 
-    public String getLatestAvailableVersion() {
-        return getVersion();
+    public default void close() {
+        // no op hook
     }
     
-    @Deprecated
-    public abstract String getBuildVersion();
-    
-    public abstract Preferences getPreferences();
-    
-    public static CoreInfo getDefault() {
-        return Core.getInstance();
+    public static interface Provider {
+        
+        public Optional<LogHandler> createLogHandler(Lookup context);
+        
     }
     
 }

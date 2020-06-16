@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 2013 Neil C Smith.
+ * Copyright 2020 Neil C Smith.
  * 
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -24,24 +24,25 @@ package org.praxislive.ide.core;
 import java.util.LinkedHashSet;
 import org.praxislive.ide.core.api.DynamicFileSystem;
 import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.MultiFileSystem;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.util.lookup.ServiceProviders;
 
 /**
  *
- * @author Neil C Smith
  */
 @ServiceProviders ({
     @ServiceProvider(service = FileSystem.class),
     @ServiceProvider(service = DynamicFileSystem.class)
 })
-public class DynamicFileSystemImpl extends DynamicFileSystem {
+public class DynamicFileSystemImpl extends MultiFileSystem
+        implements DynamicFileSystem {
     
     private final LinkedHashSet<FileSystem> mounted;
     
     public DynamicFileSystemImpl() {
         setPropagateMasks(true);
-        mounted = new LinkedHashSet<FileSystem>();
+        mounted = new LinkedHashSet<>();
     }
 
     @Override

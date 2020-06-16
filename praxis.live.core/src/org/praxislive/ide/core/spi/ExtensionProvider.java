@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Neil C Smith.
+ * Copyright 2020 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -20,16 +20,17 @@
  * have any questions.
  */
 
-package org.praxislive.ide.core.api;
+package org.praxislive.ide.core.spi;
 
+import java.util.Optional;
+import org.openide.util.Lookup;
 import org.praxislive.core.Component;
 
 /**
  *
- * @author Neil C Smith (http://neilcsmith.net)
  */
 public interface ExtensionProvider {
 
-    public Component getExtensionComponent();
+    public Optional<Component> createExtension(Lookup context);
 
 }
