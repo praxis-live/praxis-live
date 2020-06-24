@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2019 Neil C Smith.
+ * Copyright 2020 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -21,117 +21,230 @@
  */
 package org.praxislive.ide.project;
 
+import java.awt.EventQueue;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.LinkedHashSet;
+import java.util.EnumMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import javax.lang.model.SourceVersion;
-import org.praxislive.core.CallArguments;
-import org.praxislive.core.services.ServiceUnavailableException;
-import org.praxislive.ide.core.api.Callback;
-import org.praxislive.ide.core.api.HubUnavailableException;
-import org.praxislive.ide.project.api.ExecutionLevel;
-import org.praxislive.ide.project.api.PraxisProjectProperties;
-import static org.praxislive.ide.project.api.PraxisProjectProperties.PROP_LIBRARIES;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
+import org.praxislive.core.services.ServiceUnavailableException;
+import org.praxislive.ide.core.api.Callback;
+import org.praxislive.ide.core.api.HubUnavailableException;
+import org.praxislive.ide.project.api.ExecutionLevel;
+import org.praxislive.ide.project.api.ExecutionElement;
+import org.praxislive.ide.project.api.PraxisProject;
+import org.praxislive.ide.project.api.ProjectProperties;
+import org.praxislive.ide.project.spi.ElementHandler;
+import org.praxislive.ide.project.spi.FileHandler;
+import org.praxislive.ide.project.spi.LineHandler;
+
+import static org.praxislive.ide.project.api.ProjectProperties.PROP_LIBRARIES;
+import static org.praxislive.ide.project.DefaultPraxisProject.LIBS_COMMAND;
+import static org.praxislive.ide.project.DefaultPraxisProject.MAX_JAVA_VERSION;
+import static org.praxislive.ide.project.DefaultPraxisProject.MIN_JAVA_VERSION;
 
 /**
  *
- * @author Neil C Smith (http://neilcsmith.net)
  */
-public class ProjectPropertiesImpl implements PraxisProjectProperties {
+public class ProjectPropertiesImpl implements ProjectProperties {
 
-    private final Set<FileObject> buildFiles;
-    private final Set<FileObject> runFiles;
+    private final Map<ExecutionLevel, Map<ExecutionElement, ElementHandler>> elements;
     private final PropertyChangeSupport pcs;
     private final DefaultPraxisProject project;
     private final FileListener listener;
+    private final CompilerLineHandler compilerHandler;
+    private final LibrariesLineHandler librariesHandler;
+    private final List<FileHandler.Provider> fileHandlerProviders;
+    private final List<LineHandler.Provider> lineHandlerProviders;
 
-    private int javaRelease = 8;
-    
+    private int javaRelease = MIN_JAVA_VERSION;
+
     ProjectPropertiesImpl(DefaultPraxisProject project) {
         this.project = project;
-        buildFiles = new LinkedHashSet<>();
-        runFiles = new LinkedHashSet<>();
+        this.elements = new EnumMap<>(ExecutionLevel.class);
+        for (ExecutionLevel level : ExecutionLevel.values()) {
+            elements.put(level, new LinkedHashMap<>());
+        }
+        compilerHandler = new CompilerLineHandler();
+        librariesHandler = new LibrariesLineHandler();
+        fileHandlerProviders = new ArrayList<>(
+                Lookup.getDefault().lookupAll(FileHandler.Provider.class));
+        lineHandlerProviders = new ArrayList<>();
+        lineHandlerProviders.add(this::findInternalHandler);
+        lineHandlerProviders.addAll(Lookup.getDefault().lookupAll(LineHandler.Provider.class));
         pcs = new PropertyChangeSupport(this);
         listener = new FileListener();
         project.getProjectDirectory().addRecursiveListener(listener);
     }
 
     @Override
-    public synchronized boolean addFile(ExecutionLevel level, FileObject file) {
-        Set<FileObject> set;
+    public void setElements(ExecutionLevel level, List<ExecutionElement> elements) {
+        if (level == ExecutionLevel.CONFIGURE) {
+            throw new IllegalArgumentException("Changing configure level not currently supported");
+        }
+        final Set<ElementHandler> handlers = new HashSet<>();
         if (level == ExecutionLevel.BUILD) {
-            set = buildFiles;
-        } else if (level == ExecutionLevel.RUN) {
-            set = runFiles;
+            handlers.addAll(this.elements.get(ExecutionLevel.CONFIGURE).values());
+            handlers.addAll(this.elements.get(ExecutionLevel.RUN).values());
         } else {
-            throw new IllegalArgumentException("Unknown build level");
+            handlers.addAll(this.elements.get(ExecutionLevel.CONFIGURE).values());
+            handlers.addAll(this.elements.get(ExecutionLevel.BUILD).values());
         }
-        boolean changed = set.add(file);
-        if (changed) {
-            pcs.firePropertyChange(PROP_FILES, null, null);
+        var existing = this.elements.get(level);
+        var replacements = new LinkedHashMap<ExecutionElement, ElementHandler>(elements.size());
+        for (var el : elements) {
+            var handler = existing.get(el);
+            if (handler == null) {
+                handler = findHandler(level, el);
+            }
+            if (!handlers.add(handler)) {
+                throw new IllegalArgumentException("Duplicate handler");
+            }
+            replacements.put(el, handler);
         }
-        return changed;
+        existing.clear();
+        existing.putAll(replacements);
     }
 
     @Override
-    public synchronized boolean removeFile(ExecutionLevel level, FileObject file) {
-        Set<FileObject> set;
-        if (level == ExecutionLevel.BUILD) {
-            set = buildFiles;
-        } else if (level == ExecutionLevel.RUN) {
-            set = runFiles;
-        } else {
-            throw new IllegalArgumentException("Unknown build level");
-        }
-        boolean changed = set.remove(file);
-        if (changed) {
-            pcs.firePropertyChange(PROP_FILES, null, null);
-        }
-        return changed;
+    public List<ExecutionElement> getElements(ExecutionLevel level) {
+        return new ArrayList<>(elements.get(level).keySet());
     }
 
     @Override
-    public synchronized List<FileObject> getFiles(ExecutionLevel level) {
-        if (level == ExecutionLevel.BUILD) {
-            return new ArrayList<>(buildFiles);
-        } else if (level == ExecutionLevel.RUN) {
-            return new ArrayList<>(runFiles);
+    public PraxisProject getProject() {
+        return project;
+    }
+
+    void initElements(Map<ExecutionLevel, List<ExecutionElement>> elementMap) {
+        initConfigure(elementMap.get(ExecutionLevel.CONFIGURE));
+        final Set<ElementHandler> handlers = new HashSet<>();
+        handlers.addAll(elements.get(ExecutionLevel.CONFIGURE).values());
+        initLevel(handlers, ExecutionLevel.BUILD, elementMap.get(ExecutionLevel.BUILD));
+        initLevel(handlers, ExecutionLevel.RUN, elementMap.get(ExecutionLevel.RUN));
+    }
+
+    Map<ExecutionLevel, List<ExecutionTask>> elements() {
+        EnumMap<ExecutionLevel, List<ExecutionTask>> map = new EnumMap(ExecutionLevel.class);
+        map.put(ExecutionLevel.CONFIGURE, elements.get(ExecutionLevel.CONFIGURE)
+                .entrySet()
+                .stream()
+                .map(e -> new ExecutionTask(e.getKey(), e.getValue()))
+                .collect(Collectors.toList())
+        );
+        map.put(ExecutionLevel.BUILD, elements.get(ExecutionLevel.BUILD)
+                .entrySet()
+                .stream()
+                .map(e -> new ExecutionTask(e.getKey(), e.getValue()))
+                .collect(Collectors.toList())
+        );
+        map.put(ExecutionLevel.RUN, elements.get(ExecutionLevel.RUN)
+                .entrySet()
+                .stream()
+                .map(e -> new ExecutionTask(e.getKey(), e.getValue()))
+                .collect(Collectors.toList())
+        );
+        return map;
+    }
+
+    private void initConfigure(List<ExecutionElement> elementList) {
+        var map = elements.get(ExecutionLevel.CONFIGURE);
+        map.clear();
+        elementList.stream()
+                .filter(ExecutionElement.Line.class::isInstance)
+                .map(ExecutionElement.Line.class::cast)
+                .filter(e -> librariesHandler.isSupportedCommand(e.tokens().get(0).getText()))
+                .findFirst()
+                .ifPresentOrElse(e -> {
+                    librariesHandler.configure(e);
+                    map.put(e, librariesHandler);
+                }, () -> {
+                    map.put(librariesHandler.defaultElement(), librariesHandler);
+                });
+        elementList.stream()
+                .filter(ExecutionElement.Line.class::isInstance)
+                .map(ExecutionElement.Line.class::cast)
+                .filter(e -> compilerHandler.isSupportedCommand(e.tokens().get(0).getText()))
+                .findFirst()
+                .ifPresentOrElse(e -> {
+                    compilerHandler.configure(e);
+                    map.put(e, compilerHandler);
+                }, () -> {
+                    map.put(compilerHandler.defaultElement(), compilerHandler);
+                });
+                
+    }
+
+    private void initLevel(Set<ElementHandler> handlers,
+            ExecutionLevel level,
+            List<ExecutionElement> elementList) {
+        var map = this.elements.get(level);
+        map.clear();
+        for (var element : elementList) {
+            try {
+                var handler = findHandler(level, element);
+                if (!handlers.add(handler)) {
+                    throw new IllegalStateException("Duplicate handler");
+                }
+                map.put(element, handler);
+            } catch (Exception ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+    }
+
+    private ElementHandler findHandler(ExecutionLevel level, ExecutionElement element)
+            throws IllegalArgumentException {
+        if (element instanceof ExecutionElement.File) {
+            var fileElement = (ExecutionElement.File) element;
+            checkFile(fileElement.file());
+            return fileHandlerProviders.stream()
+                    .flatMap(p -> p.createHandler(project, level, fileElement).stream())
+                    .findFirst()
+                    .orElseGet(() -> new DefaultFileHandler(project, level, fileElement));
+        } else if (element instanceof ExecutionElement.Line) {
+            var lineElement = (ExecutionElement.Line) element;
+            return lineHandlerProviders.stream()
+                    .flatMap(p -> p.createHandler(project, level, lineElement).stream())
+                    .findFirst()
+                    .orElseGet(() -> new DefaultLineHandler(project, level, lineElement));
         } else {
             throw new IllegalArgumentException();
         }
     }
 
-    public synchronized void setProjectFiles(ExecutionLevel level, FileObject[] files) {
-        for (FileObject file : files) {
-            checkFile(file);
-        }
-        if (level == ExecutionLevel.BUILD) {
-            buildFiles.clear();
-            buildFiles.addAll(Arrays.asList(files));
-        } else if (level == ExecutionLevel.RUN) {
-            runFiles.clear();
-            runFiles.addAll(Arrays.asList(files));
+    private Optional<LineHandler> findInternalHandler(
+            PraxisProject project,
+            ExecutionLevel level,
+            ExecutionElement.Line lineElement) {
+        var tokens = lineElement.tokens();
+        var command = tokens.get(0).getText();
+        if (compilerHandler.isSupportedCommand(command)) {
+            return Optional.of(compilerHandler);
+        } else if (librariesHandler.isSupportedCommand(command)) {
+            return Optional.of(librariesHandler);
         } else {
-            throw new IllegalArgumentException("Unknown build level");
+            return Optional.empty();
         }
-        pcs.firePropertyChange(PROP_FILES, null, null);
     }
 
-    public synchronized void importLibrary(FileObject lib) throws IOException {
+    public void importLibrary(FileObject lib) throws IOException {
         if (FileUtil.isParentOf(project.getProjectDirectory(), lib)) {
             throw new IOException("Library file is already inside project");
         }
@@ -145,18 +258,10 @@ public class ProjectPropertiesImpl implements PraxisProjectProperties {
         if (project.isActive()) {
             String script = "add-lib " + projectLib.toURI();
             try {
-                ProjectHelper.getDefault().executeScript(script, new Callback() {
-                    @Override
-                    public void onReturn(CallArguments args) {
-                    }
-
-                    @Override
-                    public void onError(CallArguments args) {
-                    }
-                });
-            } catch (HubUnavailableException ex) {
-                Exceptions.printStackTrace(ex);
-            } catch (ServiceUnavailableException ex) {
+                project.getLookup().lookup(ProjectHelper.class)
+                        .executeScript(script, Callback.create(r -> {
+                        }));
+            } catch (HubUnavailableException | ServiceUnavailableException ex) {
                 Exceptions.printStackTrace(ex);
             }
         }
@@ -164,12 +269,13 @@ public class ProjectPropertiesImpl implements PraxisProjectProperties {
         pcs.firePropertyChange(PROP_LIBRARIES, null, null);
     }
 
-    public synchronized void removeLibrary(String name) throws IOException {
+    public void removeLibrary(String name) throws IOException {
         if (project.isActive()) {
             throw new IOException("Cannot delete library from active project");
         }
         // @TODO move off EDT
-        FileObject libsFolder = project.getProjectDirectory().getFileObject(DefaultPraxisProject.LIBS_PATH);
+        FileObject libsFolder = project.getProjectDirectory()
+                .getFileObject(DefaultPraxisProject.LIBS_PATH);
         if (libsFolder == null) {
             throw new IOException("No libs folder");
         }
@@ -192,12 +298,12 @@ public class ProjectPropertiesImpl implements PraxisProjectProperties {
                     .collect(Collectors.toList());
         }
     }
-    
+
     public synchronized void setJavaRelease(int release) {
         if (project.isActive()) {
             throw new IllegalStateException("Cannot change source version for active project");
         }
-        if (release < 8) {
+        if (release < MIN_JAVA_VERSION || release > MAX_JAVA_VERSION) {
             throw new IllegalArgumentException();
         }
         if (javaRelease != release) {
@@ -205,7 +311,7 @@ public class ProjectPropertiesImpl implements PraxisProjectProperties {
             pcs.firePropertyChange(PROP_JAVA_RELEASE, null, null);
         }
     }
-    
+
     @Override
     public synchronized int getJavaRelease() {
         return javaRelease;
@@ -227,31 +333,103 @@ public class ProjectPropertiesImpl implements PraxisProjectProperties {
         pcs.removePropertyChangeListener(listener);
     }
 
+    private class CompilerLineHandler implements LineHandler {
+
+        private final Set<String> commands;
+
+        private CompilerLineHandler() {
+            commands = Set.of("java-compiler-release");
+        }
+
+        @Override
+        public void process(Callback callback) throws Exception {
+            String script = "java-compiler-release " + getJavaRelease();
+            project.getLookup().lookup(ProjectHelper.class).executeScript(script, callback);
+        }
+
+        @Override
+        public String rewrite(String line) {
+            return "java-compiler-release " + getJavaRelease();
+        }
+
+        private boolean isSupportedCommand(String command) {
+            return commands.contains(command);
+        }
+
+        private void configure(ExecutionElement.Line element) {
+            try {
+                setJavaRelease(Integer.parseInt(element.tokens().get(1).getText()));
+            } catch (Exception ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+
+        private ExecutionElement.Line defaultElement() {
+            return ExecutionElement.forLine("java-compiler-release " + MIN_JAVA_VERSION);
+        }
+    }
+
+    private class LibrariesLineHandler implements LineHandler {
+
+        private final Set<String> commands;
+
+        private LibrariesLineHandler() {
+            commands = Set.of("add-libs");
+        }
+
+        @Override
+        public void process(Callback callback) throws Exception {
+            String script = "set _PWD " + project.getProjectDirectory().toURI()
+                    + "\n" + LIBS_COMMAND;
+            project.getLookup().lookup(ProjectHelper.class).executeScript(script, callback);
+        }
+
+        @Override
+        public String rewrite(String line) {
+            return LIBS_COMMAND;
+        }
+
+        private boolean isSupportedCommand(String command) {
+            return commands.contains(command);
+        }
+
+        private void configure(ExecutionElement.Line element) {
+            // no op
+        }
+
+        private ExecutionElement.Line defaultElement() {
+            return ExecutionElement.forLine(LIBS_COMMAND);
+        }
+
+    }
+
     private class FileListener extends FileChangeAdapter {
 
         @Override
         public void fileDeleted(FileEvent fe) {
             synchronized (ProjectPropertiesImpl.this) {
-                FileObject file = fe.getFile();
-                boolean changed = false;
-                if (buildFiles.remove(file)) {
-                    changed = true;
-                }
-                if (runFiles.remove(file)) {
-                    changed = true;
-                }
-                if (changed) {
-                    pcs.firePropertyChange(PROP_FILES, null, null);
-                }
+                EventQueue.invokeLater(() -> checkFileDeleted(fe.getFile()));
             }
+        }
 
+        private void checkFileDeleted(FileObject file) {
+            boolean changed = false;
+            for (var category : elements.entrySet()) {
+                changed = category.getValue().keySet().removeIf(
+                        el -> el instanceof ExecutionElement.File
+                        && ((ExecutionElement.File) el).file().equals(file)
+                );
+            }
+            if (changed) {
+                pcs.firePropertyChange(PROP_ELEMENTS, null, null);
+            }
         }
 
         @Override
         public void fileRenamed(FileRenameEvent fe) {
-            synchronized (ProjectPropertiesImpl.this) {
-                pcs.firePropertyChange(PROP_FILES, null, null);
-            }
+//            synchronized (ProjectPropertiesImpl.this) {
+//                pcs.firePropertyChange(PROP_ELEMENTS, null, null);
+//            }
         }
     }
 }

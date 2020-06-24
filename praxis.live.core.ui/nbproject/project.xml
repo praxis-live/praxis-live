@@ -127,7 +127,7 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.praxislive.ide.util</code-name-base>
+                    <code-name-base>org.praxislive.ide.model</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
@@ -137,6 +137,7 @@
             </module-dependencies>
             <public-packages>
                 <package>org.praxislive.ide.core.ui.api</package>
+                <package>org.praxislive.ide.core.ui.spi</package>
             </public-packages>
         </data>
     </configuration>

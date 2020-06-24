@@ -47,7 +47,7 @@ import org.praxislive.ide.pxr.PXRParser.PropertyElement;
 import org.praxislive.ide.pxr.PXRParser.RootElement;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
-import org.praxislive.ide.core.api.CoreInfo;
+import org.praxislive.ide.core.api.IDE;
 
 /**
  *
@@ -113,7 +113,7 @@ class PXRBuilder {
                 if (PXRParser.VERSION_ATTR.equals(attr.key)) {
                     Semver fileVersion = new Semver(attr.value, Semver.SemverType.LOOSE);
                     Semver runningVersion = new Semver(
-                            CoreInfo.getDefault().getVersion(),
+                            IDE.getDefault().getVersion(),
                             Semver.SemverType.LOOSE);
                     if (fileVersion.isGreaterThan(runningVersion)) {
                         warn(Bundle.MSG_versionWarning());

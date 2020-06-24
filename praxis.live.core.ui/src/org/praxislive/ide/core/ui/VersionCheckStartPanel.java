@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2018 Neil C Smith.
+ * Copyright 2020 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -23,24 +23,21 @@ package org.praxislive.ide.core.ui;
 
 import java.util.Objects;
 import javax.swing.JPanel;
-import org.praxislive.ide.core.api.CoreInfo;
-import org.praxislive.ide.core.ui.api.StartPagePanelProvider;
+import org.praxislive.ide.core.api.IDE;
+import org.praxislive.ide.core.ui.spi.StartPagePanelProvider;
 
 /**
  *
- * @author Neil C Smith - http://www.neilcsmith.net
  */
 public class VersionCheckStartPanel extends javax.swing.JPanel {
 
-    private final CoreInfo info = CoreInfo.getDefault();
-    
     /**
      * Creates new form DownloadStartPanel
      */
     public VersionCheckStartPanel() {
         initComponents();
         downloadButton.setVisible(false);
-        currentVersionDisplay.setText(info.getVersion());
+        currentVersionDisplay.setText(IDE.getVersion());
         refresh();
     }
 
@@ -116,8 +113,8 @@ public class VersionCheckStartPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_downloadButtonActionPerformed
 
     private boolean refresh() {
-        String currentVersion = info.getVersion();
-        String latestVersion = info.getLatestAvailableVersion();
+        String currentVersion = IDE.getVersion();
+        String latestVersion = IDE.getLatestAvailableVersion();
         latestVersionDisplay.setText(latestVersion);
         downloadButton.setVisible(!Objects.equals(currentVersion, latestVersion));
         return true;

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2019 Neil C Smith.
+ * Copyright 2020 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -26,18 +26,19 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.Iterator;
 import java.util.List;
 import org.praxislive.core.syntax.Token;
 import org.praxislive.core.syntax.Tokenizer;
 import org.praxislive.ide.project.api.ExecutionLevel;
 import org.openide.filesystems.FileObject;
+import org.praxislive.ide.project.api.ExecutionElement;
 
 import static org.praxislive.core.syntax.Token.Type.*;
 
 /**
  *
- * @author Neil C Smith (http://neilcsmith.net)
  */
 class PXPReader {
 
@@ -51,34 +52,39 @@ class PXPReader {
     private final FileObject projectDir;
     private final FileObject data;
     private final ProjectPropertiesImpl props;
-    private final List<FileObject> buildFiles;
-    private final List<FileObject> runFiles;
+    private final EnumMap<ExecutionLevel, List<ExecutionElement>> elements;
 
     private ExecutionLevel level;
-    private boolean libsAdded;
+//    private boolean libsAdded;
 
     private PXPReader(FileObject projectDir,
             FileObject data, ProjectPropertiesImpl props) {
         this.projectDir = projectDir;
         this.data = data;
         this.props = props;
-        buildFiles = new ArrayList<FileObject>();
-        runFiles = new ArrayList<FileObject>();
+        elements = new EnumMap<>(ExecutionLevel.class);
+        for (ExecutionLevel l : ExecutionLevel.values()) {
+            elements.put(l, new ArrayList<>());
+        }
     }
 
     private void parse() throws Exception {
 
-        Iterator<Token> tokens = new Tokenizer(loadFile(data)).iterator();
+        String script = loadFile(data);
+        Iterator<Token> tokens = new Tokenizer(script).iterator();
+        List<Token> line = new ArrayList<>();
 
         while (tokens.hasNext()) {
-            Token[] line = tokensToEOL(tokens);
-            if (line.length == 0) {
+            line.clear();
+            tokensToEOL(tokens, line);
+            if (line.isEmpty()) {
                 continue;
             }
-            Token first = line[0];
+            Token first = line.get(0);
             switch (first.getType()) {
                 case PLAIN:
-                    parseCommand(line);
+                    // @TODO allow other token types at start?
+                    parseCommand(script, line);
                     break;
                 case COMMENT:
                     parseComment(line);
@@ -89,8 +95,7 @@ class PXPReader {
             }
         }
 
-        props.setProjectFiles(ExecutionLevel.BUILD, buildFiles.toArray(new FileObject[buildFiles.size()]));
-        props.setProjectFiles(ExecutionLevel.RUN, runFiles.toArray(new FileObject[runFiles.size()]));
+        props.initElements(elements);
 
     }
 
@@ -98,8 +103,8 @@ class PXPReader {
         return data.asText();
     }
 
-    private void parseComment(Token[] tokens) {
-        String text = tokens[0].getText();
+    private void parseComment(List<Token> tokens) {
+        String text = tokens.get(0).getText();
         if (text.contains(BUILD_LEVEL_SWITCH)) {
             switchLevel(ExecutionLevel.BUILD);
         } else if (text.contains(RUN_LEVEL_SWITCH)) {
@@ -108,85 +113,76 @@ class PXPReader {
     }
 
     private void switchLevel(ExecutionLevel level) {
-        if (level == ExecutionLevel.BUILD && this.level == ExecutionLevel.RUN) {
+        if (level.compareTo(this.level) < 0) {
             throw new IllegalArgumentException("Can't move level down");
         }
         this.level = level;
     }
 
-    private void parseCommand(Token[] tokens) throws Exception {
-        String command = tokens[0].getText();
+    private void parseCommand(String script, List<Token> tokens) throws Exception {
+        String command = tokens.get(0).getText();
         if (INCLUDE_CMD.equals(command)) {
             parseInclude(tokens);
-        } else if (ADD_LIBS_CMD.equals(command)) {
-            parseAddLibs(tokens);
-        } else if (JAVA_RELEASE_CMD.equals(command)) {
-            parseJavaRelease(tokens);
         } else {
-            throw new IllegalArgumentException("Unexpected command in project file : " + command);
+            String line = script.substring(tokens.get(0).getStartIndex(), 
+                        tokens.get(tokens.size() - 1).getEndIndex());
+            elements.get(level).add(ExecutionElement.forLine(line));
         }
     }
 
-    private void parseInclude(Token[] tokens) throws Exception {
-        if (tokens.length != 2) {
+    private void parseInclude(List<Token> tokens) throws Exception {
+        if (tokens.size() != 2) {
             throw new IllegalArgumentException("Unexpected number of arguments in include command");
         }
-        if (tokens[1].getType() == Token.Type.SUBCOMMAND) {
-            FileObject file = parseFileCommand(tokens[1].getText());
-            if (level == null) {
-                switchLevel(ExecutionLevel.RUN);
-            }
-            if (level == ExecutionLevel.BUILD) {
-                buildFiles.add(file);
-            } else {
-                runFiles.add(file);
-            }
+        if (tokens.get(1).getType() == Token.Type.SUBCOMMAND) {
+            FileObject file = parseFileCommand(tokens.get(1).getText());
+            ExecutionElement el = ExecutionElement.forFile(file);
+            elements.get(level).add(el);
         }
     }
 
     private FileObject parseFileCommand(String command) throws Exception {
-        Token[] toks = tokensToEOL(new Tokenizer(command).iterator());
-        if (toks.length == 2 && FILE_CMD.equals(toks[0].getText())) {
+        List<Token> line = new ArrayList<>();
+        tokensToEOL(new Tokenizer(command).iterator(), line);
+        if (line.size() == 2 && FILE_CMD.equals(line.get(0).getText())) {
             URI base = FileUtil.toFile(projectDir).toURI();
-            URI path = base.resolve(new URI(null, null, toks[1].getText(), null));
+            URI path = base.resolve(new URI(null, null, line.get(1).getText(), null));
             return FileUtil.toFileObject(new File(path));
         }
         throw new IllegalArgumentException("Invalid file in include line : " + command);
     }
 
-    private void parseAddLibs(Token[] tokens) throws Exception {
-        if (libsAdded) {
-            throw new IllegalArgumentException("add-libs command already found");
-        }
-        if (level != null) {
-            throw new IllegalArgumentException("add-libs command found after level switch");
-        }
-        libsAdded = true;
-    }
-    
-    private void parseJavaRelease(Token[] tokens) throws Exception {
-        if (tokens.length != 2) {
-            throw new IllegalArgumentException("Unexpected number of arguments in java-compiler-release command");
-        }
-        try {
-            int release = Integer.parseInt(tokens[1].getText());
-            props.setJavaRelease(release);
-        } catch (Exception ex) {
-            // fall through?
-        }
-        
-    }
+//    private void parseAddLibs(Token[] tokens) throws Exception {
+//        if (libsAdded) {
+//            throw new IllegalArgumentException("add-libs command already found");
+//        }
+//        if (level != null) {
+//            throw new IllegalArgumentException("add-libs command found after level switch");
+//        }
+//        libsAdded = true;
+//    }
+//    
+//    private void parseJavaRelease(Token[] tokens) throws Exception {
+//        if (tokens.length != 2) {
+//            throw new IllegalArgumentException("Unexpected number of arguments in java-compiler-release command");
+//        }
+//        try {
+//            int release = Integer.parseInt(tokens[1].getText());
+//            props.setJavaRelease(release);
+//        } catch (Exception ex) {
+//            // fall through?
+//        }
+//        
+//    }
 
-    private static Token[] tokensToEOL(Iterator<Token> tokens) {
-        List<Token> tks = new ArrayList<Token>();
+    private static void tokensToEOL(Iterator<Token> tokens, List<Token> line) {
         while (tokens.hasNext()) {
             Token t = tokens.next();
             if (t.getType() == EOL) {
                 break;
             }
-            tks.add(t);
+            line.add(t);
         }
-        return tks.toArray(new Token[tks.size()]);
     }
 
     static void initializeProjectProperties(FileObject projectDir,

@@ -33,7 +33,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.XMLFileSystem;
 import org.openide.util.RequestProcessor;
-import org.praxislive.ide.core.api.CoreInfo;
+import org.praxislive.ide.core.api.IDE;
 
 /**
  *
@@ -63,7 +63,7 @@ class Utils {
 
     private static XMLFileSystem layer;
 
-    private static Preferences info = CoreInfo.getDefault().getPreferences();
+    private static Preferences info = IDE.getDefault().getPreferences();
 
     private Utils() {
     }

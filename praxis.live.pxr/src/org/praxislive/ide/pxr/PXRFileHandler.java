@@ -28,7 +28,7 @@ import org.netbeans.api.actions.Openable;
 import org.praxislive.core.CallArguments;
 import org.praxislive.ide.core.api.Callback;
 import org.praxislive.ide.project.api.ExecutionLevel;
-import org.praxislive.ide.project.api.FileHandler;
+import org.praxislive.ide.project.spi.FileHandler;
 import org.praxislive.ide.project.api.PraxisProject;
 import org.praxislive.ide.model.RootProxy;
 import org.praxislive.ide.pxr.api.RootRegistry;
@@ -132,7 +132,7 @@ public class PXRFileHandler extends FileHandler {
     public static class Provider implements FileHandler.Provider {
 
         @Override
-        public FileHandler getHandler(PraxisProject project, ExecutionLevel level, FileObject file) {
+        public FileHandler createHandler(PraxisProject project, ExecutionLevel level, FileObject file) {
             if (level == ExecutionLevel.BUILD && file.hasExt("pxr")) {
                 try {
                     DataObject dob = DataObject.find(file);

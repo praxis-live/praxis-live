@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Neil C Smith.
+ * Copyright 2020 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -19,36 +19,34 @@
  * Please visit http://neilcsmith.net if you need additional information or
  * have any questions.
  */
-
-package org.praxislive.ide.pxs;
+package org.praxislive.ide.project;
 
 import org.praxislive.ide.core.api.Callback;
+import org.praxislive.ide.project.api.ExecutionElement;
 import org.praxislive.ide.project.api.ExecutionLevel;
-import org.praxislive.ide.project.spi.FileHandler;
 import org.praxislive.ide.project.api.PraxisProject;
-import org.openide.filesystems.FileObject;
-import org.openide.util.lookup.ServiceProvider;
+import org.praxislive.ide.project.spi.LineHandler;
 
 /**
  *
- * @author Neil C Smith (http://neilcsmith.net)
  */
-@ServiceProvider(service=FileHandler.Provider.class)
-public class PXSHandlerProvider implements FileHandler.Provider {
+class DefaultLineHandler implements LineHandler {
 
-    @Override
-    public FileHandler createHandler(PraxisProject project, ExecutionLevel level, FileObject file) {
-        return null;
+    private final PraxisProject project;
+    private final ExecutionLevel level;
+    private final String line;
+
+    DefaultLineHandler(PraxisProject project, ExecutionLevel level,
+            ExecutionElement.Line lineElement) {
+        this.project = project;
+        this.level = level;
+        this.line = lineElement.line();
     }
 
-
-    private class Handler extends FileHandler {
-
-        @Override
-        public void process(Callback callback) {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
+    @Override
+    public void process(Callback callback) throws Exception {
+        var script = "set _PWD " + project.getProjectDirectory().toURI() + "\n" + line;
+        project.getLookup().lookup(ProjectHelper.class).executeScript(script, callback);
     }
 
 }

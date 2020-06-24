@@ -23,7 +23,6 @@ package org.praxislive.ide.core.ui;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import org.praxislive.ide.core.DefaultHubManager;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionReferences;
@@ -43,6 +42,6 @@ public final class RestartHubAction implements ActionListener {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        DefaultHubManager.getInstance().restart();
+//        DefaultHubManager.getInstance().restart();
     }
 }

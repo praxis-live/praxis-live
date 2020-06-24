@@ -26,7 +26,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.praxislive.core.ComponentAddress;
-import org.praxislive.ide.core.api.CoreInfo;
+import org.praxislive.ide.core.api.IDE;
 import org.praxislive.ide.model.Connection;
 import org.praxislive.ide.properties.PraxisProperty;
 //import org.openide.util.RequestProcessor;
@@ -60,11 +60,11 @@ class PXRWriter {
     private void doWrite(Appendable target) throws IOException {
         if (root != null) {
             // full graph
-            root.setAttr(PXRParser.VERSION_ATTR, CoreInfo.getDefault().getVersion());
+            root.setAttr(PXRParser.VERSION_ATTR, IDE.getDefault().getVersion());
             writeComponent(target, root, 0);
         } else {
             // sub graph
-            writeAttribute(target, PXRParser.VERSION_ATTR, CoreInfo.getDefault().getVersion());
+            writeAttribute(target, PXRParser.VERSION_ATTR, IDE.getDefault().getVersion());
             writeChildren(target, container, 0);
             writeConnections(target, container, 0);
         }

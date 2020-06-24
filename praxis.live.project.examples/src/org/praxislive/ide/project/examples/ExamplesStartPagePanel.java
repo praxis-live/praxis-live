@@ -27,7 +27,7 @@ import javax.swing.JPanel;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.lookup.ServiceProvider;
-import org.praxislive.ide.core.ui.api.StartPagePanelProvider;
+import org.praxislive.ide.core.ui.spi.StartPagePanelProvider;
 
 /**
  *

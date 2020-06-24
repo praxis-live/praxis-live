@@ -26,9 +26,9 @@ import org.praxislive.core.Component;
 import org.praxislive.core.services.ScriptService;
 import org.praxislive.core.services.ServiceUnavailableException;
 import org.praxislive.core.types.PString;
-import org.praxislive.ide.core.api.ExtensionProvider;
+import org.praxislive.ide.core.spi.ExtensionProvider;
 import org.praxislive.ide.core.api.HubUnavailableException;
-import org.praxislive.ide.util.AbstractHelperComponent;
+import org.praxislive.ide.core.api.AbstractHelperComponent;
 import org.openide.util.Exceptions;
 import org.openide.util.lookup.ServiceProvider;
 

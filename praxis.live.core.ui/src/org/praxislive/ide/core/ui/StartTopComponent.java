@@ -45,7 +45,7 @@ import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 import org.openide.windows.WindowSystemEvent;
 import org.openide.windows.WindowSystemListener;
-import org.praxislive.ide.core.ui.api.StartPagePanelProvider;
+import org.praxislive.ide.core.ui.spi.StartPagePanelProvider;
 
 /**
  * Welcome Page

@@ -32,7 +32,7 @@ import java.util.logging.Logger;
 import org.praxislive.ide.core.api.Syncable;
 import org.praxislive.ide.model.ComponentProxy;
 import org.praxislive.ide.model.ContainerProxy;
-import org.praxislive.ide.util.AbstractTask;
+import org.praxislive.ide.core.api.AbstractTask;
 import org.netbeans.api.progress.ProgressHandle;
 import org.openide.util.RequestProcessor;
 

@@ -35,7 +35,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.XMLFileSystem;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
-import org.praxislive.ide.core.api.CoreInfo;
+import org.praxislive.ide.core.api.IDE;
 import org.praxislive.ide.core.api.DynamicFileSystem;
 
 /**
@@ -58,7 +58,7 @@ class Examples {
 
     private static XMLFileSystem layer;
 
-    private static Preferences info = CoreInfo.getDefault().getPreferences();
+    private static Preferences info = IDE.getDefault().getPreferences();
 
     private Examples() {
     }

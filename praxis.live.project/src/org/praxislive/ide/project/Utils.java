@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2018 Neil C Smith.
+ * Copyright 2020 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -19,22 +19,33 @@
  * Please visit http://neilcsmith.net if you need additional information or
  * have any questions.
  */
-package org.praxislive.ide.core.ui.api;
+package org.praxislive.ide.project;
 
-import javax.swing.JPanel;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import org.praxislive.ide.core.api.RootLifecycleHandler;
+import org.praxislive.ide.core.api.Task;
+import org.openide.util.Lookup;
 
 /**
  *
- * @author Neil C Smith - http://www.neilcsmith.net
  */
-public interface StartPagePanelProvider {
+class Utils {
 
-    public String getTitle();
+    private Utils() {
+    }
 
-    public JPanel getPanel();
-
-    public default boolean refresh() {
-        return false;
+    static List<Task> findRootDeletionTasks(String description, Set<String> roots) {
+        List<Task> tasks = new ArrayList<Task>();
+        for (RootLifecycleHandler handler
+                : Lookup.getDefault().lookupAll(RootLifecycleHandler.class)) {
+            Task task = handler.getDeletionTask(description, roots);
+            if (task != null) {
+                tasks.add(task);
+            }
+        }
+        return tasks;
     }
 
 }

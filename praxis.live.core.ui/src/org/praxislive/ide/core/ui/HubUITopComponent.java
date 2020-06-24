@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Neil C Smith.
+ * Copyright 2020 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -21,9 +21,11 @@
  */
 package org.praxislive.ide.core.ui;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.io.IOException;
 import java.util.logging.Logger;
 import javax.swing.ListSelectionModel;
-import org.praxislive.ide.core.DefaultHubManager;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
@@ -31,32 +33,43 @@ import org.openide.windows.WindowManager;
 import org.netbeans.api.settings.ConvertAsProperties;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.ListView;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
+import org.openide.nodes.FilterNode;
+import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
+import org.openide.util.Lookup;
+import org.praxislive.ide.model.HubProxy;
+import org.praxislive.ide.model.RootProxy;
 
 /**
- * Top component which displays something.
+ * Top component which displays Hub and roots information
  */
 @ConvertAsProperties(dtd = "-//org.praxislive.ide.hubui//HubUI//EN",
 autostore = false)
 public final class HubUITopComponent extends TopComponent implements ExplorerManager.Provider {
 
-    private static HubUITopComponent instance;
-    /** path to the icon used by the component and its open action */
-    static final String ICON_PATH = "org/praxislive/ide/core/ui/resources/hub-action.png";
+    private final static String SYSTEM_PREFIX = "_";
+    
     private static final String PREFERRED_ID = "HubUITopComponent";
-    private HubProxy hub;
-    private ExplorerManager manager;
+    /** path to the icon used by the component and its open action */
+    private static final String ICON_PATH = "org/praxislive/ide/core/ui/resources/hub-action.png";
+    
+    private static HubUITopComponent instance;
+    
+    private final ExplorerManager manager;
+    private final TCListener registryListener;
+    
+    private HubNode hubNode;
 
     public HubUITopComponent() {
         manager = new ExplorerManager();
-        hub = new HubProxy();
-        manager.setRootContext(hub.getNodeDelegate());
         initComponents();
         ((ListView) rootList).setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         setName(NbBundle.getMessage(HubUITopComponent.class, "CTL_HubUITopComponent"));
         setToolTipText(NbBundle.getMessage(HubUITopComponent.class, "HINT_HubUITopComponent"));
         setIcon(ImageUtilities.loadImage(ICON_PATH, true));
-
+        registryListener = new TCListener();
     }
 
     /** This method is called from within the constructor to
@@ -119,11 +132,9 @@ public final class HubUITopComponent extends TopComponent implements ExplorerMan
 
     private void restartButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_restartButtonActionPerformed
 
-        DefaultHubManager.getInstance().restart();
     }//GEN-LAST:event_restartButtonActionPerformed
 
     private void systemRootToggleActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_systemRootToggleActionPerformed
-        hub.setShowSystemRoots(systemRootToggle.isSelected());
     }//GEN-LAST:event_systemRootToggleActionPerformed
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JToolBar jToolBar1;
@@ -164,18 +175,24 @@ public final class HubUITopComponent extends TopComponent implements ExplorerMan
     }
 
     @Override
+    public ExplorerManager getExplorerManager() {
+        return manager;
+    }
+    
+    @Override
     public int getPersistenceType() {
         return TopComponent.PERSISTENCE_ALWAYS;
     }
 
     @Override
     public void componentOpened() {
-        // TODO add custom code on component opening
+        TopComponent.getRegistry().addPropertyChangeListener(registryListener);
+        refresh();
     }
 
     @Override
     public void componentClosed() {
-        // TODO add custom code on component closing
+        TopComponent.getRegistry().removePropertyChangeListener(registryListener);
     }
 
     void writeProperties(java.util.Properties p) {
@@ -203,8 +220,125 @@ public final class HubUITopComponent extends TopComponent implements ExplorerMan
         return PREFERRED_ID;
     }
 
-    @Override
-    public ExplorerManager getExplorerManager() {
-        return manager;
+    private void refresh() {
+        Node[] nodes = TopComponent.getRegistry().getActivatedNodes();
+        HubProxy hub = null;
+        for (Node node : nodes) {
+            Lookup lkp = node.getLookup();
+            HubProxy found = null;
+            found = lkp.lookup(HubProxy.class);
+            
+            // search projects and data objects?
+            
+            if (found != null) {
+                if (hub != null) {
+                    // more than one
+                    hub = null;
+                    break;
+                } else {
+                    hub = found;
+                }
+            }
+        }
+        
+        if (hub != null) {
+            if (hubNode != null) {
+                if (hubNode.hub == hub) {
+                     return;
+                } else {
+                    hubNode.dispose();
+                }
+            }
+            hubNode = new HubNode(hub, hub.getNodeDelegate());
+            manager.setRootContext(hubNode);
+        } else {
+            if (hubNode == null) {
+                return;
+            } else {
+                hubNode.dispose();
+                hubNode = null;
+                manager.setRootContext(new AbstractNode(Children.LEAF));
+            }
+        }
+//        
     }
+    
+    private class TCListener implements PropertyChangeListener {
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (TopComponent.Registry.PROP_ACTIVATED_NODES.equals(evt.getPropertyName())) {
+                refresh();
+            }
+        }
+        
+    }
+    
+    private static class HubNode extends FilterNode {
+        
+        final HubProxy hub;
+        final Roots roots;
+        
+        
+        private HubNode(HubProxy hub, Node original) {
+            this(hub, original, new Roots(original));
+        }
+        
+        private HubNode(HubProxy hub, Node original, Roots roots) {
+            super(original, roots);
+            this.hub = hub;
+            this.roots = roots;
+        }
+        
+        private void dispose() {
+            roots.dispose();
+        }
+        
+    }
+    
+    private static class RootNode extends FilterNode {
+        
+        private final RootProxy root;
+        
+        private RootNode(Node original, RootProxy root) {
+            super(original, Children.LEAF);
+            this.root = root;
+        }
+
+        @Override
+        public void destroy() throws IOException {
+            super.destroy();
+        }
+        
+        
+        
+    }
+    
+    private static class Roots extends FilterNode.Children {
+        
+        private boolean showSystem;
+        
+        Roots(Node original) {
+            super(original);
+        }
+
+        @Override
+        protected Node[] createNodes(Node key) {
+            RootProxy root = key.getLookup().lookup(RootProxy.class);
+            if (root == null || root.getAddress().rootID().startsWith(SYSTEM_PREFIX)) {
+                return new Node[0];
+            } else {
+                return new Node[] {new RootNode(key, root)};
+            }
+            
+        }
+
+        private void dispose() {
+            setKeys(new Node[0]);
+        }
+        
+        
+    }
+    
+    
 }

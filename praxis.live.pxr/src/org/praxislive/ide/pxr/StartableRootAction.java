@@ -37,7 +37,7 @@ import org.praxislive.core.types.PBoolean;
 import org.praxislive.impl.swing.ControlBinding.SyncRate;
 import org.praxislive.ide.core.api.HubUnavailableException;
 import org.praxislive.ide.model.RootProxy;
-import org.praxislive.ide.util.ArgumentPropertyAdaptor;
+import org.praxislive.ide.core.api.ValuePropertyAdaptor;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
@@ -60,7 +60,7 @@ class StartableRootAction extends AbstractAction
     private RootProxy root;
     private JToggleButton button;
     private boolean running;
-    private ArgumentPropertyAdaptor.ReadOnly runningAdaptor;
+    private ValuePropertyAdaptor.ReadOnly runningAdaptor;
     
     
     StartableRootAction() {
@@ -134,7 +134,7 @@ class StartableRootAction extends AbstractAction
             return;
         }
         setEnabled(true);
-        runningAdaptor = new ArgumentPropertyAdaptor.ReadOnly(this, 
+        runningAdaptor = new ValuePropertyAdaptor.ReadOnly(this, 
                 StartableProtocol.IS_RUNNING, false, SyncRate.Low);
         runningAdaptor.addPropertyChangeListener(new PropertyChangeListener() {
 

@@ -37,7 +37,7 @@ import org.praxislive.core.services.ServiceUnavailableException;
 import org.praxislive.core.types.PArray;
 import org.praxislive.impl.swing.ControlBinding.SyncRate;
 import org.praxislive.ide.pxr.api.RootRegistry;
-import org.praxislive.ide.util.ArgumentPropertyAdaptor;
+import org.praxislive.ide.core.api.ValuePropertyAdaptor;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -49,13 +49,13 @@ public class PXRRootRegistry extends RootRegistry {
     private final static PXRRootRegistry INSTANCE = new PXRRootRegistry();
     private PropertyChangeSupport pcs;
     private final Set<PXRRootProxy> roots;
-    private ArgumentPropertyAdaptor.ReadOnly rootsAdaptor;
+    private ValuePropertyAdaptor.ReadOnly rootsAdaptor;
 
     private PXRRootRegistry() {
         roots = new LinkedHashSet<PXRRootProxy>();
         pcs = new PropertyChangeSupport(this);
         PXRHelper.getDefault().addPropertyChangeListener(new HubListener());
-        rootsAdaptor = new ArgumentPropertyAdaptor.ReadOnly(this, "roots", false, SyncRate.Medium);
+        rootsAdaptor = new ValuePropertyAdaptor.ReadOnly(this, "roots", false, SyncRate.Medium);
         rootsAdaptor.addPropertyChangeListener(new PropertyChangeListener() {
 
             @Override

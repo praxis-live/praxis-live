@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2019 Neil C Smith.
+ * Copyright 2020 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -19,65 +19,59 @@
  * Please visit http://neilcsmith.net if you need additional information or
  * have any questions.
  */
-
 package org.praxislive.ide.project;
 
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import org.praxislive.ide.project.api.ExecutionLevel;
-import org.praxislive.ide.project.api.PraxisProjectProperties;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.praxislive.ide.project.api.ExecutionElement;
+import org.praxislive.ide.project.spi.ElementHandler;
+import org.praxislive.ide.project.spi.LineHandler;
 
 /**
  *
- * @author Neil C Smith (http://neilcsmith.net)
  */
-public class PXPWriter {
-    
-    
+class PXPWriter {
 
     private final FileObject projectDir;
     private final FileObject projectFile;
-    private final PraxisProjectProperties props;
+    private final ProjectPropertiesImpl props;
 
     private PXPWriter(FileObject projectDir, FileObject projectFile,
-            PraxisProjectProperties props) {
+            ProjectPropertiesImpl props) {
         this.projectDir = projectDir;
         this.projectFile = projectFile;
         this.props = props;
     }
 
     private void write() throws IOException {
-        Writer writer = null;
-        try {
-            writer = new OutputStreamWriter(projectFile.getOutputStream());
-            writeConfig(writer);
+        var elements = props.elements();
+        try (Writer writer = new OutputStreamWriter(projectFile.getOutputStream())) {
+            for (var e : elements.get(ExecutionLevel.CONFIGURE)) {
+                writeElement(writer, e.element(), e.handler());
+            }
             writeLevel(writer, ExecutionLevel.BUILD);
-            for (FileObject file : props.getFiles(ExecutionLevel.BUILD)) {
-                writeFile(writer, file);
+            for (var e : elements.get(ExecutionLevel.BUILD)) {
+                writeElement(writer, e.element(), e.handler());
             }
             writeLevel(writer, ExecutionLevel.RUN);
-            for (FileObject file : props.getFiles(ExecutionLevel.RUN)) {
-                writeFile(writer, file);
-            }
-        } finally {
-            if (writer != null) {
-                writer.close();
+            for (var e : elements.get(ExecutionLevel.RUN)) {
+                writeElement(writer, e.element(), e.handler());
             }
         }
     }
-    
-    private void writeConfig(Writer writer) throws IOException {
-        writer.write(PXPReader.JAVA_RELEASE_CMD);
-        writer.write(" ");
-        writer.write(String.valueOf(props.getJavaRelease()));
-        writer.write("\n");
-        writer.write(DefaultPraxisProject.LIBS_COMMAND);
-        writer.write("\n");
-    }
-    
+
+//    private void writeConfig(Writer writer) throws IOException {
+//        writer.write(PXPReader.JAVA_RELEASE_CMD);
+//        writer.write(" ");
+//        writer.write(String.valueOf(props.getJavaRelease()));
+//        writer.write("\n");
+//        writer.write(DefaultPraxisProject.LIBS_COMMAND);
+//        writer.write("\n");
+//    }
     private void writeLevel(Writer writer, ExecutionLevel level) throws IOException {
         writer.write("\n# ");
         if (level == ExecutionLevel.BUILD) {
@@ -86,6 +80,19 @@ public class PXPWriter {
             writer.write(PXPReader.RUN_LEVEL_SWITCH);
         }
         writer.write("\n");
+    }
+
+    private void writeElement(Writer writer, ExecutionElement element,
+            ElementHandler handler) throws IOException {
+        if (element instanceof ExecutionElement.File) {
+            writeFile(writer, ((ExecutionElement.File) element).file());
+        } else if (element instanceof ExecutionElement.Line
+                && handler instanceof LineHandler) {
+            var line = ((ExecutionElement.Line) element).line();
+            line = ((LineHandler) handler).rewrite(line);
+            writer.write(line);
+            writer.write("\n");
+        }
     }
 
     private void writeFile(Writer writer, FileObject file) throws IOException {
@@ -101,10 +108,10 @@ public class PXPWriter {
         writer.write("\"]\n");
     }
 
-    public static void writeProjectProperties(FileObject projectDir,
+    static void writeProjectProperties(FileObject projectDir,
             FileObject file,
-            PraxisProjectProperties props) throws IOException {
-            new PXPWriter(projectDir, file, props).write();
+            ProjectPropertiesImpl props) throws IOException {
+        new PXPWriter(projectDir, file, props).write();
     }
 
 }

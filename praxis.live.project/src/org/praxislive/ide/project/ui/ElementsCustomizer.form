@@ -20,8 +20,8 @@
               <Component id="fileList" min="-2" pref="312" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="addButton" pref="70" max="32767" attributes="0"/>
-                  <Component id="removeButton" alignment="0" pref="70" max="32767" attributes="0"/>
+                  <Component id="addFileButton" max="32767" attributes="0"/>
+                  <Component id="removeButton" alignment="0" max="32767" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
@@ -32,7 +32,7 @@
           <Component id="fileList" alignment="0" pref="300" max="32767" attributes="0"/>
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="addButton" min="-2" max="-2" attributes="0"/>
+              <Component id="addFileButton" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="removeButton" min="-2" max="-2" attributes="0"/>
               <EmptySpace pref="224" max="32767" attributes="0"/>
@@ -48,20 +48,20 @@
 
       <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
     </Container>
-    <Component class="javax.swing.JButton" name="addButton">
+    <Component class="javax.swing.JButton" name="addFileButton">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/praxislive/ide/project/ui/Bundle.properties" key="FilesCustomizer.addButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/praxislive/ide/project/ui/Bundle.properties" key="ElementsCustomizer.addFileButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
       <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="addButtonActionPerformed"/>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="addFileButtonActionPerformed"/>
       </Events>
     </Component>
     <Component class="javax.swing.JButton" name="removeButton">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/praxislive/ide/project/ui/Bundle.properties" key="FilesCustomizer.removeButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/praxislive/ide/project/ui/Bundle.properties" key="ElementsCustomizer.removeButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
       <Events>

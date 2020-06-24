@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2019 Neil C Smith.
+ * Copyright 2020 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -27,7 +27,6 @@ import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -37,10 +36,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 import javax.lang.model.SourceVersion;
 import javax.swing.Icon;
-import org.praxislive.core.CallArguments;
 import org.praxislive.ide.core.api.Callback;
 import org.praxislive.ide.project.api.ExecutionLevel;
-import org.praxislive.ide.project.api.FileHandler;
 import org.praxislive.ide.project.api.PraxisProject;
 import org.praxislive.ide.project.ui.PraxisLogicalViewProvider;
 import org.praxislive.ide.project.ui.ProjectDialogManager;
@@ -67,28 +64,30 @@ import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.util.WeakListeners;
 import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ProxyLookup;
+import org.praxislive.core.Value;
+import org.praxislive.ide.project.api.ExecutionElement;
+import org.praxislive.ide.project.spi.ElementHandler;
 
 /**
  *
- * @author Neil C Smith (http://neilcsmith.net)
  */
 @NbBundle.Messages({
     "# {0} - required Java release",
     "PraxisProject.javaVersionError=This project requires Java {0}"
 })
-public class DefaultPraxisProject extends PraxisProject {
+public class DefaultPraxisProject implements PraxisProject {
 
     public final static String LIBS_PATH = "config/libs/";
     public final static String LIBS_COMMAND = "add-libs [file-list \"" + LIBS_PATH + "*.jar\"]";
     
-    public static final int MIN_JAVA_VERSION = 8;
+    public static final int MIN_JAVA_VERSION = 11;
     public static final int MAX_JAVA_VERSION;
     
     static {
         int max = SourceVersion.latest().ordinal();
-        MAX_JAVA_VERSION = max < 8 ? 8 : max;
+        MAX_JAVA_VERSION = max < MIN_JAVA_VERSION ? MIN_JAVA_VERSION : max;
     }
 
     private final static RequestProcessor RP = new RequestProcessor(PraxisProject.class);
@@ -96,13 +95,13 @@ public class DefaultPraxisProject extends PraxisProject {
     private final FileObject directory;
     private final FileObject projectFile;
     private final ProjectPropertiesImpl properties;
+    private final HubManager hubManager;
     private final Lookup lookup;
-    private final HelperListener helperListener;
     private final PropertiesListener propsListener;
     private final ProjectState state;
-    private final Set<FileObject> executedBuildFiles = new HashSet<>();
-    private boolean actionsEnabled = true;
-    private boolean active;
+    private final Set<ElementHandler> executedHandlers;
+    
+    private boolean actionsEnabled;
     private ClassPath libsCP;
 
     DefaultPraxisProject(FileObject directory, FileObject projectFile, ProjectState state)
@@ -110,11 +109,12 @@ public class DefaultPraxisProject extends PraxisProject {
         this.directory = directory;
         this.projectFile = projectFile;
         this.state = state;
+        executedHandlers = new HashSet<>();
         properties = parseProjectFile(projectFile);
         propsListener = new PropertiesListener();
         properties.addPropertyChangeListener(propsListener);
-
-        Lookup base = Lookups.fixed(new Object[]{
+        hubManager = new HubManager(this);
+        Lookup base = Lookups.fixed(
             this,
             properties,
             new Info(),
@@ -125,12 +125,11 @@ public class DefaultPraxisProject extends PraxisProject {
             new PraxisLogicalViewProvider(this),
             new BaseTemplates(),
             UILookupMergerSupport.createPrivilegedTemplatesMerger()
-        });
+        );
 
+        base = new ProxyLookup(base, hubManager.getLookup());
         this.lookup = LookupProviderSupport.createCompositeLookup(base, LOOKUP_PATH);
-        helperListener = new HelperListener();
-        ProjectHelper.getDefault().addPropertyChangeListener(
-                WeakListeners.propertyChange(helperListener, ProjectHelper.getDefault()));
+        actionsEnabled = true;
     }
 
     private ProjectPropertiesImpl parseProjectFile(FileObject projectFile) {
@@ -158,7 +157,7 @@ public class DefaultPraxisProject extends PraxisProject {
     }
 
     public boolean isActive() {
-        return active;
+        return hubManager.getState() == HubManager.State.Running;
     }
 
     private void execute(ExecutionLevel level) {
@@ -171,24 +170,24 @@ public class DefaultPraxisProject extends PraxisProject {
             return;
         }
         
-        if (!active) {
+        if (!isActive()) {
             registerLibs();
+            executedHandlers.clear();
         }
-        List<FileObject> buildFiles = new ArrayList<>();
-        buildFiles.add(projectFile);
-        FileObject libsFolder = directory.getFileObject(LIBS_PATH);
-        if (libsFolder != null) {
-            buildFiles.add(libsFolder);
+        List<ExecutionTask> buildTasks = new ArrayList<>();
+        buildTasks.addAll(properties.elements().get(ExecutionLevel.CONFIGURE));
+        
+        if (level == ExecutionLevel.BUILD || level == ExecutionLevel.RUN) {
+            buildTasks.addAll(properties.elements().get(ExecutionLevel.BUILD));
         }
-        buildFiles.addAll(properties.getFiles(ExecutionLevel.BUILD));
-        buildFiles.removeAll(executedBuildFiles);
+        buildTasks.removeIf(task -> executedHandlers.contains(task.handler()));
 
-        List<FileObject> runFiles = level == ExecutionLevel.RUN
-                ? properties.getFiles(ExecutionLevel.RUN)
-                : Collections.EMPTY_LIST;
+        List<ExecutionTask> runTasks = new ArrayList<>();
+        if (level == ExecutionLevel.RUN) {
+            buildTasks.addAll(properties.elements().get(ExecutionLevel.RUN));
+        }
 
-        FileHandlerIterator itr = new FileHandlerIterator(buildFiles, runFiles);
-        active = true;
+        var itr = new ElementIterator(buildTasks, runTasks);
         actionsEnabled = false;
         itr.start();
     }
@@ -280,19 +279,6 @@ public class DefaultPraxisProject extends PraxisProject {
         }
     }
 
-    private class HelperListener implements PropertyChangeListener {
-
-        @Override
-        public void propertyChange(PropertyChangeEvent evt) {
-            if (ProjectHelper.PROP_HUB_CONNECTED.equals(evt.getPropertyName())) {
-                if (ProjectHelper.getDefault().isConnected()) {
-                    actionsEnabled = true;
-                    active = false;
-                    executedBuildFiles.clear();
-                }
-            }
-        }
-    }
 
     private class PropertiesListener implements PropertyChangeListener {
 
@@ -336,55 +322,35 @@ public class DefaultPraxisProject extends PraxisProject {
         @Override
         public boolean isActionEnabled(String command, Lookup context) throws IllegalArgumentException {
 
-            return ProjectHelper.getDefault().isConnected() && actionsEnabled;
+            return actionsEnabled;
 
         }
     }
     
-    private class ProjectFileHandler extends FileHandler {
 
-        @Override
-        public void process(Callback callback) throws Exception {
-            String script = "java-compiler-release " + properties.getJavaRelease();
-            ProjectHelper.getDefault().executeScript(script, callback);
-        }
-        
-    }
 
-    private class LibrariesFileHandler extends FileHandler {
+    private class ElementIterator implements Cancellable {
 
-        @Override
-        public void process(Callback callback) throws Exception {
-            String script = "set _PWD " + directory.toURI() + "\n" + LIBS_COMMAND;
-            ProjectHelper.getDefault().executeScript(script, callback);
-        }
-
-    }
-
-    private class FileHandlerIterator implements Cancellable {
-
-        private List<FileObject> buildFiles;
-        private List<FileObject> runFiles;
+        private List<ExecutionTask> buildTasks;
+        private List<ExecutionTask> runTasks;
         private ProgressHandle progress = null;
         private int index = -1;
-        private FileHandler.Provider[] handlers = new FileHandler.Provider[0];
-        private Map<FileObject, List<String>> warnings;
+        private Map<ExecutionElement, List<String>> warnings;
         private ExecutionLevel level;
 
-        private FileHandlerIterator(List<FileObject> buildFiles, List<FileObject> runFiles) {
-            this.buildFiles = buildFiles;
-            this.runFiles = runFiles;
-            handlers = Lookup.getDefault().lookupAll(FileHandler.Provider.class).toArray(handlers);
+        private ElementIterator(List<ExecutionTask> buildTasks, List<ExecutionTask> runTasks) {
+            this.buildTasks = buildTasks;
+            this.runTasks = runTasks;
         }
 
         public void start() {
-            int totalFiles = buildFiles.size() + runFiles.size();
-            if (totalFiles == 0) {
+            int total = buildTasks.size() + runTasks.size();
+            if (total == 0) {
                 return;
             }
             progress = ProgressHandle.createHandle("Executing...", this);
             progress.setInitialDelay(0);
-            progress.start(totalFiles);
+            progress.start(total);
             next();
         }
 
@@ -395,49 +361,64 @@ public class DefaultPraxisProject extends PraxisProject {
 
         private void next() {
             index++;
-            if (index >= (buildFiles.size() + runFiles.size())) {
+            if (index >= (buildTasks.size() + runTasks.size())) {
                 done();
                 return;
             }
-            FileObject file;
-//            ExecutionLevel level;
-            if (index < buildFiles.size()) {
-                file = buildFiles.get(index);
-                executedBuildFiles.add(file);
+            ExecutionTask task;
+            if (index < buildTasks.size()) {
+                task = buildTasks.get(index);
+                executedHandlers.add(task.handler());
                 level = ExecutionLevel.BUILD;
             } else {
-                file = runFiles.get(index - buildFiles.size());
+                task = runTasks.get(index - buildTasks.size());
                 level = ExecutionLevel.RUN;
             }
-            FileHandler handler = findHandler(level, file);
-            String msg = FileUtil.getRelativePath(getProjectDirectory(), file) + " [" + level + "]";
-            progress.progress(msg, index);
+            if (task.element() instanceof ExecutionElement.File) {
+                var msg = FileUtil.getRelativePath(getProjectDirectory(),
+                        ((ExecutionElement.File) task.element()).file())
+                        + " [" + level + "]";
+                progress.progress(msg, index);
+            } else {
+                progress.progress(index);
+            }
+            
             try {
-                handler.process(new CallbackImpl(handler, file));
+                task.handler().process(Callback.create(result -> {
+                    if (result.isError()) {
+                        if (continueOnError(task.element(), result.args())) {
+                            next();
+                        } else {
+                            done();
+                        }
+                    } else {
+                        logWarnings(task.element(), task.handler().warnings());
+                        next();
+                    }
+                }));
             } catch (Exception ex) {
                 Exceptions.printStackTrace(ex);
-                if (continueOnError(handler, file, null)) {
+                if (continueOnError(task.element(), List.of())) {
                     next();
                 } else {
                     done();
                 }
             }
         }
-
-        private boolean continueOnError(FileHandler handler, FileObject file, CallArguments args) {
+      
+        private boolean continueOnError(ExecutionElement element, List<Value> args) {
             return ProjectDialogManager.getDefault().continueOnError(
-                    DefaultPraxisProject.this, file, args, level);
+                    DefaultPraxisProject.this, level, element, args);
         }
 
-        private void logWarnings(FileHandler handler, FileObject file) {
-            List<String> wl = handler.getWarnings();
+        private void logWarnings(ExecutionElement element, List<String> wl) {
             if (wl == null || wl.isEmpty()) {
                 return;
             }
             if (warnings == null) {
-                warnings = new LinkedHashMap<FileObject, List<String>>();
+                warnings = new LinkedHashMap<>();
             }
-            warnings.put(file, wl);
+            warnings.put(element, wl);
         }
 
         private void done() {
@@ -448,58 +429,5 @@ public class DefaultPraxisProject extends PraxisProject {
             actionsEnabled = true;
         }
 
-        private FileHandler findHandler(ExecutionLevel level, FileObject file) {
-
-            if (projectFile.equals(file)) {
-                return new ProjectFileHandler();
-            }
-            
-            if (file.isFolder()
-                    && file.equals(directory.getFileObject(LIBS_PATH))) {
-                return new LibrariesFileHandler();
-            }
-
-            FileHandler handler = null;
-            for (FileHandler.Provider provider : handlers) {
-                try {
-                    handler = provider.getHandler(DefaultPraxisProject.this, level, file);
-                } catch (Exception ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-                if (handler != null) {
-                    break;
-                }
-            }
-            if (handler == null) {
-                handler = new DefaultFileHandler(DefaultPraxisProject.this, level, file);
-            }
-            return handler;
-        }
-
-        private class CallbackImpl implements Callback {
-
-            private FileHandler handler;
-            private FileObject file;
-
-            private CallbackImpl(FileHandler handler, FileObject file) {
-                this.handler = handler;
-                this.file = file;
-            }
-
-            @Override
-            public void onReturn(CallArguments args) {
-                logWarnings(handler, file);
-                next();
-            }
-
-            @Override
-            public void onError(CallArguments args) {
-                if (continueOnError(handler, file, args)) {
-                    next();
-                } else {
-                    done();
-                }
-            }
-        }
     }
 }

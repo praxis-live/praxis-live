@@ -40,7 +40,6 @@ import org.praxislive.code.ClassBodyContext;
 import org.praxislive.core.ControlAddress;
 import org.praxislive.core.ArgumentInfo;
 import org.praxislive.ide.project.api.PraxisProject;
-import org.praxislive.ide.project.api.PraxisProjectProperties;
 import org.netbeans.api.actions.Openable;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.JavaClassPathConstants;
@@ -61,6 +60,7 @@ import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.MultiFileLoader;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle.Messages;
+import org.praxislive.ide.project.api.ProjectProperties;
 
 @Messages({
     "LBL_PXJ_LOADER=Files of PXJ"
@@ -106,7 +106,7 @@ public class PXJDataObject extends MultiDataObject {
     private final ClassBodyContext<?> classBodyContext;
     private final ControlAddress controlAddress;
     private final PraxisProject project;
-    private final PraxisProjectProperties projectProps;
+    private final ProjectProperties projectProps;
     private final LibsListener libsListener;
     private final ClassPath sourceClasspath;
     
@@ -168,11 +168,11 @@ public class PXJDataObject extends MultiDataObject {
         }
     }
 
-    private PraxisProjectProperties findProjectProperties(PraxisProject project) {
-        return project.getLookup().lookup(PraxisProjectProperties.class);
+    private ProjectProperties findProjectProperties(PraxisProject project) {
+        return project.getLookup().lookup(ProjectProperties.class);
     }
 
-    private ClassPath createCompileClasspath(PraxisProjectProperties props) {
+    private ClassPath createCompileClasspath(ProjectProperties props) {
         List<FileObject> libs = props.getLibraries();
         if (libs.isEmpty()) {
             return ClassPathRegistry.getInstance().getCompileClasspath();
@@ -454,7 +454,7 @@ public class PXJDataObject extends MultiDataObject {
 
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
-            if (PraxisProjectProperties.PROP_LIBRARIES.equals(evt.getPropertyName())) {
+            if (ProjectProperties.PROP_LIBRARIES.equals(evt.getPropertyName())) {
                 compileClasspath = createCompileClasspath(projectProps);
             }
         }

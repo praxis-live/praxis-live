@@ -30,7 +30,7 @@ import javax.swing.text.Style;
 import javax.swing.text.html.HTMLDocument;
 import org.openide.util.Exceptions;
 import org.praxislive.ide.core.Core;
-import org.praxislive.ide.core.ui.api.StartPagePanelProvider;
+import org.praxislive.ide.core.ui.spi.StartPagePanelProvider;
 
 /**
  *

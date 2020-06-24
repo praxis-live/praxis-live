@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2014 Neil C Smith.
+ * Copyright 2020 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -24,9 +24,8 @@ package org.praxislive.ide.model;
 
 /**
  *
- * @author Neil C Smith (http://neilcsmith.net)
  */
-public class Connection {
+public final class Connection {
 
     private final String child1;
     private final String port1;

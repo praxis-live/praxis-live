@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Neil C Smith.
+ * Copyright 2020 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -23,44 +23,51 @@ package org.praxislive.ide.project.ui;
 
 import java.util.List;
 import java.util.Map;
-import org.praxislive.core.CallArguments;
 import org.praxislive.ide.project.api.ExecutionLevel;
 import org.praxislive.ide.project.api.PraxisProject;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.praxislive.core.Value;
+import org.praxislive.ide.project.api.ExecutionElement;
 
 /**
  *
- * @author Neil C Smith <http://neilcsmith.net>
  */
 public class ProjectDialogManager {
-    
+
     private final static ProjectDialogManager INSTANCE = new ProjectDialogManager();
-    
-    
+
     private ProjectDialogManager() {
-        
+
     }
-    
+
     public void showWarningsDialog(PraxisProject project,
-            Map<FileObject, List<String>> warnings,
+            Map<ExecutionElement, List<String>> warnings,
             ExecutionLevel level) {
         WarningsDialogPanel panel = new WarningsDialogPanel(project, warnings, level);
         NotifyDescriptor nd = new NotifyDescriptor.Message(panel, NotifyDescriptor.WARNING_MESSAGE);
         DialogDisplayer.getDefault().notify(nd);
     }
-    
-    public boolean continueOnError(PraxisProject project, FileObject file, CallArguments args, ExecutionLevel level) {
+
+    public boolean continueOnError(PraxisProject project, ExecutionLevel level, ExecutionElement element, List<Value> args) {
         StringBuilder sb = new StringBuilder();
-        String path = FileUtil.getRelativePath(project.getProjectDirectory(), file);
-        if (path == null) {
-            path = file.getPath();
+        if (element instanceof ExecutionElement.File) {
+            var file = ((ExecutionElement.File) element).file();
+            var path = FileUtil.getRelativePath(project.getProjectDirectory(), file);
+            if (path == null) {
+                path = file.getPath();
+            }
+            sb.append("Error executing ");
+            sb.append(path);
+            sb.append(".\n");
+        } else if (element instanceof ExecutionElement.Line) {
+            var cmd = ((ExecutionElement.Line) element).line();
+            sb.append("Error executing ");
+            sb.append(cmd);
+            sb.append(".\n");
         }
-        sb.append("Error executing ");
-        sb.append(path);
-        sb.append(".\n");
+
         sb.append("Continue ");
         if (level == ExecutionLevel.BUILD) {
             sb.append("building");
@@ -79,10 +86,9 @@ public class ProjectDialogManager {
             return false;
         }
     }
-    
-    
+
     public static ProjectDialogManager getDefault() {
         return INSTANCE;
     }
-    
+
 }

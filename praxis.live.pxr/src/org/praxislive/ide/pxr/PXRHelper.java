@@ -31,11 +31,11 @@ import org.praxislive.core.protocols.ContainerProtocol;
 import org.praxislive.core.services.RootManagerService;
 import org.praxislive.core.types.PString;
 import org.praxislive.ide.core.api.Callback;
-import org.praxislive.ide.core.api.ExtensionProvider;
+import org.praxislive.ide.core.spi.ExtensionProvider;
 import org.praxislive.ide.core.api.HubUnavailableException;
 import org.praxislive.ide.model.Connection;
 import org.praxislive.ide.model.ProxyException;
-import org.praxislive.ide.util.AbstractHelperComponent;
+import org.praxislive.ide.core.api.AbstractHelperComponent;
 import org.openide.util.Exceptions;
 import org.openide.util.lookup.ServiceProvider;
 

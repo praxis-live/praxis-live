@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Neil C Smith.
+ * Copyright 2020 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -19,31 +19,23 @@
  * Please visit http://neilcsmith.net if you need additional information or
  * have any questions.
  */
+package org.praxislive.ide.project.spi;
 
-package org.praxislive.ide.project.api;
-
-import java.util.Collections;
-import java.util.List;
-import org.praxislive.ide.core.api.Callback;
-import org.openide.filesystems.FileObject;
+import java.util.Optional;
+import org.praxislive.ide.project.api.ExecutionElement;
+import org.praxislive.ide.project.api.ExecutionLevel;
+import org.praxislive.ide.project.api.PraxisProject;
 
 /**
  *
- * @author Neil C Smith (http://neilcsmith.net)
  */
-public abstract class FileHandler {
+public interface FileHandler extends ElementHandler {
 
-
-    public abstract void process(Callback callback) throws Exception;
-
-    public List<String> getWarnings() {
-        List<String> list = Collections.emptyList();
-        return list;
-    }
-
+    
     public static interface Provider {
 
-        public FileHandler getHandler(PraxisProject project, ExecutionLevel level, FileObject file);
+        public Optional<FileHandler> createHandler(PraxisProject project,
+                ExecutionLevel level, ExecutionElement.File element);
 
     }
 }

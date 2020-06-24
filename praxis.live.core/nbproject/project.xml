@@ -146,6 +146,7 @@
             </module-dependencies>
             <public-packages>
                 <package>org.praxislive.ide.core.api</package>
+                <package>org.praxislive.ide.core.spi</package>
             </public-packages>
         </data>
     </configuration>

@@ -30,21 +30,21 @@ import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.AbstractTableModel;
-import org.praxislive.ide.core.HubSettings;
-import org.praxislive.ide.core.HubSlaveInfo;
+//import org.praxislive.ide.core.HubSettings;
+//import org.praxislive.ide.core.HubSlaveInfo;
 
 final class NetworkPanel extends javax.swing.JPanel {
 
     private final static int DEFAULT_PORT = 13178;
 
     private final NetworkController controller;
-    private final SlaveTableModel slaveModel;
+//    private final SlaveTableModel slaveModel;
 
     NetworkPanel(NetworkController ctrl) {
         this.controller = ctrl;
         initComponents();
-        slaveModel = new SlaveTableModel();
-        slaveTable.setModel(slaveModel);
+//        slaveModel = new SlaveTableModel();
+//        slaveTable.setModel(slaveModel);
         slaveTable.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
 
             @Override
@@ -232,49 +232,49 @@ final class NetworkPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_enableBoxActionPerformed
 
     private void addSlaveBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addSlaveBtnActionPerformed
-        slaveModel.addSlave();
+//        slaveModel.addSlave();
     }//GEN-LAST:event_addSlaveBtnActionPerformed
 
     private void removeSlaveBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeSlaveBtnActionPerformed
-        int sel = slaveTable.getSelectedRow();
-        if (sel > -1) {
-            slaveModel.removeSlave(sel);
-        }
+//        int sel = slaveTable.getSelectedRow();
+//        if (sel > -1) {
+//            slaveModel.removeSlave(sel);
+//        }
     }//GEN-LAST:event_removeSlaveBtnActionPerformed
 
     void load() {
-        HubSettings settings = HubSettings.getDefault();
-        enableBox.setSelected(settings.isDistributedHub());
-        enableBoxActionPerformed(null);
-        File launcher = settings.getLocalSlaveLauncher();
-        if (launcher == null) {
-            launcherLocation.setText("");
-        } else {
-            launcherLocation.setText(launcher.getAbsolutePath());
-        }
-        slaveModel.load(settings.getSlaveInfo());
-        fileServerCheckBox.setSelected(settings.isRunFileServer());
-        preferLocalCheckBox.setSelected(settings.isPreferLocalFiles());
-        masterCompilerCheckBox.setSelected(settings.isUseMasterCompiler());
+//        HubSettings settings = HubSettings.getDefault();
+//        enableBox.setSelected(settings.isDistributedHub());
+//        enableBoxActionPerformed(null);
+//        File launcher = settings.getLocalSlaveLauncher();
+//        if (launcher == null) {
+//            launcherLocation.setText("");
+//        } else {
+//            launcherLocation.setText(launcher.getAbsolutePath());
+//        }
+//        slaveModel.load(settings.getSlaveInfo());
+//        fileServerCheckBox.setSelected(settings.isRunFileServer());
+//        preferLocalCheckBox.setSelected(settings.isPreferLocalFiles());
+//        masterCompilerCheckBox.setSelected(settings.isUseMasterCompiler());
     }
 
     void store() {
-        HubSettings settings = HubSettings.getDefault();
-        settings.setDistributedHub(enableBox.isSelected());
-        settings.setSlaveInfo(slaveModel.slaves);
-        String path = launcherLocation.getText().trim();
-        if (!path.isEmpty()) {
-            File l = new File(path);
-            l = l.getAbsoluteFile();
-            if (l.exists()) {
-                settings.setLocalSlaveLauncher(l);
-            }
-        } else {
-            settings.setLocalSlaveLauncher(null);
-        }
-        settings.setRunFileServer(fileServerCheckBox.isSelected());
-        settings.setPreferLocalFiles(preferLocalCheckBox.isSelected());
-        settings.setUseMasterCompiler(masterCompilerCheckBox.isSelected());
+//        HubSettings settings = HubSettings.getDefault();
+//        settings.setDistributedHub(enableBox.isSelected());
+//        settings.setSlaveInfo(slaveModel.slaves);
+//        String path = launcherLocation.getText().trim();
+//        if (!path.isEmpty()) {
+//            File l = new File(path);
+//            l = l.getAbsoluteFile();
+//            if (l.exists()) {
+//                settings.setLocalSlaveLauncher(l);
+//            }
+//        } else {
+//            settings.setLocalSlaveLauncher(null);
+//        }
+//        settings.setRunFileServer(fileServerCheckBox.isSelected());
+//        settings.setPreferLocalFiles(preferLocalCheckBox.isSelected());
+//        settings.setUseMasterCompiler(masterCompilerCheckBox.isSelected());
     }
 
     boolean valid() {
@@ -297,185 +297,185 @@ final class NetworkPanel extends javax.swing.JPanel {
     private javax.swing.JTable slaveTable;
     // End of variables declaration//GEN-END:variables
 
-    private class SlaveTableModel extends AbstractTableModel {
+//    private class SlaveTableModel extends AbstractTableModel {
+//
+//        private final List<?> slaves;
+//
+//        private SlaveTableModel() {
+//            slaves = new ArrayList<>();
+//        }
+//
+////        private void load(List<HubSlaveInfo> storedSlaves) {
+////            slaves.clear();
+////            slaves.addAll(storedSlaves);
+////            fireTableDataChanged();
+////        }
+////
+////        private void addSlave() {
+////            HubSlaveInfo slave = new HubSlaveInfo("localhost", DEFAULT_PORT, "*", "*", false);
+////            slaves.add(slave);
+////            fireTableRowsInserted(slaves.size() - 1, slaves.size() - 1);
+////        }
+//
+//        private void removeSlave(int index) {
+//            slaves.remove(index);
+//            fireTableRowsDeleted(index, index);
+//        }
+//
+//        @Override
+//        public boolean isCellEditable(int arg0, int arg1) {
+//            return true;
+//        }
+//
+//        @Override
+//        public int getRowCount() {
+//            return slaves.size();
+//        }
+//
+//        @Override
+//        public int getColumnCount() {
+//            return 5;
+//        }
+//
+//        @Override
+//        public String getColumnName(int column) {
+//            switch (column) {
+//                case 0:
+//                    return "Host";
+//                case 1:
+//                    return "Port";
+//                case 2:
+//                    return "ID Pattern";
+//                case 3:
+//                    return "Type Pattern";
+//                case 4:
+//                    return "Autostart";
+//                default:
+//                    return "";
+//            }
+//        }
+//
+//        @Override
+//        public Class<?> getColumnClass(int columnIndex) {
+//            switch (columnIndex) {
+//                case 4:
+//                    return Boolean.class;
+//                default:
+//                    return String.class;
+//            }
+//        }
 
-        private final List<HubSlaveInfo> slaves;
+//        @Override
+//        public Object getValueAt(int row, int column) {
+////            HubSlaveInfo info = slaves.get(row);
+////            switch (column) {
+////                case 0:
+////                    return info.getHost();
+////                case 1:
+////                    return info.getPort();
+////                case 2:
+////                    return info.getId();
+////                case 3:
+////                    return info.getType();
+////                case 4:
+////                    return info.isAutoStart();
+////            }
+//            throw new ArrayIndexOutOfBoundsException();
+//        }
 
-        private SlaveTableModel() {
-            slaves = new ArrayList<>();
-        }
+//        @Override
+//        public void setValueAt(Object val, final int row, final int column) {
+//            try {
+//                switch (column) {
+//                    case 0:
+//                        updateHost(val.toString(), row);
+//                        break;
+//                    case 1:
+//                        updatePort(val.toString(), row);
+//                        break;
+//                    case 2:
+//                        updateID(val.toString(), row);
+//                        break;
+//                    case 3:
+//                        updateType(val.toString(), row);
+//                        break;
+//                    case 4:
+//                        updateAutostart((Boolean) val, row);
+//                        break;
+//                }
+//                fireTableRowsUpdated(row, row);
+//                controller.changed();
+//            } catch (Exception ex) {
+//                EventQueue.invokeLater(new Runnable() {
+//
+//                    @Override
+//                    public void run() {
+//                        slaveTable.editCellAt(row, column);
+//                    }
+//                });
+//                
+//            }
+//
+//        }
 
-        private void load(List<HubSlaveInfo> storedSlaves) {
-            slaves.clear();
-            slaves.addAll(storedSlaves);
-            fireTableDataChanged();
-        }
+//        private void updateHost(String host, int row) {
+//            HubSlaveInfo oldSlave = slaves.get(row);
+//            if (host.isEmpty()) {
+//                host = "localhost";
+//            }
+//            boolean autostart = oldSlave.isAutoStart() && host.equals("localhost");
+//            HubSlaveInfo slave = new HubSlaveInfo(host,
+//                    oldSlave.getPort(),
+//                    oldSlave.getId(),
+//                    oldSlave.getType(),
+//                    autostart);
+//            slaves.set(row, slave);
+//        }
+//
+//        private void updatePort(String portString, int row) {
+//            HubSlaveInfo oldSlave = slaves.get(row);
+//            int port = portString.isEmpty() ? DEFAULT_PORT : Integer.parseInt(portString);
+//            HubSlaveInfo slave = new HubSlaveInfo(oldSlave.getHost(),
+//                    port,
+//                    oldSlave.getId(),
+//                    oldSlave.getType(),
+//                    oldSlave.isAutoStart());
+//            slaves.set(row, slave);
+//        }
+//
+//        private void updateID(String id, int row) {
+//            HubSlaveInfo oldSlave = slaves.get(row);
+//            id = id.isEmpty() ? "*" : id;
+//            HubSlaveInfo slave = new HubSlaveInfo(oldSlave.getHost(),
+//                    oldSlave.getPort(),
+//                    id,
+//                    oldSlave.getType(),
+//                    oldSlave.isAutoStart());
+//            slaves.set(row, slave);
+//        }
+//
+//        private void updateType(String type, int row) {
+//            HubSlaveInfo oldSlave = slaves.get(row);
+//            type = type.isEmpty() ? "*" : type;
+//            HubSlaveInfo slave = new HubSlaveInfo(oldSlave.getHost(),
+//                    oldSlave.getPort(),
+//                    oldSlave.getId(),
+//                    type,
+//                    oldSlave.isAutoStart());
+//            slaves.set(row, slave);
+//        }
+//
+//        private void updateAutostart(boolean autostart, int row) {
+//            HubSlaveInfo oldSlave = slaves.get(row);
+//            autostart = autostart && "localhost".equals(oldSlave.getHost());
+//            HubSlaveInfo slave = new HubSlaveInfo(oldSlave.getHost(),
+//                    oldSlave.getPort(),
+//                    oldSlave.getId(),
+//                    oldSlave.getType(),
+//                    autostart);
+//            slaves.set(row, slave);
+//        }
 
-        private void addSlave() {
-            HubSlaveInfo slave = new HubSlaveInfo("localhost", DEFAULT_PORT, "*", "*", false);
-            slaves.add(slave);
-            fireTableRowsInserted(slaves.size() - 1, slaves.size() - 1);
-        }
-
-        private void removeSlave(int index) {
-            slaves.remove(index);
-            fireTableRowsDeleted(index, index);
-        }
-
-        @Override
-        public boolean isCellEditable(int arg0, int arg1) {
-            return true;
-        }
-
-        @Override
-        public int getRowCount() {
-            return slaves.size();
-        }
-
-        @Override
-        public int getColumnCount() {
-            return 5;
-        }
-
-        @Override
-        public String getColumnName(int column) {
-            switch (column) {
-                case 0:
-                    return "Host";
-                case 1:
-                    return "Port";
-                case 2:
-                    return "ID Pattern";
-                case 3:
-                    return "Type Pattern";
-                case 4:
-                    return "Autostart";
-                default:
-                    return "";
-            }
-        }
-
-        @Override
-        public Class<?> getColumnClass(int columnIndex) {
-            switch (columnIndex) {
-                case 4:
-                    return Boolean.class;
-                default:
-                    return String.class;
-            }
-        }
-
-        @Override
-        public Object getValueAt(int row, int column) {
-            HubSlaveInfo info = slaves.get(row);
-            switch (column) {
-                case 0:
-                    return info.getHost();
-                case 1:
-                    return info.getPort();
-                case 2:
-                    return info.getId();
-                case 3:
-                    return info.getType();
-                case 4:
-                    return info.isAutoStart();
-            }
-            throw new ArrayIndexOutOfBoundsException();
-        }
-
-        @Override
-        public void setValueAt(Object val, final int row, final int column) {
-            try {
-                switch (column) {
-                    case 0:
-                        updateHost(val.toString(), row);
-                        break;
-                    case 1:
-                        updatePort(val.toString(), row);
-                        break;
-                    case 2:
-                        updateID(val.toString(), row);
-                        break;
-                    case 3:
-                        updateType(val.toString(), row);
-                        break;
-                    case 4:
-                        updateAutostart((Boolean) val, row);
-                        break;
-                }
-                fireTableRowsUpdated(row, row);
-                controller.changed();
-            } catch (Exception ex) {
-                EventQueue.invokeLater(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        slaveTable.editCellAt(row, column);
-                    }
-                });
-                
-            }
-
-        }
-
-        private void updateHost(String host, int row) {
-            HubSlaveInfo oldSlave = slaves.get(row);
-            if (host.isEmpty()) {
-                host = "localhost";
-            }
-            boolean autostart = oldSlave.isAutoStart() && host.equals("localhost");
-            HubSlaveInfo slave = new HubSlaveInfo(host,
-                    oldSlave.getPort(),
-                    oldSlave.getId(),
-                    oldSlave.getType(),
-                    autostart);
-            slaves.set(row, slave);
-        }
-
-        private void updatePort(String portString, int row) {
-            HubSlaveInfo oldSlave = slaves.get(row);
-            int port = portString.isEmpty() ? DEFAULT_PORT : Integer.parseInt(portString);
-            HubSlaveInfo slave = new HubSlaveInfo(oldSlave.getHost(),
-                    port,
-                    oldSlave.getId(),
-                    oldSlave.getType(),
-                    oldSlave.isAutoStart());
-            slaves.set(row, slave);
-        }
-
-        private void updateID(String id, int row) {
-            HubSlaveInfo oldSlave = slaves.get(row);
-            id = id.isEmpty() ? "*" : id;
-            HubSlaveInfo slave = new HubSlaveInfo(oldSlave.getHost(),
-                    oldSlave.getPort(),
-                    id,
-                    oldSlave.getType(),
-                    oldSlave.isAutoStart());
-            slaves.set(row, slave);
-        }
-
-        private void updateType(String type, int row) {
-            HubSlaveInfo oldSlave = slaves.get(row);
-            type = type.isEmpty() ? "*" : type;
-            HubSlaveInfo slave = new HubSlaveInfo(oldSlave.getHost(),
-                    oldSlave.getPort(),
-                    oldSlave.getId(),
-                    type,
-                    oldSlave.isAutoStart());
-            slaves.set(row, slave);
-        }
-
-        private void updateAutostart(boolean autostart, int row) {
-            HubSlaveInfo oldSlave = slaves.get(row);
-            autostart = autostart && "localhost".equals(oldSlave.getHost());
-            HubSlaveInfo slave = new HubSlaveInfo(oldSlave.getHost(),
-                    oldSlave.getPort(),
-                    oldSlave.getId(),
-                    oldSlave.getType(),
-                    autostart);
-            slaves.set(row, slave);
-        }
-
-    }
+//    }
 
 }

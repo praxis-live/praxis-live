@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Neil C Smith.
+ * Copyright 2020 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -19,13 +19,26 @@
  * Please visit http://neilcsmith.net if you need additional information or
  * have any questions.
  */
-
 package org.praxislive.ide.project.api;
 
 /**
- *
- * @author Neil C Smith (http://neilcsmith.net)
+ * The three main levels of project execution.
  */
 public enum ExecutionLevel {
-    BUILD, RUN;
+
+    /**
+     * The configure level is for hub setup, process start and required
+     * configuration.
+     */
+    CONFIGURE,
+    /**
+     * The build level is for building of user roots and components.
+     */
+    BUILD,
+    /**
+     * The run level is for starting user roots or executing commands related to
+     * running the project. Lines and files in this level may be executed
+     * multiple times.
+     */
+    RUN;
 }

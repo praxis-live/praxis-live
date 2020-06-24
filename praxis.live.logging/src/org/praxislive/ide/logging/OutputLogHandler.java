@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 2015 Neil C Smith.
+ * Copyright 2020 Neil C Smith.
  * 
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -23,28 +23,28 @@ package org.praxislive.ide.logging;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
+import org.openide.util.Lookup;
 import org.praxislive.core.Value;
 import org.praxislive.core.ComponentAddress;
 import org.praxislive.core.types.PError;
-import org.praxislive.ide.core.api.LogHandler;
-import org.praxislive.logging.LogLevel;
+import org.praxislive.ide.core.spi.LogHandler;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.windows.FoldHandle;
 import org.openide.windows.IOFolding;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 import org.openide.windows.OutputWriter;
+import org.praxislive.core.services.LogLevel;
 
 /**
  *
- * @author Neil C Smith <http://neilcsmith.net>
  */
-@ServiceProvider(service = LogHandler.class)
-public class OutputLogHandler extends LogHandler {
+public class OutputLogHandler implements LogHandler {
 
     private final Map<String, InputOutput> ioTabs;
     
-    public OutputLogHandler() {
+    private OutputLogHandler() {
         ioTabs = new HashMap<String, InputOutput>();
     }
     
@@ -57,7 +57,7 @@ public class OutputLogHandler extends LogHandler {
         if (!getLevel().isLoggable(level)) {
             return;
         }
-        String rootID = source.getRootID();
+        String rootID = source.rootID();
         InputOutput ioTab = findIOTab(rootID);
         OutputWriter writer;
         if (level == LogLevel.ERROR) {
@@ -99,17 +99,27 @@ public class OutputLogHandler extends LogHandler {
     }
     
     private void writePError(InputOutput ioTab, OutputWriter writer, PError err) {
-        writer.print(err.getType().getSimpleName());
+        writer.print(err.exceptionType().getSimpleName());
         writer.print(" - ");
-        writer.print(err.getMessage());
+        writer.print(err.message());
         writer.println();
-        Exception ex = err.getWrappedException();
+        Exception ex = err.exception().orElse(null);
         if (ex != null && IOFolding.isSupported(ioTab)) {
             FoldHandle fold = IOFolding.startFold(ioTab, false);
             ex.printStackTrace(writer);
             writer.println();
             fold.finish();
         }
+    }
+    
+    @ServiceProvider(service = LogHandler.Provider.class)
+    public static class Provider implements LogHandler.Provider {
+
+        @Override
+        public Optional<LogHandler> createLogHandler(Lookup context) {
+            return Optional.of(new OutputLogHandler());
+        }
+        
     }
     
 }

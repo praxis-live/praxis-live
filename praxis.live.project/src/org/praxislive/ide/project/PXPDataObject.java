@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Neil C Smith.
+ * Copyright 2020 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -28,11 +28,9 @@ import org.openide.loaders.DataNode;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.MultiFileLoader;
-import org.openide.nodes.CookieSet;
 import org.openide.nodes.Node;
 import org.openide.nodes.Children;
 import org.openide.util.Lookup;
-import org.openide.text.DataEditorSupport;
 
 public class PXPDataObject extends MultiDataObject {
 

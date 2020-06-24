@@ -35,8 +35,8 @@ import org.openide.*;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.lookup.ServiceProvider;
-import org.praxislive.ide.core.api.CoreInfo;
-import org.praxislive.ide.core.ui.api.StartPagePanelProvider;
+import org.praxislive.ide.core.api.IDE;
+import org.praxislive.ide.core.ui.spi.StartPagePanelProvider;
 import org.praxislive.video.gstreamer.configuration.GStreamerSettings;
 
 /**
@@ -72,7 +72,7 @@ public class GStreamerStartPagePanel extends javax.swing.JPanel {
         } else {
             downloadLink = null;
             String link = "";
-            Preferences info = CoreInfo.getDefault().getPreferences();
+            Preferences info = IDE.getDefault().getPreferences();
             if (Platform.isWindows()) {
                 if (Platform.is64Bit()) {
                     link = info.get(KEY_DOWNLOAD_WIN64, "");

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Neil C Smith.
+ * Copyright 2020 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -19,38 +19,26 @@
  * Please visit http://neilcsmith.net if you need additional information or
  * have any questions.
  */
+package org.praxislive.ide.project.spi;
 
-package org.praxislive.ide.core.ui;
-
-import org.praxislive.core.Component;
-import org.praxislive.ide.core.api.ExtensionProvider;
-import org.praxislive.ide.util.AbstractHelperComponent;
-import org.openide.util.lookup.ServiceProvider;
+import java.util.Optional;
+import org.praxislive.ide.project.api.ExecutionElement;
+import org.praxislive.ide.project.api.ExecutionLevel;
+import org.praxislive.ide.project.api.PraxisProject;
 
 /**
  *
- * @author Neil C Smith (http://neilcsmith.net)
  */
-class CoreHelper extends AbstractHelperComponent {
-
-    private final static CoreHelper INSTANCE = new CoreHelper();
-
-    private CoreHelper() {
-
+public interface LineHandler extends ElementHandler {
+    
+    public default String rewrite(String line) {
+        return line;
     }
 
-    public static CoreHelper getDefault() {
-        return INSTANCE;
-    }
+    public static interface Provider {
 
-    @ServiceProvider(service=ExtensionProvider.class)
-    public static class Provider implements ExtensionProvider {
-
-        @Override
-        public Component getExtensionComponent() {
-            return getDefault();
-        }
+        public Optional<LineHandler> createHandler(PraxisProject project,
+                ExecutionLevel level, ExecutionElement.Line line);
 
     }
-
 }

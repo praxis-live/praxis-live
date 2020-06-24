@@ -1,12 +1,23 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
-/*
- * FilesCustomizer.java
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Created on 03-May-2011, 20:02:15
+ * Copyright 2020 Neil C Smith.
+ *
+ * This code is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License version 3 only, as
+ * published by the Free Software Foundation.
+ *
+ * This code is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ * version 3 for more details.
+ *
+ * You should have received a copy of the GNU General Public License version 3
+ * along with this work; if not, see http://www.gnu.org/licenses/
+ *
+ *
+ * Please visit http://neilcsmith.net if you need additional information or
+ * have any questions.
  */
 package org.praxislive.ide.project.ui;
 
@@ -15,13 +26,11 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import javax.swing.Action;
 import javax.swing.ListSelectionModel;
 import org.praxislive.ide.project.DefaultPraxisProject;
 import org.praxislive.ide.project.api.ExecutionLevel;
-import org.praxislive.ide.project.api.PraxisProjectProperties;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.ListView;
 import org.openide.filesystems.FileChooserBuilder;
@@ -33,32 +42,33 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
+import org.praxislive.ide.project.api.ExecutionElement;
+import org.praxislive.ide.project.api.ProjectProperties;
 
 /**
  *
- * @author Neil C Smith (http://neilcsmith.net)
  */
-class FilesCustomizer extends javax.swing.JPanel implements ExplorerManager.Provider {
+class ElementsCustomizer extends javax.swing.JPanel implements ExplorerManager.Provider {
 
     private ExplorerManager manager;
     private DefaultPraxisProject project;
     private ExecutionLevel level;
-    private PraxisProjectProperties props;
-    private List<FileObject> files;
-    private Files children;
+    private ProjectProperties props;
+    private List<ExecutionElement> elements;
+    private Elements children;
     private Node root;
 
     /** Creates new form FilesCustomizer */
-    FilesCustomizer(DefaultPraxisProject project, ExecutionLevel level) {
+    ElementsCustomizer(DefaultPraxisProject project, ExecutionLevel level) {
         if (project == null || level == null) {
             throw new NullPointerException();
         }
         this.project = project;
         this.level = level;
-        props = project.getLookup().lookup(PraxisProjectProperties.class);
+        props = project.getLookup().lookup(ProjectProperties.class);
         manager = new ExplorerManager();
-        files = new ArrayList<FileObject>();
-        children = new Files();
+        elements = new ArrayList<>();
+        children = new Elements();
         root = new AbstractNode(children);
         refreshList();
         manager.setRootContext(root);
@@ -68,19 +78,19 @@ class FilesCustomizer extends javax.swing.JPanel implements ExplorerManager.Prov
     }
 
     final void refreshList() {
-        files.clear();
+        elements.clear();
         if (props != null) {
-            files.addAll(props.getFiles(level));
+            elements.addAll(props.getElements(level));
         }
         refreshView();
     }
 
     private void refreshView() {
-        children.setFiles(files);
+        children.setFiles(elements);
     }
 
-    FileObject[] getFiles() {
-        return files.toArray(new FileObject[files.size()]);
+    List<ExecutionElement> getElements() {
+        return List.copyOf(elements);
     }
 
     /** This method is called from within the constructor to
@@ -93,17 +103,17 @@ class FilesCustomizer extends javax.swing.JPanel implements ExplorerManager.Prov
     private void initComponents() {
 
         fileList = new ListView();
-        addButton = new javax.swing.JButton();
+        addFileButton = new javax.swing.JButton();
         removeButton = new javax.swing.JButton();
 
-        addButton.setText(org.openide.util.NbBundle.getMessage(FilesCustomizer.class, "FilesCustomizer.addButton.text")); // NOI18N
-        addButton.addActionListener(new java.awt.event.ActionListener() {
+        addFileButton.setText(org.openide.util.NbBundle.getMessage(ElementsCustomizer.class, "ElementsCustomizer.addFileButton.text")); // NOI18N
+        addFileButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                addButtonActionPerformed(evt);
+                addFileButtonActionPerformed(evt);
             }
         });
 
-        removeButton.setText(org.openide.util.NbBundle.getMessage(FilesCustomizer.class, "FilesCustomizer.removeButton.text")); // NOI18N
+        removeButton.setText(org.openide.util.NbBundle.getMessage(ElementsCustomizer.class, "ElementsCustomizer.removeButton.text")); // NOI18N
         removeButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 removeButtonActionPerformed(evt);
@@ -118,8 +128,8 @@ class FilesCustomizer extends javax.swing.JPanel implements ExplorerManager.Prov
                 .addComponent(fileList, javax.swing.GroupLayout.PREFERRED_SIZE, 312, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(addButton, javax.swing.GroupLayout.DEFAULT_SIZE, 70, Short.MAX_VALUE)
-                    .addComponent(removeButton, javax.swing.GroupLayout.PREFERRED_SIZE, 70, Short.MAX_VALUE))
+                    .addComponent(addFileButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(removeButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -127,15 +137,15 @@ class FilesCustomizer extends javax.swing.JPanel implements ExplorerManager.Prov
             .addComponent(fileList, javax.swing.GroupLayout.DEFAULT_SIZE, 300, Short.MAX_VALUE)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(addButton)
+                .addComponent(addFileButton)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(removeButton)
                 .addContainerGap(224, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
-    private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
-        FileChooserBuilder fcb = new FileChooserBuilder(FilesCustomizer.class); // use project specific String?
+    private void addFileButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addFileButtonActionPerformed
+        FileChooserBuilder fcb = new FileChooserBuilder(ElementsCustomizer.class); // use project specific String?
         fcb.setFilesOnly(true);
         fcb.setTitle("Add file");
         fcb.setApproveText("Add");
@@ -145,11 +155,11 @@ class FilesCustomizer extends javax.swing.JPanel implements ExplorerManager.Prov
         if (add != null) {
             FileObject file = FileUtil.toFileObject(add);
             if (validateFile(file)) {
-                files.add(file);
+                elements.add(ExecutionElement.forFile(file));
                 refreshView();
             }
         }
-    }//GEN-LAST:event_addButtonActionPerformed
+    }//GEN-LAST:event_addFileButtonActionPerformed
 
     private boolean validateFile(FileObject file) {
         return FileUtil.isParentOf(project.getProjectDirectory(), file);
@@ -169,15 +179,13 @@ class FilesCustomizer extends javax.swing.JPanel implements ExplorerManager.Prov
     private void removeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeButtonActionPerformed
         Node[] nodes = manager.getSelectedNodes();
         for (Node node : nodes) {
-            FileObject file = ((FileNode) node).getFile();
-//            if (!isConfigFile(file)) {
-                files.remove(file);
-//            }
+            var element = ((ElementNode) node).getElement();
+            elements.remove(element);
         }
         refreshView();
     }//GEN-LAST:event_removeButtonActionPerformed
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton addButton;
+    private javax.swing.JButton addFileButton;
     private javax.swing.JScrollPane fileList;
     private javax.swing.JButton removeButton;
     // End of variables declaration//GEN-END:variables
@@ -209,32 +217,53 @@ class FilesCustomizer extends javax.swing.JPanel implements ExplorerManager.Prov
         }
     }
 
-    private class Files extends Children.Keys<FileObject> {
+    private class Elements extends Children.Keys<ExecutionElement> {
 
-        void setFiles(List<FileObject> keys) {
+        void setFiles(List<ExecutionElement> keys) {
             setKeys(keys);
         }
 
         @Override
-        protected Node[] createNodes(FileObject key) {
-            Node node;
-            if (isConfigFile(key)) {
-                node = new FileNode(key, true);
-            } else {
-                node = new FileNode(key, false);
+        protected Node[] createNodes(ExecutionElement element) {
+            if (element instanceof ExecutionElement.File) {
+                var fileElement = (ExecutionElement.File) element;
+                Node node;
+                if (isConfigFile(fileElement.file())) {
+                    node = new FileNode(fileElement, true);
+                } else {
+                    node = new FileNode(fileElement, false);
+                }
+                return new Node[]{node};
+            } else if (element instanceof ExecutionElement.Line) {
+                
             }
-            return new Node[]{node};
+            return new Node[0];
         }
     }
-
-    private class FileNode extends AbstractNode {
-
-        private FileObject file;
-        private boolean config;
-
-        private FileNode(FileObject file, boolean config) {
+    
+    private class ElementNode extends AbstractNode {
+        
+        private final ExecutionElement element;
+        
+        private ElementNode(ExecutionElement element) {
             super(Children.LEAF);
-            this.file = file;
+            this.element = element;
+        }
+        
+        ExecutionElement getElement() {
+            return element;
+        }
+
+    }
+
+    private class FileNode extends ElementNode {
+
+        private final FileObject file;
+        private final boolean config;
+
+        private FileNode(ExecutionElement.File element, boolean config) {
+            super(element);
+            this.file = element.file();
             this.config = config;
         }
 
@@ -253,14 +282,7 @@ class FilesCustomizer extends javax.swing.JPanel implements ExplorerManager.Prov
             return super.getIcon(type);
         }
 
-        FileObject getFile() {
-            return file;
-        }
-
-        boolean isConfig() {
-            return config;
-        }
-
+        
         @Override
         public String getName() {
             return file.getPath();
@@ -279,8 +301,23 @@ class FilesCustomizer extends javax.swing.JPanel implements ExplorerManager.Prov
                 return null;
             }
         }
+    }
+    
+    private class LineNode extends ElementNode {
+        
+        private final String line;
+        
+        public LineNode(ExecutionElement.Line element) {
+            super(element);
+            this.line = element.line();
+        }
 
-
-
+        @Override
+        public String getDisplayName() {
+            return line;
+        }
+        
+        
+        
     }
 }

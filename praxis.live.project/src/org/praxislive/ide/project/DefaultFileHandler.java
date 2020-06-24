@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Neil C Smith.
+ * Copyright 2020 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -21,67 +21,34 @@
  */
 package org.praxislive.ide.project;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.util.HashSet;
-import java.util.Set;
-import javax.swing.SwingUtilities;
-import org.praxislive.core.CallArguments;
 import org.praxislive.ide.core.api.Callback;
 import org.praxislive.ide.project.api.ExecutionLevel;
-import org.praxislive.ide.project.api.FileHandler;
+import org.praxislive.ide.project.spi.FileHandler;
 import org.praxislive.ide.project.api.PraxisProject;
 import org.openide.filesystems.FileObject;
-import org.openide.util.RequestProcessor;
+import org.praxislive.ide.project.api.ExecutionElement;
 
 /**
  *
- * @author Neil C Smith (http://neilcsmith.net)
  */
-class DefaultFileHandler extends FileHandler {
+class DefaultFileHandler implements FileHandler {
 
-    private static BuildRegistry REGISTRY = new BuildRegistry();
-//    private static RequestProcessor RP = new RequestProcessor();
-    private ExecutionLevel level;
-    private PraxisProject project;
-    private FileObject file;
+    private final PraxisProject project;
+    private final ExecutionLevel level;
+    private final FileObject file;
 
-    DefaultFileHandler(PraxisProject project, ExecutionLevel level, FileObject file) {
+    DefaultFileHandler(PraxisProject project, ExecutionLevel level,
+            ExecutionElement.File fileElement) {
         this.project = project;
-        this.file = file;
         this.level = level;
+        this.file = fileElement.file();
     }
 
     @Override
     public void process(Callback callback) throws Exception {
-        if (level == ExecutionLevel.BUILD) {
-            if (!REGISTRY.addIfAbsent(file)) {
-                
-            }
-        }
         String script = file.asText();
-        script = "set _PWD " + project.getProjectDirectory().getURL().toURI() + "\n" + script;
-        ProjectHelper.getDefault().executeScript(script, callback);
+        script = "set _PWD " + project.getProjectDirectory().toURI() + "\n" + script;
+        project.getLookup().lookup(ProjectHelper.class).executeScript(script, callback);
     }
 
-    private static class BuildRegistry implements PropertyChangeListener {
-
-        private Set<FileObject> files;
-
-        private BuildRegistry() {
-            files = new HashSet<FileObject>();
-            ProjectHelper.getDefault().addPropertyChangeListener(this);
-        }
-
-        private boolean addIfAbsent(FileObject file) {
-            return files.add(file);
-        }
-
-        @Override
-        public void propertyChange(PropertyChangeEvent pce) {
-            if (ProjectHelper.PROP_HUB_CONNECTED.equals(pce.getPropertyName())) {
-                files.clear();
-            }
-        }
-    }
 }

@@ -22,8 +22,8 @@
 package org.praxislive.ide.pxr.gui;
 
 import org.praxislive.core.Component;
-import org.praxislive.ide.core.api.ExtensionProvider;
-import org.praxislive.ide.util.AbstractHelperComponent;
+import org.praxislive.ide.core.spi.ExtensionProvider;
+import org.praxislive.ide.core.api.AbstractHelperComponent;
 import org.openide.util.lookup.ServiceProvider;
 
 /**

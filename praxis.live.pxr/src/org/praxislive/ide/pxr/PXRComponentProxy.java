@@ -57,7 +57,7 @@ import org.praxislive.ide.model.ComponentProxy;
 import org.praxislive.ide.model.ProxyException;
 import org.praxislive.ide.properties.PraxisProperty;
 import org.praxislive.ide.pxr.api.Attributes;
-import org.praxislive.ide.util.ArgumentPropertyAdaptor;
+import org.praxislive.ide.core.api.ValuePropertyAdaptor;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
@@ -95,7 +95,7 @@ public class PXRComponentProxy implements ComponentProxy {
 //    private int listenerCount = 0;
     boolean nodeSyncing;
     boolean parentSyncing;
-    private ArgumentPropertyAdaptor.ReadOnly dynInfoAdaptor;
+    private ValuePropertyAdaptor.ReadOnly dynInfoAdaptor;
 
     PXRComponentProxy(PXRContainerProxy parent, ComponentType type,
             ComponentInfo info) {
@@ -172,7 +172,7 @@ public class PXRComponentProxy implements ComponentProxy {
 
     private void initDynamic() {
         LOG.finest("Setting up dynamic component adaptor");
-        dynInfoAdaptor = new ArgumentPropertyAdaptor.ReadOnly(this, "info", true, ControlBinding.SyncRate.None);
+        dynInfoAdaptor = new ValuePropertyAdaptor.ReadOnly(this, "info", true, ControlBinding.SyncRate.None);
         dynInfoAdaptor.addPropertyChangeListener(new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent evt) {

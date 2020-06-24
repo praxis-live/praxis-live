@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2020 Neil C Smith.
+ * Copyright 2018 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -19,29 +19,22 @@
  * Please visit http://neilcsmith.net if you need additional information or
  * have any questions.
  */
-package org.praxislive.ide.model;
+package org.praxislive.ide.core.ui.spi;
 
-import java.util.stream.Stream;
-import org.praxislive.ide.core.api.Callback;
-import org.praxislive.core.ComponentType;
+import javax.swing.JPanel;
 
 /**
  *
+ * @author Neil C Smith - http://www.neilcsmith.net
  */
-public interface ContainerProxy extends ComponentProxy {
+public interface StartPagePanelProvider {
 
-    public void addChild(String id, ComponentType type, Callback callback);
+    public String getTitle();
 
-    public void removeChild(String id, Callback callback);
-    
-    public ComponentProxy getChild(String id);
+    public JPanel getPanel();
 
-    public Stream<String> children();
-
-    public void connect(Connection connection, Callback callback);
-
-    public void disconnect(Connection connection, Callback callback);
-
-    public Stream<Connection> connections();
+    public default boolean refresh() {
+        return false;
+    }
 
 }

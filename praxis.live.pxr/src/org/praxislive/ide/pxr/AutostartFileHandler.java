@@ -27,7 +27,7 @@ import javax.swing.SwingUtilities;
 import org.praxislive.core.CallArguments;
 import org.praxislive.ide.core.api.Callback;
 import org.praxislive.ide.project.api.ExecutionLevel;
-import org.praxislive.ide.project.api.FileHandler;
+import org.praxislive.ide.project.spi.FileHandler;
 import org.praxislive.ide.project.api.PraxisProject;
 import org.praxislive.ide.model.ProxyException;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -131,7 +131,7 @@ public class AutostartFileHandler extends FileHandler {
     public static class Provider implements FileHandler.Provider {
 
         @Override
-        public FileHandler getHandler(PraxisProject project, ExecutionLevel level, FileObject file) {
+        public FileHandler createHandler(PraxisProject project, ExecutionLevel level, FileObject file) {
             String name = file.getName();
             if (name.endsWith(AUTOSTART_SUFFIX)) {
                 FileObject parent = file.getParent();

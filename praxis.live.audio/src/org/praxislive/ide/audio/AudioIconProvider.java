@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Neil C Smith.
+ * Copyright 2020 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -21,30 +21,29 @@
  */
 package org.praxislive.ide.audio;
 
-import org.praxislive.core.services.ComponentFactory.MetaData;
+import java.awt.Image;
+import java.util.Optional;
+import org.openide.util.ImageUtilities;
 import org.praxislive.core.ComponentType;
-import org.praxislive.ide.components.api.MetaDataDecorator;
-import org.praxislive.ide.components.api.MetaDataRewriter;
 import org.openide.util.lookup.ServiceProvider;
+import org.praxislive.ide.components.api.ComponentIconProvider;
 
 /**
  *
- * @author Neil C Smith
  */
-@ServiceProvider(service=MetaDataRewriter.class)
-public class AudioMetaDataExtender implements MetaDataRewriter {
-    
-    private final static String AUDIO_ICON = 
-            "org/praxislive/ide/audio/resources/audio.png";
+@ServiceProvider(service = ComponentIconProvider.class)
+public class AudioIconProvider implements ComponentIconProvider {
+
+    private final static Image AUDIO_ICON = ImageUtilities.loadImage(
+            "org/praxislive/ide/audio/resources/audio.png");
 
     @Override
-    public <T> MetaData<T> rewrite(ComponentType type, MetaData<T> data) {
-        if ("root:audio".equals(type.toString()) ||
-                type.toString().startsWith("audio:")) {
-            return new MetaDataDecorator<T>(data, new MetaDataDecorator.Icon(AUDIO_ICON));
-        } else {
-            return data;
+    public Optional<Image> getIcon(ComponentType type) {
+        if ("root:audio".equals(type.toString())
+                || type.toString().startsWith("audio:")) {
+            return Optional.of(AUDIO_ICON);
         }
+        return Optional.empty();
     }
-    
+
 }

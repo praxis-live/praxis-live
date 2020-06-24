@@ -47,8 +47,8 @@ public class PraxisCustomizerProvider implements CustomizerProvider,
     private final Category java;
     private final DefaultPraxisProject project;
 
-    private FilesCustomizer buildFiles;
-    private FilesCustomizer runFiles;
+    private ElementsCustomizer buildFiles;
+    private ElementsCustomizer runFiles;
     private LibrariesCustomizer librariesCustomizer;
     private JavaCustomizer javaCustomizer;
 
@@ -94,14 +94,14 @@ public class PraxisCustomizerProvider implements CustomizerProvider,
     public JComponent create(Category category) {
         if (build.equals(category)) {
             if (buildFiles == null) {
-                buildFiles = new FilesCustomizer(project, ExecutionLevel.BUILD);
+                buildFiles = new ElementsCustomizer(project, ExecutionLevel.BUILD);
             } else {
                 buildFiles.refreshList();
             }
             return buildFiles;
         } else if (run.equals(category)) {
             if (runFiles == null) {
-                runFiles = new FilesCustomizer(project, ExecutionLevel.RUN);
+                runFiles = new ElementsCustomizer(project, ExecutionLevel.RUN);
             } else {
                 runFiles.refreshList();
             }
@@ -132,10 +132,10 @@ public class PraxisCustomizerProvider implements CustomizerProvider,
                 return;
             }
             if (buildFiles != null) {
-                props.setProjectFiles(ExecutionLevel.BUILD, buildFiles.getFiles());
+                props.setElements(ExecutionLevel.BUILD, buildFiles.getElements());
             }
             if (runFiles != null) {
-                props.setProjectFiles(ExecutionLevel.RUN, runFiles.getFiles());
+                props.setElements(ExecutionLevel.RUN, runFiles.getElements());
             }
             if (javaCustomizer != null) {
                 javaCustomizer.updateProject();

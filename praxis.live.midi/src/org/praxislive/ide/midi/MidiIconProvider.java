@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Neil C Smith.
+ * Copyright 2020 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -22,6 +22,7 @@
 package org.praxislive.ide.midi;
 
 import java.awt.Image;
+import java.util.Optional;
 import org.praxislive.core.ComponentType;
 import org.praxislive.ide.components.api.ComponentIconProvider;
 import org.openide.util.ImageUtilities;
@@ -29,20 +30,19 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author Neil C Smith <http://neilcsmith.net>
  */
 @ServiceProvider(service = ComponentIconProvider.class)
 public class MidiIconProvider implements ComponentIconProvider {
 
-    private final static Image AUDIO_ICON = ImageUtilities.loadImage(
+    private final static Image MIDI_ICON = ImageUtilities.loadImage(
             "org/praxislive/ide/midi/resources/midi.png", true);
 
     @Override
-    public Image getIcon(ComponentType type) {
+    public Optional<Image> getIcon(ComponentType type) {
         if ("root:midi".equals(type.toString())
                 || type.toString().startsWith("midi:")) {
-            return AUDIO_ICON;
+            return Optional.of(MIDI_ICON);
         }
-        return null;
+        return Optional.empty();
     }
 }

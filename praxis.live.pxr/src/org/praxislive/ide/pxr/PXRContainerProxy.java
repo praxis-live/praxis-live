@@ -48,7 +48,7 @@ import org.praxislive.ide.properties.PraxisProperty;
 import org.praxislive.ide.model.Connection;
 import org.praxislive.ide.model.ContainerProxy;
 import org.praxislive.ide.model.ProxyException;
-import org.praxislive.ide.util.ArgumentPropertyAdaptor;
+import org.praxislive.ide.core.api.ValuePropertyAdaptor;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 
@@ -64,7 +64,7 @@ public class PXRContainerProxy extends PXRComponentProxy implements ContainerPro
     private final Set<Connection> connections;
     private final ChildrenProperty childProp;
     private final ConnectionsProperty conProp;
-    private ArgumentPropertyAdaptor.ReadOnly conAdaptor;
+    private ValuePropertyAdaptor.ReadOnly conAdaptor;
 
     boolean ignore;
 
@@ -324,7 +324,7 @@ public class PXRContainerProxy extends PXRComponentProxy implements ContainerPro
     }
 
     private void initConAdaptor() {
-        conAdaptor = new ArgumentPropertyAdaptor.ReadOnly(this,
+        conAdaptor = new ValuePropertyAdaptor.ReadOnly(this,
                 ContainerProtocol.CONNECTIONS, true, ControlBinding.SyncRate.None);
         conAdaptor.addPropertyChangeListener(new ConnectionsListener());
         PXRHelper.getDefault().bind(ControlAddress.create(getAddress(),

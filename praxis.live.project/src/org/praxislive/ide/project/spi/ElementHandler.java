@@ -19,31 +19,21 @@
  * Please visit http://neilcsmith.net if you need additional information or
  * have any questions.
  */
-package org.praxislive.ide.video;
+package org.praxislive.ide.project.spi;
 
-import java.awt.Image;
-import java.util.Optional;
-import org.praxislive.core.ComponentType;
-import org.praxislive.ide.components.api.ComponentIconProvider;
-import org.openide.util.ImageUtilities;
-import org.openide.util.lookup.ServiceProvider;
+import java.util.List;
+import org.praxislive.ide.core.api.Callback;
 
 /**
  *
  */
-@ServiceProvider(service=ComponentIconProvider.class)
-public class VideoIconProvider implements ComponentIconProvider {
+public interface ElementHandler {
     
-    private final static Image VIDEO_ICON = ImageUtilities.loadImage(
-            "org/praxislive/ide/video/resources/video.png", true);
-
-    @Override
-    public Optional<Image> getIcon(ComponentType type) {
-        if ("root:video".equals(type.toString()) ||
-                type.toString().startsWith("video:")) {
-            return Optional.of(VIDEO_ICON);
-        }
-        return Optional.empty();
+    public void process(Callback callback) throws Exception;
+    
+    public default List<String> warnings() {
+        return List.of();
     }
+
     
 }

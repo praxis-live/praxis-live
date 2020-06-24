@@ -35,7 +35,6 @@ import org.praxislive.core.ComponentType;
 import org.praxislive.ide.core.api.Callback;
 import org.praxislive.ide.project.api.ExecutionLevel;
 import org.praxislive.ide.project.api.PraxisProject;
-import org.praxislive.ide.project.api.PraxisProjectProperties;
 import org.praxislive.ide.pxr.PXRDataObject;
 import org.praxislive.ide.pxr.PXRFileHandler;
 import org.netbeans.api.project.Project;
@@ -45,6 +44,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
+import org.praxislive.ide.project.api.ProjectProperties;
 
 public final class PXRWizardIterator implements WizardDescriptor.InstantiatingIterator {
 
@@ -138,7 +138,7 @@ public final class PXRWizardIterator implements WizardDescriptor.InstantiatingIt
 
             FileObject autostarter = writeAutostartFile(project, id);
 
-            PraxisProjectProperties props = project.getLookup().lookup(PraxisProjectProperties.class);
+            ProjectProperties props = project.getLookup().lookup(ProjectProperties.class);
             if (props != null) {
                 props.addFile(ExecutionLevel.BUILD, fileObj);
                 if (autostart) {

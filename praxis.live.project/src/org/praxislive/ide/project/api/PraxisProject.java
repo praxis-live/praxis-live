@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Neil C Smith.
+ * Copyright 2020 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -25,10 +25,9 @@ package org.praxislive.ide.project.api;
 import org.netbeans.api.project.Project;
 
 /**
- *
- * @author Neil C Smith (http://neilcsmith.net)
+ * 
  */
-public abstract class PraxisProject implements Project {
+public interface PraxisProject extends Project {
 
     public final static String PROJECT_LAYER_PATH = "Projects/org-praxislive-ide-project";
     public final static String LOOKUP_PATH = PROJECT_LAYER_PATH + "/Lookup";
