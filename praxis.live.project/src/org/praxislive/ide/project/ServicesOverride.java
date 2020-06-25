@@ -56,9 +56,9 @@ import org.praxislive.ide.core.api.AbstractIDERoot;
 /**
  *
  */
-class RootsManager extends AbstractIDERoot implements RootHub.ServiceProvider {
+class ServicesOverride extends AbstractIDERoot implements RootHub.ServiceProvider {
 
-    private final static Logger LOG = Logger.getLogger(RootsManager.class.getName());
+    private final static Logger LOG = Logger.getLogger(ServicesOverride.class.getName());
     private final static ComponentInfo INFO = Info.component()
             .merge(ComponentProtocol.API_INFO)
             .merge(RootManagerService.API_INFO)
@@ -69,7 +69,7 @@ class RootsManager extends AbstractIDERoot implements RootHub.ServiceProvider {
     
     private ComponentAddress defaultService;
 
-    RootsManager() {
+    ServicesOverride() {
         registerControl(RootManagerService.ADD_ROOT, new AddRootControl());
         registerControl(RootManagerService.REMOVE_ROOT, new RemoveRootControl());
         registerControl(RootManagerService.ROOTS, new RootsControl());

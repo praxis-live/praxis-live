@@ -25,9 +25,11 @@ import org.praxislive.ide.core.api.Logging;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Queue;
 import java.util.Set;
 import java.util.logging.Level;
@@ -39,8 +41,10 @@ import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.praxislive.core.services.LogLevel;
 import org.praxislive.hub.net.NetworkCoreFactory;
+import org.praxislive.ide.core.api.AbstractTask;
 import org.praxislive.ide.core.api.ExtensionContainer;
 import org.praxislive.ide.core.api.RootLifecycleHandler;
+import org.praxislive.ide.core.api.SerialTasks;
 
 /**
  *
@@ -63,7 +67,7 @@ class HubManager {
     private ExtensionContainer container;
     private State state;
     private boolean markForRestart;
-    private RootsManager rootManager;
+    private ServicesOverride servicesOverride;
 
     HubManager(DefaultPraxisProject project) {
         this.project = project;
@@ -119,7 +123,7 @@ class HubManager {
     State getState() {
         return state;
     }
-    
+
     Lookup getLookup() {
         return Lookup.EMPTY;
     }
@@ -256,17 +260,17 @@ class HubManager {
 
     private void initHub() throws Exception {
         container = ExtensionContainer.create(project.getLookup());
-        rootManager = new RootsManager();
+        servicesOverride = new ServicesOverride();
         Logging log = Logging.create(project.getLookup());
         LogLevel logLevel = log.getLogLevel();
-        
+
         var core = NetworkCoreFactory.builder()
                 .exposeServices(List.of())
                 .build();
-        
+
         hub = Hub.builder()
                 .setCoreRootFactory(core)
-                .addExtension(rootManager)
+                .addExtension(servicesOverride)
                 .addExtension(log)
                 .addExtension(container)
                 .extendLookup(logLevel)
@@ -282,7 +286,7 @@ class HubManager {
             Exceptions.printStackTrace(ex);
         }
         container = null;
-        rootManager = null;
+        servicesOverride = null;
         hub = null;
     }
 
@@ -290,13 +294,82 @@ class HubManager {
     }
 
     private void initShutdownTasks() {
-        Set<String> roots = rootManager.getKnownUserRoots();
+        Set<String> roots = servicesOverride.getKnownUserRoots();
         LOG.log(Level.FINE, "Looking up handlers for {0}", Arrays.toString(roots.toArray()));
         var description = "Shutdown"; // @TODO bundle
         var tasks = Lookup.getDefault().lookupAll(RootLifecycleHandler.class).stream()
                 .map(handler -> handler.getDeletionTask(description, roots))
                 .collect(Collectors.toList());
         shutdownTasks.addAll(tasks);
+    }
+
+    public Task createStartupTask() {
+        return new StartUpTask(List.of(new InitHubTask()));
+    }
+    
+    public Task createShutdownTask() {
+        var roots = servicesOverride.getKnownUserRoots();
+        var description = "Shutdown"; // @TODO bundle
+        var tasks = Lookup.getDefault().lookupAll(RootLifecycleHandler.class).stream()
+                .map(handler -> handler.getDeletionTask(description, roots))
+                .collect(Collectors.toCollection(ArrayList::new));
+        tasks.add(new DeinitHubTask());
+        return new ShutDownTask(tasks);
+    }
+
+    private class StartUpTask extends SerialTasks {
+
+        public StartUpTask(List<Task> tasks) {
+            super(tasks);
+        }
+
+        @Override
+        public Optional<String> description() {
+            return Optional.of("Initializing hub.");
+        }
+
+        @Override
+        protected void beforeExecute() {
+            if (hub != null) {
+                throw new IllegalStateException("Hub already running");
+            }
+        }
+
+    }
+
+    private class InitHubTask extends AbstractTask {
+
+        @Override
+        protected void handleExecute() throws Exception {
+            initHub();
+            updateState(State.COMPLETED);
+        }
+
+    }
+    
+    private class ShutDownTask extends SerialTasks {
+        
+        public ShutDownTask(List<Task> tasks) {
+            super(tasks);
+        }
+
+        @Override
+        protected void beforeExecute() {
+            if (hub == null) {
+                throw new IllegalStateException("Hub not running");
+            }
+        }
+        
+    }
+    
+    private class DeinitHubTask extends AbstractTask {
+
+        @Override
+        protected void handleExecute() throws Exception {
+            deinitHub();
+            updateState(Task.State.COMPLETED);
+        }
+
     }
 
     private class TaskListener implements PropertyChangeListener {

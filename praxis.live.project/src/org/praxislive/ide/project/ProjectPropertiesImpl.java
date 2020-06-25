@@ -140,24 +140,24 @@ public class ProjectPropertiesImpl implements ProjectProperties {
         initLevel(handlers, ExecutionLevel.RUN, elementMap.get(ExecutionLevel.RUN));
     }
 
-    Map<ExecutionLevel, List<ExecutionTask>> elements() {
-        EnumMap<ExecutionLevel, List<ExecutionTask>> map = new EnumMap(ExecutionLevel.class);
+    Map<ExecutionLevel, List<ExecutionEntry>> elements() {
+        EnumMap<ExecutionLevel, List<ExecutionEntry>> map = new EnumMap(ExecutionLevel.class);
         map.put(ExecutionLevel.CONFIGURE, elements.get(ExecutionLevel.CONFIGURE)
                 .entrySet()
                 .stream()
-                .map(e -> new ExecutionTask(e.getKey(), e.getValue()))
+                .map(e -> new ExecutionEntry(e.getKey(), e.getValue()))
                 .collect(Collectors.toList())
         );
         map.put(ExecutionLevel.BUILD, elements.get(ExecutionLevel.BUILD)
                 .entrySet()
                 .stream()
-                .map(e -> new ExecutionTask(e.getKey(), e.getValue()))
+                .map(e -> new ExecutionEntry(e.getKey(), e.getValue()))
                 .collect(Collectors.toList())
         );
         map.put(ExecutionLevel.RUN, elements.get(ExecutionLevel.RUN)
                 .entrySet()
                 .stream()
-                .map(e -> new ExecutionTask(e.getKey(), e.getValue()))
+                .map(e -> new ExecutionEntry(e.getKey(), e.getValue()))
                 .collect(Collectors.toList())
         );
         return map;

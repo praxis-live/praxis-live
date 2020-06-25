@@ -29,6 +29,7 @@ import org.praxislive.ide.project.api.PraxisProject;
 import org.openide.awt.HtmlRenderer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.praxislive.ide.core.api.Task;
 import org.praxislive.ide.project.api.ExecutionElement;
 
 /**
@@ -37,37 +38,25 @@ import org.praxislive.ide.project.api.ExecutionElement;
 class WarningsDialogPanel extends javax.swing.JPanel {
 
     private final PraxisProject project;
-    private final ExecutionLevel level;
 
     /**
      * Creates new form WarningsDialogPanel
      */
     WarningsDialogPanel(PraxisProject project,
-            Map<ExecutionElement, List<String>> warnings,
-            ExecutionLevel level) {
+            Map<Task, List<String>> warnings) {
         this.project = project;
-        this.level = level;
         initComponents();
         initListModel(warnings);
         warningsList.setCellRenderer(HtmlRenderer.createRenderer());
         initLabel(warningsList.getModel().getSize());
     }
 
-    private void initListModel(Map<ExecutionElement, List<String>> warnings) {
+    private void initListModel(Map<Task, List<String>> warnings) {
         DefaultListModel model = new DefaultListModel();
-        for (Map.Entry<ExecutionElement, List<String>> entry : warnings.entrySet()) {
-            var element = entry.getKey();
-            if (element instanceof ExecutionElement.File) {
-                var file = ((ExecutionElement.File) element).file();
-                var filename = FileUtil.getRelativePath(project.getProjectDirectory(), file);
-                if (filename == null) {
-                    filename = file.getPath();
-                }
-                model.addElement("<html><b>" + filename + "</b>");
-            } else {
-                model.addElement("<html><b>" + project.getProjectDirectory().getName() + "</b>");
-            }
-
+        for (var entry : warnings.entrySet()) {
+            var taskDesc = entry.getKey().description()
+                    .orElse(project.getProjectDirectory().getName());
+            model.addElement("<html><b>" + taskDesc + "</b>");
             for (String warning : entry.getValue()) {
                 model.addElement(warning);
             }
@@ -77,13 +66,7 @@ class WarningsDialogPanel extends javax.swing.JPanel {
 
     private void initLabel(int warningsCount) {
         StringBuilder sb = new StringBuilder();
-        sb.append("Project ");
-        if (level == ExecutionLevel.BUILD) {
-            sb.append("build");
-        } else {
-            sb.append("run");
-        }
-        sb.append(" completed with ");
+        sb.append("Project execution completed with ");
         if (warningsCount == 1) {
             sb.append("1 warning.");
         } else {

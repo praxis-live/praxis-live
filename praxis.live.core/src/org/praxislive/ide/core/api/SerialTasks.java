@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2016 Neil C Smith.
+ * Copyright 2020 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -25,29 +25,50 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayDeque;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Queue;
-import org.praxislive.ide.core.api.Task;
+import java.util.function.Consumer;
 
 /**
  *
- * @author Neil C Smith (http://neilcsmith.net)
  */
 public class SerialTasks extends AbstractTask {
     
     private final Queue<Task> tasks;
     private final Listener listener;
-            
-    private Task activeTask;
 
-    public SerialTasks(Task ... tasks) {
-        this.tasks = new ArrayDeque<>(Arrays.asList(tasks));
+    private Task activeTask;
+    private Consumer<Task> before;
+    private Consumer<Task> after;
+    
+    
+    public SerialTasks(List<Task> tasks) {
+        this.tasks = new ArrayDeque<>(tasks);
         listener = new Listener();
     }
+    
+    public SerialTasks(Task ... tasks) {
+        this(Arrays.asList(tasks));
+    }
 
+    public int remaining() {
+        return tasks.size();
+    }
+    
+    protected void beforeExecute() {}
+    
+    protected void afterExecute() {}
+    
+    protected void beforeTask(Task task) {}
+    
+    protected void afterTask(Task task) {}
+    
     @Override
-    protected void handleExecute() throws Exception {
+    protected final void handleExecute() throws Exception {
+        beforeExecute();
         if (tasks.isEmpty()) {
             updateState(State.COMPLETED);
+            afterExecute();
             return;
         }
         handleTaskQueue();
@@ -56,7 +77,14 @@ public class SerialTasks extends AbstractTask {
     private void handleTaskQueue() {
         while (!tasks.isEmpty()) {
             activeTask = tasks.poll();
-            State state = activeTask.execute();
+            State state = activeTask.getState();
+            if (state == State.NEW) {
+                beforeTask(activeTask);
+                state = activeTask.execute();
+            }
+            if (state == State.COMPLETED) {
+                afterTask(activeTask);
+            }
             if (state == State.RUNNING) {
                 activeTask.addPropertyChangeListener(listener);
                 return;
@@ -67,6 +95,7 @@ public class SerialTasks extends AbstractTask {
             }
         }
         updateState(State.COMPLETED);
+        afterExecute();
     }
 
     @Override
@@ -99,10 +128,12 @@ public class SerialTasks extends AbstractTask {
                 }
                 activeTask.removePropertyChangeListener(this);
                 if (taskState == State.COMPLETED) {
+                    afterTask(activeTask);
                     handleTaskQueue();
                 } else if (taskState == State.CANCELLED ||
                         taskState == State.ERROR) {
                     updateState(taskState);
+                    afterExecute();
                 }
             }
             

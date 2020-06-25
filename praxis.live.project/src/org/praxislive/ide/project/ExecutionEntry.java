@@ -28,12 +28,12 @@ import org.praxislive.ide.project.spi.ElementHandler;
 /**
  *
  */
-final class ExecutionTask {
+final class ExecutionEntry {
     
     private final ExecutionElement element;
     private final ElementHandler handler;
 
-    public ExecutionTask(ExecutionElement element, ElementHandler handler) {
+    public ExecutionEntry(ExecutionElement element, ElementHandler handler) {
         this.element = Objects.requireNonNull(element);
         this.handler = Objects.requireNonNull(handler);
     }
@@ -65,7 +65,7 @@ final class ExecutionTask {
         if (getClass() != obj.getClass()) {
             return false;
         }
-        final ExecutionTask other = (ExecutionTask) obj;
+        final ExecutionEntry other = (ExecutionEntry) obj;
         if (!Objects.equals(this.element, other.element)) {
             return false;
         }

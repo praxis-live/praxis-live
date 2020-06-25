@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Neil C Smith.
+ * Copyright 2020 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -22,11 +22,12 @@
 package org.praxislive.ide.core.api;
 
 import java.beans.PropertyChangeListener;
+import java.util.List;
+import java.util.Optional;
 import org.openide.util.Cancellable;
 
 /**
  *
- * @author Neil C Smith <http://neilcsmith.net>
  */
 public interface Task extends Cancellable {
     
@@ -41,5 +42,13 @@ public interface Task extends Cancellable {
     public void addPropertyChangeListener(PropertyChangeListener listener);
     
     public void removePropertyChangeListener(PropertyChangeListener listener);
+    
+    public default Optional<String> description() {
+        return Optional.empty();
+    }
+    
+    public default List<String> log() {
+        return List.of();
+    }
     
 }

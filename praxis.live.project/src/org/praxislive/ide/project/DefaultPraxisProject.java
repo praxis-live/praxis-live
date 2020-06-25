@@ -31,6 +31,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
@@ -58,7 +59,6 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Cancellable;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
@@ -67,6 +67,9 @@ import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 import org.praxislive.core.Value;
+import org.praxislive.ide.core.api.AbstractTask;
+import org.praxislive.ide.core.api.SerialTasks;
+import org.praxislive.ide.core.api.Task;
 import org.praxislive.ide.project.api.ExecutionElement;
 import org.praxislive.ide.project.spi.ElementHandler;
 
@@ -81,10 +84,10 @@ public class DefaultPraxisProject implements PraxisProject {
 
     public final static String LIBS_PATH = "config/libs/";
     public final static String LIBS_COMMAND = "add-libs [file-list \"" + LIBS_PATH + "*.jar\"]";
-    
+
     public static final int MIN_JAVA_VERSION = 11;
     public static final int MAX_JAVA_VERSION;
-    
+
     static {
         int max = SourceVersion.latest().ordinal();
         MAX_JAVA_VERSION = max < MIN_JAVA_VERSION ? MIN_JAVA_VERSION : max;
@@ -100,9 +103,10 @@ public class DefaultPraxisProject implements PraxisProject {
     private final PropertiesListener propsListener;
     private final ProjectState state;
     private final Set<ElementHandler> executedHandlers;
-    
+
     private boolean actionsEnabled;
     private ClassPath libsCP;
+    private TaskExec activeExec;
 
     DefaultPraxisProject(FileObject directory, FileObject projectFile, ProjectState state)
             throws IOException {
@@ -115,16 +119,16 @@ public class DefaultPraxisProject implements PraxisProject {
         properties.addPropertyChangeListener(propsListener);
         hubManager = new HubManager(this);
         Lookup base = Lookups.fixed(
-            this,
-            properties,
-            new Info(),
-            new ActionImpl(),
-            new ProjectOpenedHookImpl(),
-            state,
-            new PraxisCustomizerProvider(this),
-            new PraxisLogicalViewProvider(this),
-            new BaseTemplates(),
-            UILookupMergerSupport.createPrivilegedTemplatesMerger()
+                this,
+                properties,
+                new Info(),
+                new ActionImpl(),
+                new ProjectOpenedHookImpl(),
+                state,
+                new PraxisCustomizerProvider(this),
+                new PraxisLogicalViewProvider(this),
+                new BaseTemplates(),
+                UILookupMergerSupport.createPrivilegedTemplatesMerger()
         );
 
         base = new ProxyLookup(base, hubManager.getLookup());
@@ -161,7 +165,7 @@ public class DefaultPraxisProject implements PraxisProject {
     }
 
     private void execute(ExecutionLevel level) {
-        
+
         if (properties.getJavaRelease() > MAX_JAVA_VERSION) {
             NotifyDescriptor nd = new NotifyDescriptor.Message(
                     Bundle.PraxisProject_javaVersionError(properties.getJavaRelease()),
@@ -169,29 +173,49 @@ public class DefaultPraxisProject implements PraxisProject {
             DialogDisplayer.getDefault().notify(nd);
             return;
         }
-        
+
+        List<Task> tasks = new ArrayList<>();
+
         if (!isActive()) {
             registerLibs();
             executedHandlers.clear();
+            tasks.add(hubManager.createStartupTask());
         }
-        List<ExecutionTask> buildTasks = new ArrayList<>();
-        buildTasks.addAll(properties.elements().get(ExecutionLevel.CONFIGURE));
-        
+
+        var elements = properties.elements();
+        elements.get(ExecutionLevel.CONFIGURE).forEach(e -> {
+            if (!executedHandlers.contains(e.handler())) {
+                tasks.add(new ElementTask(ExecutionLevel.CONFIGURE, e));
+            }
+        });
         if (level == ExecutionLevel.BUILD || level == ExecutionLevel.RUN) {
-            buildTasks.addAll(properties.elements().get(ExecutionLevel.BUILD));
+            elements.get(ExecutionLevel.BUILD).forEach(e -> {
+                if (!executedHandlers.contains(e.handler())) {
+                    tasks.add(new ElementTask(ExecutionLevel.BUILD, e));
+                }
+            });
         }
-        buildTasks.removeIf(task -> executedHandlers.contains(task.handler()));
-
-        List<ExecutionTask> runTasks = new ArrayList<>();
         if (level == ExecutionLevel.RUN) {
-            buildTasks.addAll(properties.elements().get(ExecutionLevel.RUN));
+            elements.get(ExecutionLevel.RUN).forEach(e -> {
+                tasks.add(new ElementTask(ExecutionLevel.RUN, e));
+            });
         }
 
-        var itr = new ElementIterator(buildTasks, runTasks);
         actionsEnabled = false;
-        itr.start();
+        activeExec = new TaskExec(tasks);
+        var execState = activeExec.execute();
+        if (execState == Task.State.RUNNING) {
+            activeExec.addPropertyChangeListener(e -> {
+                actionsEnabled = true;
+                activeExec = null;
+            });
+        } else {
+            actionsEnabled = true;
+            activeExec = null;
+        }
+
     }
-    
+
     void registerLibs() {
         clearLibs();
         libsCP = buildLibsClasspath();
@@ -199,7 +223,7 @@ public class DefaultPraxisProject implements PraxisProject {
             GlobalPathRegistry.getDefault().register(ClassPath.COMPILE, new ClassPath[]{libsCP});
         }
     }
-    
+
     private void clearLibs() {
         if (libsCP != null) {
             GlobalPathRegistry.getDefault().unregister(ClassPath.COMPILE, new ClassPath[]{libsCP});
@@ -253,7 +277,7 @@ public class DefaultPraxisProject implements PraxisProject {
             // no op
         }
     }
-    
+
     private class ProjectOpenedHookImpl extends ProjectOpenedHook {
 
         @Override
@@ -265,7 +289,7 @@ public class DefaultPraxisProject implements PraxisProject {
         protected void projectClosed() {
             clearLibs();
         }
-        
+
     }
 
     private class BaseTemplates implements PrivilegedTemplates {
@@ -278,7 +302,6 @@ public class DefaultPraxisProject implements PraxisProject {
             };
         }
     }
-
 
     private class PropertiesListener implements PropertyChangeListener {
 
@@ -326,107 +349,103 @@ public class DefaultPraxisProject implements PraxisProject {
 
         }
     }
-    
 
+    private class TaskExec extends SerialTasks {
 
-    private class ElementIterator implements Cancellable {
+        private final Map<Task, List<String>> warnings;
+        private final ProgressHandle progress;
+        private final int count;
 
-        private List<ExecutionTask> buildTasks;
-        private List<ExecutionTask> runTasks;
-        private ProgressHandle progress = null;
-        private int index = -1;
-        private Map<ExecutionElement, List<String>> warnings;
-        private ExecutionLevel level;
-
-        private ElementIterator(List<ExecutionTask> buildTasks, List<ExecutionTask> runTasks) {
-            this.buildTasks = buildTasks;
-            this.runTasks = runTasks;
-        }
-
-        public void start() {
-            int total = buildTasks.size() + runTasks.size();
-            if (total == 0) {
-                return;
-            }
+        private TaskExec(List<Task> tasks) {
+            super(tasks);
+            warnings = new LinkedHashMap<>();
             progress = ProgressHandle.createHandle("Executing...", this);
             progress.setInitialDelay(0);
-            progress.start(total);
-            next();
+            count = tasks.size();
         }
 
         @Override
-        public boolean cancel() {
-            return false;
+        protected void beforeExecute() {
+            progress.start(count);
         }
 
-        private void next() {
-            index++;
-            if (index >= (buildTasks.size() + runTasks.size())) {
-                done();
-                return;
-            }
-            ExecutionTask task;
-            if (index < buildTasks.size()) {
-                task = buildTasks.get(index);
-                executedHandlers.add(task.handler());
-                level = ExecutionLevel.BUILD;
-            } else {
-                task = runTasks.get(index - buildTasks.size());
-                level = ExecutionLevel.RUN;
-            }
-            if (task.element() instanceof ExecutionElement.File) {
-                var msg = FileUtil.getRelativePath(getProjectDirectory(),
-                        ((ExecutionElement.File) task.element()).file())
-                        + " [" + level + "]";
-                progress.progress(msg, index);
-            } else {
-                progress.progress(index);
-            }
-            
-            try {
-                task.handler().process(Callback.create(result -> {
-                    if (result.isError()) {
-                        if (continueOnError(task.element(), result.args())) {
-                            next();
-                        } else {
-                            done();
-                        }
-                    } else {
-                        logWarnings(task.element(), task.handler().warnings());
-                        next();
-                    }
-                }));
-            } catch (Exception ex) {
-                Exceptions.printStackTrace(ex);
-                if (continueOnError(task.element(), List.of())) {
-                    next();
-                } else {
-                    done();
-                }
+        @Override
+        protected void beforeTask(Task task) {
+            task.description().ifPresentOrElse(
+                    d -> progress.progress(d, count - remaining()),
+                    () -> progress.progress(count - remaining()));
+        }
+
+        @Override
+        protected void afterTask(Task task) {
+            var log = task.log();
+            if (log.isEmpty()) {
+                warnings.put(task, List.copyOf(log));
             }
         }
-      
+
+        @Override
+        protected void afterExecute() {
+            if (!warnings.isEmpty()) {
+                ProjectDialogManager.getDefault()
+                        .showWarningsDialog(DefaultPraxisProject.this, warnings);
+            }
+        }
+        
+        
+
+    }
+
+    private class ElementTask extends AbstractTask {
+
+        private final ExecutionLevel level;
+        private final ExecutionElement element;
+        private final ElementHandler handler;
+
+        private ElementTask(ExecutionLevel level, ExecutionEntry entry) {
+            this.level = level;
+            this.element = entry.element();
+            this.handler = entry.handler();
+        }
+
+        @Override
+        protected void handleExecute() throws Exception {
+            if (level != ExecutionLevel.RUN) {
+                executedHandlers.add(handler);
+            }
+            handler.process(Callback.create(result -> {
+                if (result.isError()) {
+                    if (continueOnError(element, result.args())) {
+                        updateState(State.COMPLETED);
+                    } else {
+                        updateState(State.ERROR);
+                    }
+                } else {
+                    updateState(State.COMPLETED);
+                }
+            }));
+        }
+
+        @Override
+        public Optional<String> description() {
+            if (element instanceof ExecutionElement.File) {
+                var msg = FileUtil.getRelativePath(getProjectDirectory(),
+                        ((ExecutionElement.File) element).file())
+                        + " [" + level + "]";
+                return Optional.of(msg);
+            } else {
+                return Optional.empty();
+            }
+        }
+
+        @Override
+        public List<String> log() {
+            return handler.warnings();
+        }
+
         private boolean continueOnError(ExecutionElement element, List<Value> args) {
             return ProjectDialogManager.getDefault().continueOnError(
                     DefaultPraxisProject.this, level, element, args);
-        }
-
-        private void logWarnings(ExecutionElement element, List<String> wl) {
-            if (wl == null || wl.isEmpty()) {
-                return;
-            }
-            if (warnings == null) {
-                warnings = new LinkedHashMap<>();
-            }
-            warnings.put(element, wl);
-        }
-
-        private void done() {
-            progress.finish();
-            if (warnings != null) {
-                ProjectDialogManager.getDefault().showWarningsDialog(DefaultPraxisProject.this, warnings, level);
-            }
-            actionsEnabled = true;
         }
 
     }

@@ -29,6 +29,7 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileUtil;
 import org.praxislive.core.Value;
+import org.praxislive.ide.core.api.Task;
 import org.praxislive.ide.project.api.ExecutionElement;
 
 /**
@@ -43,9 +44,8 @@ public class ProjectDialogManager {
     }
 
     public void showWarningsDialog(PraxisProject project,
-            Map<ExecutionElement, List<String>> warnings,
-            ExecutionLevel level) {
-        WarningsDialogPanel panel = new WarningsDialogPanel(project, warnings, level);
+            Map<Task, List<String>> warnings) {
+        WarningsDialogPanel panel = new WarningsDialogPanel(project, warnings);
         NotifyDescriptor nd = new NotifyDescriptor.Message(panel, NotifyDescriptor.WARNING_MESSAGE);
         DialogDisplayer.getDefault().notify(nd);
     }
