@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Neil C Smith.
+ * Copyright 2020 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -21,10 +21,11 @@
  */
 package org.praxislive.ide.pxr;
 
+import java.util.List;
+import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
-import org.praxislive.core.CallArguments;
 import org.praxislive.ide.core.api.Callback;
 import org.praxislive.ide.project.api.ExecutionLevel;
 import org.praxislive.ide.project.spi.FileHandler;
@@ -36,12 +37,13 @@ import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.ServiceProvider;
+import org.praxislive.core.types.PError;
+import org.praxislive.ide.project.api.ExecutionElement;
 
 /**
  *
- * @author Neil C Smith (http://neilcsmith.net)
  */
-public class AutostartFileHandler extends FileHandler {
+public class AutostartFileHandler implements FileHandler {
     
     private final static Logger LOG = Logger.getLogger(AutostartFileHandler.class.getName());
     
@@ -51,7 +53,6 @@ public class AutostartFileHandler extends FileHandler {
     private PraxisProject project;
     private FileObject source;
     private String rootID;
-    private Callback callback;
 
     public AutostartFileHandler(PraxisProject project, FileObject source, String rootID) {
         if (project == null || source == null) {
@@ -67,60 +68,39 @@ public class AutostartFileHandler extends FileHandler {
         if (callback == null) {
             throw new NullPointerException();
         }
-        this.callback = callback;
-        RP.execute(new Runnable() {
-
-            @Override
-            public void run() {
-                try {
-                    String script = source.asText().trim();
-                    String expected = "/" + rootID + ".start";
-                    if (!expected.equals(script)) {
-                        LOG.log(Level.WARNING, "Unexpected contents in Autostart file\nFile : {0}\nContents : {1}",
-                                new Object[]{source.getURL(), script});
-                        // @TODO mark file for fixing somehow?
-                    }
-                    SwingUtilities.invokeLater(new Runnable() {
-
-                        @Override
-                        public void run() {
-                            // @TODO check root file is owned by project?
-                            PXRRootProxy root = PXRRootRegistry.getDefault().getRootByID(rootID);
-                            Project owner = root != null ? FileOwnerQuery.getOwner(root.getSourceFile()) : null;
-                            if (root != null && owner != null &&
-                                    project.getProjectDirectory().equals(owner.getProjectDirectory())) {
-                                try {
-                                    root.call("start", CallArguments.EMPTY, new Callback() {
-
-                                        @Override
-                                        public void onReturn(CallArguments args) {
-                                            callback.onReturn(CallArguments.EMPTY);
-                                        }
-
-                                        @Override
-                                        public void onError(CallArguments args) {
-                                            callback.onReturn(CallArguments.EMPTY);
-                                        }
-                                    });
-                                    return;
-                                } catch (ProxyException ex) {
-                                    Exceptions.printStackTrace(ex);
-                                }
-                            }
-                            callback.onError(CallArguments.EMPTY);
-                        }
-                    });
-                    
-                } catch (Exception ex) {
-                    Exceptions.printStackTrace(ex);
-                    SwingUtilities.invokeLater(new Runnable() {
-
-                        @Override
-                        public void run() {
-                            callback.onError(CallArguments.EMPTY);
-                        }
-                    });
+        RP.execute(() -> {
+            try {
+                String script = source.asText().trim();
+                String expected = "/" + rootID + ".start";
+                if (!expected.equals(script)) {
+                    LOG.log(Level.WARNING, "Unexpected contents in Autostart file\nFile : {0}\nContents : {1}",
+                            new Object[]{source.toURI(), script});
+                    // @TODO mark file for fixing somehow?
                 }
+                SwingUtilities.invokeLater(() -> {
+                    // @TODO check root file is owned by project?
+                    PXRRootProxy root = project.getLookup().lookup(PXRRootRegistry.class).getRootByID(rootID);
+                    Project owner = root != null ? FileOwnerQuery.getOwner(root.getSourceFile()) : null;
+                    if (root != null && owner != null &&
+                            project.getProjectDirectory().equals(owner.getProjectDirectory())) {
+                        try {
+                            root.send("start", List.of(), callback);
+                        } catch (Exception ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
+                    callback.onError(List.of());
+                });
+                
+            } catch (Exception ex) {
+                Exceptions.printStackTrace(ex);
+                SwingUtilities.invokeLater(new Runnable() {
+                    
+                    @Override
+                    public void run() {
+                        callback.onError(List.of(PError.of(ex)));
+                    }
+                });
             }
         });
     }
@@ -131,17 +111,19 @@ public class AutostartFileHandler extends FileHandler {
     public static class Provider implements FileHandler.Provider {
 
         @Override
-        public FileHandler createHandler(PraxisProject project, ExecutionLevel level, FileObject file) {
-            String name = file.getName();
+        public Optional<FileHandler> createHandler(PraxisProject project,
+                ExecutionLevel level, ExecutionElement.File element) {
+            var file = element.file();
+            var name = file.getName();
             if (name.endsWith(AUTOSTART_SUFFIX)) {
                 FileObject parent = file.getParent();
                 if ("config".equals(parent.getName()) &&
                         project.getProjectDirectory().equals(parent.getParent())) {
                     String rootID = name.substring(0, name.lastIndexOf(AUTOSTART_SUFFIX));
-                    return new AutostartFileHandler(project, file, rootID);
+                    return Optional.of(new AutostartFileHandler(project, file, rootID));
                 }
             }
-            return null;
+            return Optional.empty();
 
         }
     }

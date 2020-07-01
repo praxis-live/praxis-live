@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2018 Neil C Smith.
+ * Copyright 2020 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -35,7 +35,6 @@ import org.praxislive.core.types.PString;
 
 /**
  *
- * @author Neil C Smith (http://neilcsmith.net)
  */
 class PXRParser {
 
@@ -132,7 +131,7 @@ class PXRParser {
     }
 
     private static Token[] tokensToEOL(Iterator<Token> tokens) {
-        List<Token> tks = new ArrayList<Token>();
+        List<Token> tks = new ArrayList<>();
         while (tokens.hasNext()) {
             Token t = tokens.next();
             if (t.getType() == EOL) {
@@ -147,12 +146,12 @@ class PXRParser {
 
         Token t;
         if (tokens.hasNext() && (t = tokens.next()).getType() == PLAIN) {
-            root.address = ComponentAddress.valueOf(t.getText());
+            root.address = ComponentAddress.of(t.getText());
         } else {
             throw new IllegalArgumentException("No root address found.");
         }
         if (tokens.hasNext() && (t = tokens.next()).getType() == PLAIN) {
-            root.type = ComponentType.valueOf(t.getText());
+            root.type = ComponentType.of(t.getText());
         } else {
             throw new IllegalArgumentException("No root type found.");
         }
@@ -268,7 +267,7 @@ class PXRParser {
                 case PLAIN:
                 case QUOTED:
                 case BRACED:
-                    args[i] = PString.valueOf(t.getText());
+                    args[i] = PString.of(t.getText());
                     break;
                 case SUBCOMMAND:
                     args[i] = new SubCommandArgument(t.getText());
@@ -294,12 +293,12 @@ class PXRParser {
         ComponentType type = null;
         Token t = tokens[0];
         if (t.getType() == PLAIN && t.getText().startsWith(RELATIVE_ADDRESS_PREFIX)) {
-            address = ComponentAddress.create(parent.address,
+            address = ComponentAddress.of(parent.address,
                     t.getText().substring(RELATIVE_ADDRESS_PREFIX.length()));
         }
         t = tokens[1];
         if (t.getType() == PLAIN) {
-            type = ComponentType.create(t.getText());
+            type = ComponentType.of(t.getText());
         }
         if (address == null || type == null) {
             throw new IllegalArgumentException("Invalid component creation line : " + address);
@@ -325,10 +324,10 @@ class PXRParser {
         PortAddress p2 = parsePortAddress(parent.address, tokens[1]);
         ConnectionElement con = new ConnectionElement();
         con.container = parent;
-        con.component1 = p1.getComponentAddress().getID();
-        con.port1 = p1.getID();
-        con.component2 = p2.getComponentAddress().getID();
-        con.port2 = p2.getID();
+        con.component1 = p1.component().componentID();
+        con.port1 = p1.portID();
+        con.component2 = p2.component().componentID();
+        con.port2 = p2.portID();
         cons.add(con);
     }
 
@@ -336,7 +335,7 @@ class PXRParser {
         if (token.getType() == PLAIN) {
             String txt = token.getText();
             if (txt.startsWith(RELATIVE_ADDRESS_PREFIX)) {
-                return PortAddress.create(context + txt.substring(1));
+                return PortAddress.of(context + txt.substring(1));
             }
         }
         throw new IllegalArgumentException("Invalid token in parsePortAddress() - context : " + context + " , token : " + token.getText());

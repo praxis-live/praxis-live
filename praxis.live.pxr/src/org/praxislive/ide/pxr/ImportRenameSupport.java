@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Neil C Smith.
+ * Copyright 2020 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -28,6 +28,7 @@ import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
@@ -44,7 +45,6 @@ import org.openide.NotifyDescriptor;
 
 /**
  *
- * @author Neil C Smith
  */
 class ImportRenameSupport {
     
@@ -70,17 +70,19 @@ class ImportRenameSupport {
             return prepareSingle(container, cmps[0], paste);
         }
         
-        Set<String> existing = new LinkedHashSet<String>(Arrays.asList(container.getChildIDs()));
+        Set<String> existing = container.children().collect(
+                Collectors.toCollection(LinkedHashSet::new));
         
-        List<String> names = new ArrayList<String>(cmps.length);
+        List<String> names = new ArrayList<>(cmps.length);
         for (ComponentElement cmp : cmps) {
-            String name = EditorUtils.findFreeID(existing, cmp.address.getID(), false);
+            String name = EditorUtils.findFreeID(existing, cmp.address.componentID(), false);
             existing.add(name);
             names.add(name);
         }
         
-        existing.clear();
-        existing.addAll(Arrays.asList(container.getChildIDs()));
+        existing = container.children().collect(
+                Collectors.toCollection(LinkedHashSet::new));
+        
         RenameTableModel model = new RenameTableModel(existing, Arrays.asList(cmps), names);
         JTable table = new JTable(model);
         NotifyDescriptor dlg = constructDialog(paste ? "Paste as ..." : "Import as ...", table);
@@ -93,10 +95,10 @@ class ImportRenameSupport {
         
         for (int i=0; i<cmps.length; i++) {
             ComponentAddress ad = cmps[i].address;
-            String oldID = ad.getID();
+            String oldID = ad.componentID();
             String newID = names.get(i);
             if (!oldID.equals(newID)) {
-                ComponentAddress newAd = ComponentAddress.create(ad.getParentAddress(), newID);
+                ComponentAddress newAd = ComponentAddress.of(ad.parent(), newID);
                 cmps[i].address = newAd;
                 checkChildren(cmps[i], ad, newAd);
                 checkConnections(fakeRoot, oldID, newID);
@@ -109,13 +111,14 @@ class ImportRenameSupport {
     
     private static boolean prepareSingle(ContainerProxy container, ComponentElement cmp, boolean paste) {
         ComponentAddress parsedAddress = cmp.address;
-        String id = parsedAddress.getID();
+        String id = parsedAddress.componentID();
         NotifyDescriptor.InputLine dlg = new NotifyDescriptor.InputLine(
                 "ID:", "Enter an ID for " + id);
-        dlg.setInputText(EditorUtils.findFreeID(new LinkedHashSet<>(Arrays.asList(container.getChildIDs())), id, false));
+        dlg.setInputText(EditorUtils.findFreeID(container.children().collect(
+                Collectors.toCollection(LinkedHashSet::new)), id, false));
         Object retval = DialogDisplayer.getDefault().notify(dlg);
         if (retval == NotifyDescriptor.OK_OPTION) {
-            cmp.address = ComponentAddress.create(cmp.address.getParentAddress(), dlg.getInputText());
+            cmp.address = ComponentAddress.of(cmp.address.parent(), dlg.getInputText());
             checkChildren(cmp, parsedAddress, cmp.address);
             return true;
         }
@@ -157,7 +160,7 @@ class ImportRenameSupport {
             String ad = child.address.toString();
             if (ad.startsWith(oldAd.toString())) {
                 ad = ad.replace(oldAd.toString(), newAd.toString());
-                child.address = ComponentAddress.create(ad);
+                child.address = ComponentAddress.of(ad);
             }
             checkChildren(child, oldAd, newAd);
         }
@@ -202,7 +205,7 @@ class ImportRenameSupport {
         @Override
         public Object getValueAt(int rowIndex, int columnIndex) {
             if (columnIndex == 0) {
-                return children.get(rowIndex).address.getID();
+                return children.get(rowIndex).address.componentID();
             } else {
                 return names.get(rowIndex);
             }

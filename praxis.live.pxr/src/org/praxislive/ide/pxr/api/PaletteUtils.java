@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2014 Neil C Smith.
+ * Copyright 2020 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -23,18 +23,18 @@ package org.praxislive.ide.pxr.api;
 
 import org.praxislive.ide.pxr.palette.ComponentPalette;
 import org.netbeans.spi.palette.PaletteController;
+import org.praxislive.ide.project.api.PraxisProject;
 
 /**
  *
- * @author Neil C Smith <http://neilcsmith.net>
  */
 public class PaletteUtils {
 
     private PaletteUtils() {
     }
 
-    public static PaletteController getPalette(String... categories) {
-        return ComponentPalette.getDefault().createPalette(categories);
+    public static PaletteController getPalette(PraxisProject project, String... categories) {
+        return ComponentPalette.getPalette(project, categories);
     }
 
 }

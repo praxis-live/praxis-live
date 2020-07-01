@@ -141,7 +141,7 @@ public class ProjectPropertiesImpl implements ProjectProperties {
     }
 
     Map<ExecutionLevel, List<ExecutionEntry>> elements() {
-        EnumMap<ExecutionLevel, List<ExecutionEntry>> map = new EnumMap(ExecutionLevel.class);
+        EnumMap<ExecutionLevel, List<ExecutionEntry>> map = new EnumMap<>(ExecutionLevel.class);
         map.put(ExecutionLevel.CONFIGURE, elements.get(ExecutionLevel.CONFIGURE)
                 .entrySet()
                 .stream()

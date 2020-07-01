@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Neil C Smith.
+ * Copyright 2020 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -36,8 +36,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import javax.swing.SwingUtilities;
-import javax.swing.filechooser.FileNameExtensionFilter;
-import org.praxislive.core.CallArguments;
 import org.praxislive.core.ComponentAddress;
 import org.praxislive.ide.core.api.Callback;
 import org.praxislive.ide.core.api.Task;
@@ -47,7 +45,6 @@ import org.praxislive.ide.core.api.SerialTasks;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
-import org.openide.filesystems.FileChooserBuilder;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -57,7 +54,6 @@ import org.praxislive.ide.pxr.wizard.PXGExportWizard;
 
 /**
  *
- * @author Neil C Smith
  */
 public class ActionBridge {
 
@@ -233,7 +229,7 @@ public class ActionBridge {
 
         private String findSuggestedName(PXRParser.RootElement root) {
             if (root.children.length == 1) {
-                return root.children[0].address.getID();
+                return root.children[0].address.componentID();
             } else {
                 return "";
             }
@@ -316,10 +312,10 @@ public class ActionBridge {
                                     PXRBuilder builder = new PXRBuilder(findRootProxy(container), root, warnings);
                                     builder.process(callback);
                                 } else {
-                                    callback.onReturn(CallArguments.EMPTY);
+                                    callback.onReturn(List.of());
                                 }
                             } else {
-                                callback.onError(CallArguments.EMPTY);
+                                callback.onError(List.of());
                             }
                         } catch (Exception ex) {
                             Exceptions.printStackTrace(ex);

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2017 Neil C Smith.
+ * Copyright 2020 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -49,7 +49,6 @@ import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.CloneableTopComponent;
-import org.openide.windows.TopComponent;
 
 public class PXRDataObject extends MultiDataObject {
 
@@ -90,7 +89,13 @@ public class PXRDataObject extends MultiDataObject {
         }
         this.type = type;
         if (type != null) {
-            icon = Components.getIcon(type);
+            var project = FileOwnerQuery.getOwner(getPrimaryFile());
+            var components = project.getLookup().lookup(Components.class);
+            if (components != null) {
+                icon = components.getIcon(type);
+            } else {
+                icon = null;
+            }
         } else {
             icon = null;
         }
@@ -155,7 +160,7 @@ public class PXRDataObject extends MultiDataObject {
         Object attr = file.getAttribute(KEY_ATTR_ROOT_TYPE);
         if (attr instanceof String) {
             try {
-                ComponentType type = ComponentType.valueOf(attr.toString());
+                ComponentType type = ComponentType.of(attr.toString());
                 setType(type);
                 return;
             } catch (Exception ex) {

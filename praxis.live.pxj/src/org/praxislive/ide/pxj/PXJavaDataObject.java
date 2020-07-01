@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2017 Neil C Smith.
+ * Copyright 2020 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -24,6 +24,8 @@ package org.praxislive.ide.pxj;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import java.util.Optional;
+import org.netbeans.api.project.Project;
 import org.praxislive.core.ControlAddress;
 import org.praxislive.ide.model.ComponentProxy;
 import org.openide.filesystems.FileObject;
@@ -36,20 +38,22 @@ import org.openide.nodes.CookieSet;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeAdapter;
 import org.openide.util.lookup.ProxyLookup;
+import org.praxislive.ide.model.HubProxy;
 
 /**
  *
- * @author Neil C Smith
  */
 class PXJavaDataObject extends MultiDataObject {
 
     private final ControlAddress controlAddress;
+    private final Project project;
 
     public PXJavaDataObject(FileObject fo, MultiFileLoader loader) throws DataObjectExistsException {
         super(fo, loader);
         CookieSet cookies = getCookieSet();
         cookies.add(new PXJavaEditorSupport(this, cookies));
         controlAddress = (ControlAddress) fo.getAttribute(PXJDataObject.CONTROL_ADDRESS_KEY);
+        project = (Project) fo.getAttribute(PXJDataObject.PROJECT_KEY);
     }
 
     @Override
@@ -59,7 +63,8 @@ class PXJavaDataObject extends MultiDataObject {
 
     @Override
     protected Node createNodeDelegate() {
-        Node cmpNode = ComponentProxy.find(controlAddress.getComponentAddress())
+        Node cmpNode = Optional.ofNullable(project.getLookup().lookup(HubProxy.class))
+                    .flatMap(hub -> hub.find(controlAddress.component()))
                     .map(ComponentProxy::getNodeDelegate)
                     .orElse(null);
         return new PXJavaNode(this, cmpNode);

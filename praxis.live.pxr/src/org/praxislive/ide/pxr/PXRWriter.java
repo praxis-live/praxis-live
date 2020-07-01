@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2018 Neil C Smith.
+ * Copyright 2020 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -29,11 +29,9 @@ import org.praxislive.core.ComponentAddress;
 import org.praxislive.ide.core.api.IDE;
 import org.praxislive.ide.model.Connection;
 import org.praxislive.ide.properties.PraxisProperty;
-//import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author Neil C Smith (http://neilcsmith.net)
  */
 class PXRWriter {
 
@@ -60,11 +58,11 @@ class PXRWriter {
     private void doWrite(Appendable target) throws IOException {
         if (root != null) {
             // full graph
-            root.setAttr(PXRParser.VERSION_ATTR, IDE.getDefault().getVersion());
+            root.setAttr(PXRParser.VERSION_ATTR, IDE.getVersion());
             writeComponent(target, root, 0);
         } else {
             // sub graph
-            writeAttribute(target, PXRParser.VERSION_ATTR, IDE.getDefault().getVersion());
+            writeAttribute(target, PXRParser.VERSION_ATTR, IDE.getVersion());
             writeChildren(target, container, 0);
             writeConnections(target, container, 0);
         }
@@ -91,7 +89,7 @@ class PXRWriter {
             sb.append(cmp.getAddress().toString());
         } else {
             ComponentAddress ad = cmp.getAddress();
-            String id = ad.getComponentID(ad.getDepth() - 1);
+            String id = ad.componentID(ad.depth() - 1);
             sb.append("./");
             sb.append(id);
         }
@@ -151,7 +149,7 @@ class PXRWriter {
     }
 
     private void writeChildren(Appendable sb, PXRContainerProxy container, int level) throws IOException {
-        String[] childIDs = container.getChildIDs();
+        String[] childIDs = container.children().toArray(String[]::new);
         for (String id : childIDs) {
             if (level == 0 && children != null && !children.contains(id)) {
                 LOG.log(Level.FINEST, "Skipping child : {0}", id);
@@ -162,7 +160,7 @@ class PXRWriter {
     }
 
     private void writeConnections(Appendable sb, PXRContainerProxy container, int level) throws IOException {
-        Connection[] connections = container.getConnections();
+        Connection[] connections = container.connections().toArray(Connection[]::new);
         for (Connection connection : connections) {
             String c1 = connection.getChild1();
             String c2 = connection.getChild2();

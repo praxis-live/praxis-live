@@ -30,6 +30,7 @@ import org.praxislive.base.AbstractComponent;
 import org.praxislive.base.Binding;
 import org.praxislive.base.BindingContext;
 import org.praxislive.core.Call;
+import org.praxislive.core.ComponentAddress;
 import org.praxislive.core.ComponentInfo;
 import org.praxislive.core.Control;
 import org.praxislive.core.ControlAddress;
@@ -98,6 +99,11 @@ public class AbstractHelperComponent extends AbstractComponent {
         return connected;
     }
 
+    @Override
+    public ComponentAddress findService(Class<? extends Service> service) throws ServiceUnavailableException {
+        return super.findService(service);
+    }
+    
     // @TODO track and sync sends to existing bindings?
     public void send(ControlAddress to, List<Value> args, Callback callback)
             throws HubUnavailableException {

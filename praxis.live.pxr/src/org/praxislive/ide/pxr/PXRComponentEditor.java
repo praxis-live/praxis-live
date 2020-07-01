@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2017 Neil C Smith.
+ * Copyright 2020 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -33,13 +33,13 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.UIManager;
-import org.praxislive.impl.swing.ControlBinding;
 import org.praxislive.ide.core.api.Syncable;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.explorer.propertysheet.PropertyPanel;
 import org.openide.explorer.propertysheet.PropertySheet;
 import org.openide.nodes.Node;
+import org.praxislive.base.Binding;
 
 /**
  *
@@ -54,7 +54,7 @@ class PXRComponentEditor {
     private JComponent editor;
     private Listener listener;
     private Map<String, PropertyPanel> propPanels;
-    private List<ControlBinding.Adaptor> adaptors;
+    private List<Binding.Adaptor> adaptors;
 
     PXRComponentEditor(PXRComponentProxy component) {
         this.component = component;

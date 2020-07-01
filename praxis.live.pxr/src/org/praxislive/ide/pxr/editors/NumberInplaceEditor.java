@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2016 Neil C Smith.
+ * Copyright 2020 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -53,7 +53,6 @@ import org.openide.explorer.propertysheet.PropertyModel;
 
 /**
  *
- * @author Neil C Smith (http://neilcsmith.net)
  */
 class NumberInplaceEditor extends JComponent implements InplaceEditor {
 
@@ -171,11 +170,11 @@ class NumberInplaceEditor extends JComponent implements InplaceEditor {
     @Override
     public void setValue(Object o) {
         try {
-            currentValue = PNumber.coerce((Value) o);
+            currentValue = PNumber.from((Value) o).orElse(PNumber.ZERO);
         } catch (Exception ex) {
             LOG.log(Level.FINE, "Exception in setValue()", ex);
             if (currentValue == null) {
-                currentValue = PNumber.valueOf(0);
+                currentValue = PNumber.ZERO;
             }
         }
         if (textField.isVisible()) {
@@ -187,7 +186,7 @@ class NumberInplaceEditor extends JComponent implements InplaceEditor {
     public Object getValue() {
         if (textField.isVisible()) {
             try {
-                return PNumber.valueOf(textField.getText());
+                return PNumber.parse(textField.getText());
             } catch (Exception ex) {
                 LOG.log(Level.FINE, "Exception in getValue()", ex);
             }
@@ -249,7 +248,7 @@ class NumberInplaceEditor extends JComponent implements InplaceEditor {
     }
 
     private void updateValue(double value) {
-        currentValue = PNumber.valueOf(value);
+        currentValue = PNumber.of(value);
         try {
             propertyModel.setValue(currentValue);
         } catch (InvocationTargetException ex) {

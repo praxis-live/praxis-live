@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Neil C Smith.
+ * Copyright 2020 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -19,16 +19,17 @@
  * Please visit http://neilcsmith.net if you need additional information or
  * have any questions.
  */
-package org.praxislive.ide.core.api;
+package org.praxislive.ide.project.spi;
 
+import java.util.Optional;
 import java.util.Set;
+import org.praxislive.ide.core.api.Task;
 
 /**
  *
- * @author Neil C Smith <http://neilcsmith.net>
  */
-public abstract class RootLifecycleHandler {
+public interface RootLifecycleHandler {
     
-    public abstract Task getDeletionTask(String description, Set<String> rootIDs);
+    public Optional<Task> getDeletionTask(String description, Set<String> rootIDs);
     
 }

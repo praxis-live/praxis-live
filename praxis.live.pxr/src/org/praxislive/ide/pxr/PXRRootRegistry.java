@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Neil C Smith.
+ * Copyright 2020 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -21,52 +21,58 @@
  */
 package org.praxislive.ide.pxr;
 
-import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
-import org.praxislive.core.Value;
-import org.praxislive.core.ValueFormatException;
-import org.praxislive.core.ControlAddress;
-import org.praxislive.core.services.RootManagerService;
-import org.praxislive.core.services.ServiceUnavailableException;
-import org.praxislive.core.types.PArray;
-import org.praxislive.impl.swing.ControlBinding.SyncRate;
-import org.praxislive.ide.pxr.api.RootRegistry;
-import org.praxislive.ide.core.api.ValuePropertyAdaptor;
+import java.util.stream.Collectors;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Lookup;
+import org.praxislive.ide.model.HubProxy;
+import org.praxislive.ide.model.RootProxy;
+import org.praxislive.ide.project.api.PraxisProject;
+import org.praxislive.ide.project.spi.RootRegistry;
 
 /**
  *
- * @author Neil C Smith (http://neilcsmith.net)
  */
-public class PXRRootRegistry extends RootRegistry {
+@ProjectServiceProvider(projectType = PraxisProject.TYPE,
+        service = RootRegistry.class)
+public class PXRRootRegistry implements RootRegistry {
 
-    private final static PXRRootRegistry INSTANCE = new PXRRootRegistry();
-    private PropertyChangeSupport pcs;
+    private final PraxisProject project;
+    private final HubProxy hub;
     private final Set<PXRRootProxy> roots;
-    private ValuePropertyAdaptor.ReadOnly rootsAdaptor;
+    private final PropertyChangeSupport pcs;
 
-    private PXRRootRegistry() {
-        roots = new LinkedHashSet<PXRRootProxy>();
+    public PXRRootRegistry(Lookup lookup) {
+        this.project = Objects.requireNonNull(lookup.lookup(PraxisProject.class));
+        this.hub = Objects.requireNonNull(lookup.lookup(HubProxy.class));
+        this.roots = new LinkedHashSet<>();
         pcs = new PropertyChangeSupport(this);
-        PXRHelper.getDefault().addPropertyChangeListener(new HubListener());
-        rootsAdaptor = new ValuePropertyAdaptor.ReadOnly(this, "roots", false, SyncRate.Medium);
-        rootsAdaptor.addPropertyChangeListener(new PropertyChangeListener() {
-
-            @Override
-            public void propertyChange(PropertyChangeEvent evt) {
-                validateRoots();
-            }
-        });
-        bindRootsAdaptor();
+        hub.addPropertyChangeListener(e -> validateRoots());
     }
 
-    public synchronized void register(PXRRootProxy root) {
+    @Override
+    public Optional<RootProxy> find(String id) {
+        return roots.stream()
+                .filter(r -> r.getAddress().rootID().equals(id))
+                .map(RootProxy.class::cast)
+                .findFirst();
+    }
+
+    @Override
+    public List<RootProxy> findAll() {
+        return roots.stream().collect(Collectors.toList());
+    }
+
+    void register(PXRRootProxy root) {
         if (root == null) {
             throw new NullPointerException();
         }
@@ -77,119 +83,78 @@ public class PXRRootRegistry extends RootRegistry {
         fireRootsChange();
     }
 
-    public synchronized void unregister(PXRRootProxy root) {
+    void unregister(PXRRootProxy root) {
         if (roots.remove(root)) {
             root.dispose();
             fireRootsChange();
         }
-        
+
     }
 
-    private synchronized void unregisterAll() {
-        if (roots.isEmpty()) {
-            return;
+    private void validateRoots() {
+        List<String> ids = hub.roots().collect(Collectors.toList());
+        Iterator<PXRRootProxy> itr = roots.iterator();
+        boolean removed = false;
+        while (itr.hasNext()) {
+            PXRRootProxy root = itr.next();
+            if (!ids.contains(root.getAddress().rootID())) {
+                itr.remove();
+                root.dispose();
+                removed = true;
+            }
         }
-        for (PXRRootProxy root : roots) {
-            root.dispose();
-        }
-        roots.clear();
-        fireRootsChange();
-    }
-
-    private synchronized void validateRoots() {
-        try {
-            PArray rts = PArray.coerce(rootsAdaptor.getValue());
-            List<String> ids = new ArrayList<String>(rts.getSize());
-            for (Value id : rts) {
-                ids.add(id.toString());
-            }
-            Iterator<PXRRootProxy> itr = roots.iterator();
-            boolean removed = false;
-            while (itr.hasNext()) {
-                PXRRootProxy root = itr.next();
-                if (!ids.contains(root.getAddress().getRootID())) {
-                    itr.remove();
-                    root.dispose();
-                    removed = true;
-                }
-            }
-            if (removed) {
-                fireRootsChange();
-            }
-        } catch (ValueFormatException ex) {
-            // @TODO what here?
+        if (removed) {
+            fireRootsChange();
         }
 
     }
 
     private void fireRootsChange() {
-        pcs.firePropertyChange(PROP_ROOTS, null, null);
+        pcs.firePropertyChange("roots", null, null);
     }
 
-    private void bindRootsAdaptor() {
-        try {
-            PXRHelper hlp = PXRHelper.getDefault();
-            hlp.bind(
-                    ControlAddress.create(hlp.findService(RootManagerService.class),
-                    RootManagerService.ROOTS), rootsAdaptor);
-        } catch (ServiceUnavailableException ex) {
-        }
-    }
-
-
-    @Override
-    public void addPropertyChangeListener(PropertyChangeListener listener) {
+    void addPropertyChangeListener(PropertyChangeListener listener) {
         pcs.addPropertyChangeListener(listener);
     }
 
-    @Override
-    public void removePropertyChangeListener(PropertyChangeListener listener) {
+    void removePropertyChangeListener(PropertyChangeListener listener) {
         pcs.removePropertyChangeListener(listener);
     }
 
-    @Override
-    public synchronized PXRRootProxy[] getRoots() {
+    PXRRootProxy[] getRoots() {
         return roots.toArray(new PXRRootProxy[roots.size()]);
     }
-    
-    public PXRRootProxy getRootByID(String id) {
-        for (PXRRootProxy root : getRoots()) {
-            if (root.getAddress().getRootID().equals(id)) {
-                return root;
-            }
-        }
-        return null;
-    }
-    
-    public PXRRootProxy findRootForFile(FileObject file) {
-        for (PXRRootProxy root : getRoots()) {
-            if (root.getSourceFile().equals(file)) {
-                return root;
-            }
-        }
-        return null;
+
+    PXRRootProxy getRootByID(String id) {
+        return roots.stream()
+                .filter(r -> r.getAddress().rootID().equals(id))
+                .findFirst()
+                .orElse(null);
+
     }
 
-    private class HubListener implements PropertyChangeListener {
+    PXRRootProxy getRootByFile(FileObject file) {
+        return roots.stream()
+                .filter(r -> r.getSourceFile().equals(file))
+                .findFirst()
+                .orElse(null);
+    }
 
-        @Override
-        public void propertyChange(PropertyChangeEvent evt) {
-            if (PXRHelper.PROP_HUB_CONNECTED.equals(evt.getPropertyName())) {
-                boolean connected = PXRHelper.getDefault().isConnected();
-                if (connected) {
-                    bindRootsAdaptor();
-                } else {
-                    unregisterAll();
-                }
-            }
+    static PXRRootProxy findRootForFile(FileObject file) {
+        var reg = registryForFile(file);
+        if (reg != null) {
+            return reg.getRootByFile(file);
+        } else {
+            return null;
         }
     }
 
-
-
-
-    public static PXRRootRegistry getDefault() {
-        return INSTANCE;
+    static PXRRootRegistry registryForFile(FileObject file) {
+        var project = FileOwnerQuery.getOwner(file);
+        if (project == null) {
+            return null;
+        }
+        return project.getLookup().lookup(PXRRootRegistry.class);
     }
 
 }

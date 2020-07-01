@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2019 Neil C Smith.
+ * Copyright 2020 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -128,8 +128,8 @@ class PXGExportWizardPanel1 implements WizardDescriptor.Panel<WizardDescriptor> 
         paletteCategory = component.getPaletteCategory().trim();
         if (!paletteCategory.isEmpty()) {
             try {
-                ComponentType test = ComponentType.valueOf(paletteCategory + ":test");
-            } catch (ValueFormatException ex) {
+                ComponentType test = ComponentType.of(paletteCategory + ":test");
+            } catch (Exception ex) {
                 err = Bundle.PXGExportWizard_invalidPaletteCategory();
                 nowValid = false;
             }

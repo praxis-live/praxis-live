@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Neil C Smith.
+ * Copyright 2020 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -46,7 +46,6 @@ import org.openide.filesystems.FileUtil;
 
 /**
  *
- * @author Neil C Smith (http://neilcsmith.net)
  */
 public class ResourceEditor extends EditorSupport
         implements SubCommandEditor, ExPropertyEditor {
@@ -62,7 +61,7 @@ public class ResourceEditor extends EditorSupport
         if (dir instanceof File) {
             workingDir = FileUtil.toFileObject((File)dir);
         }
-        PMap props = info.getProperties();
+        PMap props = info.properties();
         allowEmpty = true;
 //        property.setValue("canEditAsText", Boolean.FALSE);
 //        Value arg = props.get(ArgumentInfo.KEY_SUGGESTED_VALUES);
@@ -107,7 +106,7 @@ public class ResourceEditor extends EditorSupport
             if (arg.isEmpty()) {
                 return null;
             } else {
-                return PResource.coerce(arg).value();
+                return PResource.from(arg).orElseThrow().value();
             }
         } catch (Exception ex) {
             return null;
@@ -159,7 +158,7 @@ public class ResourceEditor extends EditorSupport
             case BRACED:
                 URI path = workingDir.toURI().resolve(new URI(null, null, file.getText(), null));
                 LOG.log(Level.FINE, "Setting path to {0}", path);
-                setValue(PResource.valueOf(path));
+                setValue(PResource.of(path));
                 break;
             default:
                 throw new IllegalArgumentException("Couldn't parse file");

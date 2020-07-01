@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2016 Neil C Smith.
+ * Copyright 2020 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -25,9 +25,7 @@ import java.awt.Image;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.praxislive.core.services.ComponentFactory;
 import org.praxislive.core.ComponentType;
-import org.praxislive.ide.components.api.Components;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.MIMEResolver;
 import org.openide.loaders.DataNode;
@@ -40,6 +38,7 @@ import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
+import org.praxislive.ide.components.api.Icons;
 
 @MIMEResolver.ExtensionRegistration(
         displayName = "Type",
@@ -59,13 +58,11 @@ public class TypeDataObject extends MultiDataObject {
     static final String TYPE_ATTR_KEY = "componentType";
 
     private ComponentType type;
-    private ComponentFactory.MetaData<?> data;
 
     public TypeDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException, IOException {
         super(pf, loader);
         try {
-            type = ComponentType.create(pf.getAttribute(TYPE_ATTR_KEY).toString());
-            data = Components.getMetaData(type);
+            type = ComponentType.of(pf.getAttribute(TYPE_ATTR_KEY).toString());
         } catch (Exception ex) {
             LOG.log(Level.WARNING, "Invalid or non-existent ComponentType in .type file.", ex);
         }
@@ -81,7 +78,7 @@ public class TypeDataObject extends MultiDataObject {
         if (type == null) {
             return super.getLookup();
         } else {
-            return new ProxyLookup(super.getLookup(), Lookups.fixed(type, data));
+            return new ProxyLookup(super.getLookup(), Lookups.fixed(type));
         }
     }
 
@@ -110,7 +107,7 @@ public class TypeDataObject extends MultiDataObject {
             if (type == null) {
                 return super.getIcon(size);
             } else {
-                return Components.getIcon(type);
+                return Icons.getIcon(type);
             }
         }
 
@@ -124,16 +121,6 @@ public class TypeDataObject extends MultiDataObject {
             return type.toString();
         }
         
-        @Override
-        public String getHtmlDisplayName() {
-            if (data != null) {
-                if (data.isDeprecated()) {
-                    return "<s>" + type.toString() + "</s>";
-                }
-            }
-            return super.getHtmlDisplayName();
-        }
-
     }
 
 }

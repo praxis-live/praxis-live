@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 2018 Neil C Smith.
+ * Copyright 2020 Neil C Smith.
  * 
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -29,7 +29,6 @@ import java.net.URL;
 import java.util.Objects;
 import java.util.prefs.Preferences;
 import java.util.stream.Stream;
-import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.XMLFileSystem;
@@ -40,7 +39,6 @@ import org.praxislive.ide.core.api.DynamicFileSystem;
 
 /**
  *
- * @author Neil C Smith - http://www.neilcsmith.net
  */
 class Examples {
 
@@ -58,7 +56,7 @@ class Examples {
 
     private static XMLFileSystem layer;
 
-    private static Preferences info = IDE.getDefault().getPreferences();
+    private static Preferences info = IDE.getPreferences();
 
     private Examples() {
     }

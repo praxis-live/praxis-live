@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Neil C Smith.
+ * Copyright 2020 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -31,6 +31,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import javax.swing.Action;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
@@ -48,7 +49,6 @@ import org.praxislive.core.protocols.ContainerProtocol;
 import org.praxislive.core.types.PString;
 import org.praxislive.ide.model.ComponentProxy;
 import org.praxislive.ide.model.RootProxy;
-import org.praxislive.ide.pxr.api.RootRegistry;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.explorer.view.BeanTreeView;
@@ -60,10 +60,11 @@ import org.openide.nodes.NodeNotFoundException;
 import org.openide.nodes.NodeOp;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.praxislive.ide.model.HubProxy;
+import org.praxislive.ide.project.api.PraxisProject;
 
 /**
  *
- * @author Neil C Smith (http://neilcsmith.net)
  */
 class ControlAddressCustomEditor extends javax.swing.JPanel
         implements ExplorerManager.Provider {
@@ -103,14 +104,14 @@ class ControlAddressCustomEditor extends javax.swing.JPanel
         listModel = new DefaultListModel();
         controlList.setModel(listModel);
 
-        em.setRootContext(new AbstractNode(new RootsChildren(), Lookup.EMPTY));
+        em.setRootContext(new AbstractNode(new RootsChildren(editor.project), Lookup.EMPTY));
         if (current != null) {
             Node node = findNodeFromAddress(current);
             if (node != null) {
                 try {
                     em.setSelectedNodes(new Node[]{node});
                     refreshComponent(node.getLookup().lookup(ComponentProxy.class));
-                    controlList.setSelectedValue(current.getID(), true);
+                    controlList.setSelectedValue(current.controlID(), true);
                 } catch (PropertyVetoException ex) {
                     Exceptions.printStackTrace(ex);
                 }
@@ -139,10 +140,10 @@ class ControlAddressCustomEditor extends javax.swing.JPanel
 
     private Node findNodeFromAddress(ControlAddress address) {
         LOG.log(Level.FINEST, "Searching for node that matches {0}", address);
-        ComponentAddress cmp = address.getComponentAddress();
-        String[] parts = new String[cmp.getDepth()];
+        ComponentAddress cmp = address.component();
+        String[] parts = new String[cmp.depth()];
         for (int i = 0; i < parts.length; i++) {
-            parts[i] = cmp.getComponentID(i);
+            parts[i] = cmp.componentID(i);
         }
         try {
             return NodeOp.findPath(em.getRootContext(), parts);
@@ -275,7 +276,7 @@ class ControlAddressCustomEditor extends javax.swing.JPanel
         listModel.clear();
         if (cmp != null) {
             boolean sys = systemToggleButton.isSelected();
-            for (String id : cmp.getInfo().getControls()) {
+            for (String id : cmp.getInfo().controls()) {
                 if (sys || !SYS_CTRLS.contains(id)) {
                     listModel.addElement(id);
                 }          
@@ -316,7 +317,7 @@ class ControlAddressCustomEditor extends javax.swing.JPanel
                 env.setState(PropertyEnv.STATE_NEEDS_VALIDATION);
             } else {
                 try {
-                    current = ControlAddress.valueOf(addressField.getText());
+                    current = ControlAddress.of(addressField.getText());
                     env.setState(PropertyEnv.STATE_NEEDS_VALIDATION);
                 } catch (Exception ex) {
                     env.setState(PropertyEnv.STATE_INVALID);
@@ -359,7 +360,7 @@ class ControlAddressCustomEditor extends javax.swing.JPanel
             }
             String id = sel.toString();
             if (exploredComponent != null) {
-                current = ControlAddress.create(exploredComponent.getAddress(), id);
+                current = ControlAddress.of(exploredComponent.getAddress(), id);
                 ignore = true;
                 addressField.setText(current.toString());
                 env.setState(PropertyEnv.STATE_NEEDS_VALIDATION);
@@ -384,7 +385,7 @@ class ControlAddressCustomEditor extends javax.swing.JPanel
 //                LOG.finest(button == null ? "No default button found" : "Default button found");
                 if (id instanceof String && button != null) {
 //                    LOG.finest("Creating current address");
-                    current = ControlAddress.create(exploredComponent.getAddress(), id.toString());
+                    current = ControlAddress.of(exploredComponent.getAddress(), id.toString());
 //                    LOG.finest("Clicking default button");
                     button.doClick();
                     e.consume();
@@ -395,8 +396,13 @@ class ControlAddressCustomEditor extends javax.swing.JPanel
 
     private static class RootsChildren extends Children.Keys<RootProxy> {
 
-        private RootsChildren() {
-            setKeys(RootRegistry.getDefault().getRoots());
+        private RootsChildren(PraxisProject project) {
+            if (project != null) {
+                var hub = project.getLookup().lookup(HubProxy.class);
+                if (hub != null) {
+                    setKeys(hub.roots().map(hub::getRoot).collect(Collectors.toList()));
+                }
+            }
         }
 
         @Override

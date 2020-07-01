@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Neil C Smith.
+ * Copyright 2020 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -22,6 +22,10 @@
 package org.praxislive.ide.pxr;
 
 import java.io.File;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.stream.Stream;
 import org.praxislive.core.ComponentAddress;
 import org.praxislive.core.ComponentType;
 import org.praxislive.core.ComponentInfo;
@@ -29,29 +33,27 @@ import org.praxislive.ide.project.api.PraxisProject;
 import org.praxislive.ide.model.RootProxy;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.praxislive.core.Value;
+import org.praxislive.ide.core.api.Callback;
+import org.praxislive.ide.model.Connection;
 
 /**
  *
- * @author Neil C Smith (http://neilcsmith.net)
  */
 public class PXRRootProxy extends PXRContainerProxy implements RootProxy {
 
-    private ComponentAddress address;
-    private PXRDataObject source;
-    private PraxisProject project;
-//    private String id;
+    private final ComponentAddress address;
+    private final PXRDataObject source;
+    private final PraxisProject project;
+    private final PXRHelper helper;
 
-    PXRRootProxy(PXRDataObject source, String id, ComponentType type, ComponentInfo info) {
-        this(null, source, id, type, info);
-    }
-
-    PXRRootProxy(PraxisProject project, PXRDataObject source, String id,
+    PXRRootProxy(PraxisProject project, PXRHelper helper, PXRDataObject source, String id,
             ComponentType type, ComponentInfo info) {
         super(null, type, info);
-//        this.id = id;
-        this.address = ComponentAddress.create("/" + id);
+        this.address = ComponentAddress.of("/" + id);
         this.source = source;
         this.project = project;
+        this.helper = helper;
     }
 
     @Override
@@ -76,6 +78,11 @@ public class PXRRootProxy extends PXRContainerProxy implements RootProxy {
         return project;
     }
 
+    PXRHelper getHelper() {
+        return helper;
+    }
+    
+    
     File getWorkingDirectory() {
         if (project == null) {
             return FileUtil.toFile(source.getPrimaryFile().getParent());

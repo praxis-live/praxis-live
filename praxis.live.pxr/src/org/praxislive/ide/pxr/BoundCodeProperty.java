@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2018 Neil C Smith.
+ * Copyright 2020 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -46,9 +46,7 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
-import org.praxislive.core.CallArguments;
 import org.praxislive.core.Value;
-import org.praxislive.ide.core.api.Callback;
 
 class BoundCodeProperty extends BoundArgumentProperty {
 
@@ -75,20 +73,20 @@ class BoundCodeProperty extends BoundArgumentProperty {
     private FileObject file;
 
     BoundCodeProperty(PraxisProject project, ControlAddress address, ControlInfo info, String mimeType) {
-        super(address, info);
+        super(project, address, info);
         this.project = project;
         this.mimeType = mimeType;
-        this.template = info.getOutputsInfo()[0].getProperties().getString(ArgumentInfo.KEY_TEMPLATE, "");
+        this.template = info.outputs().get(0).properties().getString(ArgumentInfo.KEY_TEMPLATE, "");
         this.fileListener = new FileListener();
         fileName = safeFileName(address);
-        String id = address.getID();
+        String id = address.controlID();
         editAction = new EditAction(id);
         resetAction = new ResetAction(id);
         setHidden(true);
     }
     
     private String safeFileName(ControlAddress address) {
-        String name = address.getComponentAddress().getID() + "_" + address.getID();
+        String name = address.component().componentID() + "_" + address.controlID();
         name = name.replace('-', '_');
         return name;
     }
@@ -103,37 +101,6 @@ class BoundCodeProperty extends BoundArgumentProperty {
     public void dispose() {
         super.dispose();
         deleteFile();
-    }
-
-    @Override
-    public void setValue(Value value, Callback callback) {
-        if ("text/x-praxis-java".equals(this.mimeType) &&
-                "code".equals(getName())) {
-            super.setValue(value, new Callback() {
-                @Override
-                public void onReturn(CallArguments args) {
-                    callback.onReturn(args);
-                }
-
-                @Override
-                public void onError(CallArguments args) {
-                    // doing this directly in the callback doesn't work?!
-                    // possibly DefaultBindingControl - removes active adaptor after callback?
-                    EventQueue.invokeLater(() -> {
-                        BoundCodeProperty.super.setValue(rewriteV3toV4(value), callback);
-                    });
-                }
-            });
-        } else {
-            super.setValue(value, callback);
-        }
-    }
-    
-    private PString rewriteV3toV4(Value value) {
-        String code = value.toString();
-        code = code.replace("@Port", "@Config.Port");
-        code = code.replace(" Table ", " AudioTable ");
-        return PString.valueOf(code);
     }
 
     Action getEditAction() {
@@ -180,7 +147,7 @@ class BoundCodeProperty extends BoundArgumentProperty {
         }
         f.setAttribute("project", project);
         f.setAttribute("controlAddress", getAddress());
-        f.setAttribute("argumentInfo", getInfo().getOutputsInfo()[0]);
+        f.setAttribute("argumentInfo", getInfo().outputs().get(0));
         f.addFileChangeListener(fileListener);
         return f;
     }
@@ -209,7 +176,7 @@ class BoundCodeProperty extends BoundArgumentProperty {
     private void updateFromFile() {
         if (file != null) {
             try {
-                setValue(PString.valueOf(file.asText()));
+                setValue(PString.of(file.asText()));
             } catch (Exception ex) {
                 Exceptions.printStackTrace(ex);
             }

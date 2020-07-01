@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2018 Neil C Smith.
+ * Copyright 2020 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -42,7 +42,6 @@ import org.openide.explorer.propertysheet.PropertyEnv;
 
 /**
  *
- * @author Neil C Smith (http://neilcsmith.net)
  */
 @SuppressWarnings("deprecation")
 public class NumberEditor extends EditorSupport implements
@@ -62,7 +61,7 @@ public class NumberEditor extends EditorSupport implements
     }
 
     private void init() {
-        isInteger = info.getProperties().getBoolean(PNumber.KEY_IS_INTEGER, false);
+        isInteger = info.properties().getBoolean(PNumber.KEY_IS_INTEGER, false);
         if (isInteger) {
             initInt();
         } else {
@@ -71,7 +70,7 @@ public class NumberEditor extends EditorSupport implements
     }
 
     private void initFP() {
-        PMap props = info.getProperties();
+        PMap props = info.properties();
 
         double min = props.getDouble(PNumber.KEY_MINIMUM, PNumber.MIN_VALUE);
         double max = props.getDouble(PNumber.KEY_MAXIMUM, PNumber.MAX_VALUE);
@@ -84,18 +83,18 @@ public class NumberEditor extends EditorSupport implements
     }
 
     private void initInt() {
-        PMap props = info.getProperties();
+        PMap props = info.properties();
         Value arg = props.get(ArgumentInfo.KEY_SUGGESTED_VALUES);
         int min = props.getInt(PNumber.KEY_MINIMUM, PNumber.MIN_VALUE);
         int max = props.getInt(PNumber.KEY_MAXIMUM, PNumber.MIN_VALUE);
         if (arg != null) {
             try {
-                PArray arr = PArray.coerce(arg);
-                suggested = new ArrayList<>(arr.getSize());
+                PArray arr = PArray.from(arg).orElseThrow();
+                suggested = new ArrayList<>(arr.size());
                 for (Value val : arr) {
                     suggested.add(val.toString());
                 }
-            } catch (ValueFormatException ex) {
+            } catch (Exception ex) {
                 // no op
             }
         } else if (max > min && ((long) max) - min <= 16) {
@@ -123,7 +122,7 @@ public class NumberEditor extends EditorSupport implements
     @Override
     public void setAsText(String text) throws IllegalArgumentException {
         try {
-            setValue(PNumber.valueOf(text));
+            setValue(PNumber.parse(text));
         } catch (ValueFormatException ex) {
             throw new IllegalArgumentException(ex);
         }
@@ -131,11 +130,7 @@ public class NumberEditor extends EditorSupport implements
 
     @Override
     public String getPraxisInitializationString() {
-        try {
-            return PNumber.coerce((Value) getValue()).toString();
-        } catch (Exception ex) {
-            return null;
-        }
+        return PNumber.from((Value) getValue()).map(PNumber::toString).orElse(null);
     }
 
     public String getDisplayName() {
@@ -161,12 +156,8 @@ public class NumberEditor extends EditorSupport implements
 
     @Override
     public void paintValue(Graphics g, Rectangle box) {
-        double value;
-        try {
-            value = PNumber.coerce((Value) getValue()).value();
-        } catch (Exception ex) {
-            value = 0;
-        }
+        var value = PNumber.from((Value) getValue())
+                .orElse(PNumber.ZERO).value();
         inplace.paintValue(g, box, value, false);
     }
 

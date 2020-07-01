@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Neil C Smith.
+ * Copyright 2020 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -25,32 +25,45 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.HashSet;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
-import org.praxislive.ide.core.api.RootLifecycleHandler;
+import org.netbeans.spi.project.ProjectServiceProvider;
+import org.praxislive.ide.project.spi.RootLifecycleHandler;
 import org.praxislive.ide.core.api.Task;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.util.lookup.ServiceProvider;
+import org.openide.util.Lookup;
+import org.praxislive.ide.project.api.PraxisProject;
 
 /**
  *
- * @author Neil C Smith <http://neilcsmith.net>
  */
-@ServiceProvider(service=RootLifecycleHandler.class)
-public class RootLifecycleHandlerImpl extends RootLifecycleHandler {
+@ProjectServiceProvider(projectType = PraxisProject.TYPE,
+        service = RootLifecycleHandler.class)
+public class RootLifecycleHandlerImpl implements RootLifecycleHandler {
+    
+    private final PraxisProject project;
 
+    public RootLifecycleHandlerImpl(Lookup lookup) {
+        this.project = Objects.requireNonNull(lookup.lookup(PraxisProject.class));
+    }
+    
     @Override
-    public Task getDeletionTask(String description, Set<String> rootIDs) {
-        Set<PXRDataObject> dobs = new HashSet<PXRDataObject>();
+    public Optional<Task> getDeletionTask(String description, Set<String> rootIDs) {
+        var reg = project.getLookup().lookup(PXRRootRegistry.class);
+        if (reg == null) {
+            return Optional.empty();
+        }
+        Set<PXRDataObject> dobs = new HashSet<>();
         for (String rootID : rootIDs) {
-            PXRRootProxy root = PXRRootRegistry.getDefault().getRootByID(rootID);
-            if (root instanceof PXRRootProxy) {
-                dobs.add( ((PXRRootProxy) root).getSource());
+            PXRRootProxy root = reg.getRootByID(rootID);
+            if (root != null) {
+                dobs.add(root.getSource());
             }
         }
         if (!dobs.isEmpty()) {
-//            return SaveTask.createSaveTask(dobs);
-            return new DeletionSaveTask(description, dobs);
+            return Optional.of(new DeletionSaveTask(description, dobs));
         } else {
             return null;
         }

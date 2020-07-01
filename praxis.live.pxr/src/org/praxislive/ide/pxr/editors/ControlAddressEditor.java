@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Neil C Smith.
+ * Copyright 2020 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -31,19 +31,27 @@ import org.praxislive.ide.properties.EditorSupport;
 import org.praxislive.ide.properties.PraxisProperty;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
+import org.praxislive.ide.project.api.PraxisProject;
 
 /**
  *
- * @author Neil C Smith <http://neilcsmith.net>
  */
 public class ControlAddressEditor extends EditorSupport 
     implements ExPropertyEditor {
     
+    final PraxisProject project;
+    
     private PropertyEnv env;
-    private boolean allowEmpty;
+    private final boolean allowEmpty;
     
     ControlAddressEditor(PraxisProperty property, ArgumentInfo info) {
-        allowEmpty = info.getProperties().getBoolean(ArgumentInfo.KEY_ALLOW_EMPTY, false);
+        var p = property.getValue("project");
+        if (p instanceof PraxisProject) {
+            project = (PraxisProject) p;
+        } else {
+            project = null;
+        }
+        allowEmpty = info.properties().getBoolean(ArgumentInfo.KEY_ALLOW_EMPTY, false);
 //        property.setValue("canEditAsText", Boolean.FALSE);
     }
 
@@ -58,7 +66,7 @@ public class ControlAddressEditor extends EditorSupport
             }
         } else {
             try {
-                setValue(ControlAddress.valueOf(val));
+                setValue(ControlAddress.parse(val));
             } catch (ValueFormatException ex) {
                 throw new IllegalArgumentException(ex);
             }
@@ -71,7 +79,7 @@ public class ControlAddressEditor extends EditorSupport
             if (arg.isEmpty()) {
                 return null;
             } else {
-                return ControlAddress.coerce(arg);
+                return ControlAddress.from(arg).orElseThrow();
             }
         } catch (Exception ex) {
             return null;

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2014 Neil C Smith.
+ * Copyright 2020 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -29,7 +29,6 @@ import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.List;
 import org.praxislive.core.Value;
-import org.praxislive.core.ValueFormatException;
 import org.praxislive.core.ArgumentInfo;
 import org.praxislive.core.types.PArray;
 import org.praxislive.core.types.PMap;
@@ -41,7 +40,6 @@ import org.openide.explorer.propertysheet.PropertyEnv;
 
 /**
  *
- * @author Neil C Smith (http://neilcsmith.net)
  */
 @SuppressWarnings("deprecation")
 public class StringEditor extends EditorSupport
@@ -60,7 +58,7 @@ public class StringEditor extends EditorSupport
         if (property == null) {
             throw new NullPointerException();
         }
-        PMap props = info.getProperties();
+        PMap props = info.properties();
         emptyIsDefault = props.getBoolean(ArgumentInfo.KEY_EMPTY_IS_DEFAULT, false);
         Value tagArray = props.get(ArgumentInfo.KEY_ALLOWED_VALUES);
         if (tagArray != null) {
@@ -75,8 +73,8 @@ public class StringEditor extends EditorSupport
 
     private void createTagList(Value tagArray) {
         try {
-            PArray arr = PArray.coerce(tagArray);
-            tags = new ArrayList<>(arr.getSize());
+            PArray arr = PArray.from(tagArray).orElseThrow();
+            tags = new ArrayList<>(arr.size());
             for (Value val : arr) {
                 tags.add(val.toString());
             }
@@ -86,7 +84,7 @@ public class StringEditor extends EditorSupport
                 tags.add(0, EMPTY_DEFAULT_STRING);
                 rewriteDefaultTag = true;
             }
-        } catch (ValueFormatException ex) {
+        } catch (Exception ex) {
             // no op
         }
     }

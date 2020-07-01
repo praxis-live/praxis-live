@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Neil C Smith.
+ * Copyright 2020 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -28,25 +28,24 @@ import org.praxislive.ide.properties.EditorSupport;
 
 /**
  *
- * @author Neil C Smith (http://neilcsmith.net)
  */
 @SuppressWarnings("deprecation")
 public class BooleanEditor extends EditorSupport {
 
     @Override
     public void setValue(Object value) {
-        try {
-            Value val = (Value) value;
-            super.setValue(PBoolean.coerce(val));
-        } catch (Exception ex) {
-            throw new IllegalArgumentException(ex);
+        if (value instanceof Value) {
+            super.setValue(PBoolean.from((Value) value)
+                    .orElseThrow(IllegalArgumentException::new));
+        } else {
+            throw new IllegalArgumentException();
         }
     }
 
     @Override
     public void setAsText(String text) throws IllegalArgumentException {
         try {
-            setValue(PBoolean.valueOf(text));
+            setValue(PBoolean.parse(text));
         } catch (ValueFormatException ex) {
             throw new IllegalArgumentException(ex);
         }
@@ -59,11 +58,8 @@ public class BooleanEditor extends EditorSupport {
 
     @Override
     public String getPraxisInitializationString() {
-        try {
-            return PBoolean.coerce((Value) getValue()).toString();
-        } catch (Exception ex) {
-            return null;
-        }
+        return PBoolean.from((Value) getValue()).map(PBoolean::toString).orElse(null);
+        
     }
 
     public String getDisplayName() {

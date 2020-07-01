@@ -1,6 +1,23 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright 2020 Neil C Smith.
+ *
+ * This code is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License version 3 only, as
+ * published by the Free Software Foundation.
+ *
+ * This code is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ * version 3 for more details.
+ *
+ * You should have received a copy of the GNU General Public License version 3
+ * along with this work; if not, see http://www.gnu.org/licenses/
+ *
+ *
+ * Please visit http://neilcsmith.net if you need additional information or
+ * have any questions.
  */
 package org.praxislive.ide.pxr.templates;
 
@@ -9,6 +26,7 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -29,12 +47,11 @@ import org.xml.sax.SAXException;
 
 /**
  *
- * @author Neil C Smith
  */
 class TemplateFiles {
 
     private final static Logger LOG = Logger.getLogger(TemplateFiles.class.getName());
-    private final static Map<String, String> display = new HashMap<String, String>();
+    private final static Map<String, String> display = new LinkedHashMap<>();
 
     static {
         display.put("root:audio", "Audio Patch");
@@ -63,15 +80,10 @@ class TemplateFiles {
     private FileSystem init() {
         StringBuilder sb = new StringBuilder();
         buildLayerPrefix(sb);
-        ComponentType[] types = Components.getRootComponentTypes();
-        for (ComponentType type : types) {
+        for (String typeString : display.keySet()) {
+            var type = ComponentType.of(typeString);
             String filename = fileName(type);
             buildTemplateFile(sb, type, filename);
-
-            MetaData<? extends Root> data = Components.getRootMetaData(type);
-            if (data != null && !data.isDeprecated()) {
-                privileged.add(templateFolder + filename);
-            }
         }
         buildLayerSuffix(sb);
         LOG.log(Level.FINE, "Created Templates dynamic layer\n{0}", sb);

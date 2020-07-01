@@ -29,13 +29,14 @@ import org.praxislive.core.ComponentType;
 /**
  *
  */
-class Icons {
+public final class Icons {
 
      private static final Image DEFAULT_ICON = ImageUtilities.loadImage(
             "org/praxislive/ide/components/resources/default-icon.png", true);
      
+     private Icons() {}
      
-     static Image getIcon(ComponentType type) {
+     public static Image getIcon(ComponentType type) {
         return Lookup.getDefault().lookupAll(ComponentIconProvider.class).stream()
                 .flatMap(p -> p.getIcon(type).stream())
                 .findFirst()

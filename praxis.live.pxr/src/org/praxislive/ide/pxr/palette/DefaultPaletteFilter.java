@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2014 Neil C Smith.
+ * Copyright 2020 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -22,9 +22,9 @@
 
 package org.praxislive.ide.pxr.palette;
 
+import java.util.List;
 import org.praxislive.core.services.ComponentFactory;
 import org.praxislive.ide.components.api.Components;
-import org.praxislive.meta.TypeRewriter;
 import org.netbeans.spi.palette.PaletteFilter;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
@@ -33,13 +33,14 @@ import org.openide.util.Lookup;
 
 /**
  *
- * @author Neil C Smith <http://neilcsmith.net>
  */
 class DefaultPaletteFilter extends PaletteFilter {
         
-        private String[] categories;
+        private final Components components;
+        private final List<String> categories;
 
-        DefaultPaletteFilter(String[] categories) {
+        DefaultPaletteFilter(Components components, List<String> categories) {
+            this.components = components;
             this.categories = categories;
         }
         
@@ -62,18 +63,13 @@ class DefaultPaletteFilter extends PaletteFilter {
 
         @Override
         public boolean isValidItem(Lookup lkp) {
-            ComponentFactory.MetaData<?> data = lkp.lookup(ComponentFactory.MetaData.class);
-            if (data != null) {
-                if (data.isDeprecated()) {
-                    if (Components.getShowDeprecated()) {
-                        TypeRewriter rw = data.getLookup().find(TypeRewriter.class).orElse(null);
-                        if (rw == null || !TypeRewriter.isIdentity(rw)) {
-                            return true;
-                        }
-                    }
-                    return false;
-                }
-            }
+            // @TODO make deprecated a boolean attribute of file
+//            ComponentFactory.MetaData<?> data = lkp.lookup(ComponentFactory.MetaData.class);
+//            if (data != null) {
+//                if (data.isDeprecated()) {
+//                    return components.showDeprecated();
+//                }
+//            }
             return true;
         }
         

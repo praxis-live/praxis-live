@@ -22,28 +22,22 @@
 package org.praxislive.ide.project;
 
 import org.praxislive.ide.core.api.Logging;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
-import java.util.Queue;
-import java.util.Set;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import org.praxislive.hub.Hub;
 import org.praxislive.ide.core.api.Task;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
 import org.praxislive.core.services.LogLevel;
 import org.praxislive.hub.net.NetworkCoreFactory;
 import org.praxislive.ide.core.api.AbstractTask;
 import org.praxislive.ide.core.api.ExtensionContainer;
-import org.praxislive.ide.core.api.RootLifecycleHandler;
+import org.praxislive.ide.project.spi.RootLifecycleHandler;
 import org.praxislive.ide.core.api.SerialTasks;
 
 /**
@@ -59,208 +53,54 @@ class HubManager {
     };
 
     private final DefaultPraxisProject project;
-    private final Queue<Task> startupTasks;
-    private final Queue<Task> shutdownTasks;
-    private final PropertyChangeSupport pcs;
+    private final HubProxyImpl proxy;
+    private final Lookup lookup;
+    private final InstanceContent lookupContent;
 
     private Hub hub;
     private ExtensionContainer container;
     private State state;
-    private boolean markForRestart;
     private ServicesOverride servicesOverride;
 
     HubManager(DefaultPraxisProject project) {
         this.project = project;
+        this.proxy = new HubProxyImpl(project);
         state = State.Stopped;
-        startupTasks = new LinkedList<>();
-        shutdownTasks = new LinkedList<>();
-        pcs = new PropertyChangeSupport(this);
+        lookupContent = new InstanceContent();
+        lookupContent.add(proxy);
+        lookup = new AbstractLookup(lookupContent);
+    }
+    
+    Task createStartupTask() {
+        return new StartUpTask(List.of(new InitHubTask()));
+    }
+    
+    Task createShutdownTask() {
+        var roots = servicesOverride.getKnownUserRoots();
+        var description = "Shutdown"; // @TODO bundle
+        var tasks = project.getLookup().lookupAll(RootLifecycleHandler.class).stream()
+                .flatMap(handler -> handler.getDeletionTask(description, roots).stream())
+                .collect(Collectors.toCollection(ArrayList::new));
+        tasks.add(new DeinitHubTask());
+        return new ShutDownTask(tasks);
     }
 
-    public synchronized void start() {
-        switch (state) {
-            case Stopped:
-                doStartup();
-                break;
-            case Running:
-                LOG.fine("start() called but already running");
-                return;
-            case Starting:
-                LOG.fine("start() called but already starting");
-                return;
-            case Stopping:
-                LOG.fine("start() called but in process of stopping. markForRestart set to true");
-                markForRestart = true;
-                return;
-        }
-    }
-
-    public synchronized void stop() {
-        if (state == State.Stopped) {
-            LOG.fine("stop() called but already stopped");
-            return;
-        } else if (state == State.Stopping) {
-            LOG.fine("stop() called but already stopping. markForRestart set to false");
-            markForRestart = false;
-            return;
-        }
-        markForRestart = false;
-        doShutdown();
-    }
-
-    public synchronized void restart() {
-        if (state == State.Stopped) {
-            start();
-            return;
-        } else if (state == State.Stopping) {
-            markForRestart = true;
-            return;
-        }
-        markForRestart = true;
-        doShutdown();
-    }
-
+    
     State getState() {
         return state;
     }
 
     Lookup getLookup() {
-        return Lookup.EMPTY;
-    }
-
-    void addPropertyChangeListener(PropertyChangeListener pl) {
-        pcs.addPropertyChangeListener(pl);
-    }
-
-    void removePropertyChangeListener(PropertyChangeListener pl) {
-        pcs.removePropertyChangeListener(pl);
-    }
-
-    private void doStartup() {
-        updateState(State.Starting);
-        initStartupTasks();
-        if (startupTasks.isEmpty()) {
-            LOG.fine("No startup tasks found. Going straight to completeStartup");
-            completeStartup();
-        } else {
-            nextStartupTask();
-        }
-    }
-
-    private void completeStartup() {
-        if (state != State.Starting) {
-            LOG.fine("Unexpected state in completeStartup() - stopping");
-            updateState(State.Stopped);
-            return;
-        }
-        LOG.fine("completeStartup()");
-        try {
-            initHub();
-            updateState(State.Running);
-        } catch (Exception ex) {
-            Exceptions.printStackTrace(ex);
-            deinitHub();
-            updateState(State.Stopped);
-        }
-        markForRestart = false;
-    }
-
-    private void nextStartupTask() {
-        Task task = startupTasks.poll();
-//        activeTask = task;
-        if (task != null) {
-            LOG.log(Level.FINE, "Executing task {0}", task.getClass());
-            Task.State st = task.execute();
-            switch (st) {
-                case CANCELLED:
-                    LOG.log(Level.FINE, "Task cancelled - {0}", task.getClass());
-                    cancelStartup();
-                    break;
-                case RUNNING:
-                    LOG.log(Level.FINE, "Task running - {0}", task.getClass());
-                    task.addPropertyChangeListener(new TaskListener(task, true));
-                    break;
-                case ERROR:
-                    LOG.log(Level.WARNING, "Task error from {0}", task.getClass());
-                // notify error.
-                // fall through
-                default:
-                    nextStartupTask();
-            }
-        } else {
-            completeStartup();
-        }
-
-    }
-
-    private void cancelStartup() {
-        startupTasks.clear();
-        updateState(State.Stopped);
-    }
-
-    private void doShutdown() {
-        updateState(State.Stopping);
-        initShutdownTasks();
-        if (shutdownTasks.isEmpty()) {
-            LOG.fine("No shutdown tasks found. Going straight to completeShutdown");
-            completeShutdown();
-        } else {
-            nextShutdownTask();
-        }
-    }
-
-    private void completeShutdown() {
-        LOG.fine("completeShutdown()");
-        deinitHub();
-        updateState(State.Stopped);
-        if (markForRestart) {
-            LOG.fine("Restarting hub");
-            start();
-        }
-    }
-
-    private void nextShutdownTask() {
-        Task task = shutdownTasks.poll();
-//        activeTask = task;
-        if (task != null) {
-            LOG.log(Level.FINE, "Executing task {0}", task.getClass());
-            Task.State st = task.execute();
-            switch (st) {
-                case CANCELLED:
-                    LOG.log(Level.FINE, "Task cancelled - {0}", task.getClass());
-                    cancelShutdown();
-                    break;
-                case RUNNING:
-                    LOG.log(Level.FINE, "Task running - {0}", task.getClass());
-                    task.addPropertyChangeListener(new TaskListener(task, false));
-                    break;
-                case ERROR:
-                    LOG.log(Level.WARNING, "Task error from {0}", task.getClass());
-                // notify error.
-                // fall through
-                default:
-                    nextShutdownTask();
-            }
-        } else {
-            completeShutdown();
-        }
-
-    }
-
-    private void cancelShutdown() {
-        shutdownTasks.clear();
-        updateState(State.Running);
-    }
-
-    private void updateState(State state) {
-        State old = this.state;
-        this.state = state;
-        pcs.firePropertyChange(null, old, state);
+        return lookup;
     }
 
     private void initHub() throws Exception {
+        if (hub != null) {
+            throw new IllegalStateException();
+        }
         container = ExtensionContainer.create(project.getLookup());
-        servicesOverride = new ServicesOverride();
+        container.extensions().forEach(lookupContent::add);
+        servicesOverride = new ServicesOverride(project);
         Logging log = Logging.create(project.getLookup());
         LogLevel logLevel = log.getLogLevel();
 
@@ -279,6 +119,7 @@ class HubManager {
     }
 
     private void deinitHub() {
+        container.extensions().forEach(lookupContent::remove);
         hub.shutdown();
         try {
             hub.await();
@@ -290,32 +131,6 @@ class HubManager {
         hub = null;
     }
 
-    private void initStartupTasks() {
-    }
-
-    private void initShutdownTasks() {
-        Set<String> roots = servicesOverride.getKnownUserRoots();
-        LOG.log(Level.FINE, "Looking up handlers for {0}", Arrays.toString(roots.toArray()));
-        var description = "Shutdown"; // @TODO bundle
-        var tasks = Lookup.getDefault().lookupAll(RootLifecycleHandler.class).stream()
-                .map(handler -> handler.getDeletionTask(description, roots))
-                .collect(Collectors.toList());
-        shutdownTasks.addAll(tasks);
-    }
-
-    public Task createStartupTask() {
-        return new StartUpTask(List.of(new InitHubTask()));
-    }
-    
-    public Task createShutdownTask() {
-        var roots = servicesOverride.getKnownUserRoots();
-        var description = "Shutdown"; // @TODO bundle
-        var tasks = Lookup.getDefault().lookupAll(RootLifecycleHandler.class).stream()
-                .map(handler -> handler.getDeletionTask(description, roots))
-                .collect(Collectors.toCollection(ArrayList::new));
-        tasks.add(new DeinitHubTask());
-        return new ShutDownTask(tasks);
-    }
 
     private class StartUpTask extends SerialTasks {
 
@@ -330,11 +145,21 @@ class HubManager {
 
         @Override
         protected void beforeExecute() {
-            if (hub != null) {
-                throw new IllegalStateException("Hub already running");
+            if (HubManager.this.state != HubManager.State.Stopped) {
+                throw new IllegalStateException();
             }
+            HubManager.this.state = HubManager.State.Starting;
         }
 
+        @Override
+        protected void afterExecute() {
+            if (hub != null && hub.isAlive()) {
+                HubManager.this.state = HubManager.State.Running;
+            } else {
+                HubManager.this.state = HubManager.State.Stopped;
+            }
+        }
+        
     }
 
     private class InitHubTask extends AbstractTask {
@@ -355,11 +180,18 @@ class HubManager {
 
         @Override
         protected void beforeExecute() {
-            if (hub == null) {
-                throw new IllegalStateException("Hub not running");
+            if (HubManager.this.state != HubManager.State.Running) {
+                throw new IllegalStateException();
             }
+            HubManager.this.state = HubManager.State.Stopping;
         }
-        
+
+        @Override
+        protected void afterExecute() {
+            if (getState() == State.COMPLETED) {
+                HubManager.this.state = HubManager.State.Stopped;
+            } 
+        }
     }
     
     private class DeinitHubTask extends AbstractTask {
@@ -371,34 +203,6 @@ class HubManager {
         }
 
     }
+    
 
-    private class TaskListener implements PropertyChangeListener {
-
-        private final boolean startup;
-        private final Task task;
-
-        TaskListener(Task task, boolean startup) {
-            this.task = task;
-            this.startup = startup;
-        }
-
-        @Override
-        public void propertyChange(PropertyChangeEvent pce) {
-            task.removePropertyChangeListener(this);
-            if (startup) {
-                if (task.getState() == Task.State.CANCELLED) {
-                    cancelStartup();
-                } else {
-                    nextStartupTask();
-                }
-            } else {
-                if (task.getState() == Task.State.CANCELLED) {
-                    cancelShutdown();
-                } else {
-                    nextShutdownTask();
-                }
-            }
-
-        }
-    }
 }

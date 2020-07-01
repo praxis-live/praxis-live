@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2016 Neil C Smith.
+ * Copyright 2020 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -33,28 +33,26 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Stream;
 import org.praxislive.core.Value;
 import org.praxislive.core.ValueFormatException;
-import org.praxislive.core.CallArguments;
 import org.praxislive.core.ComponentAddress;
 import org.praxislive.core.ComponentType;
 import org.praxislive.core.ControlAddress;
 import org.praxislive.core.ComponentInfo;
 import org.praxislive.core.protocols.ContainerProtocol;
 import org.praxislive.core.types.PArray;
-import org.praxislive.impl.swing.ControlBinding;
 import org.praxislive.ide.core.api.Callback;
 import org.praxislive.ide.properties.PraxisProperty;
 import org.praxislive.ide.model.Connection;
 import org.praxislive.ide.model.ContainerProxy;
-import org.praxislive.ide.model.ProxyException;
 import org.praxislive.ide.core.api.ValuePropertyAdaptor;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
+import org.praxislive.base.Binding;
 
 /**
  *
- * @author Neil C Smith (http://neilcsmith.net)
  */
 public class PXRContainerProxy extends PXRComponentProxy implements ContainerProxy {
 
@@ -93,21 +91,19 @@ public class PXRContainerProxy extends PXRComponentProxy implements ContainerPro
     }
 
     @Override
-    public String[] getChildIDs() {
-        Set<String> keySet = children.keySet();
-        return keySet.toArray(new String[keySet.size()]);
+    public Stream<String> children() {
+        return children.keySet().stream();
     }
 
     @Override
-    public void addChild(final String id, final ComponentType type, final Callback callback)
-            throws ProxyException {
+    public void addChild(final String id, final ComponentType type, final Callback callback) {
 
-        ComponentAddress childAddress = ComponentAddress.create(getAddress(), id);
-        PXRHelper.getDefault().createComponentAndGetInfo(childAddress, type, new Callback() {
+        ComponentAddress childAddress = ComponentAddress.of(getAddress(), id);
+        getRoot().getHelper().createComponentAndGetInfo(childAddress, type, new Callback() {
             @Override
-            public void onReturn(CallArguments args) {
+            public void onReturn(List<Value> args) {
                 try {
-                    ComponentInfo info = ComponentInfo.coerce(args.get(0));
+                    ComponentInfo info = ComponentInfo.from(args.get(0)).orElseThrow();
                     if (isContainer(info)) {
                         children.put(id, new PXRContainerProxy(PXRContainerProxy.this, type, info));
                     } else {
@@ -127,7 +123,7 @@ public class PXRContainerProxy extends PXRComponentProxy implements ContainerPro
             }
 
             @Override
-            public void onError(CallArguments args) {
+            public void onError(List<Value> args) {
                 if (callback != null) {
                     callback.onError(args);
                 }
@@ -141,11 +137,11 @@ public class PXRContainerProxy extends PXRComponentProxy implements ContainerPro
     }
 
     @Override
-    public void removeChild(final String id, final Callback callback) throws ProxyException {
-        ComponentAddress childAddress = ComponentAddress.create(getAddress(), id);
-        PXRHelper.getDefault().removeComponent(childAddress, new Callback() {
+    public void removeChild(final String id, final Callback callback) {
+        ComponentAddress childAddress = ComponentAddress.of(getAddress(), id);
+        getRoot().getHelper().removeComponent(childAddress, new Callback() {
             @Override
-            public void onReturn(CallArguments args) {
+            public void onReturn(List<Value> args) {
                 PXRComponentProxy child = children.get(id);
                 if (child != null) {
                     child.dispose();
@@ -175,7 +171,7 @@ public class PXRContainerProxy extends PXRComponentProxy implements ContainerPro
             }
 
             @Override
-            public void onError(CallArguments args) {
+            public void onError(List<Value> args) {
                 if (callback != null) {
                     callback.onError(args);
                 }
@@ -184,11 +180,11 @@ public class PXRContainerProxy extends PXRComponentProxy implements ContainerPro
     }
 
     @Override
-    public void connect(final Connection connection, final Callback callback) throws ProxyException {
+    public void connect(final Connection connection, final Callback callback) {
 
-        PXRHelper.getDefault().connect(getAddress(), connection, new Callback() {
+        getRoot().getHelper().connect(getAddress(), connection, new Callback() {
             @Override
-            public void onReturn(CallArguments args) {
+            public void onReturn(List<Value> args) {
                 connections.add(connection);
                 firePropertyChange(ContainerProtocol.CONNECTIONS, null, null);
                 if (callback != null) {
@@ -197,7 +193,7 @@ public class PXRContainerProxy extends PXRComponentProxy implements ContainerPro
             }
 
             @Override
-            public void onError(CallArguments args) {
+            public void onError(List<Value> args) {
                 if (callback != null) {
                     callback.onError(args);
                 }
@@ -206,11 +202,11 @@ public class PXRContainerProxy extends PXRComponentProxy implements ContainerPro
     }
 
     @Override
-    public void disconnect(final Connection connection, final Callback callback) throws ProxyException {
+    public void disconnect(final Connection connection, final Callback callback) {
 
-        PXRHelper.getDefault().disconnect(getAddress(), connection, new Callback() {
+        getRoot().getHelper().disconnect(getAddress(), connection, new Callback() {
             @Override
-            public void onReturn(CallArguments args) {
+            public void onReturn(List<Value> args) {
                 connections.remove(connection);
                 firePropertyChange(ContainerProtocol.CONNECTIONS, null, null);
                 if (callback != null) {
@@ -219,7 +215,7 @@ public class PXRContainerProxy extends PXRComponentProxy implements ContainerPro
             }
 
             @Override
-            public void onError(CallArguments args) {
+            public void onError(List<Value> args) {
                 if (callback != null) {
                     callback.onError(args);
                 }
@@ -240,7 +236,7 @@ public class PXRContainerProxy extends PXRComponentProxy implements ContainerPro
         if (childID == null) {
             return null;
         } else {
-            return ComponentAddress.create(getAddress(), childID);
+            return ComponentAddress.of(getAddress(), childID);
         }
     }
 
@@ -255,8 +251,8 @@ public class PXRContainerProxy extends PXRComponentProxy implements ContainerPro
     }
 
     @Override
-    public Connection[] getConnections() {
-        return connections.toArray(new Connection[connections.size()]);
+    public Stream<Connection> connections() {
+        return connections.stream();
     }
 
     @Override
@@ -317,17 +313,17 @@ public class PXRContainerProxy extends PXRComponentProxy implements ContainerPro
             initConAdaptor();
         }
         if (syncing) {
-            conAdaptor.setSyncRate(ControlBinding.SyncRate.Low);
+            conAdaptor.setSyncRate(Binding.SyncRate.Low);
         } else {
-            conAdaptor.setSyncRate(ControlBinding.SyncRate.None);
+            conAdaptor.setSyncRate(Binding.SyncRate.None);
         }
     }
 
     private void initConAdaptor() {
         conAdaptor = new ValuePropertyAdaptor.ReadOnly(this,
-                ContainerProtocol.CONNECTIONS, true, ControlBinding.SyncRate.None);
+                ContainerProtocol.CONNECTIONS, true, Binding.SyncRate.None);
         conAdaptor.addPropertyChangeListener(new ConnectionsListener());
-        PXRHelper.getDefault().bind(ControlAddress.create(getAddress(),
+        getRoot().getHelper().bind(ControlAddress.of(getAddress(),
                 ContainerProtocol.CONNECTIONS), conAdaptor);
     }
 
@@ -337,7 +333,8 @@ public class PXRContainerProxy extends PXRComponentProxy implements ContainerPro
             child.dispose();
         }
         if (conAdaptor != null) {
-            PXRHelper.getDefault().unbind(conAdaptor);
+            getRoot().getHelper().unbind(ControlAddress.of(getAddress(),
+                ContainerProtocol.CONNECTIONS), conAdaptor);
         }
         super.dispose();
     }
@@ -351,7 +348,7 @@ public class PXRContainerProxy extends PXRComponentProxy implements ContainerPro
 
         @Override
         public String[] getValue() {
-            return getChildIDs();
+            return children().toArray(String[]::new);
         }
 
         @Override
@@ -370,7 +367,7 @@ public class PXRContainerProxy extends PXRComponentProxy implements ContainerPro
 
         @Override
         public Connection[] getValue() {
-            return getConnections();
+            return connections().toArray(Connection[]::new);
         }
 
         @Override
@@ -403,11 +400,11 @@ public class PXRContainerProxy extends PXRComponentProxy implements ContainerPro
             if (extCons.isEmpty()) {
                 return Collections.emptySet();
             }
-            PArray extArr = PArray.coerce(extCons);
-            Set<Connection> cons = new LinkedHashSet<>(extArr.getSize());
+            PArray extArr = PArray.from(extCons).orElseThrow(ValueFormatException::new);
+            Set<Connection> cons = new LinkedHashSet<>(extArr.size());
             for (Value arg : extArr) {
-                PArray con = PArray.coerce(arg);
-                if (con.getSize() != 4) {
+                PArray con = PArray.from(arg).orElseThrow(ValueFormatException::new);
+                if (con.size() != 4) {
                     throw new ValueFormatException("Connection array has invalid number of parts\n" + extCons);
                 }
                 cons.add(new Connection(con.get(0).toString(), con.get(1).toString(),

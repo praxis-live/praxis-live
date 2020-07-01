@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2018 Neil C Smith.
+ * Copyright 2020 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -25,46 +25,62 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.praxislive.core.services.ComponentFactory;
 import org.praxislive.core.ComponentType;
 import org.praxislive.ide.components.api.Components;
-import org.praxislive.ide.core.api.DynamicFileSystem;
 import org.netbeans.spi.palette.PaletteController;
 import org.netbeans.spi.palette.PaletteFactory;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.MultiFileSystem;
 import org.openide.filesystems.XMLFileSystem;
 import org.openide.loaders.DataFolder;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
+import org.praxislive.ide.project.api.PraxisProject;
 import org.xml.sax.SAXException;
 
 /**
  *
- * @author Neil C Smith <http://neilcsmith.net>
  */
 public class ComponentPalette {
 
     private final static Logger LOG = Logger.getLogger(ComponentPalette.class.getName());
 
+    private final static WeakHashMap<PraxisProject, ComponentPalette> CACHE
+            = new WeakHashMap<>();
+
     final static String FOLDER = "PXR/Palette/";
 
-    private final static ComponentPalette INSTANCE = new ComponentPalette();
+    private final PraxisProject project;
+    private final Components components;
+    private final FileSystem paletteFS;
 
-    private final FileSystem memoryFS;
-    private final FileSystem layer;
-
-    private ComponentPalette() {
-        memoryFS = FileUtil.createMemoryFileSystem();
-        layer = init();
-        if (layer != null) {
-            DynamicFileSystem.getDefault().mount(layer);
+    private ComponentPalette(PraxisProject project) {
+        this.project = project;
+        var cmp = project.getLookup().lookup(Components.class);
+        if (cmp != null) {
+            this.components = cmp;
+        } else {
+            this.components = new FallbackComponents();
         }
+        var layer = init();
+        FileSystem fs;
+        try {
+            fs = new MultiFileSystem(FileUtil.getSystemConfigRoot().getFileSystem(), layer);
+        } catch (FileStateInvalidException ex) {
+            Exceptions.printStackTrace(ex);
+            fs = new MultiFileSystem(layer);
+        }
+        paletteFS = fs;
     }
 
     private FileSystem init() {
@@ -97,10 +113,10 @@ public class ComponentPalette {
     private void buildMaps(
             Map<String, Map<ComponentType, ComponentFactory.MetaData<?>>> core,
             Map<String, Map<ComponentType, ComponentFactory.MetaData<?>>> others) {
-        ComponentType[] types = Components.getComponentTypes();
+        var types = components.componentTypes();
         for (ComponentType type : types) {
             String str = type.toString();
-            ComponentFactory.MetaData<?> data = Components.getMetaData(type);
+            ComponentFactory.MetaData<?> data = components.metaData(type);
             str = str.substring(0, str.lastIndexOf(':'));
             boolean cr = str.startsWith("core");
             Map<ComponentType, ComponentFactory.MetaData<?>> children = cr ? core.get(str) : others.get(str);
@@ -115,7 +131,7 @@ public class ComponentPalette {
             children.put(type, data);
         }
         core.putIfAbsent("core:custom", Collections.emptyMap());
-        
+
         String[] knownCustom = new String[]{
             "audio:custom",
             "data:custom",
@@ -123,11 +139,11 @@ public class ComponentPalette {
             "video:custom",
             "video:gl:custom"
         };
-        
+
         for (String folder : knownCustom) {
             others.putIfAbsent(folder, Collections.emptyMap());
         }
-        
+
     }
 
     private void buildLayerPrefix(StringBuilder sb) {
@@ -189,6 +205,7 @@ public class ComponentPalette {
         OutputStreamWriter writer = null;
         FileObject file = null;
         try {
+            var memoryFS = FileUtil.createMemoryFileSystem();
             file = memoryFS.getRoot().createData("layer.xml");
             writer = new OutputStreamWriter(file.getOutputStream(), "UTF-8");
             writer.append(sb);
@@ -206,19 +223,15 @@ public class ComponentPalette {
         return file;
     }
 
-    public PaletteController createPalette(String ... categories) {
-        DataFolder paletteFolder = 
-                DataFolder.findFolder(FileUtil.getConfigFile(FOLDER));
+    public static PaletteController getPalette(PraxisProject project, String... categories) {
+        ComponentPalette palette = CACHE.computeIfAbsent(project, ComponentPalette::new);
+        DataFolder paletteFolder
+                = DataFolder.findFolder(palette.paletteFS.findResource(FOLDER));
         Node rootNode = new PaletteFilterNode(paletteFolder.getNodeDelegate());
         return PaletteFactory.createPalette(rootNode,
                 new DefaultPaletteActions(),
-                new DefaultPaletteFilter(categories.clone()),
+                new DefaultPaletteFilter(palette.components, List.of(categories)),
                 null);
-    }
-    
-
-    public static ComponentPalette getDefault() {
-        return INSTANCE;
     }
 
     private static class TypeComparator implements Comparator<ComponentType> {
@@ -234,5 +247,24 @@ public class ComponentPalette {
             return type1.toString().compareTo(type2.toString());
 
         }
+    }
+
+    private static class FallbackComponents implements Components {
+
+        @Override
+        public List<ComponentType> componentTypes() {
+            return List.of();
+        }
+
+        @Override
+        public List<ComponentType> rootTypes() {
+            return List.of();
+        }
+
+        @Override
+        public ComponentFactory.MetaData metaData(ComponentType type) {
+            return null;
+        }
+
     }
 }

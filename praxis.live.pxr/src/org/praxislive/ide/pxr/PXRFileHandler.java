@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Neil C Smith.
+ * Copyright 2020 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -23,27 +23,27 @@ package org.praxislive.ide.pxr;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.actions.Openable;
-import org.praxislive.core.CallArguments;
 import org.praxislive.ide.core.api.Callback;
 import org.praxislive.ide.project.api.ExecutionLevel;
 import org.praxislive.ide.project.spi.FileHandler;
 import org.praxislive.ide.project.api.PraxisProject;
 import org.praxislive.ide.model.RootProxy;
-import org.praxislive.ide.pxr.api.RootRegistry;
-import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.ServiceProvider;
+import org.praxislive.core.Value;
+import org.praxislive.core.types.PError;
+import org.praxislive.ide.project.api.ExecutionElement;
 
 /**
  *
- * @author Neil C Smith (http://neilcsmith.net)
  */
-public class PXRFileHandler extends FileHandler {
+public class PXRFileHandler implements FileHandler {
 
     private static final RequestProcessor RP = new RequestProcessor();
     private PraxisProject project;
@@ -67,9 +67,9 @@ public class PXRFileHandler extends FileHandler {
         }
         this.callback = callback;
         
-        RootProxy root = RootRegistry.getDefault().findRootForFile(source.getPrimaryFile());
+        RootProxy root = PXRRootRegistry.findRootForFile(source.getPrimaryFile());
         if (root != null) {
-            callback.onReturn(CallArguments.EMPTY);
+            callback.onReturn(List.of());
             return;
         }
              
@@ -93,7 +93,7 @@ public class PXRFileHandler extends FileHandler {
 
                         @Override
                         public void run() {
-                            callback.onError(CallArguments.EMPTY);
+                            callback.onError(List.of(PError.of(ex)));
                         }
                     });
                 }
@@ -102,7 +102,7 @@ public class PXRFileHandler extends FileHandler {
     }
 
     @Override
-    public List<String> getWarnings() {
+    public List<String> warnings() {
         return warnings;
     }
     
@@ -112,7 +112,7 @@ public class PXRFileHandler extends FileHandler {
         builder.process(new Callback() {
 
             @Override
-            public void onReturn(CallArguments args) {
+            public void onReturn(List<Value> args) {
                 Openable open = source.getLookup().lookup(Openable.class);
                 if (open != null) {
                     open.open();
@@ -121,7 +121,7 @@ public class PXRFileHandler extends FileHandler {
             }
 
             @Override
-            public void onError(CallArguments args) {
+            public void onError(List<Value> args) {
                 callback.onError(args);
             
             }
@@ -132,19 +132,24 @@ public class PXRFileHandler extends FileHandler {
     public static class Provider implements FileHandler.Provider {
 
         @Override
-        public FileHandler createHandler(PraxisProject project, ExecutionLevel level, FileObject file) {
-            if (level == ExecutionLevel.BUILD && file.hasExt("pxr")) {
+        public Optional<FileHandler> createHandler(PraxisProject project, ExecutionLevel level,
+                ExecutionElement.File element) {
+            var file = element.file();
+            if (file.hasExt("pxr")) {
+                if (level != ExecutionLevel.BUILD) {
+                    throw new IllegalArgumentException("PXR files must be in build level");
+                }
                 try {
                     DataObject dob = DataObject.find(file);
                     if (dob instanceof PXRDataObject) {
-                        return new PXRFileHandler(project, (PXRDataObject) dob);
+                        return Optional.of(new PXRFileHandler(project, (PXRDataObject) dob));
                     }
                 } catch (DataObjectNotFoundException ex) {
                     // fall through
                 }
 
             }
-            return null;
+            return Optional.empty();
 
         }
     }

@@ -78,6 +78,10 @@ public final class ExtensionContainer extends AbstractIDERoot {
     public ComponentInfo getInfo() {
         return INFO;
     }
+    
+    public List<Component> extensions() {
+        return extensions;
+    }
 
     public static ExtensionContainer create(Lookup context) {
         var exts = Lookup.getDefault().lookupAll(ExtensionProvider.class)

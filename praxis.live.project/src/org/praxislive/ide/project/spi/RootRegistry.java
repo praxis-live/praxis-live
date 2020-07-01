@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2017 Neil C Smith.
+ * Copyright 2020 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -19,29 +19,19 @@
  * Please visit http://neilcsmith.net if you need additional information or
  * have any questions.
  */
-package org.praxislive.ide.pxr;
+package org.praxislive.ide.project.spi;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import org.praxislive.ide.model.RootProxy;
-import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author Neil C Smith (http://neilcsmith.net)
  */
-@ServiceProvider(service = RootProxy.Registry.class)
-public class PXRRootProxyRegistry implements RootProxy.Registry {
+public interface RootRegistry {
+    
+    public Optional<RootProxy> find(String id);
 
-    @Override
-    public Optional<RootProxy> find(String id) {
-        return Optional.ofNullable(PXRRootRegistry.getDefault().getRootByID(id));
-    }
-
-    @Override
-    public List<RootProxy> findAll() {
-        return Arrays.asList(PXRRootRegistry.getDefault().getRoots());
-    }
+    public List<RootProxy> findAll();
     
 }

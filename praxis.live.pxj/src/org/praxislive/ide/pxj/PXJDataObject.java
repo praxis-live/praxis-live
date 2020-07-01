@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2017 Neil C Smith.
+ * Copyright 2020 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -136,7 +136,7 @@ public class PXJDataObject extends MultiDataObject {
         try {
             Object o = f.getAttribute(ARGUMENT_INFO_KEY);
             if (o instanceof ArgumentInfo) {
-                o = ((ArgumentInfo) o).getProperties().get(ClassBodyContext.KEY);
+                o = ((ArgumentInfo) o).properties().get(ClassBodyContext.KEY);
                 if (o != null) {
                     Class<?> cls = Class.forName(o.toString(), true, Thread.currentThread().getContextClassLoader());
                     if (cls != null && ClassBodyContext.class.isAssignableFrom(cls)) {
@@ -287,6 +287,7 @@ public class PXJDataObject extends MultiDataObject {
             }
         }
         f.setAttribute(PXJ_DOB_KEY, this);
+        f.setAttribute(PROJECT_KEY, project);
         f.setAttribute(CONTROL_ADDRESS_KEY, controlAddress);
         f.addFileChangeListener(new ProxyListener());
         return f;

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2018 Neil C Smith.
+ * Copyright 2020 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -59,9 +59,9 @@ final class PXRVisualPanel1 extends JPanel implements DocumentListener {
         // @TODO remove temporary fixed types.
         ComponentType type = wizardPanel.type;
         if (type == null) {
-            typeField.addItem(ComponentType.create("root:audio"));
-            typeField.addItem(ComponentType.create("root:video"));
-            typeField.addItem(ComponentType.create("root:tinkerforge"));
+            typeField.addItem(ComponentType.of("root:audio"));
+            typeField.addItem(ComponentType.of("root:video"));
+            typeField.addItem(ComponentType.of("root:tinkerforge"));
         } else {
             typeField.addItem(type);
             typeField.setEnabled(false);

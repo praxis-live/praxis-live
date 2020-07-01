@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2017 Neil C Smith.
+ * Copyright 2020 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -52,7 +52,6 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author Neil C Smith <http://neilcsmith.net>
  */
 abstract class SaveTask implements Task {
 
@@ -128,7 +127,7 @@ abstract class SaveTask implements Task {
                 throw new IllegalStateException();
             }
             dob.preSave();
-            root = PXRRootRegistry.getDefault().findRootForFile(dob.getPrimaryFile());
+            root = PXRRootRegistry.findRootForFile(dob.getPrimaryFile());
             activeTasks.put(dob, this);
             updateState(State.RUNNING);
             LOG.log(Level.FINE, "Starting sync for save on {0}", root.getAddress());
@@ -170,9 +169,11 @@ abstract class SaveTask implements Task {
             components.add(component);
             if (component instanceof ContainerProxy) {
                 ContainerProxy container = (ContainerProxy) component;
-                for (String id : container.getChildIDs()) {
-                    addComponentAndChildren(components, container.getChild(id));
-                }
+//                for (String id : container.getChildIDs()) {
+//                    addComponentAndChildren(components, container.getChild(id));
+//                }
+                container.children().forEachOrdered(id -> 
+                        addComponentAndChildren(components, container.getChild(id)));
             }
         }
 

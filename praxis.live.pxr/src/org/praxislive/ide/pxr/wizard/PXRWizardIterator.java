@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2018 Neil C Smith.
+ * Copyright 2020 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -30,7 +30,6 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
-import org.praxislive.core.CallArguments;
 import org.praxislive.core.ComponentType;
 import org.praxislive.ide.core.api.Callback;
 import org.praxislive.ide.project.api.ExecutionLevel;
@@ -245,16 +244,8 @@ public final class PXRWizardIterator implements WizardDescriptor.InstantiatingIt
             DataObject dob = DataObject.find(file);
             if (dob instanceof PXRDataObject) {
 
-                new PXRFileHandler(project, (PXRDataObject) dob).process(new Callback() {
-
-                    @Override
-                    public void onReturn(CallArguments args) {
-                    }
-
-                    @Override
-                    public void onError(CallArguments args) {
-                    }
-                });
+                new PXRFileHandler(project, (PXRDataObject) dob).process(
+                        Callback.create(r -> {}));
 
             }
         } catch (Exception ex) {
@@ -269,7 +260,7 @@ public final class PXRWizardIterator implements WizardDescriptor.InstantiatingIt
         Object typeAttr = template.getAttribute("rootType");
         if (typeAttr != null) {
             try {
-                rootType = ComponentType.create(typeAttr.toString());
+                rootType = ComponentType.of(typeAttr.toString());
             } catch (Exception ex) {
                 // do nothing
             }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2014 Neil C Smith.
+ * Copyright 2020 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -35,15 +35,14 @@ import org.praxislive.ide.properties.PraxisProperty;
 
 /**
  *
- * @author Neil C Smith (http://neilcsmith.net)
  */
 public class EditorManager {
 
     public static PraxisProperty.Editor getDefaultEditor(
             PraxisProperty property, ControlInfo info) {
 
-        if (info.getOutputsInfo().length == 1) {
-            return getDefaultEditor(property, info.getOutputsInfo()[0]);
+        if (info.outputs().size() == 1) {
+            return getDefaultEditor(property, info.outputs().get(0));
         } else {
             throw new UnsupportedOperationException(
                     "EditorManager cannot currently handle properties with multiple arguments.");
@@ -53,7 +52,7 @@ public class EditorManager {
 
     private static PraxisProperty.Editor getDefaultEditor(
             PraxisProperty property, ArgumentInfo info) {
-        Class<?> type = info.getType();
+        Class<?> type = info.argumentType().asClass();
         if (PString.class.isAssignableFrom(type)) {
 //            return findStringEditor(property, info);
             return new StringEditor(property, info);
@@ -99,8 +98,8 @@ public class EditorManager {
 //    }
     public static boolean hasAdditionalEditors(
             PraxisProperty property, ControlInfo info) {
-        if (info.getOutputsInfo().length == 1) {
-            return hasAdditionalEditors(property, info.getOutputsInfo()[0]);
+        if (info.outputs().size() == 1) {
+            return hasAdditionalEditors(property, info.outputs().get(0));
         } else {
             throw new UnsupportedOperationException(
                     "EditorManager cannot currently handle properties with multiple arguments.");
@@ -109,7 +108,7 @@ public class EditorManager {
 
     private static boolean hasAdditionalEditors(
             PraxisProperty<?> property, ArgumentInfo info) {
-        Class<? extends Value> type = info.getType();
+        Class<? extends Value> type = info.argumentType().asClass();
         if (PArray.class.isAssignableFrom(type)) {
             return true;
         } else if (PMap.class.isAssignableFrom(type)) {
@@ -122,8 +121,8 @@ public class EditorManager {
 
     public static PraxisProperty.Editor[] getAdditionalEditors(
             PraxisProperty property, ControlInfo info) {
-        if (info.getOutputsInfo().length == 1) {
-            return getAdditionalEditors(property, info.getOutputsInfo()[0]);
+        if (info.outputs().size() == 1) {
+            return getAdditionalEditors(property, info.outputs().get(0));
         } else {
             throw new UnsupportedOperationException(
                     "EditorManager cannot currently handle properties with multiple arguments.");
@@ -132,7 +131,7 @@ public class EditorManager {
 
     private static PraxisProperty.Editor[] getAdditionalEditors(
             PraxisProperty<?> property, ArgumentInfo info) {
-        Class<? extends Value> type = info.getType();
+        Class<? extends Value> type = info.argumentType().asClass();
         if (PArray.class.isAssignableFrom(type)) {
             return new PraxisProperty.Editor[]{
                 new FileListEditor(property, info),

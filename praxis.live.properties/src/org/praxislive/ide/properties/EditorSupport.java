@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2014 Neil C Smith.
+ * Copyright 2020 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -26,14 +26,13 @@ import org.praxislive.core.types.PString;
 
 /**
  *
- * @author Neil C Smith
  */
 public class EditorSupport extends PropertyEditorSupport
         implements PraxisProperty.Editor {
 
     @Override
     public void setAsText(String text) throws IllegalArgumentException {
-        setValue(PString.valueOf(text));
+        setValue(PString.of(text));
     }
 
     @Override

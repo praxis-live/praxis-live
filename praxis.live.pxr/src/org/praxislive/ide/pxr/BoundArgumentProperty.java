@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2014 Neil C Smith.
+ * Copyright 2020 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -24,20 +24,21 @@ package org.praxislive.ide.pxr;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.beans.PropertyEditor;
+import java.util.List;
+import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.praxislive.base.Binding;
 import org.praxislive.core.Value;
-import org.praxislive.core.CallArguments;
 import org.praxislive.core.ControlAddress;
 import org.praxislive.core.ControlInfo;
 import org.praxislive.core.types.PString;
-import org.praxislive.impl.swing.ControlBinding;
 import org.praxislive.ide.core.api.Callback;
+import org.praxislive.ide.project.api.PraxisProject;
 import org.praxislive.ide.properties.PraxisProperty;
 
 /**
  *
- * @author Neil C Smith (http://neilcsmith.net)
  */
 public class BoundArgumentProperty extends
         PraxisProperty<Value> {
@@ -45,6 +46,7 @@ public class BoundArgumentProperty extends
     private final static Logger LOG = Logger.getLogger(BoundArgumentProperty.class.getName());
 
     private final PropertyChangeSupport pcs;
+    private final PXRHelper helper;
     private final Adaptor adaptor;
     private final ControlAddress address;
     private final ControlInfo info;
@@ -56,12 +58,12 @@ public class BoundArgumentProperty extends
     private Value value;
     
 
-    BoundArgumentProperty(ControlAddress address, ControlInfo info) {
+    BoundArgumentProperty(PraxisProject project, ControlAddress address, ControlInfo info) {
         super(Value.class);
         if (address == null || info == null) {
             throw new NullPointerException();
         }
-        if (info.getOutputsInfo().length != 1) {
+        if (info.outputs().size() != 1) {
             throw new IllegalArgumentException("Property doesn't accept single argument");
         }  
         this.address = address;
@@ -72,16 +74,19 @@ public class BoundArgumentProperty extends
         pcs = new PropertyChangeSupport(this);
         adaptor = new Adaptor();
         value = defaultValue;
-        PXRHelper.getDefault().bind(address, adaptor);
-        setName(address.getID());
+        helper = Objects.requireNonNull(project.getLookup().lookup(PXRHelper.class),
+                "No helper component found");
+        helper.bind(address, adaptor);
+        setName(address.controlID());
         
         setValue("canAutoComplete", Boolean.FALSE);
+        setValue("project", project);
         
     }
     
     private boolean isWritable(ControlInfo info) {
         boolean rw;
-        switch (info.getType()) {
+        switch (info.controlType()) {
             case Property:
                 rw = true;
                 break;
@@ -95,19 +100,12 @@ public class BoundArgumentProperty extends
     }
 
     private Value getDefault(ControlInfo info) {
-        Value[] defs = info.getDefaults();
-        Value def = null;
-        if (defs != null && defs.length > 0) {
-            def = defs[0];
-        }
-        if (def == null) {
-            def = PString.EMPTY;
-        }
-        return def;
+        var defs = info.defaults();
+        return defs.isEmpty() ? PString.EMPTY : defs.get(0);
     }
     
     private boolean isTransient(ControlInfo info) {
-        return info.getProperties().getBoolean(ControlInfo.KEY_TRANSIENT, false);
+        return info.properties().getBoolean(ControlInfo.KEY_TRANSIENT, false);
     }
     
     @Override
@@ -136,6 +134,7 @@ public class BoundArgumentProperty extends
         setValueImpl(value, true, null);
     }
 
+    @Override
     public void setValue(Value value, Callback callback) {
         setValueImpl(value, true, callback);
     }
@@ -197,11 +196,11 @@ public class BoundArgumentProperty extends
     @Override
     public void dispose() {
         super.dispose();
-        PXRHelper.getDefault().unbind(adaptor);
+        helper.unbind(address, adaptor);
     }
 
     Class<? extends Value> getArgumentType() {
-        return info.getOutputsInfo()[0].getType();
+        return info.outputs().get(0).type().asClass();
     }
     
     ControlAddress getAddress() {
@@ -228,7 +227,7 @@ public class BoundArgumentProperty extends
         }
         this.value = value;
         if (!equivalent(oldValue, value)) {
-            pcs.firePropertyChange(address.getID(), oldValue, value);
+            pcs.firePropertyChange(address.controlID(), oldValue, value);
         }
     }
 
@@ -246,27 +245,23 @@ public class BoundArgumentProperty extends
         return v1.equivalent(v2) || v2.equivalent(v1);
     }
 
-    @Deprecated
-    static BoundArgumentProperty create(ControlAddress address, ControlInfo info) {
-        return new BoundArgumentProperty(address, info);
-    }
 
-    private class Adaptor extends ControlBinding.Adaptor {
+    private class Adaptor extends Binding.Adaptor {
 
         private Callback callback;
 
         private Adaptor() {
-            setSyncRate(ControlBinding.SyncRate.Medium);
+            setSyncRate(Binding.SyncRate.Medium);
 //            setActive(false);
         }
 
         @Override
         public void update() {
             Value arg = null;
-            ControlBinding binding = getBinding();
+            var binding = getBinding();
             if (binding != null) {
-                CallArguments args = binding.getArguments();
-                if (args.getSize() > 0) {
+                var args = binding.getValues();
+                if (args.size() > 0) {
                     arg = args.get(0);
                 }
             }
@@ -276,17 +271,17 @@ public class BoundArgumentProperty extends
         }
 
         void sendValue(Value val, Callback callback) {
-            send(CallArguments.create(val));
+            send(List.of(val));
             if (callback != null) {
                 if (this.callback != null) {
-                    this.callback.onError(CallArguments.EMPTY);
+                    this.callback.onError(List.of());
                 }
                 this.callback = callback;
             }
         }
 
         @Override
-        public void onResponse(CallArguments args) {
+        public void onResponse(List<Value> args) {
             if (callback != null) {
                 Callback cb = callback;
                 callback = null;
@@ -295,7 +290,7 @@ public class BoundArgumentProperty extends
         }
 
         @Override
-        public void onError(CallArguments args) {
+        public void onError(List<Value> args) {
             if (callback != null) {
                 Callback cb = callback;
                 callback = null;

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2017 Neil C Smith.
+ * Copyright 2020 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -38,7 +38,6 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JToolBar;
 import org.praxislive.ide.pxr.api.RootEditor;
-import org.praxislive.ide.pxr.api.RootRegistry;
 import org.openide.awt.Actions;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
@@ -49,19 +48,20 @@ import org.openide.windows.CloneableTopComponent;
 
 /**
  *
- * @author Neil C Smith (http://neilcsmith.net)
  */
 public class RootEditorTopComponent extends CloneableTopComponent {
 
     private final static Action START_STOP_ACTION = new StartableRootAction();
     private final static Action ROOT_CONFIG_ACTION = new RootConfigAction();
-    private PXRDataObject dob;
-    private RootEditor editor;
+    
+    private final PXRDataObject dob;
+    private final EditorLookup lookup;
+    private final PropertyChangeListener registryListener;
+    private final JToolBar toolBar;
+    
     private JComponent editorPanel;
-    private EditorLookup lookup;
+    private RootEditor editor;
     private PXRRootProxy root;
-    private PropertyChangeListener registryListener;
-    private JToolBar toolBar;
 
     public RootEditorTopComponent(PXRDataObject dob) {
         this.setDisplayName(dob.getName());
@@ -84,9 +84,12 @@ public class RootEditorTopComponent extends CloneableTopComponent {
     @Override
     protected void componentOpened() {
         assert EventQueue.isDispatchThread();
-        root = PXRRootRegistry.getDefault().findRootForFile(dob.getPrimaryFile());
+        var registry = PXRRootRegistry.registryForFile(dob.getPrimaryFile());
+        if (registry != null) {
+            root = registry.getRootByFile(dob.getPrimaryFile());
+            registry.addPropertyChangeListener(registryListener);
+        }
         install(root);
-        RootRegistry.getDefault().addPropertyChangeListener(registryListener);
     }
 
     @Override
@@ -121,7 +124,10 @@ public class RootEditorTopComponent extends CloneableTopComponent {
     @Override
     protected void componentClosed() {
         syncEditor();
-        RootRegistry.getDefault().removePropertyChangeListener(registryListener);
+        var registry = PXRRootRegistry.registryForFile(dob.getPrimaryFile());
+        if (registry != null) {
+            registry.removePropertyChangeListener(registryListener);
+        }
         uninstall(root);
     }
 
@@ -155,7 +161,7 @@ public class RootEditorTopComponent extends CloneableTopComponent {
     }
 
     private void checkRoot() {
-        PXRRootProxy root = PXRRootRegistry.getDefault().findRootForFile(dob.getPrimaryFile());
+        PXRRootProxy root = PXRRootRegistry.findRootForFile(dob.getPrimaryFile());
         if (root == this.root) {
             return;
         }

@@ -43,7 +43,7 @@ public class EditorUtilsTest {
     @Test
     public void testExtractBaseID() {
         System.out.println("extractBaseID");
-        ComponentType type = ComponentType.create("audio:testing:test");
+        ComponentType type = ComponentType.of("audio:testing:test");
         String expResult = "test";
         String result = EditorUtils.extractBaseID(type);
         assertEquals(expResult, result);

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2018 Neil C Smith.
+ * Copyright 2020 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -21,7 +21,8 @@
  */
 package org.praxislive.ide.pxr;
 
-import org.praxislive.core.CallArguments;
+import java.util.List;
+import java.util.Optional;
 import org.praxislive.core.Component;
 import org.praxislive.core.ComponentAddress;
 import org.praxislive.core.ComponentType;
@@ -32,94 +33,95 @@ import org.praxislive.core.services.RootManagerService;
 import org.praxislive.core.types.PString;
 import org.praxislive.ide.core.api.Callback;
 import org.praxislive.ide.core.spi.ExtensionProvider;
-import org.praxislive.ide.core.api.HubUnavailableException;
 import org.praxislive.ide.model.Connection;
 import org.praxislive.ide.model.ProxyException;
 import org.praxislive.ide.core.api.AbstractHelperComponent;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.openide.util.lookup.ServiceProvider;
+import org.praxislive.core.Value;
+import org.praxislive.core.types.PError;
 
 /**
  *
- * @author Neil C Smith (http://neilcsmith.net)
  */
 public class PXRHelper extends AbstractHelperComponent {
-
-    private static final PXRHelper INSTANCE = new PXRHelper();
 
     private PXRHelper() {
     }
 
     void createComponentAndGetInfo(ComponentAddress address, ComponentType type,
-            Callback callback) throws ProxyException {
+            Callback callback) {
         try {
-            if (address.getDepth() == 1) {
-                String id = address.getRootID();
+            if (address.depth() == 1) {
+                String id = address.rootID();
                 send(RootManagerService.class, RootManagerService.ADD_ROOT,
-                        CallArguments.create(PString.valueOf(id), type),
+                        List.of(PString.of(id), type),
                         new GetInfoCallback(address, callback));
             } else {
-                String id = address.getComponentID(address.getDepth() - 1);
-                send(ControlAddress.create(address.getParentAddress(), ContainerProtocol.ADD_CHILD),
-                        CallArguments.create(PString.valueOf(id), type),
+                String id = address.componentID();
+                send(ControlAddress.of(address.parent(), ContainerProtocol.ADD_CHILD),
+                        List.of(PString.of(id), type),
                         new GetInfoCallback(address, callback));
             }
         } catch (Exception ex) {
-            throw new ProxyException(ex);
+            callback.onError(List.of(PError.of(ex)));
         }
+
     }
 
-    void removeComponent(ComponentAddress address, Callback callback) throws ProxyException {
+    void removeComponent(ComponentAddress address, Callback callback) {
         try {
-            if (address.getDepth() == 1) {
-                String id = address.getRootID();
+            if (address.depth() == 1) {
+                String id = address.rootID();
                 send(RootManagerService.class, RootManagerService.REMOVE_ROOT,
-                        CallArguments.create(PString.valueOf(id)),
+                        List.of(PString.of(id)),
                         callback);
             } else {
-                String id = address.getComponentID(address.getDepth() - 1);
-                send(ControlAddress.create(address.getParentAddress(), ContainerProtocol.REMOVE_CHILD),
-                        CallArguments.create(PString.valueOf(id)),
+                String id = address.componentID();
+                send(ControlAddress.of(address.parent(), ContainerProtocol.REMOVE_CHILD),
+                        List.of(PString.of(id)),
                         callback);
             }
         } catch (Exception ex) {
-            throw new ProxyException(ex);
+            callback.onError(List.of(PError.of(ex)));
         }
     }
 
     void connect(ComponentAddress container,
-            Connection connection, Callback callback) throws ProxyException {
+            Connection connection,
+             Callback callback) {
         connectionImpl(container, connection, true, callback);
     }
 
     void disconnect(ComponentAddress container,
-            Connection connection, Callback callback) throws ProxyException {
+            Connection connection,
+             Callback callback) {
         connectionImpl(container, connection, false, callback);
     }
 
     private void connectionImpl(ComponentAddress container,
             Connection connection,
-            boolean connect, Callback callback) throws ProxyException {
+            boolean connect, Callback callback) {
         try {
-            PString c1ID = PString.valueOf(connection.getChild1());
-            PString p1ID = PString.valueOf(connection.getPort1());
-            PString c2ID = PString.valueOf(connection.getChild2());
-            PString p2ID = PString.valueOf(connection.getPort2());
+            PString c1ID = PString.of(connection.getChild1());
+            PString p1ID = PString.of(connection.getPort1());
+            PString c2ID = PString.of(connection.getChild2());
+            PString p2ID = PString.of(connection.getPort2());
 
-            send(ControlAddress.create(container,
+            send(ControlAddress.of(container,
                     connect ? ContainerProtocol.CONNECT : ContainerProtocol.DISCONNECT),
-                    CallArguments.create(c1ID, p1ID, c2ID, p2ID),
+                    List.of(c1ID, p1ID, c2ID, p2ID),
                     callback);
         } catch (Exception ex) {
-            throw new ProxyException(ex);
+            callback.onError(List.of(PError.of(ex)));
         }
     }
 
+    private class GetInfoCallback implements Callback {
 
-    private static class GetInfoCallback implements Callback {
-
-        private ComponentAddress address;
-        private Callback infoCallback;
+        private final ComponentAddress address;
+        private final Callback infoCallback;
 
         private GetInfoCallback(ComponentAddress address, Callback infoCallback) {
             this.address = address;
@@ -127,32 +129,28 @@ public class PXRHelper extends AbstractHelperComponent {
         }
 
         @Override
-        public void onReturn(CallArguments args) {
-            ControlAddress to = ControlAddress.create(address, ComponentProtocol.INFO);
+        public void onReturn(List<Value> args) {
+            ControlAddress to = ControlAddress.of(address, ComponentProtocol.INFO);
             try {
-                INSTANCE.send(to, CallArguments.EMPTY, infoCallback);
-            } catch (HubUnavailableException ex) {
+                send(to, List.of(), infoCallback);
+            } catch (Exception ex) {
                 Exceptions.printStackTrace(ex);
-                onError(args);
+                onError(List.of(PError.of(ex)));
             }
         }
 
         @Override
-        public void onError(CallArguments args) {
+        public void onError(List<Value> args) {
             infoCallback.onError(args);
         }
-    }
-
-    public static PXRHelper getDefault() {
-        return INSTANCE;
     }
 
     @ServiceProvider(service = ExtensionProvider.class)
     public static class Provider implements ExtensionProvider {
 
         @Override
-        public Component getExtensionComponent() {
-            return getDefault();
+        public Optional<Component> createExtension(Lookup context) {
+            return Optional.of(new PXRHelper());
         }
     }
 }

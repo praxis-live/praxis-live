@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2016 Neil C Smith.
+ * Copyright 2020 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -23,7 +23,6 @@ package org.praxislive.ide.pxr;
 
 import java.awt.EventQueue;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -38,7 +37,6 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author Neil C Smith (http://neilcsmith.net)
  */
 public class SyncTask extends AbstractTask {
 
@@ -108,9 +106,12 @@ public class SyncTask extends AbstractTask {
             syncing.add(component);
             if (component instanceof ContainerProxy) {
                 ContainerProxy container = (ContainerProxy) component;
-                for (String id : container.getChildIDs()) {
-                    addComponentAndChildren(container.getChild(id));
-                }
+//                for (String id : container.getChildIDs()) {
+//                    addComponentAndChildren(container.getChild(id));
+//                }
+                container.children().forEachOrdered(id -> 
+                        addComponentAndChildren(container.getChild(id))
+                );
             }
         }
     

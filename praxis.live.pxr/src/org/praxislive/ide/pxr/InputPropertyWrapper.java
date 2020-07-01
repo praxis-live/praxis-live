@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2018 Neil C Smith.
+ * Copyright 2020 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -21,33 +21,14 @@
  */
 package org.praxislive.ide.pxr;
 
-import java.awt.AWTEvent;
-import java.awt.Component;
-import java.awt.EventQueue;
-import java.awt.Graphics;
-import java.awt.Rectangle;
-import java.awt.event.KeyEvent;
-import java.beans.PropertyEditor;
 import java.lang.reflect.InvocationTargetException;
-import javax.swing.Action;
-import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.KeyStroke;
-import org.praxislive.ide.properties.EditorSupport;
-import org.openide.explorer.propertysheet.ExPropertyEditor;
-import org.openide.explorer.propertysheet.InplaceEditor;
-import org.openide.explorer.propertysheet.PropertyEnv;
-import org.openide.explorer.propertysheet.PropertyModel;
+import java.util.List;
 import org.openide.nodes.Node;
-import org.openide.util.Exceptions;
-import org.praxislive.core.CallArguments;
 import org.praxislive.core.types.PString;
 import org.praxislive.ide.core.api.Callback;
-import org.praxislive.ide.model.ProxyException;
 
 /**
  *
- * @author Neil C Smith (http://neilcsmith.net)
  */
 class InputPropertyWrapper extends Node.Property<String> {
 
@@ -78,21 +59,7 @@ class InputPropertyWrapper extends Node.Property<String> {
 
     @Override
     public void setValue(String val) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-        try {
-            cmp.call(id, CallArguments.create(PString.valueOf(val)), new Callback() {
-                @Override
-                public void onReturn(CallArguments args) {
-                }
-                
-                @Override
-                public void onError(CallArguments args) {
-                    
-                }
-            });
-        } catch (ProxyException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-    
+        cmp.send(id, List.of(PString.of(val)), Callback.create(c -> {}));
     }
 
 }

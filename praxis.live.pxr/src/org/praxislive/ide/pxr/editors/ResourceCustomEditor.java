@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Neil C Smith.
+ * Copyright 2020 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -55,7 +55,6 @@ import org.openide.util.Utilities;
 
 /**
  *
- * @author Neil C Smith (http://neilcsmith.net)
  */
 class ResourceCustomEditor extends javax.swing.JPanel
         implements ExplorerManager.Provider {
@@ -314,7 +313,7 @@ class ResourceCustomEditor extends javax.swing.JPanel
                 env.setState(PropertyEnv.STATE_NEEDS_VALIDATION);
             } else {
                 try {
-                    current = PResource.valueOf(uriField.getText()).value();
+                    current = PResource.parse(uriField.getText()).value();
                     env.setState(PropertyEnv.STATE_NEEDS_VALIDATION);
                 } catch (Exception ex) {
                     env.setState(PropertyEnv.STATE_INVALID);
@@ -333,7 +332,7 @@ class ResourceCustomEditor extends javax.swing.JPanel
                 if (current == null) {
                     editor.setValue(PString.EMPTY);
                 } else {
-                    editor.setValue(PResource.valueOf(current));
+                    editor.setValue(PResource.of(current));
                 }
             }
         }

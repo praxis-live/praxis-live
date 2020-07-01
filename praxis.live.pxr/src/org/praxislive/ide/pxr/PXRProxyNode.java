@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2019 Neil C Smith.
+ * Copyright 2020 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -48,7 +48,6 @@ import javax.swing.AbstractAction;
 
 /**
  *
- * @author Neil C Smith (http://neilcsmith.net)
  */
 class PXRProxyNode extends AbstractNode {
 
@@ -72,7 +71,7 @@ class PXRProxyNode extends AbstractNode {
         super(children, lookup);
         this.component = component;
         this.preferredAction = new PreferredAction();
-        setName(component.getAddress().getID());
+        setName(component.getAddress().componentID());
         refreshProperties();
         refreshActions();
     }
@@ -147,20 +146,15 @@ class PXRProxyNode extends AbstractNode {
 
     private void destroyImpl() {
         assert EventQueue.isDispatchThread();
-        try {
-            PXRContainerProxy container = component.getParent();
-            container.removeChild(container.getChildID(component), null);
-//            component.dispose(); //@TODO should be done from container callback?
-        } catch (ProxyException ex) {
-            Exceptions.printStackTrace(ex);
-        }
+        PXRContainerProxy container = component.getParent();
+        container.removeChild(container.getChildID(component), null);
     }
 
     @Override
     public Image getIcon(int type) {
-        if (icon == null) {
-            icon = Components.getIcon(component.getType());
-        }
+//        if (icon == null) {
+//            icon = Components.getIcon(component.getType());
+//        }
         return icon;
     }
 
@@ -203,10 +197,10 @@ class PXRProxyNode extends AbstractNode {
     private List<String> inputControls() {
         ComponentInfo info = component.getInfo();
         List<String> inputs = new ArrayList<>();
-        for (String id : info.getControls()) {
-            ControlInfo ci = info.getControlInfo(id);
-            if (ci.getType() == ControlInfo.Type.Function &&
-                    ci.getProperties().getString("input-port", "").equals(id)) {
+        for (String id : info.controls()) {
+            ControlInfo ci = info.controlInfo(id);
+            if (ci.controlType() == ControlInfo.Type.Function
+                    && ci.properties().getString("input-port", "").equals(id)) {
                 inputs.add(id);
             }
         }
@@ -235,17 +229,16 @@ class PXRProxyNode extends AbstractNode {
             }
             component.getEditorAction().actionPerformed(e);
         }
-        
+
     }
-    
-    
+
     static class ContainerChildren extends Children.Keys<String> {
 
         final PXRContainerProxy container;
 
         private ContainerChildren(PXRContainerProxy container) {
             this.container = container;
-            setKeys(container.getChildIDs());
+            update();
         }
 
         @Override
@@ -259,7 +252,7 @@ class PXRProxyNode extends AbstractNode {
         }
 
         private void update() {
-            setKeys(container.getChildIDs());
+            setKeys(container.children().toArray(String[]::new));
         }
 
     }

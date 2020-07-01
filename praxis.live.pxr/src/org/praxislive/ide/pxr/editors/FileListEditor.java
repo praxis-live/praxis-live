@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Neil C Smith.
+ * Copyright 2020 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -45,7 +45,6 @@ import org.openide.explorer.propertysheet.PropertyEnv;
 
 /**
  *
- * @author Neil C Smith (http://neilcsmith.net)
  */
 public class FileListEditor extends EditorSupport
         implements SubCommandEditor, ExPropertyEditor {
@@ -202,10 +201,10 @@ public class FileListEditor extends EditorSupport
         File[] files = dir.listFiles();
         List<PResource> uris = new ArrayList<PResource>();
         for (File f : files) {
-            uris.add(PResource.valueOf(f.toURI()));
+            uris.add(PResource.of(f.toURI()));
         }
         Collections.sort(uris);
-        return PArray.valueOf(uris);
+        return PArray.of(uris);
     }
 
     private File resolveDirectory(Token file) throws Exception {

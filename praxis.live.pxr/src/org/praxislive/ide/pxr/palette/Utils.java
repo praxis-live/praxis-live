@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 2018 Neil C Smith.
+ * Copyright 2020 Neil C Smith.
  * 
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -37,7 +37,6 @@ import org.praxislive.ide.core.api.IDE;
 
 /**
  *
- * @author Neil C Smith - http://www.neilcsmith.net
  */
 class Utils {
 
@@ -63,7 +62,7 @@ class Utils {
 
     private static XMLFileSystem layer;
 
-    private static Preferences info = IDE.getDefault().getPreferences();
+    private static Preferences info = IDE.getPreferences();
 
     private Utils() {
     }

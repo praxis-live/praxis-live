@@ -29,7 +29,8 @@ import org.netbeans.api.project.Project;
  */
 public interface PraxisProject extends Project {
 
-    public final static String PROJECT_LAYER_PATH = "Projects/org-praxislive-ide-project";
+    public final static String TYPE = "org-praxislive-ide-project";
+    public final static String PROJECT_LAYER_PATH = "Projects/" + TYPE;
     public final static String LOOKUP_PATH = PROJECT_LAYER_PATH + "/Lookup";
 
 }

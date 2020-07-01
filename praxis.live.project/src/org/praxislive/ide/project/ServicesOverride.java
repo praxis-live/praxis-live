@@ -32,6 +32,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import org.praxislive.core.Call;
 import org.praxislive.core.ComponentAddress;
 import org.praxislive.core.ControlAddress;
@@ -52,6 +53,7 @@ import org.praxislive.core.protocols.ComponentProtocol;
 import org.praxislive.core.services.Service;
 import org.praxislive.core.services.Services;
 import org.praxislive.ide.core.api.AbstractIDERoot;
+import org.praxislive.ide.project.spi.RootLifecycleHandler;
 
 /**
  *
@@ -65,18 +67,20 @@ class ServicesOverride extends AbstractIDERoot implements RootHub.ServiceProvide
             .control(SystemManagerService.SYSTEM_EXIT, SystemManagerService.SYSTEM_EXIT_INFO)
             .build();
     
+    private final DefaultPraxisProject project;
     private final Set<String> knownRoots;
     
     private ComponentAddress defaultService;
 
-    ServicesOverride() {
+    ServicesOverride(DefaultPraxisProject project) {
+        this.project = project;
+        knownRoots = new LinkedHashSet<>();
         registerControl(RootManagerService.ADD_ROOT, new AddRootControl());
         registerControl(RootManagerService.REMOVE_ROOT, new RemoveRootControl());
         registerControl(RootManagerService.ROOTS, new RootsControl());
 //        registerProtocol(RootManagerService.class);
         registerControl(SystemManagerService.SYSTEM_EXIT, new ExitControl());
 //        registerProtocol(SystemManagerService.class);
-        knownRoots = new LinkedHashSet<>();
     }
 
     @Override
@@ -161,8 +165,11 @@ class ServicesOverride extends AbstractIDERoot implements RootHub.ServiceProvide
             List<Call> calls = pending.get(rootID);
             if (calls == null) {
                 LOG.log(Level.FINE, "No pending calls found for root removal /{0}", rootID);
-                List<Task> tasks = Utils.findRootDeletionTasks("Deleting /" + rootID,
-                        Collections.singleton(rootID));
+                var description = "Deleting /" + rootID;
+                var rootSet = Set.of(rootID);
+                var tasks = project.getLookup().lookupAll(RootLifecycleHandler.class).stream()
+                        .flatMap(handler -> handler.getDeletionTask(description, rootSet).stream())
+                        .collect(Collectors.toList());
                 if (tasks.isEmpty()) {
                     LOG.log(Level.FINE, "No tasks found for root removal /{0}", rootID);
                     Object ret = DialogDisplayer.getDefault().notify(
