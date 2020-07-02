@@ -85,6 +85,7 @@ public class AutostartFileHandler implements FileHandler {
                             project.getProjectDirectory().equals(owner.getProjectDirectory())) {
                         try {
                             root.send("start", List.of(), callback);
+                            return;
                         } catch (Exception ex) {
                             Exceptions.printStackTrace(ex);
                         }

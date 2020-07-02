@@ -16,13 +16,13 @@
                property="praxiscore.dist.dir.exists" />
     <fail unless="praxiscore.dist.dir.exists"
           message="PraxisCORE distribution not found for version ${praxiscore.version}" />
-    <copy todir="${suite.build.dir}/cluster/praxiscore/" verbose="true">
+    <copy todir="${suite.build.dir}/praxiscore/" verbose="true">
       <fileset dir="${praxiscore.dist.dir}" />
     </copy>
   </target>
     
   <target name="-check-praxiscore-embed" >
-    <available file="${suite.build.dir}/cluster/praxiscore/repo/praxiscore-api-${praxiscore.version}.jar"
+    <available file="${suite.build.dir}/praxiscore/repo/praxiscore-api-${praxiscore.version}.jar"
                property="praxiscore.exists" />
   </target>
     

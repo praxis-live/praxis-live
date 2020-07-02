@@ -379,13 +379,14 @@ public class DefaultPraxisProject implements PraxisProject {
         @Override
         protected void afterTask(Task task) {
             var log = task.log();
-            if (log.isEmpty()) {
+            if (!log.isEmpty()) {
                 warnings.put(task, List.copyOf(log));
             }
         }
 
         @Override
         protected void afterExecute() {
+            progress.finish();
             if (!warnings.isEmpty()) {
                 ProjectDialogManager.getDefault()
                         .showWarningsDialog(DefaultPraxisProject.this, warnings);

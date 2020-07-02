@@ -43,7 +43,7 @@ import org.praxislive.ide.project.spi.RootRegistry;
  *
  */
 @ProjectServiceProvider(projectType = PraxisProject.TYPE,
-        service = RootRegistry.class)
+        service = {RootRegistry.class, PXRRootRegistry.class})
 public class PXRRootRegistry implements RootRegistry {
 
     private final PraxisProject project;

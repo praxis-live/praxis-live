@@ -104,7 +104,7 @@ class PXRBuilder {
         checkVersion();
         buildElementIterator();
         process();
-    }
+        }
 
     private void checkVersion() {
 //        try {

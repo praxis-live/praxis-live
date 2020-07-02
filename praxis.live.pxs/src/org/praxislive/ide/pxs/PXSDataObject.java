@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Neil C Smith.
+ * Copyright 2020 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -22,6 +22,7 @@
 package org.praxislive.ide.pxs;
 
 import java.io.IOException;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataNode;
 import org.openide.loaders.DataObjectExistsException;
@@ -58,14 +59,15 @@ public class PXSDataObject extends MultiDataObject {
         @Override
         public void runScript() {
             try {
-            FileObject file = getPrimaryFile();
-            String script = file.asText();
-            script = "set _PWD " + file.getURL().toURI() + "\n" + script;
-            //PXSExtension.executeScript(script);
-            PXSHelper.executeScript(script);
-        } catch (Exception ex) {
-            Exceptions.printStackTrace(ex);
-        }
+                var file = getPrimaryFile();
+                var project = FileOwnerQuery.getOwner(file);
+                var helper = project.getLookup().lookup(PXSHelper.class);
+                String script = file.asText();
+                script = "set _PWD " + file.toURI() + "\n" + script;
+                helper.executeScript(script);
+            } catch (Exception ex) {
+                Exceptions.printStackTrace(ex);
+            }
         }
 
     }

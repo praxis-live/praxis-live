@@ -62,6 +62,7 @@ class PXPReader {
         this.projectDir = projectDir;
         this.data = data;
         this.props = props;
+        this.level = ExecutionLevel.CONFIGURE;
         elements = new EnumMap<>(ExecutionLevel.class);
         for (ExecutionLevel l : ExecutionLevel.values()) {
             elements.put(l, new ArrayList<>());

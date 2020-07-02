@@ -21,12 +21,14 @@
  */
 package org.praxislive.ide.project;
 
+import java.awt.EventQueue;
 import org.praxislive.ide.core.api.Logging;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+import javax.swing.Timer;
 import org.praxislive.hub.Hub;
 import org.praxislive.ide.core.api.Task;
 import org.openide.util.Exceptions;
@@ -163,11 +165,32 @@ class HubManager {
     }
 
     private class InitHubTask extends AbstractTask {
+        
+        private ProjectHelper helper;
+        private int count;
+        private Timer timer;
 
         @Override
         protected void handleExecute() throws Exception {
             initHub();
-            updateState(State.COMPLETED);
+            helper = lookup.lookup(ProjectHelper.class);
+            if (helper == null) {
+                updateState(State.ERROR);
+            } else {
+                timer = new Timer(50, e -> checkHelper());
+                timer.start();
+                updateState(State.RUNNING);
+            }
+        }
+        
+        private void checkHelper() {
+            if (helper.isConnected()) {
+                timer.stop();
+                updateState(State.COMPLETED);
+            } else if (count++ > 10) {
+                timer.stop();
+                updateState(State.ERROR);
+            }
         }
 
     }

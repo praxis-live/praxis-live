@@ -1,8 +1,0 @@
-Manifest-Version: 1.0
-AutoUpdate-Show-In-Client: true
-OpenIDE-Module: com.revivius.nb.darcula
-OpenIDE-Module-Install: com/revivius/nb/darcula/Installer.class
-OpenIDE-Module-Layer: com/revivius/nb/darcula/layer.xml
-OpenIDE-Module-Localizing-Bundle: com/revivius/nb/darcula/Bundle.properties
-OpenIDE-Module-Specification-Version: 1.0
-

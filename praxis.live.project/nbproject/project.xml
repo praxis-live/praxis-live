@@ -191,6 +191,7 @@
             </module-dependencies>
             <public-packages>
                 <package>org.praxislive.ide.project.api</package>
+                <package>org.praxislive.ide.project.spi</package>
             </public-packages>
         </data>
     </configuration>

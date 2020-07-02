@@ -219,6 +219,7 @@
                 <friend>org.praxislive.ide.pxr.midi</friend>
                 <friend>org.praxislive.ide.pxr.osc</friend>
                 <package>org.praxislive.ide.pxr.api</package>
+                <package>org.praxislive.ide.pxr.spi</package>
             </friend-packages>
         </data>
     </configuration>

@@ -1,8 +1,0 @@
-Manifest-Version: 1.0
-OpenIDE-Module: org.praxislive.ide.terminal
-OpenIDE-Module-Layer: org/praxislive/ide/terminal/resources/layer.xml
-OpenIDE-Module-Localizing-Bundle: org/praxislive/ide/terminal/resources/Bundle.properties
-OpenIDE-Module-Requires: org.openide.windows.WindowManager
-OpenIDE-Module-Specification-Version: 1.0
-AutoUpdate-Essential-Module: true
-AutoUpdate-Show-In-Client: false

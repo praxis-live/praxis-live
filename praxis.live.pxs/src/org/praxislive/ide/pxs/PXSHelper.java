@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2018 Neil C Smith.
+ * Copyright 2020 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -21,45 +21,43 @@
  */
 package org.praxislive.ide.pxs;
 
-import org.praxislive.core.CallArguments;
+import java.util.List;
+import java.util.Optional;
 import org.praxislive.core.Component;
 import org.praxislive.core.services.ScriptService;
-import org.praxislive.core.services.ServiceUnavailableException;
 import org.praxislive.core.types.PString;
 import org.praxislive.ide.core.spi.ExtensionProvider;
-import org.praxislive.ide.core.api.HubUnavailableException;
 import org.praxislive.ide.core.api.AbstractHelperComponent;
 import org.openide.util.Exceptions;
-import org.openide.util.lookup.ServiceProvider;
+import org.openide.util.Lookup;
+import org.praxislive.ide.project.api.PraxisProject;
 
 /**
  *
- * @author Neil C Smith (http://neilcsmith.net)
  */
-@ServiceProvider(service = ExtensionProvider.class)
-public class PXSHelper implements ExtensionProvider {
-
-    private final static ComponentImpl component = new ComponentImpl();
-
-    @Override
-    public Component getExtensionComponent() {
-        return component;
+public class PXSHelper extends AbstractHelperComponent {
+    
+    private PXSHelper(PraxisProject project) {
+        
     }
 
-    public static void executeScript(String script) {
-        component.executeScript(script);
-    }
-
-    private static class ComponentImpl extends AbstractHelperComponent {
-
-        private void executeScript(String script) {
-            try {
-                send(ScriptService.class, ScriptService.EVAL, CallArguments.create(PString.valueOf(script)), null);
-            } catch (HubUnavailableException ex) {
-                Exceptions.printStackTrace(ex);
-            } catch (ServiceUnavailableException ex) {
-                Exceptions.printStackTrace(ex);
-            }
+    public void executeScript(String script) {
+        try {
+            send(ScriptService.class, ScriptService.EVAL,
+                    List.of(PString.of(script)), null);
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
         }
     }
+
+    public static class Provider implements ExtensionProvider {
+
+        @Override
+        public Optional<Component> createExtension(Lookup context) {
+            return Optional.ofNullable(context.lookup(PraxisProject.class))
+                    .map(PXSHelper::new);
+        }
+
+    }
+
 }

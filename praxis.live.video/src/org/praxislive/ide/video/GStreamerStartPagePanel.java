@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2018 Neil C Smith.
+ * Copyright 2020 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -41,7 +41,6 @@ import org.praxislive.video.gstreamer.configuration.GStreamerSettings;
 
 /**
  *
- * @author Neil C Smith - http://www.neilcsmith.net
  */
 @Messages({
     "TITLE_GStreamerStartPanel=Video playback and capture",
@@ -72,7 +71,7 @@ public class GStreamerStartPagePanel extends javax.swing.JPanel {
         } else {
             downloadLink = null;
             String link = "";
-            Preferences info = IDE.getDefault().getPreferences();
+            Preferences info = IDE.getPreferences();
             if (Platform.isWindows()) {
                 if (Platform.is64Bit()) {
                     link = info.get(KEY_DOWNLOAD_WIN64, "");
