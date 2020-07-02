@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2014 Neil C Smith.
+ * Copyright 2020 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -21,24 +21,26 @@
  */
 package org.praxislive.ide.pxr.graph;
 
+import java.util.Optional;
+import org.openide.filesystems.FileObject;
 import org.praxislive.ide.model.RootProxy;
-import org.praxislive.ide.pxr.api.RootEditor;
+import org.praxislive.ide.pxr.spi.RootEditor;
 import org.openide.util.lookup.ServiceProvider;
+import org.praxislive.ide.project.api.PraxisProject;
 
 /**
  *
- * @author Neil C Smith <http://neilcsmith.net>
  */
 @ServiceProvider(service = RootEditor.Provider.class)
 public class GraphEditorProvider implements RootEditor.Provider {
 
     @Override
-    public RootEditor createEditor(RootProxy root) {
+    public Optional<RootEditor> createEditor(PraxisProject project, FileObject file, RootProxy root) {
         String type = root.getType().toString();
         if (type.startsWith("root:")) {
-            return new GraphEditor(root, type.substring(5));
+            return Optional.of(new GraphEditor(project, file, root, type.substring(5)));
         }
-        return null;
+        return Optional.empty();
     }
 
 }

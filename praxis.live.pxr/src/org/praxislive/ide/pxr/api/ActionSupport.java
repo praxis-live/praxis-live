@@ -21,6 +21,7 @@
  */
 package org.praxislive.ide.pxr.api;
 
+import org.praxislive.ide.pxr.spi.RootEditor;
 import java.util.List;
 import java.util.Set;
 import org.praxislive.ide.core.api.Callback;

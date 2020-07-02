@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 2012 Neil C Smith.
+ * Copyright 2020 Neil C Smith.
  * 
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -31,51 +31,61 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.Objects;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import net.miginfocom.swing.MigLayout;
-import org.praxislive.core.ControlAddress;
+import org.openide.util.Exceptions;
+import org.praxislive.core.ComponentInfo;
+import org.praxislive.core.Info;
 import org.praxislive.core.Lookup;
-import org.praxislive.impl.swing.BindingContext;
-import org.praxislive.impl.swing.ControlBinding.Adaptor;
+import org.praxislive.core.protocols.ComponentProtocol;
+import org.praxislive.core.protocols.ContainerProtocol;
+import org.praxislive.core.protocols.StartableProtocol;
 import org.praxislive.gui.GuiContext;
 import org.praxislive.gui.Keys;
-import org.praxislive.impl.swing.AbstractSwingRoot;
-import org.praxislive.impl.InstanceLookup;
-import org.praxislive.impl.RootState;
+import org.praxislive.ide.core.api.AbstractIDERoot;
+import org.praxislive.ide.project.api.PraxisProject;
 
 /**
  *
- * @author Neil C Smith
  */
-public class DockableGuiRoot extends AbstractSwingRoot {
+public class DockableGuiRoot extends AbstractIDERoot {
     
     private final static Map<String, DockableGuiRoot> REGISTRY = 
             new HashMap<String, DockableGuiRoot>();
+    private final static ComponentInfo INFO = Info.component(cmp -> cmp
+            .merge(ComponentProtocol.API_INFO)
+            .merge(ContainerProtocol.API_INFO)
+            .merge(StartableProtocol.API_INFO)
+    );
+    
+    private final PraxisProject project;
     
     private JFrame frame;
 //    private JScrollPane scrollPane;
     private JPanel container;
     private MigLayout layout;
     private LayoutChangeListener layoutListener;
-    private Bindings bindings;
     private Context context;
     private Lookup lookup;
     private GuiEditor activeEditor;
 
-    public DockableGuiRoot() {
-//        bindingCache = new HashMap<ControlAddress, DefaultBindingControl>();
+    public DockableGuiRoot(PraxisProject project) {
+        this.project = Objects.requireNonNull(project);
+    }
+
+    @Override
+    public ComponentInfo getInfo() {
+        return INFO;
     }
 
     @Override
     protected void setup() {
         frame = new JFrame();
-        frame.setTitle("PraxisLIVE: " + getAddress());
-//        frame.setSize(150, 50);
+        frame.setTitle("PraxisLIVE : " + getAddress());
         frame.setMinimumSize(new Dimension(150, 50));
         frame.addWindowListener(new WindowAdapter() {
 
@@ -86,29 +96,26 @@ public class DockableGuiRoot extends AbstractSwingRoot {
                         setIdle();
                     }
                 } catch (Exception ex) {
-                    Logger.getLogger(DockableGuiRoot.class.getName()).log(Level.SEVERE, null, ex);
+                    Exceptions.printStackTrace(ex);
                 }
             }
         });
-//        frame.getContentPane().setLayout(new MigLayout("fill", "[fill, grow]"));
         layout = new MigLayout("", "[fill]");
         container = new JPanel(layout);
         container.addContainerListener(new ChildrenListener());
         container.putClientProperty(Keys.Address, getAddress());
         layoutListener = new LayoutChangeListener();
-//        frame.getContentPane().add(new JScrollPane(container), "grow, push");
         frame.getContentPane().add(new JScrollPane(container));
         
-        REGISTRY.put(getAddress().getRootID(), this);
+        REGISTRY.put(computeID(project, getAddress().rootID()), this);
         
     }
 
     @Override
     public Lookup getLookup() {
         if (lookup == null) {
-            bindings = new Bindings();
             context = new Context();
-            lookup = InstanceLookup.create(super.getLookup(), bindings, context);
+            lookup = Lookup.of(super.getLookup(), context);
         }
         return lookup;
     }
@@ -159,7 +166,7 @@ public class DockableGuiRoot extends AbstractSwingRoot {
         }
         activeEditor = editor;
         editor.addRootPanel(container);
-        if (getState() != RootState.ACTIVE_RUNNING) {
+        if (getState() != State.ACTIVE_RUNNING) {
             Utils.disableAll(container);
         }
     }
@@ -169,7 +176,7 @@ public class DockableGuiRoot extends AbstractSwingRoot {
             editor.removeRootPanel(container);
             activeEditor = null;
             frame.getContentPane().add(new JScrollPane(container));
-            if (getState() == RootState.ACTIVE_RUNNING) {           
+            if (getState() == State.ACTIVE_RUNNING) {           
                 frame.pack();
                 frame.setVisible(true);
                 frame.requestFocus();
@@ -178,21 +185,12 @@ public class DockableGuiRoot extends AbstractSwingRoot {
         }
     }
     
-    static DockableGuiRoot find(String id) {
-        return REGISTRY.get(id);
+    static DockableGuiRoot find(PraxisProject project, String id) {
+        return REGISTRY.get(computeID(project, id));
     }
-
-    private class Bindings extends BindingContext {
-
-        @Override
-        public void bind(ControlAddress address, Adaptor adaptor) {
-            GuiHelper.getDefault().bind(address, adaptor);
-        }
-
-        @Override
-        public void unbind(Adaptor adaptor) {
-            GuiHelper.getDefault().unbind(adaptor);
-        }
+    
+    private static String computeID(PraxisProject project, String rootID) {
+        return project.getProjectDirectory().getPath() + "!" + rootID;
     }
 
     private class Context extends GuiContext {
@@ -235,6 +233,7 @@ public class DockableGuiRoot extends AbstractSwingRoot {
 
     private class LayoutChangeListener implements PropertyChangeListener {
 
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
             if (evt.getSource() instanceof JComponent) {
                 JComponent comp = (JComponent) evt.getSource();

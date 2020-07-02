@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2019 Neil C Smith.
+ * Copyright 2020 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -54,7 +54,6 @@ import java.util.stream.Collectors;
 import javax.swing.*;
 import javax.swing.border.LineBorder;
 import javax.swing.text.DefaultEditorKit;
-import org.praxislive.core.CallArguments;
 import org.praxislive.core.ComponentType;
 import org.praxislive.core.ComponentInfo;
 import org.praxislive.core.ControlInfo;
@@ -80,7 +79,7 @@ import org.praxislive.ide.model.RootProxy;
 import org.praxislive.ide.pxr.api.ActionSupport;
 import org.praxislive.ide.pxr.api.EditorUtils;
 import org.praxislive.ide.pxr.api.PaletteUtils;
-import org.praxislive.ide.pxr.api.RootEditor;
+import org.praxislive.ide.pxr.spi.RootEditor;
 import java.awt.AWTEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
@@ -111,6 +110,8 @@ import org.openide.util.Lookup;
 import org.openide.util.actions.Presenter;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
+import org.praxislive.core.Value;
+import org.praxislive.ide.project.api.PraxisProject;
 
 /**
  *
@@ -125,6 +126,9 @@ public class GraphEditor extends RootEditor {
     final static String ATTR_GRAPH_COLORS = "graph.colors";
     final static String ATTR_GRAPH_COMMENT = "graph.comment";
     final static String ATTR_GRAPH_PROPERTIES = "graph.properties";
+
+    private final PraxisProject project;
+    private final FileObject file;
     private final RootProxy root;
     private final Map<String, ComponentProxy> knownChildren;
     private final Set<Connection> knownConnections;
@@ -158,7 +162,9 @@ public class GraphEditor extends RootEditor {
 
     private final ColorsAction[] colorsActions;
 
-    public GraphEditor(RootProxy root, String category) {
+    public GraphEditor(PraxisProject project, FileObject file, RootProxy root, String category) {
+        this.project = project;
+        this.file = file;
         this.root = root;
         knownChildren = new LinkedHashMap<>();
         knownConnections = new LinkedHashSet<>();
@@ -177,7 +183,7 @@ public class GraphEditor extends RootEditor {
         pasteAction = new PasteActionPerformer(this, manager);
         duplicateAction = new DuplicateActionPerformer(this, manager);
 
-        PaletteController palette = PaletteUtils.getPalette("core", category);
+        PaletteController palette = PaletteUtils.getPalette(project, "core", category);
 
         lookup = new ProxyLookup(ExplorerUtils.createLookup(manager, buildActionMap()),
                 Lookups.fixed(palette));
@@ -320,7 +326,7 @@ public class GraphEditor extends RootEditor {
         propertyModeMenu.add(new JRadioButtonMenuItem(new PropertyModeAction("Show all", PropertyMode.Show)));
         propertyModeMenu.add(new JRadioButtonMenuItem(new PropertyModeAction("Hide all", PropertyMode.Hide)));
         menu.add(propertyModeMenu);
-        
+
         menu.add(new CommentAction(scene));
         return menu;
     }
@@ -548,8 +554,8 @@ public class GraphEditor extends RootEditor {
             }
         }));
         ComponentInfo info = cmp.getInfo();
-        for (String portID : info.getPorts()) {
-            PortInfo pi = info.getPortInfo(portID);
+        for (String portID : info.ports()) {
+            PortInfo pi = info.portInfo(portID);
             if (LOG.isLoggable(Level.FINEST)) {
                 LOG.finest("Building port " + portID);
             }
@@ -579,8 +585,8 @@ public class GraphEditor extends RootEditor {
             scene.removePinWithEdges(pin);
         }
         ComponentInfo info = cmp.getInfo();
-        for (String portID : info.getPorts()) {
-            PortInfo pi = info.getPortInfo(portID);
+        for (String portID : info.ports()) {
+            PortInfo pi = info.portInfo(portID);
             if (LOG.isLoggable(Level.FINEST)) {
                 LOG.finest("Building port " + portID);
             }
@@ -655,7 +661,8 @@ public class GraphEditor extends RootEditor {
 
         ControlInfo control = cmp.getInfo().controls().contains(pinID)
                 ? cmp.getInfo().controlInfo(pinID) : null;
-        if (control != null && control.isProperty()
+        if (control != null && (control.controlType() == ControlInfo.Type.Property
+                || control.controlType() == ControlInfo.Type.ReadOnlyProperty)
                 && (propertyMode == PropertyMode.Show
                 || control.properties().getBoolean("preferred", false))) {
             Node.Property<?> matchingProp = Utils.findMatchingProperty(cmp, pinID);
@@ -667,7 +674,7 @@ public class GraphEditor extends RootEditor {
     }
 
     private Alignment getPinAlignment(PortInfo info) {
-        switch (info.getDirection()) {
+        switch (info.direction()) {
             case IN:
                 return Alignment.Left;
             case OUT:
@@ -718,8 +725,8 @@ public class GraphEditor extends RootEditor {
         if (container == null) {
             return;
         }
-        List<String> ch = Arrays.asList(container.getChildIDs());
-        Set<String> tmp = new LinkedHashSet<String>(knownChildren.keySet());
+        List<String> ch = container.children().collect(Collectors.toList());
+        Set<String> tmp = new LinkedHashSet<>(knownChildren.keySet());
         tmp.removeAll(ch);
         // tmp now contains children that have been removed from model
         for (String id : tmp) {
@@ -749,8 +756,8 @@ public class GraphEditor extends RootEditor {
         if (container == null) {
             return;
         }
-        List<Connection> cons = Arrays.asList(container.getConnections());
-        Set<Connection> tmp = new LinkedHashSet<Connection>(knownConnections);
+        List<Connection> cons = container.connections().collect(Collectors.toList());
+        Set<Connection> tmp = new LinkedHashSet<>(knownConnections);
         tmp.removeAll(cons);
         // tmp now contains connections that have been removed from model
         for (Connection con : tmp) {
@@ -824,13 +831,12 @@ public class GraphEditor extends RootEditor {
         if (container == null) {
             return;
         }
-        for (String childID : container.getChildIDs()) {
-            syncAttributes(container.getChild(childID));
-        }
+        container.children().map(id -> container.getChild(id))
+                .forEach(this::syncAttributes);
     }
 
     private void syncAttributes(ComponentProxy cmp) {
-        Widget widget = scene.findWidget(cmp.getAddress().getID());
+        Widget widget = scene.findWidget(cmp.getAddress().componentID());
         if (widget instanceof NodeWidget) {
             NodeWidget nodeWidget = (NodeWidget) widget;
             String x = Integer.toString((int) nodeWidget.getLocation().getX());
@@ -856,18 +862,18 @@ public class GraphEditor extends RootEditor {
             try {
                 container.addChild(id, type, new Callback() {
                     @Override
-                    public void onReturn(CallArguments args) {
+                    public void onReturn(List<Value> args) {
                         syncGraph(true, true);
                     }
 
                     @Override
-                    public void onError(CallArguments args) {
+                    public void onError(List<Value> args) {
                         syncGraph(true);
                         DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message("Error creating component", NotifyDescriptor.ERROR_MESSAGE));
                     }
                 });
                 syncGraph(false);
-            } catch (ProxyException ex) {
+            } catch (Exception ex) {
                 Exceptions.printStackTrace(ex);
             }
 
@@ -878,7 +884,7 @@ public class GraphEditor extends RootEditor {
         List<String> warnings = new ArrayList<>(1);
         if (getActionSupport().importSubgraph(container, file, warnings, new Callback() {
             @Override
-            public void onReturn(CallArguments args) {
+            public void onReturn(List<Value> args) {
                 syncGraph(true, true);
                 if (!warnings.isEmpty()) {
                     String errors = warnings.stream().collect(Collectors.joining("\n"));
@@ -888,7 +894,7 @@ public class GraphEditor extends RootEditor {
             }
 
             @Override
-            public void onError(CallArguments args) {
+            public void onError(List<Value> args) {
                 syncGraph(true);
                 String errors = warnings.stream().collect(Collectors.joining("\n"));
                 DialogDisplayer.getDefault().notify(
@@ -900,7 +906,7 @@ public class GraphEditor extends RootEditor {
     }
 
     private String getFreeID(ComponentType type) {
-        Set<String> existing = new HashSet<String>(Arrays.asList(container.getChildIDs()));
+        Set<String> existing = container.children().collect(Collectors.toSet());
         return EditorUtils.findFreeID(existing, EditorUtils.extractBaseID(type), true);
 
     }
@@ -929,7 +935,7 @@ public class GraphEditor extends RootEditor {
                 assert src instanceof ComponentProxy;
                 if (src instanceof ComponentProxy) {
                     ComponentProxy cmp = (ComponentProxy) src;
-                    String id = cmp.getAddress().getID();
+                    String id = cmp.getAddress().componentID();
                     rebuildChild(id, cmp);
                 }
             }
@@ -975,16 +981,14 @@ public class GraphEditor extends RootEditor {
             PinID<String> p1 = (PinID<String>) scene.findObject(pw1);
             PinID<String> p2 = (PinID<String>) scene.findObject(pw2);
             try {
-                container.connect(new Connection(p1.getParent(), p1.getName(), p2.getParent(), p2.getName()), new Callback() {
-                    @Override
-                    public void onReturn(CallArguments args) {
-                    }
-
-                    @Override
-                    public void onError(CallArguments args) {
-                    }
-                });
-            } catch (ProxyException ex) {
+                container.connect(new Connection(p1.getParent(),
+                        p1.getName(),
+                        p2.getParent(),
+                        p2.getName()),
+                        Callback.create(r -> {
+                        })
+                );
+            } catch (Exception ex) {
                 Exceptions.printStackTrace(ex);
             }
         }
@@ -1119,38 +1123,16 @@ public class GraphEditor extends RootEditor {
             }
             for (Object obj : sel) {
                 if (obj instanceof String) {
-                    try {
-                        container.removeChild((String) obj, new Callback() {
-                            @Override
-                            public void onReturn(CallArguments args) {
-                            }
-
-                            @Override
-                            public void onError(CallArguments args) {
-                            }
-                        });
-                    } catch (ProxyException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
+                    container.removeChild((String) obj, Callback.create(r -> {
+                    }));
                 } else if (obj instanceof EdgeID) {
                     EdgeID edge = (EdgeID) obj;
                     PinID p1 = edge.getPin1();
                     PinID p2 = edge.getPin2();
                     Connection con = new Connection(p1.getParent().toString(), p1.getName(),
                             p2.getParent().toString(), p2.getName());
-                    try {
-                        container.disconnect(con, new Callback() {
-                            @Override
-                            public void onReturn(CallArguments args) {
-                            }
-
-                            @Override
-                            public void onError(CallArguments args) {
-                            }
-                        });
-                    } catch (ProxyException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
+                    container.disconnect(con, Callback.create(r -> {
+                    }));
                 }
             }
         }
@@ -1243,8 +1225,6 @@ public class GraphEditor extends RootEditor {
             }
         }
 
-        
-        
     }
 
     private class CommentAction extends AbstractAction {

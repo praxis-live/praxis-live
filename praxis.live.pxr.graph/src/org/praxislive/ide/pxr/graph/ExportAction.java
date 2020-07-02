@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2016 Neil C Smith.
+ * Copyright 2020 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -41,7 +41,6 @@ import org.openide.nodes.Node;
 
 /**
  *
- * @author Neil C Smith
  */
 class ExportAction extends AbstractAction {
     
@@ -75,7 +74,7 @@ class ExportAction extends AbstractAction {
         Point offset = Utils.findOffset(cmps);
         LOG.log(Level.FINEST, "Found offset : {0}", offset);
         Set<String> childIDs = cmps.stream()
-                .map(cmp -> cmp.getAddress().getID())
+                .map(cmp -> cmp.getAddress().componentID())
                 .collect(Collectors.toSet());
         Task exportTask = editor.getActionSupport().createExportTask(
                 container,

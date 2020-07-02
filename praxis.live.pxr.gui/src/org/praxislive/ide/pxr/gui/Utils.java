@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 2012 Neil C Smith.
+ * Copyright 2020 Neil C Smith.
  * 
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -42,7 +42,6 @@ import org.praxislive.ide.model.RootProxy;
 
 /**
  *
- * @author Neil C Smith <http://neilcsmith.net>
  */
 class Utils {
 
@@ -70,11 +69,11 @@ class Utils {
     }
 
     static ComponentProxy findComponentProxy(RootProxy root, ComponentAddress address) {
-        if (address.getRootID().equals(root.getAddress().getRootID())) {
+        if (address.rootID().equals(root.getAddress().rootID())) {
             ComponentProxy comp = root;
-            for (int i = 1; i < address.getDepth(); i++) {
+            for (int i = 1; i < address.depth(); i++) {
                 if (comp instanceof ContainerProxy) {
-                    comp = ((ContainerProxy) comp).getChild(address.getComponentID(i));
+                    comp = ((ContainerProxy) comp).getChild(address.componentID(i));
                 } else {
                     return null;
                 }

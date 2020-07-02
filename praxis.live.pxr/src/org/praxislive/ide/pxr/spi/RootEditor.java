@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2014 Neil C Smith.
+ * Copyright 2020 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -20,18 +20,20 @@
  * have any questions.
  */
 
-package org.praxislive.ide.pxr.api;
+package org.praxislive.ide.pxr.spi;
 
 //import javax.swing.Action;
+import java.util.Optional;
 import javax.swing.Action;
 import javax.swing.JComponent;
 import org.praxislive.ide.model.RootProxy;
 import org.openide.awt.UndoRedo;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
+import org.praxislive.ide.project.api.PraxisProject;
 
 /**
  *
- * @author Neil C Smith (http://neilcsmith.net)
  */
 public abstract class RootEditor {
 
@@ -76,7 +78,9 @@ public abstract class RootEditor {
  
     public static interface Provider {
 
-        public RootEditor createEditor(RootProxy model);
+        public Optional<RootEditor> createEditor(PraxisProject project,
+                FileObject file, RootProxy model);
+    
     }
 
     

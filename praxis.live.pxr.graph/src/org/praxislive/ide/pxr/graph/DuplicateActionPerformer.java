@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2019 Neil C Smith.
+ * Copyright 2020 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -32,7 +32,6 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-import org.praxislive.core.CallArguments;
 import org.praxislive.ide.core.api.Callback;
 import javax.swing.AbstractAction;
 import org.praxislive.ide.core.api.Task;
@@ -42,10 +41,10 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.Node;
+import org.praxislive.core.Value;
 
 /**
  *
- * @author Neil C Smith
  */
 class DuplicateActionPerformer extends AbstractAction implements Callback {
     
@@ -79,7 +78,7 @@ class DuplicateActionPerformer extends AbstractAction implements Callback {
         Point offset = Utils.findOffset(cmps);
         LOG.log(Level.FINEST, "Found offset : {0}", offset);
         Set<String> childIDs = cmps.stream()
-                .map(cmp -> cmp.getAddress().getID())
+                .map(cmp -> cmp.getAddress().componentID())
                 .collect(Collectors.toSet());
         Task copyTask = editor.getActionSupport().createCopyTask(
                 container,
@@ -134,12 +133,12 @@ class DuplicateActionPerformer extends AbstractAction implements Callback {
     }
     
     @Override
-    public void onReturn(CallArguments args) {
+    public void onReturn(List<Value> args) {
         editor.syncGraph(true, true);
     }
 
     @Override
-    public void onError(CallArguments args) {
+    public void onError(List<Value> args) {
         DialogDisplayer.getDefault().notify(
                 new NotifyDescriptor.Message("Error duplicating.",
                         NotifyDescriptor.ERROR_MESSAGE));

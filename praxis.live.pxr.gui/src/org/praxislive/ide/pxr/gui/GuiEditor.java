@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Neil C Smith.
+ * Copyright 2020 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -38,14 +38,16 @@ import javax.swing.JToggleButton;
 import javax.swing.KeyStroke;
 import javax.swing.OverlayLayout;
 import javax.swing.SwingUtilities;
-import org.praxislive.ide.model.ContainerProxy;
 import org.praxislive.ide.model.RootProxy;
 import org.praxislive.ide.pxr.api.PaletteUtils;
-import org.praxislive.ide.pxr.api.RootEditor;
+import org.praxislive.ide.pxr.spi.RootEditor;
+
 import static org.praxislive.ide.pxr.gui.LayoutAction.Type.*;
+
 import org.openide.actions.DeleteAction;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerUtils;
+import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.Utilities;
@@ -54,26 +56,32 @@ import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
+import org.praxislive.ide.project.api.PraxisProject;
 
 /**
  *
- * @author Neil C Smith <http://neilcsmith.net>
  */
 public class GuiEditor extends RootEditor {
 
-    private RootProxy root;
-    private JComponent editorComponent;
-    private JLayeredPane layeredPane;
-    private EditLayer editLayer;
-    private ExplorerManager em;
-    private Lookup lookup;
+    private final PraxisProject project;
+    private final FileObject file;
+    private final RootProxy root;
+    private final GuiHelper helper;
+    private final JComponent editorComponent;
+    private final JLayeredPane layeredPane;
+    private final ExplorerManager em;
+    private final Lookup lookup;
+    private final InstanceContent content;
+    
     private EditAction editAction;
-//    private LayoutAction[] layoutActions;
+    private EditLayer editLayer;
     private Action[] actions;
-    private InstanceContent content;
 
-    GuiEditor(RootProxy root) {
+    GuiEditor(PraxisProject project, FileObject file, RootProxy root) {
+        this.project = project;
+        this.file = file;
         this.root = root;
+        this.helper = project.getLookup().lookup(GuiHelper.class);
         em = new ExplorerManager();
         em.setRootContext(root.getNodeDelegate());
         // init components
@@ -87,7 +95,7 @@ public class GuiEditor extends RootEditor {
         content = new InstanceContent();
         lookup = new ProxyLookup(
                 ExplorerUtils.createLookup(em, layeredPane.getActionMap()),
-                Lookups.fixed(PaletteUtils.getPalette("gui")),
+                Lookups.fixed(PaletteUtils.getPalette(project, "gui")),
                 new AbstractLookup(content));
     }
 
@@ -149,6 +157,10 @@ public class GuiEditor extends RootEditor {
     RootProxy getRoot() {
         return root;
     }
+    
+    GuiHelper getHelper() {
+        return helper;
+    }
 
     void setSelected(Node[] nodes) throws Exception {
         em.setSelectedNodes(nodes);
@@ -166,9 +178,9 @@ public class GuiEditor extends RootEditor {
         editLayer = new EditLayer(this, panel);
         layeredPane.add(editLayer, JLayeredPane.PALETTE_LAYER);
         content.add(editLayer);
-        if (((ContainerProxy)root).getChildIDs().length == 0) {
-            editLayer.setVisible(true);
-        }
+//        if (((ContainerProxy)root).getChildIDs().length == 0) {
+//            editLayer.setVisible(true);
+//        }
         editAction.setEnabled(true);
     }
 
@@ -188,7 +200,7 @@ public class GuiEditor extends RootEditor {
     @Override
     public void componentActivated() {
         super.componentActivated();
-        DockableGuiRoot r = DockableGuiRoot.find(root.getAddress().getRootID());
+        DockableGuiRoot r = DockableGuiRoot.find(project, root.getAddress().rootID());
         if (r != null) {
             r.requestConnect(this);
         }
@@ -201,7 +213,7 @@ public class GuiEditor extends RootEditor {
 
             @Override
             public void run() {
-                DockableGuiRoot r = DockableGuiRoot.find(root.getAddress().getRootID());
+                DockableGuiRoot r = DockableGuiRoot.find(project, root.getAddress().rootID());
                 if (r != null) {
                     r.requestDisconnect(GuiEditor.this);
                 }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2014 Neil C Smith.
+ * Copyright 2020 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -21,25 +21,27 @@
  */
 package org.praxislive.ide.pxr.midi;
 
+import java.util.Optional;
+import org.openide.filesystems.FileObject;
 import org.praxislive.core.ComponentType;
-import org.praxislive.ide.pxr.api.RootEditor;
+import org.praxislive.ide.pxr.spi.RootEditor;
 import org.praxislive.ide.model.RootProxy;
 import org.openide.util.lookup.ServiceProvider;
+import org.praxislive.ide.project.api.PraxisProject;
 
 /**
  *
- * @author Neil C Smith <http://neilcsmith.net>
  */
 @ServiceProvider(service=RootEditor.Provider.class, position = 20)
 public class MidiEditorProvider implements RootEditor.Provider {
 
     @Override
-    public RootEditor createEditor(RootProxy model) {
-        ComponentType type = model.getType();
+    public Optional<RootEditor> createEditor(PraxisProject project, FileObject file, RootProxy model) {
+         ComponentType type = model.getType();
         if (type.toString().equals("root:midi")) {
-            return new MidiEditor(model);
+            return Optional.of(new MidiEditor(model));
         }
-        return null;
+        return Optional.empty();
     }
     
 }

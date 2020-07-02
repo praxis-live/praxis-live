@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Neil C Smith.
+ * Copyright 2020 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -32,12 +32,10 @@ import javax.swing.ActionMap;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import org.praxislive.core.CallArguments;
 import org.praxislive.core.ComponentType;
 import org.praxislive.ide.core.api.Callback;
 import org.praxislive.ide.model.ContainerProxy;
-import org.praxislive.ide.model.ProxyException;
-import org.praxislive.ide.pxr.api.RootEditor;
+import org.praxislive.ide.pxr.spi.RootEditor;
 import org.praxislive.ide.model.RootProxy;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -51,15 +49,16 @@ import org.openide.util.Lookup;
 
 /**
  *
- * @author Neil C Smith
  */
 public class OSCEditor extends RootEditor {
     
     private final static String RESOURCE_DIR = "org/praxislive/ide/pxr/osc/resources/";
-    private RootProxy root;
-    private JComponent editorComponent;
-    private ExplorerManager em;
-    private Lookup lookup;
+    
+    private final RootProxy root;
+    private final JComponent editorComponent;
+    private final ExplorerManager em;
+    private final Lookup lookup;
+    
     private Action[] actions;
     private OutlineView view;
 
@@ -107,7 +106,7 @@ public class OSCEditor extends RootEditor {
     }
 
     private void addBinding() {
-        ComponentType type = ComponentType.create("osc:input");
+        ComponentType type = ComponentType.of("osc:input");
         ContainerProxy container = (ContainerProxy) root;
         NotifyDescriptor.InputLine dlg = new NotifyDescriptor.InputLine(
                 "ID:", "Enter an ID for " + type);
@@ -116,19 +115,15 @@ public class OSCEditor extends RootEditor {
         if (retval == NotifyDescriptor.OK_OPTION) {
             final String id = dlg.getInputText();
             try {
-                container.addChild(id, type, new Callback() {
-
-                    @Override
-                    public void onReturn(CallArguments args) {
-                        // nothing wait for sync
-                    }
-
-                    @Override
-                    public void onError(CallArguments args) {
-                        DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message("Error creating component", NotifyDescriptor.ERROR_MESSAGE));
-                    }
-                });
-            } catch (ProxyException ex) {
+                container.addChild(id, type,
+                        Callback.create(r -> {
+                            if (r.isError()) {
+                                DialogDisplayer.getDefault().notifyLater(
+                                        new NotifyDescriptor.Message("Error creating component",
+                                                NotifyDescriptor.ERROR_MESSAGE));
+                            }
+                        }));
+            } catch (Exception ex) {
                 Exceptions.printStackTrace(ex);
             }
         }

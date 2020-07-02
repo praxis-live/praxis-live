@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2019 Neil C Smith.
+ * Copyright 2020 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -24,14 +24,12 @@ package org.praxislive.ide.pxr.graph;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Vector;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import java.util.stream.Stream;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ActionMap;
@@ -55,7 +53,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Neil C Smith (http://neilcsmith.net)
  */
 @NbBundle.Messages({
     "LBL.connect=Connect",
@@ -74,7 +71,7 @@ class ConnectAction extends AbstractAction {
     public void actionPerformed(ActionEvent e) {
         Panel panel = new Panel(SwingUtilities.windowForComponent(editor.getEditorComponent()));
 
-        Vector children = Arrays.asList(editor.getContainer().getChildIDs()).stream()
+        Vector children = editor.getContainer().children()
                 .sorted()
                 .collect(Collectors.toCollection(Vector::new));
 
@@ -94,7 +91,7 @@ class ConnectAction extends AbstractAction {
     private List<String> findNodes(String glob) {
         try {
             Pattern search = Utils.globToRegex(glob);
-            return Stream.of(editor.getContainer().getChildIDs())
+            return editor.getContainer().children()
                     .filter(id -> search.matcher(id).matches())
                     .collect(Collectors.toList());
         } catch (Exception ex) {
@@ -106,8 +103,8 @@ class ConnectAction extends AbstractAction {
     private List<String> findPins(List<String> nodes, boolean output) {
         return nodes.stream()
                 .map(nid -> editor.getContainer().getChild(nid).getInfo())
-                .flatMap(info -> Stream.of(info.getPorts())
-                .filter(pid -> info.getPortInfo(pid).getDirection()
+                .flatMap(info -> info.ports().stream()
+                .filter(pid -> info.portInfo(pid).direction()
                 != (output ? PortInfo.Direction.IN : PortInfo.Direction.OUT))
                 )
                 .distinct()
@@ -119,8 +116,8 @@ class ConnectAction extends AbstractAction {
             Pattern search = Utils.globToRegex(glob);
             return nodes.stream()
                     .map(nid -> editor.getContainer().getChild(nid).getInfo())
-                    .flatMap(info -> Stream.of(info.getPorts())
-                    .filter(pid -> info.getPortInfo(pid).getDirection()
+                    .flatMap(info -> info.ports().stream()
+                    .filter(pid -> info.portInfo(pid).direction()
                     != (output ? PortInfo.Direction.IN : PortInfo.Direction.OUT)))
                     .filter(id -> search.matcher(id).matches())
                     .distinct()

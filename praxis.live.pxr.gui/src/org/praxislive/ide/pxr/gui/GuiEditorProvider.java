@@ -1,9 +1,7 @@
-package org.praxislive.ide.pxr.gui;
-
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Neil C Smith.
+ * Copyright 2020 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -21,28 +19,30 @@ package org.praxislive.ide.pxr.gui;
  * Please visit http://neilcsmith.net if you need additional information or
  * have any questions.
  */
+package org.praxislive.ide.pxr.gui;
 
 
-
+import java.util.Optional;
+import org.openide.filesystems.FileObject;
 import org.praxislive.core.ComponentType;
-import org.praxislive.ide.pxr.api.RootEditor;
+import org.praxislive.ide.pxr.spi.RootEditor;
 import org.praxislive.ide.model.RootProxy;
 import org.openide.util.lookup.ServiceProvider;
+import org.praxislive.ide.project.api.PraxisProject;
 
 /**
  *
- * @author Neil C Smith (http://neilcsmith.net)
  */
 @ServiceProvider(service=RootEditor.Provider.class, position=10)
 public class GuiEditorProvider implements RootEditor.Provider {
 
     @Override
-    public RootEditor createEditor(RootProxy model) {
+    public Optional<RootEditor> createEditor(PraxisProject project, FileObject file, RootProxy model) {
         ComponentType type = model.getType();
         if (type.toString().equals("root:gui")) {
-            return new GuiEditor(model);
+            return Optional.of(new GuiEditor(project, file, model));
         }
-        return null;
+        return Optional.empty();
     }
 
 }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2019 Neil C Smith.
+ * Copyright 2020 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -23,17 +23,17 @@ package org.praxislive.ide.pxr.graph;
 
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
+import java.util.List;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
-import org.praxislive.core.CallArguments;
 import org.praxislive.ide.core.api.Callback;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.explorer.ExplorerManager;
+import org.praxislive.core.Value;
 
 /**
  *
- * @author Neil C Smith
  */
 class PasteActionPerformer extends AbstractAction implements Callback {
 
@@ -66,12 +66,12 @@ class PasteActionPerformer extends AbstractAction implements Callback {
     }
 
     @Override
-    public void onReturn(CallArguments args) {
+    public void onReturn(List<Value> args) {
         editor.syncGraph(true, true);
     }
 
     @Override
-    public void onError(CallArguments args) {
+    public void onError(List<Value> args) {
         DialogDisplayer.getDefault().notify(
                 new NotifyDescriptor.Message("Error pasting.",
                         NotifyDescriptor.ERROR_MESSAGE));

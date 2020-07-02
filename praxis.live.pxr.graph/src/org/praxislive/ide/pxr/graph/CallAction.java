@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2019 Neil C Smith.
+ * Copyright 2020 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -49,7 +49,6 @@ import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import org.praxislive.core.ComponentInfo;
 import org.praxislive.core.ControlInfo;
-import org.praxislive.ide.pxr.graph.Bundle;
 import org.praxislive.ide.model.ComponentProxy;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -61,7 +60,6 @@ import org.openide.util.NbBundle.Messages;
 
 /**
  *
- * @author Neil C Smith (http://neilcsmith.net)
  */
 @Messages({
     "LBL.call=Call",
@@ -99,7 +97,7 @@ class CallAction extends AbstractAction {
         }
         try {
             Pattern search = Utils.globToRegex(glob);
-            return Stream.of(editor.getContainer().getChildIDs())
+            return editor.getContainer().children()
                     .filter(id -> search.matcher(id).matches())
                     .map(id -> editor.getContainer().getChild(id).getNodeDelegate())
                     .toArray(Node[]::new);
@@ -143,8 +141,8 @@ class CallAction extends AbstractAction {
     private void findActions(Node[] nodes, Set<String> names) {
         HashSet<String> result = new HashSet<>();
         ComponentInfo info = nodes[0].getLookup().lookup(ComponentProxy.class).getInfo();
-        for (String id : info.getControls()) {
-            if (info.getControlInfo(id).getType() == ControlInfo.Type.Action) {
+        for (String id : info.controls()) {
+            if (info.controlInfo(id).controlType() == ControlInfo.Type.Action) {
                 result.add(id);
             }
         }
@@ -152,8 +150,8 @@ class CallAction extends AbstractAction {
             HashSet<String> working = new HashSet<>();
             for (int i = 1; i < nodes.length; i++) {
                 info = nodes[i].getLookup().lookup(ComponentProxy.class).getInfo();
-                for (String id : info.getControls()) {
-                    if (info.getControlInfo(id).getType() == ControlInfo.Type.Action) {
+                for (String id : info.controls()) {
+                    if (info.controlInfo(id).controlType() == ControlInfo.Type.Action) {
                         working.add(id);
                     }
                 }

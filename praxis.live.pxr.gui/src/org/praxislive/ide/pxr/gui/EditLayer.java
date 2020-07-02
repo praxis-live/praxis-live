@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Neil C Smith.
+ * Copyright 2020 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -36,6 +36,7 @@ import java.awt.dnd.DropTargetDropEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.Collections;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
@@ -45,38 +46,39 @@ import javax.swing.event.AncestorEvent;
 import javax.swing.event.AncestorListener;
 import javax.swing.event.ChangeListener;
 import net.miginfocom.swing.MigLayout;
-import org.praxislive.core.CallArguments;
 import org.praxislive.core.ComponentType;
 import org.praxislive.core.ControlAddress;
 import org.praxislive.core.types.PString;
 import org.praxislive.ide.core.api.Callback;
 import org.praxislive.ide.model.ComponentProxy;
 import org.praxislive.ide.model.ContainerProxy;
-import org.praxislive.ide.model.ProxyException;
 import org.praxislive.ide.model.RootProxy;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeTransfer;
 import org.openide.util.ChangeSupport;
+import org.openide.util.Exceptions;
+import org.praxislive.core.Value;
 
 /**
  *
- * @author Neil C Smith <http://neilcsmith.net>
  */
 class EditLayer extends JComponent {
 
     private final static Logger LOG = Logger.getLogger(EditLayer.class.getName());
     private final static Color hoverColor = new Color(143, 171, 196);
     private final static Color selectedColor = hoverColor.brighter();
-    private GuiEditor editor;
-    private RootProxy root;
-    private JPanel rootPanel;
-    private MouseController mouse;
+    
+    private final GuiEditor editor;
+    private final RootProxy root;
+    private final JPanel rootPanel;
+    private final MouseController mouse;
+    private final ChangeSupport cs;
+    private final SelectedListener selectedListener;
+    
     private JComponent hovered;
     private JComponent selected;
-    private ChangeSupport cs;
-    private SelectedListener selectedListener;
 
     EditLayer(GuiEditor editor, JPanel rootPanel) {
         this.editor = editor;
@@ -282,33 +284,34 @@ class EditLayer extends JComponent {
             pos = Utils.getGridPosition(container, dropOver);
         }
         Utils.ensureSpace(container, pos[0], pos[1], 1, 1, Collections.<JComponent>emptySet(), true);
-        final PString layout = PString.valueOf("cell " + pos[0] + " " + pos[1]);
+        final PString layout = PString.of("cell " + pos[0] + " " + pos[1]);
         final String id = getFreeID(pxy, type);
         pxy.addChild(id, type, new Callback() {
 
             @Override
-            public void onReturn(CallArguments args) {
+            public void onReturn(List<Value> args) {
 
                 try {
-                    GuiHelper.getDefault().send(ControlAddress.create(pxy.getChild(id).getAddress(), "layout"),
-                            CallArguments.create(layout), new Callback() {
+                    editor.getHelper().send(ControlAddress.of(pxy.getChild(id).getAddress(), "layout"),
+                            List.of(layout), new Callback() {
 
                                 @Override
-                                public void onReturn(CallArguments args) {
+                                public void onReturn(List<Value> args) {
                                     Utils.compactGrid(container);
                                 }
 
                                 @Override
-                                public void onError(CallArguments args) {
+                                public void onError(List<Value> args) {
                                 }
                             });
+                    
                 } catch (Exception ex) {
-                    Logger.getLogger(EditLayer.class.getName()).log(Level.SEVERE, null, ex);
+                    Exceptions.printStackTrace(ex);
                 }
             }
 
             @Override
-            public void onError(CallArguments args) {
+            public void onError(List<Value> args) {
                 DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message("Error creating component", NotifyDescriptor.ERROR_MESSAGE));
             }
         });

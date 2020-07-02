@@ -35,7 +35,7 @@ import javax.swing.JPanel;
 import org.praxislive.core.ComponentType;
 import org.praxislive.ide.components.api.Components;
 import org.praxislive.ide.model.RootProxy;
-import org.praxislive.ide.pxr.api.RootEditor;
+import org.praxislive.ide.pxr.spi.RootEditor;
 import org.netbeans.spi.palette.PaletteActions;
 import org.netbeans.spi.palette.PaletteFactory;
 import org.openide.explorer.ExplorerManager;

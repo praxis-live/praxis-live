@@ -33,10 +33,20 @@ import org.praxislive.core.Lookup;
  */
 public abstract class AbstractIDERoot extends AbstractRootContainer {
     
+    private final boolean startOnActivation;
     
     private BindingContextControl bindings;
     private Lookup lookup;
 
+    public AbstractIDERoot() {
+        this(true);
+    }
+    
+    public AbstractIDERoot(boolean startOnActivation) {
+        this.startOnActivation = startOnActivation;
+    }
+
+    
     @Override
     public Lookup getLookup() {
         return lookup == null ? super.getLookup() : lookup;
@@ -54,13 +64,23 @@ public abstract class AbstractIDERoot extends AbstractRootContainer {
         delegate.start();
     }
 
+    @Override
+    protected final void terminating() {}
+
+    protected void setup() {}
+    
+    protected void dispose() {}
+
     private class SwingDelegate extends Delegate {
 
         private Timer timer;
 
         private void start() {
             EventQueue.invokeLater(() -> {
-                setRunning();
+                setup();
+                if (startOnActivation) {
+                    setRunning();
+                }
                 timer = new Timer(50, e -> update());
                 timer.start();
             });
@@ -70,6 +90,7 @@ public abstract class AbstractIDERoot extends AbstractRootContainer {
             boolean ok = doUpdate(getRootHub().getClock().getTime());
             if (!ok) {
                 timer.stop();
+                dispose();
                 detachDelegate(this);
             }
         }
