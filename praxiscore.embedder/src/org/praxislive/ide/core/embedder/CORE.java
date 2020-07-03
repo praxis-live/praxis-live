@@ -23,30 +23,31 @@ package org.praxislive.ide.core.embedder;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.System.Logger.Level;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 import org.openide.modules.InstalledFileLocator;
+import org.openide.modules.OnStart;
 import org.openide.util.BaseUtilities;
+import org.openide.util.Exceptions;
+
 
 /**
  *
  */
 public final class CORE {
 
+    private static final System.Logger LOG = 
+            System.getLogger(CORE.class.getName());
+    
     private CORE() {
         // static utility class
     }
 
     public static File launcherFile() throws IOException {
-        File modDir = InstalledFileLocator.getDefault().
-                locate("modules", "org.praxislive.ide.core.embedder", false);
-        if (modDir == null) {
-            throw new IOException("No modules directory found");
-        }
-        File installDir = modDir.getParentFile().getParentFile();
-        File coreDir = new File(installDir, "praxiscore");
-        if (!coreDir.isDirectory()) {
-            throw new IOException("No embedded praxiscore directory found");
-        }
-        File binDir = new File(coreDir, "bin");
+        File installDir = installDir();
+        File binDir = new File(installDir, "bin");
         File launcher;
         if (BaseUtilities.isWindows()) {
             launcher = new File(binDir, "praxis.bat");
@@ -58,6 +59,58 @@ public final class CORE {
         } else {
             throw new IOException("No launcher found");
         }
+    }
+    
+    public static File installDir() throws IOException {
+        File modDir = InstalledFileLocator.getDefault().
+                locate("modules", "org.praxislive.ide.core.embedder", false);
+        if (modDir == null) {
+            throw new IOException("No modules directory found");
+        }
+        File installDir = modDir.getParentFile().getParentFile();
+        File coreDir = new File(installDir, "praxiscore");
+        if (!coreDir.isDirectory()) {
+            throw new IOException("No embedded praxiscore directory found");
+        }
+        return coreDir;
+    }
+    
+    
+    @OnStart
+    public static class ClasspathEnvTask implements Runnable {
+
+        @Override
+        public void run() {
+            try {
+                File installDir = installDir();
+                File repoDir = new File(installDir, "repo");
+                List<String> files = new ArrayList<>();
+                for (File module : repoDir.listFiles()) {
+                    if (module.getName().endsWith(".jar")) {
+                        LOG.log(Level.DEBUG, () -> 
+                                "Adding " + module + " to compile classpath."
+                        );
+                        files.add(module.getAbsolutePath());
+                    }
+                }
+                if (files.isEmpty()) {
+                    return;
+                }
+                
+                String modulepath = files.stream()
+                        .collect(Collectors.joining(File.pathSeparator));
+                
+                LOG.log(Level.DEBUG, () -> 
+                        "Setting compile classpath to :\n" + modulepath);
+                
+                System.setProperty("jdk.module.path", modulepath);
+                
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            
+        }
+        
     }
     
 }
