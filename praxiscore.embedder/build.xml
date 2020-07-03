@@ -19,6 +19,7 @@
     <copy todir="${suite.build.dir}/praxiscore/" verbose="true">
       <fileset dir="${praxiscore.dist.dir}" />
     </copy>
+    <chmod file="${suite.build.dir}/praxiscore/bin/praxis" perm="755" />
   </target>
     
   <target name="-check-praxiscore-embed" >

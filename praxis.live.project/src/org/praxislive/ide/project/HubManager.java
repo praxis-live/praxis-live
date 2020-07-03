@@ -35,7 +35,11 @@ import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
+import org.praxislive.code.CodeCompilerService;
+import org.praxislive.core.MainThread;
 import org.praxislive.core.services.LogLevel;
+import org.praxislive.core.services.LogService;
+import org.praxislive.core.services.SystemManagerService;
 import org.praxislive.hub.net.NetworkCoreFactory;
 import org.praxislive.ide.core.api.AbstractTask;
 import org.praxislive.ide.core.api.ExtensionContainer;
@@ -72,11 +76,11 @@ class HubManager {
         lookupContent.add(proxy);
         lookup = new AbstractLookup(lookupContent);
     }
-    
+
     Task createStartupTask() {
         return new StartUpTask(List.of(new InitHubTask()));
     }
-    
+
     Task createShutdownTask() {
         var roots = servicesOverride.getKnownUserRoots();
         var description = "Shutdown"; // @TODO bundle
@@ -87,7 +91,6 @@ class HubManager {
         return new ShutDownTask(tasks);
     }
 
-    
     State getState() {
         return state;
     }
@@ -107,8 +110,15 @@ class HubManager {
         LogLevel logLevel = log.getLogLevel();
 
         var core = NetworkCoreFactory.builder()
-                .exposeServices(List.of())
+                .childLauncher(new ChildLauncherImpl(project))
+                .exposeServices(List.of(
+                        CodeCompilerService.class,
+                        LogService.class,
+                        SystemManagerService.class
+                ))
                 .build();
+
+        var fakeMain = new FakeMain();
 
         hub = Hub.builder()
                 .setCoreRootFactory(core)
@@ -116,6 +126,7 @@ class HubManager {
                 .addExtension(log)
                 .addExtension(container)
                 .extendLookup(logLevel)
+                .extendLookup(fakeMain)
                 .build();
         hub.start();
     }
@@ -132,7 +143,6 @@ class HubManager {
         servicesOverride = null;
         hub = null;
     }
-
 
     private class StartUpTask extends SerialTasks {
 
@@ -161,11 +171,11 @@ class HubManager {
                 HubManager.this.state = HubManager.State.Stopped;
             }
         }
-        
+
     }
 
     private class InitHubTask extends AbstractTask {
-        
+
         private ProjectHelper helper;
         private int count;
         private Timer timer;
@@ -182,7 +192,7 @@ class HubManager {
                 updateState(State.RUNNING);
             }
         }
-        
+
         private void checkHelper() {
             if (helper.isConnected()) {
                 timer.stop();
@@ -194,9 +204,9 @@ class HubManager {
         }
 
     }
-    
+
     private class ShutDownTask extends SerialTasks {
-        
+
         public ShutDownTask(List<Task> tasks) {
             super(tasks);
         }
@@ -213,10 +223,10 @@ class HubManager {
         protected void afterExecute() {
             if (getState() == State.COMPLETED) {
                 HubManager.this.state = HubManager.State.Stopped;
-            } 
+            }
         }
     }
-    
+
     private class DeinitHubTask extends AbstractTask {
 
         @Override
@@ -226,6 +236,22 @@ class HubManager {
         }
 
     }
-    
+
+    private static class FakeMain implements MainThread {
+
+
+        @Override
+        public void runLater(Runnable task) {
+            // @TODO warn on first use? 
+            EventQueue.invokeLater(task);
+        }
+
+        @Override
+        public boolean isMainThread() {
+            return EventQueue.isDispatchThread();
+        }
+        
+
+    }
 
 }

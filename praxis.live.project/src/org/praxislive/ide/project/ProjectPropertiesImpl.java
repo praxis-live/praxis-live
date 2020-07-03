@@ -68,6 +68,7 @@ public class ProjectPropertiesImpl implements ProjectProperties {
     private final PropertyChangeSupport pcs;
     private final DefaultPraxisProject project;
     private final FileListener listener;
+    private final HubLineHandler hubHandler;
     private final CompilerLineHandler compilerHandler;
     private final LibrariesLineHandler librariesHandler;
     private final List<FileHandler.Provider> fileHandlerProviders;
@@ -81,6 +82,7 @@ public class ProjectPropertiesImpl implements ProjectProperties {
         for (ExecutionLevel level : ExecutionLevel.values()) {
             elements.put(level, new LinkedHashMap<>());
         }
+        hubHandler = new HubLineHandler();
         compilerHandler = new CompilerLineHandler();
         librariesHandler = new LibrariesLineHandler();
         fileHandlerProviders = new ArrayList<>(
@@ -169,13 +171,14 @@ public class ProjectPropertiesImpl implements ProjectProperties {
         elementList.stream()
                 .filter(ExecutionElement.Line.class::isInstance)
                 .map(ExecutionElement.Line.class::cast)
-                .filter(e -> librariesHandler.isSupportedCommand(e.tokens().get(0).getText()))
+                .filter(e -> hubHandler.isSupportedCommand(e.tokens().get(0).getText()))
                 .findFirst()
                 .ifPresentOrElse(e -> {
-                    librariesHandler.configure(e);
-                    map.put(e, librariesHandler);
+//                    hubHandler.configure(e);
+//                    map.put(e, hubHandler);
+                    map.put(hubHandler.defaultElement(), hubHandler);
                 }, () -> {
-                    map.put(librariesHandler.defaultElement(), librariesHandler);
+                    map.put(hubHandler.defaultElement(), hubHandler);
                 });
         elementList.stream()
                 .filter(ExecutionElement.Line.class::isInstance)
@@ -188,7 +191,18 @@ public class ProjectPropertiesImpl implements ProjectProperties {
                 }, () -> {
                     map.put(compilerHandler.defaultElement(), compilerHandler);
                 });
-                
+        elementList.stream()
+                .filter(ExecutionElement.Line.class::isInstance)
+                .map(ExecutionElement.Line.class::cast)
+                .filter(e -> librariesHandler.isSupportedCommand(e.tokens().get(0).getText()))
+                .findFirst()
+                .ifPresentOrElse(e -> {
+                    librariesHandler.configure(e);
+                    map.put(e, librariesHandler);
+                }, () -> {
+                    map.put(librariesHandler.defaultElement(), librariesHandler);
+                });
+
     }
 
     private void initLevel(Set<ElementHandler> handlers,
@@ -331,6 +345,63 @@ public class ProjectPropertiesImpl implements ProjectProperties {
     @Override
     public void removePropertyChangeListener(PropertyChangeListener listener) {
         pcs.removePropertyChangeListener(listener);
+    }
+
+    private class HubLineHandler implements LineHandler {
+        
+        private final String DEFAULT_HUB = "hub-configure {\n"
+                    + "    enable-fileserver false\n"
+                    + "    \n"
+                    + "    proxies {\n"
+                    + "        video {\n"
+                    + "            type-pattern video\n"
+                    + "            exec {\n"
+                    + "                command default\n"
+                    + "                java-options {\n"
+                    + "                    -Djava.awt.headless=true\n"
+                    + "                }\n"
+                    + "            }\n"
+                    + "        }\n"
+                    + "        audio {\n"
+                    + "             type-pattern audio\n"
+                    + "             exec {\n"
+                    + "                 command default\n"
+                    + "             }\n"
+                    + "        }\n"
+                    + "    }\n"
+                    + "}";
+
+        private final Set<String> commands;
+
+        private HubLineHandler() {
+            commands = Set.of("hub-configure");
+        }
+
+        @Override
+        public void process(Callback callback) throws Exception {
+            project.getLookup().lookup(ProjectHelper.class).executeScript(DEFAULT_HUB, callback);
+        }
+
+        @Override
+        public String rewrite(String line) {
+            return DEFAULT_HUB;
+        }
+
+        private boolean isSupportedCommand(String command) {
+            return commands.contains(command);
+        }
+
+//        private void configure(ExecutionElement.Line element) {
+//            try {
+//                setJavaRelease(Integer.parseInt(element.tokens().get(1).getText()));
+//            } catch (Exception ex) {
+//                Exceptions.printStackTrace(ex);
+//            }
+//        }
+
+        private ExecutionElement.Line defaultElement() {
+            return ExecutionElement.forLine(DEFAULT_HUB);
+        }
     }
 
     private class CompilerLineHandler implements LineHandler {
