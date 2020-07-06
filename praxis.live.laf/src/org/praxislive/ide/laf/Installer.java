@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2014 Neil C Smith.
+ * Copyright 2020 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 2 only, as
@@ -36,7 +36,6 @@
 package org.praxislive.ide.laf;
 
 import java.util.prefs.Preferences;
-import javax.swing.UIManager;
 import org.openide.modules.ModuleInstall;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbPreferences;
@@ -44,19 +43,16 @@ import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
 /**
- * Manages a module's lifecycle. Remember that an installer is optional and
- * often not needed at all.
+ *
  */
 public class Installer extends ModuleInstall {
 
-//    @Override
-//    public void validate() throws IllegalStateException {
-//        Preferences prefs = getPreferences();
-//        prefs.put("laf", PraxisLiveLookAndFeel.class.getName());
-//        prefs.putBoolean("dark.themes.installed", true); //NOI18N
-//        UIManager.installLookAndFeel(new UIManager.LookAndFeelInfo("Praxis LIVE", PraxisLiveLookAndFeel.class.getName()));
-//    }
-
+    @Override
+    public void validate() throws IllegalStateException {
+        Preferences prefs = getPreferences();
+        prefs.put("laf", "com.formdev.flatlaf.FlatDarkLaf");
+    }
+    
     @Override
     public void restored() {
 
