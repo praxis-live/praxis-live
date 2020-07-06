@@ -167,6 +167,7 @@ class HubManager {
         protected void afterExecute() {
             if (hub != null && hub.isAlive()) {
                 HubManager.this.state = HubManager.State.Running;
+                proxy.start();
             } else {
                 HubManager.this.state = HubManager.State.Stopped;
             }

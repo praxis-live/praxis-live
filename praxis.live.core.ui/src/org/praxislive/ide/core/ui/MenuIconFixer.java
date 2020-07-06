@@ -29,9 +29,9 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author Neil C Smith <http://neilcsmith.net>
  */
-@ServiceProvider(service=Actions.ButtonActionConnector.class)
+// @TODO delete if now working correctly
+//@ServiceProvider(service=Actions.ButtonActionConnector.class)
 public class MenuIconFixer implements Actions.ButtonActionConnector {
 
     @Override
