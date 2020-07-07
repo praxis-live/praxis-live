@@ -90,7 +90,9 @@ public class SerialTasks extends AbstractTask {
                 return;
             }
             if (state == State.ERROR || state == State.CANCELLED) {
+                afterTask(activeTask);
                 updateState(state);
+                afterExecute();
                 return;
             }
         }
@@ -132,6 +134,7 @@ public class SerialTasks extends AbstractTask {
                     handleTaskQueue();
                 } else if (taskState == State.CANCELLED ||
                         taskState == State.ERROR) {
+                    afterTask(activeTask);
                     updateState(taskState);
                     afterExecute();
                 }

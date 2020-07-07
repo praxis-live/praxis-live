@@ -118,11 +118,11 @@ class StartableRootAction extends AbstractAction
     }
 
     private void reset() {
-        root = null;
         putValue(SELECTED_KEY, Boolean.FALSE);
         setEnabled(false);
         root.getHelper().unbind(ControlAddress.of(root.getAddress(),
                 StartableProtocol.IS_RUNNING), runningAdaptor);
+        root = null;
         runningAdaptor = null;
     }
 

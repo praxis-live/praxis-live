@@ -12,8 +12,6 @@
       <file name="org-netbeans-modules-javahelp-HelpAction.instance_hidden"/>
     </folder>
     <folder name="Project">
-      <file name="org-netbeans-modules-project-ui-CleanMainProject.instance_hidden"/>
-      <file name="org-netbeans-modules-project-ui-CleanProject.instance_hidden"/>
       <file name="org-netbeans-modules-project-ui-CompileSingle.instance_hidden"/>
       <file name="org-netbeans-modules-project-ui-JavadocProject.instance_hidden"/>
       <file name="org-netbeans-modules-project-ui-RebuildMainProject.instance_hidden"/>
@@ -25,10 +23,7 @@
       <file name="org-netbeans-modules-project-ui-actions-OpenSubprojects.instance_hidden"/>
       <file name="org-netbeans-modules-project-ui-actions-StopBuildingAction.instance_hidden"/>
     </folder>
-    <folder name="System">
-            <file name="org-praxislive-ide-core-ui-RestartHubAction.instance_hidden"/>
-        </folder>
-        <file name="UnitTests_hidden"/>
+    <file name="UnitTests_hidden"/>
   </folder>
     
   <folder name="Editors">
@@ -70,6 +65,11 @@
       <file name="org-netbeans-modules-project-ui-BuildProject.shadow">
         <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-BuildProject.instance"/>
         <attr name="position" intvalue="200"/>
+      </file>
+      
+      <file name="org-netbeans-modules-project-ui-CleanProject.shadow">
+        <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-CleanProject.instance"/>
+        <attr name="position" intvalue="300"/>
       </file>
             
     </folder>
@@ -257,15 +257,20 @@
       <file name="org-netbeans-modules-project-ui-BuildMainProject.shadow_hidden"/>
       <file name="org-netbeans-modules-project-ui-RebuildMainProject.shadow_hidden"/>
       <file name="org-netbeans-modules-project-ui-RunMainProject.shadow_hidden"/>
+         
+      <file name="org-netbeans-modules-project-ui-CleanProject.shadow">
+        <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-CleanProject.instance"/>
+        <attr name="position" intvalue="100"/>
+      </file>
             
       <file name="org-netbeans-modules-project-ui-BuildProject.shadow">
         <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-BuildProject.instance"/>
-        <attr name="position" intvalue="100"/>
+        <attr name="position" intvalue="200"/>
       </file>
             
       <file name="org-netbeans-modules-project-ui-RunProject.shadow">
         <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-RunProject.instance"/>
-        <attr name="position" intvalue="200"/>
+        <attr name="position" intvalue="300"/>
       </file>
             
     </folder>

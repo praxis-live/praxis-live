@@ -89,9 +89,9 @@ public class AbstractHelperComponent extends AbstractComponent {
             }
         } else if (bindingContext != null) {
             connected = true;
+            sender.fromAddress = ControlAddress.of(getAddress(), sendID);
             pcs.firePropertyChange(PROP_HUB_CONNECTED, false, true);
         }
-        sender.fromAddress = ControlAddress.of(getAddress(), sendID);
 
     }
 

@@ -65,7 +65,7 @@ public class RootLifecycleHandlerImpl implements RootLifecycleHandler {
         if (!dobs.isEmpty()) {
             return Optional.of(new DeletionSaveTask(description, dobs));
         } else {
-            return null;
+            return Optional.empty();
         }
     }
    

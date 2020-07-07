@@ -215,6 +215,26 @@ public class DefaultPraxisProject implements PraxisProject {
         }
 
     }
+    
+    private void clean() {
+        if (activeExec != null) {
+            activeExec.cancel();
+        }
+        List<Task> tasks = List.of(hubManager.createShutdownTask());
+        activeExec = new TaskExec(tasks);
+        actionsEnabled = false;
+        var execState = activeExec.execute();
+        if (execState == Task.State.RUNNING) {
+            activeExec.addPropertyChangeListener(e -> {
+                actionsEnabled = true;
+                activeExec = null;
+            });
+        } else {
+            actionsEnabled = true;
+            activeExec = null;
+        }
+        
+    }
 
     void registerLibs() {
         clearLibs();
@@ -328,7 +348,8 @@ public class DefaultPraxisProject implements PraxisProject {
         public String[] getSupportedActions() {
             return new String[]{
                 ActionProvider.COMMAND_RUN,
-                ActionProvider.COMMAND_BUILD
+                ActionProvider.COMMAND_BUILD,
+                ActionProvider.COMMAND_CLEAN
             };
         }
 
@@ -339,13 +360,21 @@ public class DefaultPraxisProject implements PraxisProject {
                 execute(ExecutionLevel.RUN);
             } else if (ActionProvider.COMMAND_BUILD.equals(command)) {
                 execute(ExecutionLevel.BUILD);
+            } else if (ActionProvider.COMMAND_CLEAN.equals(command)) {
+                clean();
+            } else {
+                throw new IllegalArgumentException();
             }
         }
 
         @Override
         public boolean isActionEnabled(String command, Lookup context) throws IllegalArgumentException {
 
-            return actionsEnabled;
+            if (ActionProvider.COMMAND_CLEAN.equals(command)) {
+                return isActive();
+            } else {
+                return actionsEnabled;
+            }
 
         }
     }

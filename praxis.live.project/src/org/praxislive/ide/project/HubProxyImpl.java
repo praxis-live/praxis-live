@@ -114,7 +114,7 @@ class HubProxyImpl implements HubProxy {
         }
     }
     
-    void stop() {
+    void dispose() {
         var helper = project.getLookup().lookup(ProjectHelper.class);
         try {
             var address = ControlAddress.of(
@@ -124,7 +124,9 @@ class HubProxyImpl implements HubProxy {
         } catch (Exception ex) {
             Exceptions.printStackTrace(ex);
         }
-        
+        roots.clear();
+        rootsChildren.refreshRoots();
+        pcs.firePropertyChange("roots", null, null);
     }
     
     private void refreshRoots() {

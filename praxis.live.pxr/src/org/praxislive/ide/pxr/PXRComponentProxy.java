@@ -79,12 +79,12 @@ public class PXRComponentProxy implements ComponentProxy {
     private final ComponentType type;
     private final boolean dynamic;
     private final InfoProperty infoProp;
-    private final Lookup lookup;
 
     PXRProxyNode node;
 
     private PXRContainerProxy parent;
     private ComponentInfo info;
+    private Lookup lookup;
     private Map<String, BoundArgumentProperty> properties;
     private PropPropListener propertyListener;
     private List<Action> triggers;
@@ -107,11 +107,10 @@ public class PXRComponentProxy implements ComponentProxy {
         pcs = new PropertyChangeSupport(this);
         dynamic = info.properties().getBoolean(ComponentInfo.KEY_DYNAMIC, false);
         infoProp = new InfoProperty();
-        lookup = createLookup();
     }
 
-    private Lookup createLookup() {
-        return Lookups.fixed(new Sync(), new Attr());
+    Lookup createLookup() {
+        return Lookups.fixed(getRoot().getProject(), new Sync(), new Attr());
     }
 
     List<? extends PraxisProperty<?>> getProxyProperties() {
@@ -480,6 +479,9 @@ public class PXRComponentProxy implements ComponentProxy {
 
     @Override
     public Lookup getLookup() {
+        if (lookup == null) {
+            lookup = createLookup();
+        }
         return lookup;
     }
 
