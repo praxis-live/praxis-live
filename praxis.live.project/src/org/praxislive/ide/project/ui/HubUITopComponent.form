@@ -20,13 +20,13 @@
               <Component id="jToolBar1" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
-          <Component id="rootList" alignment="0" pref="200" max="32767" attributes="0"/>
+          <Component id="rootList" alignment="0" max="32767" attributes="0"/>
       </Group>
     </DimensionLayout>
     <DimensionLayout dim="1">
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="1" attributes="0">
-              <Component id="rootList" pref="209" max="32767" attributes="0"/>
+              <Component id="rootList" pref="203" max="32767" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="jToolBar1" min="-2" max="-2" attributes="0"/>
           </Group>
@@ -57,18 +57,22 @@
         <Component class="javax.swing.JToggleButton" name="systemRootToggle">
           <Properties>
             <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-              <Image iconType="3" name="/org/praxislive/ide/core/ui/resources/system24.png"/>
-            </Property>
-            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="org/praxislive/ide/core/ui/Bundle.properties" key="HubUITopComponent.systemRootToggle.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+              <Image iconType="3" name="/org/praxislive/ide/project/resources/system24.png"/>
             </Property>
             <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="org/praxislive/ide/core/ui/Bundle.properties" key="LBL_ShowSystemRoots" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+              <ResourceString bundle="org/praxislive/ide/project/ui/Bundle.properties" key="LBL_ShowSystemRoots" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
+            <Property name="actionCommand" type="java.lang.String" value="showSystemRoots"/>
             <Property name="focusable" type="boolean" value="false"/>
             <Property name="horizontalTextPosition" type="int" value="0"/>
+            <Property name="label" type="java.lang.String" value=""/>
             <Property name="verticalTextPosition" type="int" value="3"/>
           </Properties>
+          <AccessibilityProperties>
+            <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/praxislive/ide/project/ui/Bundle.properties" key="LBL_ShowSystemRoots" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+          </AccessibilityProperties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="systemRootToggleActionPerformed"/>
           </Events>

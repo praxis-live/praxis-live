@@ -19,7 +19,7 @@
  * Please visit http://neilcsmith.net if you need additional information or
  * have any questions.
  */
-package org.praxislive.ide.core.ui;
+package org.praxislive.ide.project.ui;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -46,6 +46,7 @@ import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.praxislive.ide.model.HubProxy;
 import org.praxislive.ide.model.RootProxy;
+import org.praxislive.ide.project.api.PraxisProject;
 
 /**
  * Top component which displays Hub and roots information
@@ -60,7 +61,7 @@ public final class HubUITopComponent extends TopComponent implements ExplorerMan
     /**
      * path to the icon used by the component and its open action
      */
-    private static final String ICON_PATH = "org/praxislive/ide/core/ui/resources/hub-action.png";
+    private static final String ICON_PATH = "org/praxislive/ide/project/resources/hub-action.png";
 
     private static HubUITopComponent instance;
 
@@ -95,11 +96,12 @@ public final class HubUITopComponent extends TopComponent implements ExplorerMan
         jToolBar1.setFloatable(false);
         jToolBar1.setRollover(true);
 
-        systemRootToggle.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/praxislive/ide/core/ui/resources/system24.png"))); // NOI18N
-        org.openide.awt.Mnemonics.setLocalizedText(systemRootToggle, org.openide.util.NbBundle.getMessage(HubUITopComponent.class, "HubUITopComponent.systemRootToggle.text")); // NOI18N
+        systemRootToggle.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/praxislive/ide/project/resources/system24.png"))); // NOI18N
         systemRootToggle.setToolTipText(org.openide.util.NbBundle.getMessage(HubUITopComponent.class, "LBL_ShowSystemRoots")); // NOI18N
+        systemRootToggle.setActionCommand("showSystemRoots");
         systemRootToggle.setFocusable(false);
         systemRootToggle.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        systemRootToggle.setLabel("");
         systemRootToggle.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         systemRootToggle.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -107,6 +109,7 @@ public final class HubUITopComponent extends TopComponent implements ExplorerMan
             }
         });
         jToolBar1.add(systemRootToggle);
+        systemRootToggle.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(HubUITopComponent.class, "LBL_ShowSystemRoots")); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -115,12 +118,12 @@ public final class HubUITopComponent extends TopComponent implements ExplorerMan
             .addGroup(layout.createSequentialGroup()
                 .addComponent(jToolBar1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
-            .addComponent(rootList, javax.swing.GroupLayout.DEFAULT_SIZE, 200, Short.MAX_VALUE)
+            .addComponent(rootList)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addComponent(rootList, javax.swing.GroupLayout.DEFAULT_SIZE, 209, Short.MAX_VALUE)
+                .addComponent(rootList, javax.swing.GroupLayout.DEFAULT_SIZE, 203, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jToolBar1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
@@ -214,36 +217,40 @@ public final class HubUITopComponent extends TopComponent implements ExplorerMan
     }
 
     private void refresh() {
-        HubProxy hub = null;
+        Project project = null;
         boolean foundMany = false;
-        
+
         Node[] nodes = TopComponent.getRegistry().getActivatedNodes();
         for (Node node : nodes) {
             Lookup lkp = node.getLookup();
-            var found = findHubProxy(lkp);
+            var found = findProject(lkp);
 
             if (found != null) {
-                if (hub != null && hub != found) {
+                if (project != null && project != found) {
                     // more than one
-                    hub = null;
+                    project = null;
                     foundMany = true;
                     break;
                 } else {
-                    hub = found;
+                    project = found;
                 }
             }
         }
 
-        if (hub == null && !foundMany) {
+        if (project == null && !foundMany) {
             var tc = TopComponent.getRegistry().getActivated();
             if (tc != null) {
-                var found = findHubProxy(tc.getLookup());
-                if (found != null) {
-                    hub = found;
-                }
+                project = findProject(tc.getLookup());
             }
         }
 
+        HubProxy hub;
+        if (project != null) {
+            hub = project.getLookup().lookup(HubProxy.class);
+        } else {
+            hub = null;
+        }
+        
         if (hub != null) {
             if (hubNode != null) {
                 if (hubNode.hub == hub) {
@@ -265,27 +272,17 @@ public final class HubUITopComponent extends TopComponent implements ExplorerMan
         }
     }
 
-    private HubProxy findHubProxy(Lookup lkp) {
-        HubProxy found = null;
-        found = lkp.lookup(HubProxy.class);
-
-        if (found == null) {
-            var project = lkp.lookup(Project.class);
-            if (project == null) {
-                var dob = lkp.lookup(DataObject.class);
-                if (dob != null) {
-                    project = FileOwnerQuery.getOwner(dob.getPrimaryFile());
-                }
-            }
-            if (project != null) {
-                found = project.getLookup().lookup(HubProxy.class);
+    private Project findProject(Lookup lkp) {
+        var project = lkp.lookup(Project.class);
+        if (project == null) {
+            var dob = lkp.lookup(DataObject.class);
+            if (dob != null) {
+                project = FileOwnerQuery.getOwner(dob.getPrimaryFile());
             }
         }
-        return found;
+        return project;
     }
 
-
-    
     private class TCListener implements PropertyChangeListener {
 
         @Override
