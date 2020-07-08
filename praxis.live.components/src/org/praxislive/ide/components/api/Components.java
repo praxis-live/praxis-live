@@ -37,7 +37,7 @@ public interface Components {
     
     public List<ComponentType> rootTypes();
     
-    public ComponentFactory.MetaData metaData(ComponentType type);
+    public ComponentFactory.MetaData<?> metaData(ComponentType type);
 
 
     public default Image getIcon(ComponentType type) {

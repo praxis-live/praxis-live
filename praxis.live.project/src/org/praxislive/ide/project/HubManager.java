@@ -74,6 +74,7 @@ class HubManager {
         state = State.Stopped;
         lookupContent = new InstanceContent();
         lookupContent.add(proxy);
+        lookupContent.add(LocalComponents.getInstance());
         lookup = new AbstractLookup(lookupContent);
     }
 
