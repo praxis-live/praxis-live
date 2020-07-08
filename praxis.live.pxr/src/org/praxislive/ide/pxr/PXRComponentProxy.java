@@ -399,8 +399,6 @@ public class PXRComponentProxy implements ComponentProxy {
             LOG.log(Level.FINE, "Dispose called on {0}", getAddress());
         }
 
-        parent = null;
-
         if (dynInfoAdaptor != null) {
             getRoot().getHelper().unbind(
                     ControlAddress.of(getAddress(), ComponentProtocol.INFO),
@@ -420,6 +418,8 @@ public class PXRComponentProxy implements ComponentProxy {
                 ((BoundArgumentProperty) prop).dispose();
             }
         }
+        
+        parent = null;
         properties = null;
     }
 

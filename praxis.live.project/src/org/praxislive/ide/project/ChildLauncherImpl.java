@@ -57,6 +57,7 @@ class ChildLauncherImpl implements ChildLauncher {
         var launcher = CORE.launcherFile();
         var socketFuture = new CompletableFuture<SocketAddress>();
         var desc = new ExecutionDescriptor()
+                .controllable(true)
                 .outProcessorFactory(new ExecutionDescriptor.InputProcessorFactory2() {
                     @Override
                     public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {

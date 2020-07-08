@@ -222,7 +222,7 @@ class HubManager {
 
         @Override
         protected void afterExecute() {
-            if (getState() == State.CANCELLED) {
+            if (hub != null && hub.isAlive()) {
                 HubManager.this.state = HubManager.State.Running;
             } else {
                 HubManager.this.state = HubManager.State.Stopped;
@@ -234,7 +234,11 @@ class HubManager {
 
         @Override
         protected void handleExecute() throws Exception {
-            proxy.dispose();
+            try {
+                proxy.dispose();
+            } catch (Exception ex) {
+                Exceptions.printStackTrace(ex);
+            }
             deinitHub();
             updateState(Task.State.COMPLETED);
         }
