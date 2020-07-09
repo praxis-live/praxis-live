@@ -24,7 +24,6 @@ package org.praxislive.ide.project;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -44,15 +43,19 @@ import org.praxislive.ide.core.api.Task;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.praxislive.base.AbstractAsyncControl;
 import org.praxislive.core.ComponentInfo;
 import org.praxislive.core.Control;
 import org.praxislive.core.Info;
 import org.praxislive.core.RootHub;
 import org.praxislive.core.protocols.ComponentProtocol;
+import org.praxislive.core.services.RootFactoryService;
 import org.praxislive.core.services.Service;
 import org.praxislive.core.services.Services;
+import org.praxislive.core.types.PReference;
 import org.praxislive.ide.core.api.AbstractIDERoot;
+import org.praxislive.ide.project.api.PraxisProject;
 import org.praxislive.ide.project.spi.RootLifecycleHandler;
 
 /**
@@ -64,13 +67,15 @@ class ServicesOverride extends AbstractIDERoot implements RootHub.ServiceProvide
     private final static ComponentInfo INFO = Info.component()
             .merge(ComponentProtocol.API_INFO)
             .merge(RootManagerService.API_INFO)
+            .control(RootFactoryService.NEW_ROOT_INSTANCE, RootFactoryService.NEW_ROOT_INSTANCE_INFO)
             .control(SystemManagerService.SYSTEM_EXIT, SystemManagerService.SYSTEM_EXIT_INFO)
             .build();
     
     private final DefaultPraxisProject project;
     private final Set<String> knownRoots;
     
-    private ComponentAddress defaultService;
+    private ComponentAddress defaultRootManagerService;
+    private ComponentAddress defaultRootFactoryService;
 
     ServicesOverride(DefaultPraxisProject project) {
         this.project = project;
@@ -78,9 +83,8 @@ class ServicesOverride extends AbstractIDERoot implements RootHub.ServiceProvide
         registerControl(RootManagerService.ADD_ROOT, new AddRootControl());
         registerControl(RootManagerService.REMOVE_ROOT, new RemoveRootControl());
         registerControl(RootManagerService.ROOTS, new RootsControl());
-//        registerProtocol(RootManagerService.class);
+        registerControl(RootFactoryService.NEW_ROOT_INSTANCE, new NewRootInstanceControl());
         registerControl(SystemManagerService.SYSTEM_EXIT, new ExitControl());
-//        registerProtocol(SystemManagerService.class);
     }
 
     @Override
@@ -90,29 +94,42 @@ class ServicesOverride extends AbstractIDERoot implements RootHub.ServiceProvide
     
     @Override
     public List<Class<? extends Service>> services() {
-        return List.of(RootManagerService.class, SystemManagerService.class);
+        return List.of(RootManagerService.class,
+                RootFactoryService.class,
+                SystemManagerService.class);
     }
     
     Set<String> getKnownUserRoots() {
         return knownRoots;
     }
 
-    private ComponentAddress getDefaultServiceAddress() throws ServiceUnavailableException {
-        if (defaultService == null) {
+    private ComponentAddress getDefaultRootManagerService() throws ServiceUnavailableException {
+        if (defaultRootManagerService == null) {
             ComponentAddress[] services = getLookup().find(Services.class)
                     .map(s -> s.locateAll(RootManagerService.class).toArray(ComponentAddress[]::new))
                     .orElseThrow(ServiceUnavailableException::new);
 
-            defaultService = services[services.length - 1];
+            defaultRootManagerService = services[services.length - 1];
         }
-        return defaultService;
+        return defaultRootManagerService;
+    }
+    
+    private ComponentAddress getDefaultRootFactoryService() throws ServiceUnavailableException {
+        if (defaultRootFactoryService == null) {
+            ComponentAddress[] services = getLookup().find(Services.class)
+                    .map(s -> s.locateAll(RootFactoryService.class).toArray(ComponentAddress[]::new))
+                    .orElseThrow(ServiceUnavailableException::new);
+
+            defaultRootFactoryService = services[services.length - 1];
+        }
+        return defaultRootFactoryService;
     }
 
     private class AddRootControl extends AbstractAsyncControl {
 
         @Override
         protected Call processInvoke(Call call) throws Exception {
-            ControlAddress to = ControlAddress.of(getDefaultServiceAddress(), RootManagerService.ADD_ROOT);
+            ControlAddress to = ControlAddress.of(getDefaultRootManagerService(), RootManagerService.ADD_ROOT);
             return Call.create(to, call.to(), call.time(), call.args());
         }
 
@@ -129,7 +146,7 @@ class ServicesOverride extends AbstractIDERoot implements RootHub.ServiceProvide
 
         @Override
         protected Call processInvoke(Call call) throws Exception {
-            ControlAddress to = ControlAddress.of(getDefaultServiceAddress(), RootManagerService.ROOTS);
+            ControlAddress to = ControlAddress.of(getDefaultRootManagerService(), RootManagerService.ROOTS);
             return Call.create(to, call.to(), call.time(), call.args());
         }
 
@@ -220,7 +237,7 @@ class ServicesOverride extends AbstractIDERoot implements RootHub.ServiceProvide
         }
 
         private void forwardCall(String rootID, Call call, PacketRouter router) throws Exception {
-            ControlAddress to = ControlAddress.of(getDefaultServiceAddress(), RootManagerService.REMOVE_ROOT);
+            ControlAddress to = ControlAddress.of(getDefaultRootManagerService(), RootManagerService.REMOVE_ROOT);
             Call forward = Call.create(to, call.to(), call.time(), call.args());
             forwarded.put(forward.matchID(), rootID);
             router.route(forward);
@@ -273,6 +290,35 @@ class ServicesOverride extends AbstractIDERoot implements RootHub.ServiceProvide
             }
         }
     }
+    
+    private class NewRootInstanceControl extends AbstractAsyncControl {
+
+        @Override
+        protected Call processInvoke(Call call) throws Exception {
+            if ("root:gui".equals(call.args().get(0).toString())) {
+                try {
+                    var loader = Lookup.getDefault().lookup(ClassLoader.class);
+                    var guiClass = Class.forName(
+                            "org.praxislive.ide.pxr.gui.DockableGuiRoot",
+                            true, loader);
+                    var instance = guiClass.getDeclaredConstructor(PraxisProject.class)
+                            .newInstance(project);
+                    return call.reply(PReference.of(instance));
+                } catch (Exception ex) {
+                    Exceptions.printStackTrace(ex);
+                    // fall through to default
+                }
+            }
+            ControlAddress to = ControlAddress.of(getDefaultRootFactoryService(),
+                    RootFactoryService.NEW_ROOT_INSTANCE);
+            return Call.create(to, call.to(), call.time(), call.args());
+        }
+
+        @Override
+        protected Call processResponse(Call call) throws Exception {
+            return getActiveCall().reply(call.args());
+        }
+    }
 
     private class ExitControl implements Control {
 
@@ -291,4 +337,6 @@ class ServicesOverride extends AbstractIDERoot implements RootHub.ServiceProvide
 
         }
     }
+    
+    
 }
