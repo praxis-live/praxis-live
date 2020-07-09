@@ -122,6 +122,7 @@ public class ProjectPropertiesImpl implements ProjectProperties {
         }
         existing.clear();
         existing.putAll(replacements);
+        pcs.firePropertyChange(PROP_ELEMENTS, null, null);
     }
 
     @Override

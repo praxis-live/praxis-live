@@ -97,11 +97,11 @@ public class DefaultPraxisProject implements PraxisProject {
 
     private final FileObject directory;
     private final FileObject projectFile;
-    private final ProjectPropertiesImpl properties;
-    private final HubManager hubManager;
-    private final Lookup lookup;
-    private final PropertiesListener propsListener;
     private final ProjectState state;
+    private final HubManager hubManager;
+    private final ProjectPropertiesImpl properties;
+    private final PropertiesListener propsListener;
+    private final Lookup lookup;
     private final Set<ElementHandler> executedHandlers;
 
     private boolean actionsEnabled;
@@ -113,11 +113,10 @@ public class DefaultPraxisProject implements PraxisProject {
         this.directory = directory;
         this.projectFile = projectFile;
         this.state = state;
-        executedHandlers = new HashSet<>();
+        hubManager = new HubManager(this);
         properties = parseProjectFile(projectFile);
         propsListener = new PropertiesListener();
         properties.addPropertyChangeListener(propsListener);
-        hubManager = new HubManager(this);
         Lookup base = Lookups.fixed(
                 this,
                 properties,
@@ -133,6 +132,7 @@ public class DefaultPraxisProject implements PraxisProject {
 
         base = new ProxyLookup(base, hubManager.getLookup());
         this.lookup = LookupProviderSupport.createCompositeLookup(base, LOOKUP_PATH);
+        executedHandlers = new HashSet<>();
         actionsEnabled = true;
     }
 
