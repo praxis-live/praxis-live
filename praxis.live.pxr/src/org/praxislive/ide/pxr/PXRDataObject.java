@@ -49,6 +49,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.CloneableTopComponent;
+import org.praxislive.ide.components.api.Icons;
 
 public class PXRDataObject extends MultiDataObject {
 
@@ -88,16 +89,18 @@ public class PXRDataObject extends MultiDataObject {
             return;
         }
         this.type = type;
+        icon = null;
         if (type != null) {
             var project = FileOwnerQuery.getOwner(getPrimaryFile());
-            var components = project.getLookup().lookup(Components.class);
-            if (components != null) {
-                icon = components.getIcon(type);
-            } else {
-                icon = null;
+            if (project != null) {
+                var components = project.getLookup().lookup(Components.class);
+                if (components != null) {
+                    icon = components.getIcon(type);
+                }
             }
-        } else {
-            icon = null;
+            if (icon == null) {
+                icon = Icons.getIcon(type);
+            }
         }
         if (node != null) {
             node.updateType();

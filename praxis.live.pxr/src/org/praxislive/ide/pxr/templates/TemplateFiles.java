@@ -25,16 +25,12 @@ import java.io.CharConversionException;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.praxislive.core.services.ComponentFactory.MetaData;
 import org.praxislive.core.ComponentType;
-import org.praxislive.core.Root;
-import org.praxislive.ide.components.api.Components;
 import org.praxislive.ide.core.api.DynamicFileSystem;
 import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.openide.filesystems.FileObject;
@@ -70,7 +66,7 @@ class TemplateFiles {
 
     private TemplateFiles() {
         memoryFS = FileUtil.createMemoryFileSystem();
-        privileged = new ArrayList<String>();
+        privileged = new ArrayList<>();
         layer = init();
         if (layer != null) {
             DynamicFileSystem.getDefault().mount(layer);
@@ -84,6 +80,7 @@ class TemplateFiles {
             var type = ComponentType.of(typeString);
             String filename = fileName(type);
             buildTemplateFile(sb, type, filename);
+            privileged.add(templateFolder + filename);
         }
         buildLayerSuffix(sb);
         LOG.log(Level.FINE, "Created Templates dynamic layer\n{0}", sb);
