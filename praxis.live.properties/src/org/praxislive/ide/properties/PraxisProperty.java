@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2014 Neil C Smith.
+ * Copyright 2020 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -26,12 +26,12 @@ import java.util.Enumeration;
 import org.praxislive.ide.core.api.Callback;
 import org.praxislive.ide.core.api.Disposable;
 import org.openide.nodes.Node;
+import org.praxislive.core.Value;
 
 /**
  *
- * @author Neil C Smith (http://neilcsmith.net)
  */
-public abstract class PraxisProperty<T> extends Node.Property<T>
+public abstract class PraxisProperty<T extends Value> extends Node.Property<T>
         implements Disposable {
 
     private Editor editor;

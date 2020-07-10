@@ -50,6 +50,7 @@ import org.praxislive.ide.core.api.ValuePropertyAdaptor;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.praxislive.base.Binding;
+import org.praxislive.core.types.PString;
 
 /**
  *
@@ -334,21 +335,21 @@ public class PXRContainerProxy extends PXRComponentProxy implements ContainerPro
         }
         if (conAdaptor != null) {
             getRoot().getHelper().unbind(ControlAddress.of(getAddress(),
-                ContainerProtocol.CONNECTIONS), conAdaptor);
+                    ContainerProtocol.CONNECTIONS), conAdaptor);
         }
         super.dispose();
     }
 
-    private class ChildrenProperty extends PraxisProperty<String[]> {
+    private class ChildrenProperty extends PraxisProperty<PArray> {
 
         private ChildrenProperty() {
-            super(String[].class);
+            super(PArray.class);
             setName(ContainerProtocol.CHILDREN);
         }
 
         @Override
-        public String[] getValue() {
-            return children().toArray(String[]::new);
+        public PArray getValue() {
+            return children().map(PString::of).collect(PArray.collector());
         }
 
         @Override
@@ -358,16 +359,22 @@ public class PXRContainerProxy extends PXRComponentProxy implements ContainerPro
 
     }
 
-    private class ConnectionsProperty extends PraxisProperty<Connection[]> {
+    private class ConnectionsProperty extends PraxisProperty<PArray> {
 
         private ConnectionsProperty() {
-            super(Connection[].class);
+            super(PArray.class);
             setName(ContainerProtocol.CONNECTIONS);
         }
 
         @Override
-        public Connection[] getValue() {
-            return connections().toArray(Connection[]::new);
+        public PArray getValue() {
+            return connections()
+                    .map(c -> PArray.of(
+                    PString.of(c.getChild1()),
+                    PString.of(c.getPort1()),
+                    PString.of(c.getChild2()),
+                    PString.of(c.getPort2())
+            )).collect(PArray.collector());
         }
 
         @Override

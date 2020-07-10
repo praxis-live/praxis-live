@@ -29,6 +29,9 @@ import org.praxislive.core.ComponentType;
  *
  */
 public interface ContainerProxy extends ComponentProxy {
+    
+    public static final String CHILDREN = "children";
+    public static final String CONNECTIONS = "connections";
 
     public void addChild(String id, ComponentType type, Callback callback);
 

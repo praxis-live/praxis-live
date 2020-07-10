@@ -33,17 +33,6 @@ public interface Proxy extends Lookup.Provider {
 
     public Node getNodeDelegate();
     
-    public default Node.Property<?> getProperty(String id) {
-        for (var set : getNodeDelegate().getPropertySets()) {
-            for (var property : set.getProperties()) {
-                if (property.getName().equals(id)) {
-                    return property;
-                }
-            }
-        }
-        return null;
-    }
-
     public void addPropertyChangeListener(PropertyChangeListener listener);
 
     public void removePropertyChangeListener(PropertyChangeListener listener);

@@ -27,11 +27,14 @@ import org.praxislive.core.ComponentType;
 import org.praxislive.core.ComponentInfo;
 import org.praxislive.core.Value;
 import org.praxislive.ide.core.api.Callback;
+import org.praxislive.ide.properties.PraxisProperty;
 
 /**
  *
  */
 public interface ComponentProxy extends Proxy {
+    
+    public static final String INFO = "info";
 
     public ComponentAddress getAddress();
 
@@ -40,6 +43,8 @@ public interface ComponentProxy extends Proxy {
     public ComponentInfo getInfo();
 
     public ContainerProxy getParent();
+    
+    public PraxisProperty<?> getProperty(String id);
     
     public void send(String control, List<Value> args, Callback callback);
 

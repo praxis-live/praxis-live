@@ -40,11 +40,9 @@ import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.praxislive.core.Value;
-import org.praxislive.core.ValueFormatException;
 import org.praxislive.core.ComponentAddress;
 import org.praxislive.core.ComponentType;
 import org.praxislive.core.ControlAddress;
-import org.praxislive.core.ArgumentInfo;
 import org.praxislive.core.ComponentInfo;
 import org.praxislive.core.ControlInfo;
 import org.praxislive.core.protocols.ComponentProtocol;
@@ -52,7 +50,6 @@ import org.praxislive.core.types.PString;
 import org.praxislive.ide.core.api.Callback;
 import org.praxislive.ide.core.api.Syncable;
 import org.praxislive.ide.model.ComponentProxy;
-import org.praxislive.ide.model.ProxyException;
 import org.praxislive.ide.properties.PraxisProperty;
 import org.praxislive.ide.pxr.api.Attributes;
 import org.praxislive.ide.core.api.ValuePropertyAdaptor;
@@ -63,7 +60,6 @@ import org.openide.util.lookup.Lookups;
 import org.openide.windows.TopComponent;
 import org.praxislive.base.Binding;
 import org.praxislive.core.types.PError;
-import org.praxislive.ide.core.api.HubUnavailableException;
 
 /**
  *

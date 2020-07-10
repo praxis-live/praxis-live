@@ -30,13 +30,11 @@ import org.praxislive.core.ComponentAddress;
  */
 public interface HubProxy extends Proxy {
     
+    public static final String ROOTS = "roots";
+    
     public RootProxy getRoot(String id);
     
     public Stream<String> roots();
-    
-//    public boolean isActive();
-//    
-//    public boolean shutdown() throws UnsupportedOperationException;
     
     public default Optional<ComponentProxy> find(ComponentAddress address) {
         RootProxy root = getRoot(address.rootID());

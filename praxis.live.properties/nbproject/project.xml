@@ -63,14 +63,9 @@
                     </run-dependency>
                 </dependency>
             </module-dependencies>
-            <friend-packages>
-                <friend>org.praxislive.ide.pxr</friend>
-                <friend>org.praxislive.ide.pxr.graph</friend>
-                <friend>org.praxislive.ide.pxr.gui</friend>
-                <friend>org.praxislive.ide.pxr.midi</friend>
-                <friend>org.praxislive.ide.pxr.osc</friend>
+            <public-packages>
                 <package>org.praxislive.ide.properties</package>
-            </friend-packages>
+            </public-packages>
         </data>
     </configuration>
 </project>
