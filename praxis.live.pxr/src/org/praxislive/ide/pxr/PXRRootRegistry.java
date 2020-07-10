@@ -72,6 +72,16 @@ public class PXRRootRegistry implements RootRegistry {
         return roots.stream().collect(Collectors.toList());
     }
 
+    @Override
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        pcs.addPropertyChangeListener(listener);
+    }
+
+    @Override
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        pcs.removePropertyChangeListener(listener);
+    }
+
     void register(PXRRootProxy root) {
         if (root == null) {
             throw new NullPointerException();
@@ -111,14 +121,6 @@ public class PXRRootRegistry implements RootRegistry {
 
     private void fireRootsChange() {
         pcs.firePropertyChange("roots", null, null);
-    }
-
-    void addPropertyChangeListener(PropertyChangeListener listener) {
-        pcs.addPropertyChangeListener(listener);
-    }
-
-    void removePropertyChangeListener(PropertyChangeListener listener) {
-        pcs.removePropertyChangeListener(listener);
     }
 
     PXRRootProxy[] getRoots() {

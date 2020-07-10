@@ -21,22 +21,25 @@
  */
 package org.praxislive.ide.project.ui;
 
+import java.awt.Image;
+import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
-import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
 import java.util.logging.Logger;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.ListSelectionModel;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
-//import org.openide.util.ImageUtilities;
 import org.netbeans.api.settings.ConvertAsProperties;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.ListView;
-import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -44,24 +47,35 @@ import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
+import org.praxislive.core.protocols.StartableProtocol;
+import org.praxislive.core.types.PBoolean;
 import org.praxislive.ide.model.HubProxy;
 import org.praxislive.ide.model.RootProxy;
-import org.praxislive.ide.project.api.PraxisProject;
+import org.praxislive.ide.properties.PraxisProperty;
 
 /**
  * Top component which displays Hub and roots information
  */
 @ConvertAsProperties(dtd = "-//org.praxislive.ide.hubui//HubUI//EN",
         autostore = false)
+@NbBundle.Messages({
+    "LBL_startAction=Start",
+    "LBL_stopAction=Stop",
+    "LBL_rootActive=[active]",
+    "LBL_rootIdle=[idle]"
+})
 public final class HubUITopComponent extends TopComponent implements ExplorerManager.Provider {
 
     private final static String SYSTEM_PREFIX = "_";
 
     private static final String PREFERRED_ID = "HubUITopComponent";
+
+    private final static String RESOURCE_DIR = "org/praxislive/ide/project/resources/";
+
     /**
      * path to the icon used by the component and its open action
      */
-    private static final String ICON_PATH = "org/praxislive/ide/project/resources/hub-action.png";
+    private static final String ICON_PATH = RESOURCE_DIR + "hub-action.png";
 
     private static HubUITopComponent instance;
 
@@ -101,7 +115,6 @@ public final class HubUITopComponent extends TopComponent implements ExplorerMan
         systemRootToggle.setActionCommand("showSystemRoots");
         systemRootToggle.setFocusable(false);
         systemRootToggle.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        systemRootToggle.setLabel("");
         systemRootToggle.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         systemRootToggle.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -118,19 +131,23 @@ public final class HubUITopComponent extends TopComponent implements ExplorerMan
             .addGroup(layout.createSequentialGroup()
                 .addComponent(jToolBar1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
-            .addComponent(rootList)
+            .addComponent(rootList, javax.swing.GroupLayout.DEFAULT_SIZE, 200, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addComponent(rootList, javax.swing.GroupLayout.DEFAULT_SIZE, 203, Short.MAX_VALUE)
+                .addComponent(rootList, javax.swing.GroupLayout.DEFAULT_SIZE, 200, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jToolBar1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
     private void systemRootToggleActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_systemRootToggleActionPerformed
+        if (hubNode != null) {
+            hubNode.roots.showSystem(systemRootToggle.isSelected());
+        }
     }//GEN-LAST:event_systemRootToggleActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JToolBar jToolBar1;
     private javax.swing.JScrollPane rootList;
@@ -250,7 +267,7 @@ public final class HubUITopComponent extends TopComponent implements ExplorerMan
         } else {
             hub = null;
         }
-        
+
         if (hub != null) {
             if (hubNode != null) {
                 if (hubNode.hub == hub) {
@@ -261,6 +278,7 @@ public final class HubUITopComponent extends TopComponent implements ExplorerMan
             }
             hubNode = new HubNode(hub, hub.getNodeDelegate());
             manager.setRootContext(hubNode);
+            hubNode.roots.showSystem(systemRootToggle.isSelected());
         } else if (foundMany) {
             if (hubNode == null) {
                 return;
@@ -314,23 +332,7 @@ public final class HubUITopComponent extends TopComponent implements ExplorerMan
         }
 
     }
-
-    private static class RootNode extends FilterNode {
-
-        private final RootProxy root;
-
-        private RootNode(Node original, RootProxy root) {
-            super(original, Children.LEAF);
-            this.root = root;
-        }
-
-        @Override
-        public void destroy() throws IOException {
-            super.destroy();
-        }
-
-    }
-
+    
     private static class Roots extends FilterNode.Children {
 
         private boolean showSystem;
@@ -342,7 +344,7 @@ public final class HubUITopComponent extends TopComponent implements ExplorerMan
         @Override
         protected Node[] createNodes(Node key) {
             RootProxy root = key.getLookup().lookup(RootProxy.class);
-            if (root == null || root.getAddress().rootID().startsWith(SYSTEM_PREFIX)) {
+            if (root == null || (key.isExpert() && !showSystem)) {
                 return new Node[0];
             } else {
                 return new Node[]{new RootNode(key, root)};
@@ -350,10 +352,140 @@ public final class HubUITopComponent extends TopComponent implements ExplorerMan
 
         }
 
+        private void showSystem(boolean showSystem) {
+            this.showSystem = showSystem;
+            Node[] nodes = original.getChildren().getNodes(true);
+            for (Node node : nodes) {
+                refreshKey(node);
+            }
+        }
+        
         private void dispose() {
             setKeys(new Node[0]);
         }
 
     }
+
+    private static class RootNode extends FilterNode
+            implements PropertyChangeListener {
+        
+        private static final Image ROOT_ACTIVE_ICON = 
+                ImageUtilities.loadImage(RESOURCE_DIR + "root_active.png", true);
+        private static final Image ROOT_IDLE_ICON = 
+                ImageUtilities.loadImage(RESOURCE_DIR + "root_idle.png", true);
+        private static final Image ROOT_ICON = 
+                ImageUtilities.loadImage(RESOURCE_DIR + "root.png", true);
+
+        private final RootProxy root;
+        private final boolean startable;
+        private final Action startAction;
+        private final Action stopAction;
+        
+        boolean running;
+
+        private RootNode(Node original, RootProxy root) {
+            super(original, Children.LEAF);
+            this.root = root;
+            startable = root.getInfo().hasProtocol(StartableProtocol.class);
+            startAction = new StartableAction(Bundle.LBL_startAction(), root, true);
+            startAction.setEnabled(false);
+            stopAction = new StartableAction(Bundle.LBL_stopAction(), root, false);
+            stopAction.setEnabled(false);
+            root.addPropertyChangeListener(this);
+            disableDelegation(DELEGATE_SET_DISPLAY_NAME | DELEGATE_GET_DISPLAY_NAME);
+            refresh();
+        }
+
+        @Override
+        public void destroy() throws IOException {
+            super.destroy();
+            root.removePropertyChangeListener(this);
+        }
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            if ("is-running".equals(evt.getPropertyName())) {
+                refresh();
+            }
+        }
+
+        @Override
+        public Action getPreferredAction() {
+            if (startAction.isEnabled()) {
+                return startAction;
+            } else if (stopAction.isEnabled()) {
+                return stopAction;
+            } else {
+                return null;
+            }
+        }
+        
+        @Override
+        public Action[] getActions(boolean context) {
+            if (startable) {
+                return new Action[]{startAction, stopAction};
+            } else {
+                return new Action[0];
+            }
+        }
+
+        private void refresh() {
+            var id = root.getAddress().rootID();
+            if (startable) {
+                running = Optional.ofNullable(root.getProperty("is-running"))
+                        .map(PraxisProperty::getValue)
+                        .flatMap(PBoolean::from)
+                        .orElse(PBoolean.FALSE).value();
+                if (running) {
+                    setDisplayName(id + " " + Bundle.LBL_rootActive());
+                    startAction.setEnabled(false);
+                    stopAction.setEnabled(true);
+                } else {
+                    setDisplayName(id + " " + Bundle.LBL_rootIdle());
+                    startAction.setEnabled(true);
+                    stopAction.setEnabled(false);
+                }
+            } else {
+                running = false;
+                setDisplayName(id);
+            }
+            fireIconChange();
+        }
+
+        @Override
+        public Image getIcon(int type) {
+            if (startable) {
+                if (running) {
+                    return ROOT_ACTIVE_ICON;
+                } else {
+                    return ROOT_IDLE_ICON;
+                }
+            } else {
+                return ROOT_ICON;
+            }
+        }
+
+    }
+    
+    private static class StartableAction extends AbstractAction {
+        
+        private final RootProxy root;
+        private final boolean start;
+        
+        private StartableAction(String name, RootProxy root, boolean start) {
+            super(name);
+            this.root = root;
+            this.start = start;
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            root.send(start ? StartableProtocol.START : StartableProtocol.STOP,
+                    List.of(), null);
+        }
+        
+    }
+
+    
 
 }

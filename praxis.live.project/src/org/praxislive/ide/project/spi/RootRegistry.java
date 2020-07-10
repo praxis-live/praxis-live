@@ -21,6 +21,7 @@
  */
 package org.praxislive.ide.project.spi;
 
+import java.beans.PropertyChangeListener;
 import java.util.List;
 import java.util.Optional;
 import org.praxislive.ide.model.RootProxy;
@@ -30,8 +31,14 @@ import org.praxislive.ide.model.RootProxy;
  */
 public interface RootRegistry {
     
+    public static final String ROOTS = "roots";
+    
     public Optional<RootProxy> find(String id);
 
     public List<RootProxy> findAll();
+    
+    public void addPropertyChangeListener(PropertyChangeListener listener);
+    
+    public void removePropertyChangeListener(PropertyChangeListener listener);
     
 }

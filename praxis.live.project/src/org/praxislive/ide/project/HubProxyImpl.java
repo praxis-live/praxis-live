@@ -23,6 +23,7 @@ package org.praxislive.ide.project;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -49,6 +50,7 @@ import org.praxislive.ide.core.api.ValuePropertyAdaptor;
 import org.praxislive.ide.model.HubProxy;
 import org.praxislive.ide.model.RootProxy;
 import org.praxislive.ide.project.spi.RootRegistry;
+import org.praxislive.ide.properties.PraxisProperty;
 
 /**
  *
@@ -61,15 +63,19 @@ class HubProxyImpl implements HubProxy {
     private final Node hubNode;
     private final PropertyChangeSupport pcs;
     private final Map<String, RootProxy> roots;
-
+    private final List<RootRegistry> rootRegistries;
+    private final PropertyChangeListener listener;
+    
     HubProxyImpl(DefaultPraxisProject project) {
         this.project = project;
         rootsAdaptor = new ValuePropertyAdaptor.ReadOnly(this, "roots", true, Binding.SyncRate.Low);
-        rootsAdaptor.addPropertyChangeListener(e -> refreshRoots());
+        listener = e -> refreshRoots();
+        rootsAdaptor.addPropertyChangeListener(listener);
         rootsChildren = new RootsChildren();
         hubNode = new HubNode(rootsChildren);
         pcs = new PropertyChangeSupport(this);
         roots = new LinkedHashMap<>();
+        rootRegistries = new ArrayList<>();
     }
 
     @Override
@@ -112,6 +118,11 @@ class HubProxyImpl implements HubProxy {
         } catch (Exception ex) {
             Exceptions.printStackTrace(ex);
         }
+        project.getLookup().lookupAll(RootRegistry.class).forEach(r -> {
+            if (rootRegistries.add(r)) {
+                r.addPropertyChangeListener(listener);
+            }
+        });
     }
     
     void dispose() {
@@ -124,9 +135,12 @@ class HubProxyImpl implements HubProxy {
         } catch (Exception ex) {
             Exceptions.printStackTrace(ex);
         }
+        rootsAdaptor.removePropertyChangeListener(listener);
+        rootRegistries.forEach(r -> r.removePropertyChangeListener(listener));
+        rootRegistries.clear();
         roots.clear();
         rootsChildren.refreshRoots();
-        pcs.firePropertyChange("roots", null, null);
+        pcs.firePropertyChange(ROOTS, null, null);
     }
     
     private void refreshRoots() {
@@ -135,17 +149,18 @@ class HubProxyImpl implements HubProxy {
                 .map(Value::toString)
                 .collect(Collectors.toList());
         roots.keySet().retainAll(rts);
-        rts.forEach(r -> roots.computeIfAbsent(r, this::findRootProxy));
+        rts.forEach(r -> roots.compute(r, this::findRootProxy));
         rootsChildren.refreshRoots();
-        pcs.firePropertyChange("roots", null, null);
+        pcs.firePropertyChange(ROOTS, null, null);
     }
     
-    private RootProxy findRootProxy(String id) {
+    private RootProxy findRootProxy(String id, RootProxy existing) {
         return project.getLookup().lookupAll(RootRegistry.class)
                 .stream()
                 .flatMap(reg -> reg.find(id).stream())
                 .findFirst()
-                .orElse(new FallbackRootProxy(id));
+                .orElseGet(() -> existing instanceof FallbackRootProxy ? 
+                        existing : new FallbackRootProxy(id));
     }
     
     private class HubNode extends AbstractNode {
@@ -160,15 +175,15 @@ class HubProxyImpl implements HubProxy {
         }
     }
     
-    private class RootsChildren extends Children.Keys<String> {
+    private class RootsChildren extends Children.Keys<RootProxy> {
 
         @Override
-        protected Node[] createNodes(String key) {
-            return new Node[]{roots.get(key).getNodeDelegate()};
+        protected Node[] createNodes(RootProxy key) {
+            return new Node[]{key.getNodeDelegate()};
         }
         
         private void refreshRoots() {
-            setKeys(roots.keySet());
+            setKeys(roots.values());
         }
         
     }
@@ -220,6 +235,11 @@ class HubProxyImpl implements HubProxy {
         public Lookup getLookup() {
             return Lookup.EMPTY;
         }
+
+        @Override
+        public PraxisProperty<?> getProperty(String id) {
+            return null;
+        }
         
     }
     
@@ -230,6 +250,7 @@ class HubProxyImpl implements HubProxy {
         private FallbackRootNode(FallbackRootProxy proxy) {
             super(Children.LEAF, Lookups.singleton(proxy));
             name = proxy.address.rootID();
+            setExpert(true);
         }
 
         @Override
