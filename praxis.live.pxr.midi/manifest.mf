@@ -1,7 +1,7 @@
 Manifest-Version: 1.0
-OpenIDE-Module: org.praxislive.ide.pxr.midi/2
+OpenIDE-Module: org.praxislive.ide.pxr.midi
 OpenIDE-Module-Layer: org/praxislive/ide/pxr/midi/resources/layer.xml
 OpenIDE-Module-Localizing-Bundle: org/praxislive/ide/pxr/midi/resources/Bundle.properties
-OpenIDE-Module-Specification-Version: 1.0
+OpenIDE-Module-Specification-Version: 5.0.0
 AutoUpdate-Essential-Module: true
 AutoUpdate-Show-In-Client: false

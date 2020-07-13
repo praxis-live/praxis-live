@@ -74,7 +74,6 @@ import org.praxislive.ide.graph.PraxisGraphScene;
 import org.praxislive.ide.model.ComponentProxy;
 import org.praxislive.ide.model.Connection;
 import org.praxislive.ide.model.ContainerProxy;
-import org.praxislive.ide.model.ProxyException;
 import org.praxislive.ide.model.RootProxy;
 import org.praxislive.ide.pxr.api.ActionSupport;
 import org.praxislive.ide.pxr.api.EditorUtils;

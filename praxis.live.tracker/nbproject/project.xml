@@ -7,19 +7,11 @@
             <suite-component/>
             <module-dependencies>
                 <dependency>
-                    <code-name-base>org.netbeans.api.templates</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>1.7.1</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
                     <code-name-base>org.openide.awt</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>7.62.1</specification-version>
+                        <specification-version>7.76</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -27,7 +19,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>7.38.1</specification-version>
+                        <specification-version>7.50</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -35,7 +27,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>9.8.1</specification-version>
+                        <specification-version>9.18</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -43,7 +35,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>7.57.2</specification-version>
+                        <specification-version>7.76</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -51,15 +43,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>7.39.1</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.openide.text</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>6.62.2</specification-version>
+                        <specification-version>7.53</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -67,7 +51,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>8.39.1</specification-version>
+                        <specification-version>9.15</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -75,7 +59,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>8.25.2</specification-version>
+                        <specification-version>8.41</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -83,7 +67,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>9.4.1</specification-version>
+                        <specification-version>9.16</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -91,7 +75,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>6.71.1</specification-version>
+                        <specification-version>6.85</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>

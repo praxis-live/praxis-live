@@ -30,7 +30,6 @@ import org.praxislive.ide.core.api.Callback;
 import org.praxislive.ide.project.api.ExecutionLevel;
 import org.praxislive.ide.project.spi.FileHandler;
 import org.praxislive.ide.project.api.PraxisProject;
-import org.praxislive.ide.model.ProxyException;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.openide.filesystems.FileObject;

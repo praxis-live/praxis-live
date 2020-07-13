@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Neil C Smith.
+ * Copyright 2020 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -23,33 +23,19 @@
 package org.praxislive.ide.pxr;
 
 import java.awt.BorderLayout;
-import java.awt.dnd.DnDConstants;
-import java.awt.dnd.DropTarget;
-import java.awt.dnd.DropTargetAdapter;
-import java.awt.dnd.DropTargetDropEvent;
-import java.awt.dnd.DropTargetListener;
 import javax.swing.Action;
 import javax.swing.JComponent;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
-import org.praxislive.core.ComponentType;
-import org.praxislive.ide.components.api.Components;
 import org.praxislive.ide.model.RootProxy;
 import org.praxislive.ide.pxr.spi.RootEditor;
 import org.netbeans.spi.palette.PaletteActions;
-import org.netbeans.spi.palette.PaletteFactory;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerUtils;
 import org.openide.explorer.view.BeanTreeView;
-import org.openide.nodes.Node;
-import org.openide.nodes.NodeTransfer;
 import org.openide.util.Lookup;
-import org.openide.util.lookup.Lookups;
-import org.openide.util.lookup.ProxyLookup;
 
 /**
  *
- * @author Neil C Smith (http://neilcsmith.net)
  */
 public class DebugRootEditor extends RootEditor {
 

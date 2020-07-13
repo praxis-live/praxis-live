@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2017 Neil C Smith.
+ * Copyright 2020 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -41,7 +41,6 @@ import javax.swing.JPanel;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import org.praxislive.core.ComponentType;
-import org.praxislive.ide.pxr.graph.Bundle;
 import org.netbeans.spi.palette.PaletteController;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -52,7 +51,6 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Neil C Smith (http://neilcsmith.net)
  */
 @NbBundle.Messages({
     "LBL.add=Add",
