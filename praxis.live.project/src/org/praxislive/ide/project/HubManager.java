@@ -236,7 +236,7 @@ class HubManager {
         @Override
         protected void handleExecute() throws Exception {
             try {
-                proxy.dispose();
+                proxy.stop();
             } catch (Exception ex) {
                 Exceptions.printStackTrace(ex);
             }

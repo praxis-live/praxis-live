@@ -23,7 +23,6 @@ package org.praxislive.ide.pxr;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
@@ -34,7 +33,6 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
-import org.praxislive.ide.model.HubProxy;
 import org.praxislive.ide.model.RootProxy;
 import org.praxislive.ide.project.api.PraxisProject;
 import org.praxislive.ide.project.spi.RootRegistry;
@@ -47,16 +45,13 @@ import org.praxislive.ide.project.spi.RootRegistry;
 public class PXRRootRegistry implements RootRegistry {
 
     private final PraxisProject project;
-    private final HubProxy hub;
     private final Set<PXRRootProxy> roots;
     private final PropertyChangeSupport pcs;
 
     public PXRRootRegistry(Lookup lookup) {
         this.project = Objects.requireNonNull(lookup.lookup(PraxisProject.class));
-        this.hub = Objects.requireNonNull(lookup.lookup(HubProxy.class));
         this.roots = new LinkedHashSet<>();
         pcs = new PropertyChangeSupport(this);
-        hub.addPropertyChangeListener(e -> validateRoots());
     }
 
     @Override
@@ -93,30 +88,9 @@ public class PXRRootRegistry implements RootRegistry {
         fireRootsChange();
     }
 
-    void unregister(PXRRootProxy root) {
-        if (roots.remove(root)) {
-            root.dispose();
-            fireRootsChange();
-        }
-
-    }
-
-    private void validateRoots() {
-        List<String> ids = hub.roots().collect(Collectors.toList());
-        Iterator<PXRRootProxy> itr = roots.iterator();
-        boolean removed = false;
-        while (itr.hasNext()) {
-            PXRRootProxy root = itr.next();
-            if (!ids.contains(root.getAddress().rootID())) {
-                itr.remove();
-                root.dispose();
-                removed = true;
-            }
-        }
-        if (removed) {
-            fireRootsChange();
-        }
-
+    void remove(PXRRootProxy root) {
+        roots.remove(root);
+        fireRootsChange();
     }
 
     private void fireRootsChange() {

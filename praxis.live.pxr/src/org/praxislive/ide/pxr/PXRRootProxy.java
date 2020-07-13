@@ -22,10 +22,6 @@
 package org.praxislive.ide.pxr;
 
 import java.io.File;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.stream.Stream;
 import org.praxislive.core.ComponentAddress;
 import org.praxislive.core.ComponentType;
 import org.praxislive.core.ComponentInfo;
@@ -33,14 +29,12 @@ import org.praxislive.ide.project.api.PraxisProject;
 import org.praxislive.ide.model.RootProxy;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.praxislive.core.Value;
-import org.praxislive.ide.core.api.Callback;
-import org.praxislive.ide.model.Connection;
+import org.praxislive.ide.core.api.Disposable;
 
 /**
  *
  */
-public class PXRRootProxy extends PXRContainerProxy implements RootProxy {
+public class PXRRootProxy extends PXRContainerProxy implements RootProxy, Disposable {
 
     private final ComponentAddress address;
     private final PXRDataObject source;
@@ -63,6 +57,16 @@ public class PXRRootProxy extends PXRContainerProxy implements RootProxy {
 
     public FileObject getSourceFile() {
         return source.getPrimaryFile();
+    }
+    
+    @Override
+    public void dispose() {
+        super.dispose();
+        var reg = project.getLookup().lookup(PXRRootRegistry.class);
+        assert reg != null;
+        if (reg != null) {
+            reg.remove(this);
+        }
     }
 
     @Override

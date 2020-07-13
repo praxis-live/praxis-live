@@ -25,7 +25,12 @@ package org.praxislive.ide.core.api;
 /**
  *
  */
-public interface Disposable {
+public interface Disposable extends AutoCloseable {
+
+    @Override
+    public default void close() throws Exception {
+        dispose();
+    }
     
     public void dispose();
     

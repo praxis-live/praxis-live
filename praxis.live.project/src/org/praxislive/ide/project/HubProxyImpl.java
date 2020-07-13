@@ -56,7 +56,7 @@ import org.praxislive.ide.properties.PraxisProperty;
  *
  */
 class HubProxyImpl implements HubProxy {
-    
+
     private final DefaultPraxisProject project;
     private final ValuePropertyAdaptor.ReadOnly rootsAdaptor;
     private final RootsChildren rootsChildren;
@@ -64,13 +64,15 @@ class HubProxyImpl implements HubProxy {
     private final PropertyChangeSupport pcs;
     private final Map<String, RootProxy> roots;
     private final List<RootRegistry> rootRegistries;
-    private final PropertyChangeListener listener;
+    private final PropertyChangeListener regListener;
     
+    private boolean ignoreChanges;
+
     HubProxyImpl(DefaultPraxisProject project) {
         this.project = project;
         rootsAdaptor = new ValuePropertyAdaptor.ReadOnly(this, "roots", true, Binding.SyncRate.Low);
-        listener = e -> refreshRoots();
-        rootsAdaptor.addPropertyChangeListener(listener);
+        rootsAdaptor.addPropertyChangeListener(e -> refreshRoots());
+        regListener = e -> refreshProxies();
         rootsChildren = new RootsChildren();
         hubNode = new HubNode(rootsChildren);
         pcs = new PropertyChangeSupport(this);
@@ -107,7 +109,7 @@ class HubProxyImpl implements HubProxy {
     public Lookup getLookup() {
         return Lookup.EMPTY;
     }
-    
+
     void start() {
         var helper = project.getLookup().lookup(ProjectHelper.class);
         try {
@@ -120,12 +122,14 @@ class HubProxyImpl implements HubProxy {
         }
         project.getLookup().lookupAll(RootRegistry.class).forEach(r -> {
             if (rootRegistries.add(r)) {
-                r.addPropertyChangeListener(listener);
+                r.addPropertyChangeListener(regListener);
             }
         });
+        ignoreChanges = false;
     }
-    
-    void dispose() {
+
+    void stop() {
+        ignoreChanges = true;
         var helper = project.getLookup().lookup(ProjectHelper.class);
         try {
             var address = ControlAddress.of(
@@ -135,36 +139,81 @@ class HubProxyImpl implements HubProxy {
         } catch (Exception ex) {
             Exceptions.printStackTrace(ex);
         }
-        rootsAdaptor.removePropertyChangeListener(listener);
-        rootRegistries.forEach(r -> r.removePropertyChangeListener(listener));
+        rootsAdaptor.removePropertyChangeListener(regListener);
+        rootRegistries.forEach(r -> r.removePropertyChangeListener(regListener));
         rootRegistries.clear();
+        roots.forEach((id, proxy) -> {
+            if (proxy instanceof AutoCloseable) {
+                try {
+                    ((AutoCloseable) proxy).close();
+                } catch (Exception ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        });
         roots.clear();
         rootsChildren.refreshRoots();
         pcs.firePropertyChange(ROOTS, null, null);
+        ignoreChanges = false;
     }
-    
+
     private void refreshRoots() {
-        var rts = PArray.from(rootsAdaptor.getValue()).orElse(PArray.EMPTY)
+        if (ignoreChanges) {
+            return;
+        }
+        ignoreChanges = true;
+        List<String> rts = PArray.from(rootsAdaptor.getValue()).orElse(PArray.EMPTY)
                 .stream()
                 .map(Value::toString)
                 .collect(Collectors.toList());
+        roots.forEach((id, proxy) -> {
+            if (!rts.contains(id)) {
+                if (proxy instanceof AutoCloseable) {
+                    try {
+                        ((AutoCloseable) proxy).close();
+                    } catch (Exception ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+            }
+        });
         roots.keySet().retainAll(rts);
         rts.forEach(r -> roots.compute(r, this::findRootProxy));
         rootsChildren.refreshRoots();
         pcs.firePropertyChange(ROOTS, null, null);
+        ignoreChanges = false;
     }
-    
+
+    private void refreshProxies() {
+        if (ignoreChanges) {
+            return;
+        }
+        ignoreChanges = true;
+        roots.replaceAll(this::findRootProxy);
+        rootsChildren.refreshRoots();
+        pcs.firePropertyChange(ROOTS, null, null);
+        ignoreChanges = false;
+    }
+
     private RootProxy findRootProxy(String id, RootProxy existing) {
-        return project.getLookup().lookupAll(RootRegistry.class)
+        var proxy = project.getLookup().lookupAll(RootRegistry.class)
                 .stream()
                 .flatMap(reg -> reg.find(id).stream())
                 .findFirst()
-                .orElseGet(() -> existing instanceof FallbackRootProxy ? 
-                        existing : new FallbackRootProxy(id));
+                .orElseGet(() -> existing instanceof FallbackRootProxy
+                ? existing : new FallbackRootProxy(id));
+        if (proxy != existing && existing instanceof AutoCloseable) {
+            try {
+                ((AutoCloseable) existing).close();
+            } catch (Exception ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        return proxy;
     }
-    
+
     private class HubNode extends AbstractNode {
-        
+
         private HubNode(Children children) {
             super(children);
         }
@@ -174,22 +223,22 @@ class HubProxyImpl implements HubProxy {
             return new Action[0];
         }
     }
-    
+
     private class RootsChildren extends Children.Keys<RootProxy> {
 
         @Override
         protected Node[] createNodes(RootProxy key) {
             return new Node[]{key.getNodeDelegate()};
         }
-        
+
         private void refreshRoots() {
             setKeys(roots.values());
         }
-        
+
     }
-    
+
     private class FallbackRootProxy implements RootProxy {
-        
+
         private final ComponentAddress address;
         private final Node node;
 
@@ -240,13 +289,13 @@ class HubProxyImpl implements HubProxy {
         public PraxisProperty<?> getProperty(String id) {
             return null;
         }
-        
+
     }
-    
+
     private class FallbackRootNode extends AbstractNode {
-        
+
         private final String name;
-        
+
         private FallbackRootNode(FallbackRootProxy proxy) {
             super(Children.LEAF, Lookups.singleton(proxy));
             name = proxy.address.rootID();
@@ -262,11 +311,7 @@ class HubProxyImpl implements HubProxy {
         public Action[] getActions(boolean context) {
             return new Action[0];
         }
-        
-        
-        
-        
+
     }
-    
-    
+
 }
