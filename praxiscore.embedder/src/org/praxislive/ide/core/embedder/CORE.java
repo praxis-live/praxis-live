@@ -57,7 +57,17 @@ public final class CORE {
         if (launcher.exists()) {
             return launcher;
         } else {
-            throw new IOException("No launcher found");
+            throw new IOException("No CORE launcher found");
+        }
+    }
+    
+    public static File modulesDir() throws IOException {
+        File installDir = installDir();
+        File modulesDir = new File(installDir, "mods");
+        if (modulesDir.isDirectory()) {
+            return modulesDir;
+        } else {
+            throw new IOException("No CORE modules directory found");
         }
     }
     
@@ -65,7 +75,7 @@ public final class CORE {
         File modDir = InstalledFileLocator.getDefault().
                 locate("modules", "org.praxislive.ide.core.embedder", false);
         if (modDir == null) {
-            throw new IOException("No modules directory found");
+            throw new IOException("Invalid embedder module location");
         }
         File installDir = modDir.getParentFile().getParentFile();
         File coreDir = new File(installDir, "praxiscore");
@@ -75,7 +85,6 @@ public final class CORE {
         return coreDir;
     }
     
-    
     @OnStart
     public static class ClasspathEnvTask implements Runnable {
 
@@ -83,9 +92,9 @@ public final class CORE {
         public void run() {
             try {
                 File installDir = installDir();
-                File repoDir = new File(installDir, "repo");
+                File modsDir = new File(installDir, "mods");
                 List<String> files = new ArrayList<>();
-                for (File module : repoDir.listFiles()) {
+                for (File module : modsDir.listFiles()) {
                     if (module.getName().endsWith(".jar")) {
                         LOG.log(Level.DEBUG, () -> 
                                 "Adding " + module + " to compile classpath."

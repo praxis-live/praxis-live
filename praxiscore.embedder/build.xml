@@ -12,7 +12,7 @@
   <target name="praxiscore-embed" depends="-check-praxiscore-embed" unless="praxiscore.exists">
     <echo message="Checking for PraxisCORE"/>
     <property name="praxiscore.dist.dir" value="../../praxiscore/praxiscore-bin/target/appassembler/" />
-    <available file="${praxiscore.dist.dir}/repo/praxiscore-api-${praxiscore.version}.jar"
+    <available file="${praxiscore.dist.dir}/mods/praxiscore-api-${praxiscore.version}.jar"
                property="praxiscore.dist.dir.exists" />
     <fail unless="praxiscore.dist.dir.exists"
           message="PraxisCORE distribution not found for version ${praxiscore.version}" />
@@ -23,7 +23,7 @@
   </target>
     
   <target name="-check-praxiscore-embed" >
-    <available file="${suite.build.dir}/praxiscore/repo/praxiscore-api-${praxiscore.version}.jar"
+    <available file="${suite.build.dir}/praxiscore/mods/praxiscore-api-${praxiscore.version}.jar"
                property="praxiscore.exists" />
   </target>
     

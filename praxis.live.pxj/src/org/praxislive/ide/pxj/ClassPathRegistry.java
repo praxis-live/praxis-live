@@ -55,7 +55,7 @@ public class ClassPathRegistry {
     private void init() {
         LOG.log(Level.DEBUG, "Initializing compile classpath");
         try {
-            File modDir = new File(CORE.installDir(), "repo");
+            File modDir = CORE.modulesDir();
             List<URL> jars = new ArrayList<>();
             for (File jar : modDir.listFiles()) {
                 if (jar.getName().endsWith(".jar")) {

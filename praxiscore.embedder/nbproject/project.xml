@@ -38,212 +38,212 @@
                 <subpackages>net.miginfocom</subpackages>
             </public-packages>
             <class-path-extension>
-                <runtime-relative-path>../../praxiscore/repo/audioops-api-1.0.0.jar</runtime-relative-path>
-                <binary-origin>../build/praxiscore/repo/audioops-api-1.0.0.jar</binary-origin>
+                <runtime-relative-path>../../praxiscore/mods/audioops-api-1.0.0.jar</runtime-relative-path>
+                <binary-origin>../build/praxiscore/mods/audioops-api-1.0.0.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>../../praxiscore/repo/praxiscore-api-5.0.0-SNAPSHOT.jar</runtime-relative-path>
-                <binary-origin>../build/praxiscore/repo/praxiscore-api-5.0.0-SNAPSHOT.jar</binary-origin>
+                <runtime-relative-path>../../praxiscore/mods/praxiscore-api-5.0.0-SNAPSHOT.jar</runtime-relative-path>
+                <binary-origin>../build/praxiscore/mods/praxiscore-api-5.0.0-SNAPSHOT.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>../../praxiscore/repo/praxiscore-components-5.0.0-SNAPSHOT.jar</runtime-relative-path>
-                <binary-origin>../build/praxiscore/repo/praxiscore-components-5.0.0-SNAPSHOT.jar</binary-origin>
+                <runtime-relative-path>../../praxiscore/mods/praxiscore-components-5.0.0-SNAPSHOT.jar</runtime-relative-path>
+                <binary-origin>../build/praxiscore/mods/praxiscore-components-5.0.0-SNAPSHOT.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>../../praxiscore/repo/praxiscore-hub-5.0.0-SNAPSHOT.jar</runtime-relative-path>
-                <binary-origin>../build/praxiscore/repo/praxiscore-hub-5.0.0-SNAPSHOT.jar</binary-origin>
+                <runtime-relative-path>../../praxiscore/mods/praxiscore-hub-5.0.0-SNAPSHOT.jar</runtime-relative-path>
+                <binary-origin>../build/praxiscore/mods/praxiscore-hub-5.0.0-SNAPSHOT.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>../../praxiscore/repo/audioservers-javasound-1.2.0.jar</runtime-relative-path>
-                <binary-origin>../build/praxiscore/repo/audioservers-javasound-1.2.0.jar</binary-origin>
+                <runtime-relative-path>../../praxiscore/mods/audioservers-javasound-1.2.0.jar</runtime-relative-path>
+                <binary-origin>../build/praxiscore/mods/audioservers-javasound-1.2.0.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>../../praxiscore/repo/praxiscore-audio-code-5.0.0-SNAPSHOT.jar</runtime-relative-path>
-                <binary-origin>../build/praxiscore/repo/praxiscore-audio-code-5.0.0-SNAPSHOT.jar</binary-origin>
+                <runtime-relative-path>../../praxiscore/mods/praxiscore-audio-code-5.0.0-SNAPSHOT.jar</runtime-relative-path>
+                <binary-origin>../build/praxiscore/mods/praxiscore-audio-code-5.0.0-SNAPSHOT.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>../../praxiscore/repo/audioservers-jack-1.2.0.jar</runtime-relative-path>
-                <binary-origin>../build/praxiscore/repo/audioservers-jack-1.2.0.jar</binary-origin>
+                <runtime-relative-path>../../praxiscore/mods/audioservers-jack-1.2.0.jar</runtime-relative-path>
+                <binary-origin>../build/praxiscore/mods/audioservers-jack-1.2.0.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>../../praxiscore/repo/praxiscore-audio-5.0.0-SNAPSHOT.jar</runtime-relative-path>
-                <binary-origin>../build/praxiscore/repo/praxiscore-audio-5.0.0-SNAPSHOT.jar</binary-origin>
+                <runtime-relative-path>../../praxiscore/mods/praxiscore-audio-5.0.0-SNAPSHOT.jar</runtime-relative-path>
+                <binary-origin>../build/praxiscore/mods/praxiscore-audio-5.0.0-SNAPSHOT.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>../../praxiscore/repo/praxiscore-bin-5.0.0-SNAPSHOT.jar</runtime-relative-path>
-                <binary-origin>../build/praxiscore/repo/praxiscore-bin-5.0.0-SNAPSHOT.jar</binary-origin>
+                <runtime-relative-path>../../praxiscore/mods/praxiscore-bin-5.0.0-SNAPSHOT.jar</runtime-relative-path>
+                <binary-origin>../build/praxiscore/mods/praxiscore-bin-5.0.0-SNAPSHOT.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>../../praxiscore/repo/praxiscore-code-services-5.0.0-SNAPSHOT.jar</runtime-relative-path>
-                <binary-origin>../build/praxiscore/repo/praxiscore-code-services-5.0.0-SNAPSHOT.jar</binary-origin>
+                <runtime-relative-path>../../praxiscore/mods/praxiscore-code-services-5.0.0-SNAPSHOT.jar</runtime-relative-path>
+                <binary-origin>../build/praxiscore/mods/praxiscore-code-services-5.0.0-SNAPSHOT.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>../../praxiscore/repo/praxiscore-base-5.0.0-SNAPSHOT.jar</runtime-relative-path>
-                <binary-origin>../build/praxiscore/repo/praxiscore-base-5.0.0-SNAPSHOT.jar</binary-origin>
+                <runtime-relative-path>../../praxiscore/mods/praxiscore-base-5.0.0-SNAPSHOT.jar</runtime-relative-path>
+                <binary-origin>../build/praxiscore/mods/praxiscore-base-5.0.0-SNAPSHOT.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>../../praxiscore/repo/audioservers-api-1.2.0.jar</runtime-relative-path>
-                <binary-origin>../build/praxiscore/repo/audioservers-api-1.2.0.jar</binary-origin>
+                <runtime-relative-path>../../praxiscore/mods/audioservers-api-1.2.0.jar</runtime-relative-path>
+                <binary-origin>../build/praxiscore/mods/audioservers-api-1.2.0.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>../../praxiscore/repo/praxiscore-data-5.0.0-SNAPSHOT.jar</runtime-relative-path>
-                <binary-origin>../build/praxiscore/repo/praxiscore-data-5.0.0-SNAPSHOT.jar</binary-origin>
+                <runtime-relative-path>../../praxiscore/mods/praxiscore-data-5.0.0-SNAPSHOT.jar</runtime-relative-path>
+                <binary-origin>../build/praxiscore/mods/praxiscore-data-5.0.0-SNAPSHOT.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>../../praxiscore/repo/praxiscore-script-5.0.0-SNAPSHOT.jar</runtime-relative-path>
-                <binary-origin>../build/praxiscore/repo/praxiscore-script-5.0.0-SNAPSHOT.jar</binary-origin>
+                <runtime-relative-path>../../praxiscore/mods/praxiscore-script-5.0.0-SNAPSHOT.jar</runtime-relative-path>
+                <binary-origin>../build/praxiscore/mods/praxiscore-script-5.0.0-SNAPSHOT.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>../../praxiscore/repo/praxiscore-internal-httpd-5.0.0-SNAPSHOT.jar</runtime-relative-path>
-                <binary-origin>../build/praxiscore/repo/praxiscore-internal-httpd-5.0.0-SNAPSHOT.jar</binary-origin>
+                <runtime-relative-path>../../praxiscore/mods/praxiscore-internal-httpd-5.0.0-SNAPSHOT.jar</runtime-relative-path>
+                <binary-origin>../build/praxiscore/mods/praxiscore-internal-httpd-5.0.0-SNAPSHOT.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>../../praxiscore/repo/gst1-java-core-1.1.0.jar</runtime-relative-path>
-                <binary-origin>../build/praxiscore/repo/gst1-java-core-1.1.0.jar</binary-origin>
+                <runtime-relative-path>../../praxiscore/mods/gst1-java-core-1.1.0.jar</runtime-relative-path>
+                <binary-origin>../build/praxiscore/mods/gst1-java-core-1.1.0.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>../../praxiscore/repo/praxiscore-video-5.0.0-SNAPSHOT.jar</runtime-relative-path>
-                <binary-origin>../build/praxiscore/repo/praxiscore-video-5.0.0-SNAPSHOT.jar</binary-origin>
+                <runtime-relative-path>../../praxiscore/mods/praxiscore-video-5.0.0-SNAPSHOT.jar</runtime-relative-path>
+                <binary-origin>../build/praxiscore/mods/praxiscore-video-5.0.0-SNAPSHOT.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>../../praxiscore/repo/praxiscore-hub-net-5.0.0-SNAPSHOT.jar</runtime-relative-path>
-                <binary-origin>../build/praxiscore/repo/praxiscore-hub-net-5.0.0-SNAPSHOT.jar</binary-origin>
+                <runtime-relative-path>../../praxiscore/mods/praxiscore-hub-net-5.0.0-SNAPSHOT.jar</runtime-relative-path>
+                <binary-origin>../build/praxiscore/mods/praxiscore-hub-net-5.0.0-SNAPSHOT.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>../../praxiscore/repo/audioops-impl-1.0.0.jar</runtime-relative-path>
-                <binary-origin>../build/praxiscore/repo/audioops-impl-1.0.0.jar</binary-origin>
+                <runtime-relative-path>../../praxiscore/mods/audioops-impl-1.0.0.jar</runtime-relative-path>
+                <binary-origin>../build/praxiscore/mods/audioops-impl-1.0.0.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>../../praxiscore/repo/praxiscore-internal-osc-5.0.0-SNAPSHOT.jar</runtime-relative-path>
-                <binary-origin>../build/praxiscore/repo/praxiscore-internal-osc-5.0.0-SNAPSHOT.jar</binary-origin>
+                <runtime-relative-path>../../praxiscore/mods/praxiscore-internal-osc-5.0.0-SNAPSHOT.jar</runtime-relative-path>
+                <binary-origin>../build/praxiscore/mods/praxiscore-internal-osc-5.0.0-SNAPSHOT.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>../../praxiscore/repo/praxiscore-video-components-5.0.0-SNAPSHOT.jar</runtime-relative-path>
-                <binary-origin>../build/praxiscore/repo/praxiscore-video-components-5.0.0-SNAPSHOT.jar</binary-origin>
+                <runtime-relative-path>../../praxiscore/mods/praxiscore-video-components-5.0.0-SNAPSHOT.jar</runtime-relative-path>
+                <binary-origin>../build/praxiscore/mods/praxiscore-video-components-5.0.0-SNAPSHOT.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>../../praxiscore/repo/jna-5.5.0.jar</runtime-relative-path>
-                <binary-origin>../build/praxiscore/repo/jna-5.5.0.jar</binary-origin>
+                <runtime-relative-path>../../praxiscore/mods/jna-5.5.0.jar</runtime-relative-path>
+                <binary-origin>../build/praxiscore/mods/jna-5.5.0.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>../../praxiscore/repo/processing-core-0.353.0-SNAPSHOT.jar</runtime-relative-path>
-                <binary-origin>../build/praxiscore/repo/processing-core-0.353.0-SNAPSHOT.jar</binary-origin>
+                <runtime-relative-path>../../praxiscore/mods/processing-core-0.353.0-SNAPSHOT.jar</runtime-relative-path>
+                <binary-origin>../build/praxiscore/mods/processing-core-0.353.0-SNAPSHOT.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>../../praxiscore/repo/praxiscore-video-gstreamer-5.0.0-SNAPSHOT.jar</runtime-relative-path>
-                <binary-origin>../build/praxiscore/repo/praxiscore-video-gstreamer-5.0.0-SNAPSHOT.jar</binary-origin>
+                <runtime-relative-path>../../praxiscore/mods/praxiscore-video-gstreamer-5.0.0-SNAPSHOT.jar</runtime-relative-path>
+                <binary-origin>../build/praxiscore/mods/praxiscore-video-gstreamer-5.0.0-SNAPSHOT.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>../../praxiscore/repo/lwjgl-egl-3.2.3.jar</runtime-relative-path>
-                <binary-origin>../build/praxiscore/repo/lwjgl-egl-3.2.3.jar</binary-origin>
+                <runtime-relative-path>../../praxiscore/mods/lwjgl-egl-3.2.3.jar</runtime-relative-path>
+                <binary-origin>../build/praxiscore/mods/lwjgl-egl-3.2.3.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>../../praxiscore/repo/praxiscore-code-5.0.0-SNAPSHOT.jar</runtime-relative-path>
-                <binary-origin>../build/praxiscore/repo/praxiscore-code-5.0.0-SNAPSHOT.jar</binary-origin>
+                <runtime-relative-path>../../praxiscore/mods/praxiscore-code-5.0.0-SNAPSHOT.jar</runtime-relative-path>
+                <binary-origin>../build/praxiscore/mods/praxiscore-code-5.0.0-SNAPSHOT.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>../../praxiscore/repo/lwjgl-3.2.3.jar</runtime-relative-path>
-                <binary-origin>../build/praxiscore/repo/lwjgl-3.2.3.jar</binary-origin>
+                <runtime-relative-path>../../praxiscore/mods/lwjgl-3.2.3.jar</runtime-relative-path>
+                <binary-origin>../build/praxiscore/mods/lwjgl-3.2.3.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>../../praxiscore/repo/praxiscore-tinkerforge-5.0.0-SNAPSHOT.jar</runtime-relative-path>
-                <binary-origin>../build/praxiscore/repo/praxiscore-tinkerforge-5.0.0-SNAPSHOT.jar</binary-origin>
+                <runtime-relative-path>../../praxiscore/mods/praxiscore-tinkerforge-5.0.0-SNAPSHOT.jar</runtime-relative-path>
+                <binary-origin>../build/praxiscore/mods/praxiscore-tinkerforge-5.0.0-SNAPSHOT.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>../../praxiscore/repo/praxiscore-video-pgl-5.0.0-SNAPSHOT.jar</runtime-relative-path>
-                <binary-origin>../build/praxiscore/repo/praxiscore-video-pgl-5.0.0-SNAPSHOT.jar</binary-origin>
+                <runtime-relative-path>../../praxiscore/mods/praxiscore-video-pgl-5.0.0-SNAPSHOT.jar</runtime-relative-path>
+                <binary-origin>../build/praxiscore/mods/praxiscore-video-pgl-5.0.0-SNAPSHOT.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>../../praxiscore/repo/praxiscore-video-pgl-natives-5.0.0-SNAPSHOT.jar</runtime-relative-path>
-                <binary-origin>../build/praxiscore/repo/praxiscore-video-pgl-natives-5.0.0-SNAPSHOT.jar</binary-origin>
+                <runtime-relative-path>../../praxiscore/mods/praxiscore-video-pgl-natives-5.0.0-SNAPSHOT.jar</runtime-relative-path>
+                <binary-origin>../build/praxiscore/mods/praxiscore-video-pgl-natives-5.0.0-SNAPSHOT.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>../../praxiscore/repo/lwjgl-opengl-3.2.3.jar</runtime-relative-path>
-                <binary-origin>../build/praxiscore/repo/lwjgl-opengl-3.2.3.jar</binary-origin>
+                <runtime-relative-path>../../praxiscore/mods/lwjgl-opengl-3.2.3.jar</runtime-relative-path>
+                <binary-origin>../build/praxiscore/mods/lwjgl-opengl-3.2.3.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>../../praxiscore/repo/praxiscore-video-pgl-code-5.0.0-SNAPSHOT.jar</runtime-relative-path>
-                <binary-origin>../build/praxiscore/repo/praxiscore-video-pgl-code-5.0.0-SNAPSHOT.jar</binary-origin>
+                <runtime-relative-path>../../praxiscore/mods/praxiscore-video-pgl-code-5.0.0-SNAPSHOT.jar</runtime-relative-path>
+                <binary-origin>../build/praxiscore/mods/praxiscore-video-pgl-code-5.0.0-SNAPSHOT.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>../../praxiscore/repo/praxiscore-tracker-5.0.0-SNAPSHOT.jar</runtime-relative-path>
-                <binary-origin>../build/praxiscore/repo/praxiscore-tracker-5.0.0-SNAPSHOT.jar</binary-origin>
+                <runtime-relative-path>../../praxiscore/mods/praxiscore-tracker-5.0.0-SNAPSHOT.jar</runtime-relative-path>
+                <binary-origin>../build/praxiscore/mods/praxiscore-tracker-5.0.0-SNAPSHOT.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>../../praxiscore/repo/processing-lwjgl-0.353.0-SNAPSHOT.jar</runtime-relative-path>
-                <binary-origin>../build/praxiscore/repo/processing-lwjgl-0.353.0-SNAPSHOT.jar</binary-origin>
+                <runtime-relative-path>../../praxiscore/mods/processing-lwjgl-0.353.0-SNAPSHOT.jar</runtime-relative-path>
+                <binary-origin>../build/praxiscore/mods/processing-lwjgl-0.353.0-SNAPSHOT.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>../../praxiscore/repo/praxiscore-launcher-5.0.0-SNAPSHOT.jar</runtime-relative-path>
-                <binary-origin>../build/praxiscore/repo/praxiscore-launcher-5.0.0-SNAPSHOT.jar</binary-origin>
+                <runtime-relative-path>../../praxiscore/mods/praxiscore-launcher-5.0.0-SNAPSHOT.jar</runtime-relative-path>
+                <binary-origin>../build/praxiscore/mods/praxiscore-launcher-5.0.0-SNAPSHOT.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>../../praxiscore/repo/praxiscore-midi-5.0.0-SNAPSHOT.jar</runtime-relative-path>
-                <binary-origin>../build/praxiscore/repo/praxiscore-midi-5.0.0-SNAPSHOT.jar</binary-origin>
+                <runtime-relative-path>../../praxiscore/mods/praxiscore-midi-5.0.0-SNAPSHOT.jar</runtime-relative-path>
+                <binary-origin>../build/praxiscore/mods/praxiscore-midi-5.0.0-SNAPSHOT.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>../../praxiscore/repo/lwjgl-assimp-3.2.3.jar</runtime-relative-path>
-                <binary-origin>../build/praxiscore/repo/lwjgl-assimp-3.2.3.jar</binary-origin>
+                <runtime-relative-path>../../praxiscore/mods/lwjgl-assimp-3.2.3.jar</runtime-relative-path>
+                <binary-origin>../build/praxiscore/mods/lwjgl-assimp-3.2.3.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>../../praxiscore/repo/praxiscore-core-code-5.0.0-SNAPSHOT.jar</runtime-relative-path>
-                <binary-origin>../build/praxiscore/repo/praxiscore-core-code-5.0.0-SNAPSHOT.jar</binary-origin>
+                <runtime-relative-path>../../praxiscore/mods/praxiscore-core-code-5.0.0-SNAPSHOT.jar</runtime-relative-path>
+                <binary-origin>../build/praxiscore/mods/praxiscore-core-code-5.0.0-SNAPSHOT.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>../../praxiscore/repo/praxiscore-audio-components-5.0.0-SNAPSHOT.jar</runtime-relative-path>
-                <binary-origin>../build/praxiscore/repo/praxiscore-audio-components-5.0.0-SNAPSHOT.jar</binary-origin>
+                <runtime-relative-path>../../praxiscore/mods/praxiscore-audio-components-5.0.0-SNAPSHOT.jar</runtime-relative-path>
+                <binary-origin>../build/praxiscore/mods/praxiscore-audio-components-5.0.0-SNAPSHOT.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>../../praxiscore/repo/lwjgl-glfw-3.2.3.jar</runtime-relative-path>
-                <binary-origin>../build/praxiscore/repo/lwjgl-glfw-3.2.3.jar</binary-origin>
+                <runtime-relative-path>../../praxiscore/mods/lwjgl-glfw-3.2.3.jar</runtime-relative-path>
+                <binary-origin>../build/praxiscore/mods/lwjgl-glfw-3.2.3.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>../../praxiscore/repo/lwjgl-stb-3.2.3.jar</runtime-relative-path>
-                <binary-origin>../build/praxiscore/repo/lwjgl-stb-3.2.3.jar</binary-origin>
+                <runtime-relative-path>../../praxiscore/mods/lwjgl-stb-3.2.3.jar</runtime-relative-path>
+                <binary-origin>../build/praxiscore/mods/lwjgl-stb-3.2.3.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>../../praxiscore/repo/pipes-units-2.0.0-beta-1.jar</runtime-relative-path>
-                <binary-origin>../build/praxiscore/repo/pipes-units-2.0.0-beta-1.jar</binary-origin>
+                <runtime-relative-path>../../praxiscore/mods/pipes-units-2.0.0-beta-1.jar</runtime-relative-path>
+                <binary-origin>../build/praxiscore/mods/pipes-units-2.0.0-beta-1.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>../../praxiscore/repo/praxiscore-gui-5.0.0-SNAPSHOT.jar</runtime-relative-path>
-                <binary-origin>../build/praxiscore/repo/praxiscore-gui-5.0.0-SNAPSHOT.jar</binary-origin>
+                <runtime-relative-path>../../praxiscore/mods/praxiscore-gui-5.0.0-SNAPSHOT.jar</runtime-relative-path>
+                <binary-origin>../build/praxiscore/mods/praxiscore-gui-5.0.0-SNAPSHOT.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>../../praxiscore/repo/praxiscore-video-code-5.0.0-SNAPSHOT.jar</runtime-relative-path>
-                <binary-origin>../build/praxiscore/repo/praxiscore-video-code-5.0.0-SNAPSHOT.jar</binary-origin>
+                <runtime-relative-path>../../praxiscore/mods/praxiscore-video-code-5.0.0-SNAPSHOT.jar</runtime-relative-path>
+                <binary-origin>../build/praxiscore/mods/praxiscore-video-code-5.0.0-SNAPSHOT.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>../../praxiscore/repo/pipes-core-2.0.0-beta-1.jar</runtime-relative-path>
-                <binary-origin>../build/praxiscore/repo/pipes-core-2.0.0-beta-1.jar</binary-origin>
+                <runtime-relative-path>../../praxiscore/mods/pipes-core-2.0.0-beta-1.jar</runtime-relative-path>
+                <binary-origin>../build/praxiscore/mods/pipes-core-2.0.0-beta-1.jar</binary-origin>
             </class-path-extension>
             <!--            <class-path-extension>
-                <runtime-relative-path>../../praxiscore/repo/flatlaf-0.33.jar</runtime-relative-path>
-                <binary-origin>../build/praxiscore/repo/flatlaf-0.33.jar</binary-origin>
+                <runtime-relative-path>../../praxiscore/mods/flatlaf-0.33.jar</runtime-relative-path>
+                <binary-origin>../build/praxiscore/mods/flatlaf-0.33.jar</binary-origin>
             </class-path-extension>-->
             <class-path-extension>
-                <runtime-relative-path>../../praxiscore/repo/tinkerforge-2.1.27.jar</runtime-relative-path>
-                <binary-origin>../build/praxiscore/repo/tinkerforge-2.1.27.jar</binary-origin>
+                <runtime-relative-path>../../praxiscore/mods/tinkerforge-2.1.27.jar</runtime-relative-path>
+                <binary-origin>../build/praxiscore/mods/tinkerforge-2.1.27.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>../../praxiscore/repo/jnajack-1.4.0.jar</runtime-relative-path>
-                <binary-origin>../build/praxiscore/repo/jnajack-1.4.0.jar</binary-origin>
+                <runtime-relative-path>../../praxiscore/mods/jnajack-1.4.0.jar</runtime-relative-path>
+                <binary-origin>../build/praxiscore/mods/jnajack-1.4.0.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>../../praxiscore/repo/picocli-4.3.2.jar</runtime-relative-path>
-                <binary-origin>../build/praxiscore/repo/picocli-4.3.2.jar</binary-origin>
+                <runtime-relative-path>../../praxiscore/mods/picocli-4.3.2.jar</runtime-relative-path>
+                <binary-origin>../build/praxiscore/mods/picocli-4.3.2.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>../../praxiscore/repo/jna-platform-5.5.0.jar</runtime-relative-path>
-                <binary-origin>../build/praxiscore/repo/jna-platform-5.5.0.jar</binary-origin>
+                <runtime-relative-path>../../praxiscore/mods/jna-platform-5.5.0.jar</runtime-relative-path>
+                <binary-origin>../build/praxiscore/mods/jna-platform-5.5.0.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>../../praxiscore/repo/pipes-units-javasound-2.0.0-beta-1.jar</runtime-relative-path>
-                <binary-origin>../build/praxiscore/repo/pipes-units-javasound-2.0.0-beta-1.jar</binary-origin>
+                <runtime-relative-path>../../praxiscore/mods/pipes-units-javasound-2.0.0-beta-1.jar</runtime-relative-path>
+                <binary-origin>../build/praxiscore/mods/pipes-units-javasound-2.0.0-beta-1.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>../../praxiscore/repo/praxiscore-osc-5.0.0-SNAPSHOT.jar</runtime-relative-path>
-                <binary-origin>../build/praxiscore/repo/praxiscore-osc-5.0.0-SNAPSHOT.jar</binary-origin>
+                <runtime-relative-path>../../praxiscore/mods/praxiscore-osc-5.0.0-SNAPSHOT.jar</runtime-relative-path>
+                <binary-origin>../build/praxiscore/mods/praxiscore-osc-5.0.0-SNAPSHOT.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>
