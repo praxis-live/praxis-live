@@ -63,6 +63,23 @@ public interface ProjectProperties {
         }
     }
     
+    public default void addLine(ExecutionLevel level, String line) {
+        var list = getElements(level);
+        list.add(ExecutionElement.forLine(line));
+        setElements(level, list);
+    }
+    
+    public default boolean removeLine(ExecutionLevel level, String line) {
+        var list = getElements(level);
+        if (list.removeIf(e -> e instanceof ExecutionElement.Line &&
+                ((ExecutionElement.Line) e).line().equals(line))) {
+            setElements(level, list);
+            return true;
+        } else {
+            return false;
+        }
+    }
+    
     public default List<FileObject> getLibraries() {
         return List.of();
     }
