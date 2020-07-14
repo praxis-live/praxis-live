@@ -25,6 +25,7 @@ import java.awt.EventQueue;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumMap;
@@ -302,29 +303,40 @@ public class ProjectPropertiesImpl implements ProjectProperties {
         pcs.firePropertyChange(PROP_LIBRARIES, null, null);
     }
 
+//    @Override
+//    public void addLibrary(URI library) throws Exception {
+//        
+//    }
+//
+//    @Override
+//    public void removeLibrary(URI library) throws Exception {
+//    }
     @Override
-    public synchronized List<FileObject> getLibraries() {
+    public synchronized List<URI> getLibraries() {
         FileObject libsFolder = project.getProjectDirectory().getFileObject(DefaultPraxisProject.LIBS_PATH);
         if (libsFolder == null || !libsFolder.isFolder()) {
             return Collections.EMPTY_LIST;
         } else {
             return Stream.of(libsFolder.getChildren())
                     .filter(f -> f.hasExt("jar"))
+                    .map(FileObject::toURI)
                     .collect(Collectors.toList());
         }
     }
 
-    public synchronized void setJavaRelease(int release) {
+    @Override
+    public synchronized void setJavaRelease(int release) throws Exception {
+        if (javaRelease == release) {
+            return;
+        }
         if (project.isActive()) {
             throw new IllegalStateException("Cannot change source version for active project");
         }
         if (release < MIN_JAVA_VERSION || release > MAX_JAVA_VERSION) {
             throw new IllegalArgumentException();
         }
-        if (javaRelease != release) {
-            javaRelease = release;
-            pcs.firePropertyChange(PROP_JAVA_RELEASE, null, null);
-        }
+        javaRelease = release;
+        pcs.firePropertyChange(PROP_JAVA_RELEASE, null, null);
     }
 
     @Override
@@ -349,28 +361,28 @@ public class ProjectPropertiesImpl implements ProjectProperties {
     }
 
     private class HubLineHandler implements LineHandler {
-        
+
         private final String DEFAULT_HUB = "hub-configure {\n"
-                    + "    enable-fileserver false\n"
-                    + "    \n"
-                    + "    proxies {\n"
-                    + "        video {\n"
-                    + "            type-pattern video\n"
-                    + "            exec {\n"
-                    + "                command default\n"
-                    + "                java-options {\n"
-                    + "                    -Djava.awt.headless=true\n"
-                    + "                }\n"
-                    + "            }\n"
-                    + "        }\n"
-                    + "        audio {\n"
-                    + "             type-pattern audio\n"
-                    + "             exec {\n"
-                    + "                 command default\n"
-                    + "             }\n"
-                    + "        }\n"
-                    + "    }\n"
-                    + "}";
+                + "    enable-fileserver false\n"
+                + "    \n"
+                + "    proxies {\n"
+                + "        video {\n"
+                + "            type-pattern video\n"
+                + "            exec {\n"
+                + "                command default\n"
+                + "                java-options {\n"
+                + "                    -Djava.awt.headless=true\n"
+                + "                }\n"
+                + "            }\n"
+                + "        }\n"
+                + "        audio {\n"
+                + "             type-pattern audio\n"
+                + "             exec {\n"
+                + "                 command default\n"
+                + "             }\n"
+                + "        }\n"
+                + "    }\n"
+                + "}";
 
         private final Set<String> commands;
 
@@ -399,7 +411,6 @@ public class ProjectPropertiesImpl implements ProjectProperties {
 //                Exceptions.printStackTrace(ex);
 //            }
 //        }
-
         private ExecutionElement.Line defaultElement() {
             return ExecutionElement.forLine(DEFAULT_HUB);
         }

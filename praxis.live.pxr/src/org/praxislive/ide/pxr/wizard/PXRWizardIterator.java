@@ -135,13 +135,17 @@ public final class PXRWizardIterator implements WizardDescriptor.InstantiatingIt
         Project project = Templates.getProject(wizard);
         if (project != null) {
 
-            FileObject autostarter = writeAutostartFile(project, id);
+//            FileObject autostarter = writeAutostartFile(project, id);
 
             ProjectProperties props = project.getLookup().lookup(ProjectProperties.class);
             if (props != null) {
-                props.addFile(ExecutionLevel.BUILD, fileObj);
-                if (autostart) {
-                    props.addFile(ExecutionLevel.RUN, autostarter);
+                try {
+                    props.addFile(ExecutionLevel.BUILD, fileObj);
+                    if (autostart) {
+                        props.addLine(ExecutionLevel.RUN, "/" + id + ".start");
+                    }
+                } catch (Exception ex) {
+                    Exceptions.printStackTrace(ex);
                 }
 
             }
@@ -214,29 +218,29 @@ public final class PXRWizardIterator implements WizardDescriptor.InstantiatingIt
         return template.replace("/video", "/" + id);
     }
 
-    private FileObject writeAutostartFile(Project base, String id) throws IOException {
-        FileObject configDir = base.getProjectDirectory().getFileObject("config");
-        if (configDir == null) {
-            configDir = base.getProjectDirectory().createFolder("config");
-        }
-        String fileName = id + "_autostart";
-        FileObject autostarter = configDir.getFileObject(fileName);
-        if (autostarter == null) {
-            autostarter = configDir.createData(fileName);
-        }
-        String code = "/" + id + ".start";
-
-        Writer writer = null;
-        try {
-            writer = new OutputStreamWriter(autostarter.getOutputStream());
-            writer.append(code);
-        } finally {
-            if (writer != null) {
-                writer.close();
-            }
-        }
-        return autostarter;
-    }
+//    private FileObject writeAutostartFile(Project base, String id) throws IOException {
+//        FileObject configDir = base.getProjectDirectory().getFileObject("config");
+//        if (configDir == null) {
+//            configDir = base.getProjectDirectory().createFolder("config");
+//        }
+//        String fileName = id + "_autostart";
+//        FileObject autostarter = configDir.getFileObject(fileName);
+//        if (autostarter == null) {
+//            autostarter = configDir.createData(fileName);
+//        }
+//        String code = "/" + id + ".start";
+//
+//        Writer writer = null;
+//        try {
+//            writer = new OutputStreamWriter(autostarter.getOutputStream());
+//            writer.append(code);
+//        } finally {
+//            if (writer != null) {
+//                writer.close();
+//            }
+//        }
+//        return autostarter;
+//    }
 
     private void buildFile(Project base, FileObject file) {
         PraxisProject project = base.getLookup().lookup(PraxisProject.class);

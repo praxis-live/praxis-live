@@ -24,14 +24,17 @@ package org.praxislive.ide.pxj;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.StringReader;
+import java.net.URI;
 import java.net.URL;
 import java.nio.CharBuffer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -60,6 +63,7 @@ import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.MultiFileLoader;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle.Messages;
+import org.openide.util.Utilities;
 import org.praxislive.ide.project.api.ProjectProperties;
 
 @Messages({
@@ -173,17 +177,30 @@ public class PXJDataObject extends MultiDataObject {
     }
 
     private ClassPath createCompileClasspath(ProjectProperties props) {
-        List<FileObject> libs = props.getLibraries();
+        List<URI> libs = props.getLibraries();
         if (libs.isEmpty()) {
             return ClassPathRegistry.getInstance().getCompileClasspath();
         } else {
             ClassPath libCP = ClassPathSupport.createClassPath(
                     libs.stream()
-                            .filter(f -> f.isData() && f.hasExt("jar"))
-                            .map(f -> FileUtil.urlForArchiveOrDir(FileUtil.toFile(f)))
+                            .flatMap(uri -> archiveFileFromURI(uri).stream())
                             .toArray(URL[]::new));
             return ClassPathSupport.createProxyClassPath(libCP,
                     ClassPathRegistry.getInstance().getCompileClasspath());
+        }
+    }
+    
+    private Optional<URL> archiveFileFromURI(URI uri) {
+        try {
+            File file = Utilities.toFile(uri);
+            if (file.exists() && file.getName().endsWith(".jar")) {
+                return Optional.of(FileUtil.urlForArchiveOrDir(file));
+            } else {
+                return Optional.empty();
+            }
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
+            return Optional.empty();
         }
     }
 

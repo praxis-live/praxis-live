@@ -22,8 +22,10 @@
 package org.praxislive.ide.project.ui;
 
 import java.util.Objects;
+import org.openide.util.Exceptions;
 import org.praxislive.ide.project.DefaultPraxisProject;
 import org.praxislive.ide.project.ProjectPropertiesImpl;
+
 import static org.praxislive.ide.project.DefaultPraxisProject.MIN_JAVA_VERSION;
 import static org.praxislive.ide.project.DefaultPraxisProject.MAX_JAVA_VERSION;
 
@@ -75,7 +77,11 @@ final class JavaCustomizer extends javax.swing.JPanel {
             return;
         }
         int projectRelease = selected + MIN_JAVA_VERSION;
-        props.setJavaRelease(projectRelease);
+        try {
+            props.setJavaRelease(projectRelease);
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
     
     /**

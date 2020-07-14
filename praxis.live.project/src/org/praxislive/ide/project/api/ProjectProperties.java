@@ -23,8 +23,10 @@
 package org.praxislive.ide.project.api;
 
 import java.beans.PropertyChangeListener;
+import java.net.URI;
 import java.util.List;
 import org.openide.filesystems.FileObject;
+import org.praxislive.ide.project.DefaultPraxisProject;
 
 /**
  *
@@ -36,7 +38,8 @@ public interface ProjectProperties {
     public final static String PROP_JAVA_RELEASE = "java-release";
     
     
-    public void setElements(ExecutionLevel level, List<ExecutionElement> elements);
+    public void setElements(ExecutionLevel level, List<ExecutionElement> elements)
+            throws Exception;
     
     public List<ExecutionElement> getElements(ExecutionLevel level);
     
@@ -46,13 +49,13 @@ public interface ProjectProperties {
 
     public void removePropertyChangeListener(PropertyChangeListener listener);
     
-    public default void addFile(ExecutionLevel level, FileObject file) {
+    public default void addFile(ExecutionLevel level, FileObject file) throws Exception {
         var list = getElements(level);
         list.add(ExecutionElement.forFile(file));
         setElements(level, list);
     }
     
-    public default boolean removeFile(ExecutionLevel level, FileObject file) {
+    public default boolean removeFile(ExecutionLevel level, FileObject file) throws Exception {
         var list = getElements(level);
         if (list.removeIf(e -> e instanceof ExecutionElement.File &&
                 ((ExecutionElement.File) e).file().equals(file))) {
@@ -63,13 +66,13 @@ public interface ProjectProperties {
         }
     }
     
-    public default void addLine(ExecutionLevel level, String line) {
+    public default void addLine(ExecutionLevel level, String line) throws Exception {
         var list = getElements(level);
         list.add(ExecutionElement.forLine(line));
         setElements(level, list);
     }
     
-    public default boolean removeLine(ExecutionLevel level, String line) {
+    public default boolean removeLine(ExecutionLevel level, String line) throws Exception {
         var list = getElements(level);
         if (list.removeIf(e -> e instanceof ExecutionElement.Line &&
                 ((ExecutionElement.Line) e).line().equals(line))) {
@@ -80,12 +83,24 @@ public interface ProjectProperties {
         }
     }
     
-    public default List<FileObject> getLibraries() {
+//    public default void addLibrary(URI library) throws Exception {
+//        throw new UnsupportedOperationException();
+//    }
+//    
+//    public default void removeLibrary(URI library) throws Exception {
+//        throw new UnsupportedOperationException();
+//    }
+    
+    public default List<URI> getLibraries() {
         return List.of();
     }
     
+    public default void setJavaRelease(int release) throws Exception {
+        throw new UnsupportedOperationException();
+    }
+    
     public default int getJavaRelease() {
-        return 11;
+        return DefaultPraxisProject.MIN_JAVA_VERSION;
     }
     
     
