@@ -22,6 +22,7 @@
               <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="addFileButton" max="32767" attributes="0"/>
                   <Component id="removeButton" alignment="0" max="32767" attributes="0"/>
+                  <Component id="addLineButton" alignment="1" max="32767" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
@@ -34,8 +35,10 @@
               <EmptySpace max="-2" attributes="0"/>
               <Component id="addFileButton" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
+              <Component id="addLineButton" min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
               <Component id="removeButton" min="-2" max="-2" attributes="0"/>
-              <EmptySpace pref="224" max="32767" attributes="0"/>
+              <EmptySpace max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -66,6 +69,16 @@
       </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="removeButtonActionPerformed"/>
+      </Events>
+    </Component>
+    <Component class="javax.swing.JButton" name="addLineButton">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/praxislive/ide/project/ui/Bundle.properties" key="ElementsCustomizer.addLineButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="addLineButtonActionPerformed"/>
       </Events>
     </Component>
   </SubComponents>

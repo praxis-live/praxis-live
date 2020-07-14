@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2019 Neil C Smith.
+ * Copyright 2020 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -33,11 +33,17 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.spi.project.ui.CustomizerProvider;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
+import org.openide.util.NbBundle;
 
 /**
  *
- * @author Neil C Smith (http://neilcsmith.net)
  */
+@NbBundle.Messages({
+    "LBL_buildLevelElements=Build Level Elements",
+    "LBL_runLevelElements=Run Level Elements",
+    "LBL_libraries=Libraries",
+    "LBL_compiler=Compiler"
+})
 public class PraxisCustomizerProvider implements CustomizerProvider,
         ProjectCustomizer.CategoryComponentProvider {
 
@@ -56,19 +62,19 @@ public class PraxisCustomizerProvider implements CustomizerProvider,
         this.project = project;
         build = Category.create(
                 "build",
-                "Build Level Files",
+                Bundle.LBL_buildLevelElements(),
                 null);
         run = Category.create(
                 "run",
-                "Run Level Files",
+                Bundle.LBL_runLevelElements(),
                 null);
         libraries = Category.create(
                 "libraries",
-                "Libraries",
+                Bundle.LBL_libraries(),
                 null);
         java = Category.create(
                 "java",
-                "Java",
+                Bundle.LBL_compiler(),
                 null);
     }
 
