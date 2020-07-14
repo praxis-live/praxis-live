@@ -24,8 +24,11 @@ package org.praxislive.ide.project;
 import java.awt.EventQueue;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.URI;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumMap;
@@ -35,6 +38,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.openide.filesystems.FileChangeAdapter;
@@ -45,6 +49,8 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.praxislive.core.services.ServiceUnavailableException;
+import org.praxislive.core.types.PMap;
+import org.praxislive.hub.net.HubConfiguration;
 import org.praxislive.ide.core.api.Callback;
 import org.praxislive.ide.core.api.HubUnavailableException;
 import org.praxislive.ide.project.api.ExecutionLevel;
@@ -64,6 +70,23 @@ import static org.praxislive.ide.project.DefaultPraxisProject.MIN_JAVA_VERSION;
  *
  */
 public class ProjectPropertiesImpl implements ProjectProperties {
+
+    private final static String DEFAULT_HUB_CONFIG;
+
+    static {
+        String config;
+        try (var reader = new BufferedReader(
+                new InputStreamReader(
+                        ProjectPropertiesImpl.class.getResourceAsStream(
+                                "/org/praxislive/ide/project/resources/default-hub.txt"),
+                        Charset.forName("UTF-8")))) {
+            config = reader.lines().collect(Collectors.joining("\n"));
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+            config = "";
+        }
+        DEFAULT_HUB_CONFIG = config;
+    }
 
     private final Map<ExecutionLevel, Map<ExecutionElement, ElementHandler>> elements;
     private final PropertyChangeSupport pcs;
@@ -176,9 +199,8 @@ public class ProjectPropertiesImpl implements ProjectProperties {
                 .filter(e -> hubHandler.isSupportedCommand(e.tokens().get(0).getText()))
                 .findFirst()
                 .ifPresentOrElse(e -> {
-//                    hubHandler.configure(e);
-//                    map.put(e, hubHandler);
-                    map.put(hubHandler.defaultElement(), hubHandler);
+                    hubHandler.configure(e);
+                    map.put(e, hubHandler);
                 }, () -> {
                     map.put(hubHandler.defaultElement(), hubHandler);
                 });
@@ -312,7 +334,7 @@ public class ProjectPropertiesImpl implements ProjectProperties {
 //    public void removeLibrary(URI library) throws Exception {
 //    }
     @Override
-    public synchronized List<URI> getLibraries() {
+    public List<URI> getLibraries() {
         FileObject libsFolder = project.getProjectDirectory().getFileObject(DefaultPraxisProject.LIBS_PATH);
         if (libsFolder == null || !libsFolder.isFolder()) {
             return Collections.EMPTY_LIST;
@@ -325,7 +347,7 @@ public class ProjectPropertiesImpl implements ProjectProperties {
     }
 
     @Override
-    public synchronized void setJavaRelease(int release) throws Exception {
+    public void setJavaRelease(int release) throws Exception {
         if (javaRelease == release) {
             return;
         }
@@ -340,9 +362,24 @@ public class ProjectPropertiesImpl implements ProjectProperties {
     }
 
     @Override
-    public synchronized int getJavaRelease() {
+    public int getJavaRelease() {
         return javaRelease;
     }
+    
+    public void setHubConfiguration(String config) throws Exception {
+        if (hubHandler.hubConfiguration.equals(config)) {
+            return;
+        }
+        if (project.isActive()) {
+            throw new IllegalStateException("Cannot change hub for active project");
+        }
+        hubHandler.configure(config);
+    }
+    
+    public String getHubConfiguration() {
+        return hubHandler.hubConfiguration;
+    }
+    
 
     private void checkFile(FileObject file) {
         if (!FileUtil.isParentOf(project.getProjectDirectory(), file)) {
@@ -363,54 +400,51 @@ public class ProjectPropertiesImpl implements ProjectProperties {
     private class HubLineHandler implements LineHandler {
 
         private final String DEFAULT_HUB = "hub-configure {\n"
-                + "    enable-fileserver false\n"
-                + "    \n"
-                + "    proxies {\n"
-                + "        video {\n"
-                + "            type-pattern video\n"
-                + "            exec {\n"
-                + "                command default\n"
-                + "                java-options {\n"
-                + "                    -Djava.awt.headless=true\n"
-                + "                }\n"
-                + "            }\n"
-                + "        }\n"
-                + "        audio {\n"
-                + "             type-pattern audio\n"
-                + "             exec {\n"
-                + "                 command default\n"
-                + "             }\n"
-                + "        }\n"
-                + "    }\n"
-                + "}";
+                + DEFAULT_HUB_CONFIG
+                + "\n}";
 
         private final Set<String> commands;
 
+        private String hubConfiguration;
+
         private HubLineHandler() {
             commands = Set.of("hub-configure");
+            hubConfiguration = DEFAULT_HUB_CONFIG;
         }
 
         @Override
         public void process(Callback callback) throws Exception {
-            project.getLookup().lookup(ProjectHelper.class).executeScript(DEFAULT_HUB, callback);
+            project.getLookup().lookup(ProjectHelper.class)
+                    .executeScript("hub-configure {\n" + hubConfiguration + "\n}",
+                            callback);
         }
 
         @Override
         public String rewrite(String line) {
-            return DEFAULT_HUB;
+            return "hub-configure {\n" + hubConfiguration + "\n}";
         }
 
         private boolean isSupportedCommand(String command) {
             return commands.contains(command);
         }
 
-//        private void configure(ExecutionElement.Line element) {
-//            try {
-//                setJavaRelease(Integer.parseInt(element.tokens().get(1).getText()));
-//            } catch (Exception ex) {
-//                Exceptions.printStackTrace(ex);
-//            }
-//        }
+        private void configure(ExecutionElement.Line element) {
+            try {
+                var config = element.tokens().get(1).getText();
+                configure(config);
+            } catch (Exception ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+
+        private void configure(String config) throws Exception {
+            config = config.lines()
+                    .filter(Predicate.not(String::isBlank))
+                    .collect(Collectors.joining("\n"));
+            var checkConfig = HubConfiguration.fromMap(PMap.parse(config));
+            this.hubConfiguration = config;
+        }
+
         private ExecutionElement.Line defaultElement() {
             return ExecutionElement.forLine(DEFAULT_HUB);
         }

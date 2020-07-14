@@ -1,0 +1,18 @@
+  enable-fileserver false
+  proxies {
+    video {
+      type-pattern video
+      exec {
+        command default
+        java-options {
+          -Djava.awt.headless=true
+        }
+      }
+    }
+    audio {
+      type-pattern audio
+      exec {
+        command default
+      }
+    }
+  }
