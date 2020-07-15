@@ -42,6 +42,8 @@ import org.praxislive.core.ComponentInfo;
 import org.praxislive.core.ControlInfo;
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
+import org.praxislive.ide.components.api.Components;
+import org.praxislive.ide.components.api.Icons;
 
 /**
  *
@@ -149,9 +151,14 @@ class PXRProxyNode extends AbstractNode {
 
     @Override
     public Image getIcon(int type) {
-//        if (icon == null) {
-//            icon = Components.getIcon(component.getType());
-//        }
+        if (icon == null) {
+            var cmps = component.getRoot().getProject().getLookup().lookup(Components.class);
+            if (cmps != null) {
+                icon = cmps.getIcon(component.getType());
+            } else {
+                icon = Icons.getIcon(component.getType());
+            }
+        }
         return icon;
     }
 

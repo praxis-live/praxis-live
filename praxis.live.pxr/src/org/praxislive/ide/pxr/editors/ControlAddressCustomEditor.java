@@ -62,6 +62,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.praxislive.ide.model.HubProxy;
 import org.praxislive.ide.project.api.PraxisProject;
+import org.praxislive.ide.pxr.PXRRootRegistry;
 
 /**
  *
@@ -78,6 +79,7 @@ class ControlAddressCustomEditor extends javax.swing.JPanel
         SYS_CTRLS.add(ContainerProtocol.CONNECTIONS);
         SYS_CTRLS.add(ContainerProtocol.DISCONNECT);
         SYS_CTRLS.add(ContainerProtocol.REMOVE_CHILD);
+        SYS_CTRLS.add("code");
     }
     
     private static final Logger LOG = Logger.getLogger(ControlAddressCustomEditor.class.getName());
@@ -398,9 +400,9 @@ class ControlAddressCustomEditor extends javax.swing.JPanel
 
         private RootsChildren(PraxisProject project) {
             if (project != null) {
-                var hub = project.getLookup().lookup(HubProxy.class);
-                if (hub != null) {
-                    setKeys(hub.roots().map(hub::getRoot).collect(Collectors.toList()));
+                var reg = project.getLookup().lookup(PXRRootRegistry.class);
+                if (reg != null) {
+                    setKeys(reg.findAll());
                 }
             }
         }
