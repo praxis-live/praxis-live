@@ -166,10 +166,6 @@
                 <binary-origin>../build/praxiscore/mods/praxiscore-video-pgl-code-5.0.0-SNAPSHOT.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>../../praxiscore/mods/praxiscore-tracker-5.0.0-SNAPSHOT.jar</runtime-relative-path>
-                <binary-origin>../build/praxiscore/mods/praxiscore-tracker-5.0.0-SNAPSHOT.jar</binary-origin>
-            </class-path-extension>
-            <class-path-extension>
                 <runtime-relative-path>../../praxiscore/mods/processing-lwjgl-0.353.0-SNAPSHOT.jar</runtime-relative-path>
                 <binary-origin>../build/praxiscore/mods/processing-lwjgl-0.353.0-SNAPSHOT.jar</binary-origin>
             </class-path-extension>

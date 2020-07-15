@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2015 Neil C Smith.
+ * Copyright 2020 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -19,7 +19,7 @@
  * Please visit http://neilcsmith.net if you need additional information or
  * have any questions.
  */
-package org.praxislive.ide.tracker;
+package org.praxislive.ide.tableeditor;
 
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
@@ -34,7 +34,6 @@ import javax.swing.SpinnerNumberModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.table.DefaultTableModel;
-import org.praxislive.ide.tracker.Bundle;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.ImageUtilities;
@@ -45,51 +44,50 @@ import org.openide.windows.TopComponent;
 
 /**
  *
- * @author Neil C Smith (http://neilcsmith.net)
  */
 @NbBundle.Messages({
-    "label.pattern=Pattern",
+    "label.table=Table",
     "label.rows=Rows",
     "label.columns=Columns",
     "dialog.delete.title=Confirm deletion",
-    "dialog.delete.message=Delete last pattern?",
+    "dialog.delete.message=Delete last table?",
     "dialog.close.title=Unsaved changes",
     "dialog.close.message=Contains unsaved changes. Close anyway?"
 })
-@TopComponent.Description(preferredID = "TrackerEditor",
+@TopComponent.Description(preferredID = "TableEditor",
         persistenceType = TopComponent.PERSISTENCE_NEVER)
-public final class TrackerTopComponent extends TopComponent {
+public final class TableEditorTopComponent extends TopComponent {
 
-    private final static String RESOURCE_DIR = "org/praxislive/ide/tracker/resources/";
+    private final static String RESOURCE_DIR = "org/praxislive/ide/tableeditor/resources/";
 
-    private final TrackerDataObject dob;
+    private final TableDataObject dob;
     private final Listener listener;
 
-    private Patterns patterns;
-    private TrackerTable table;
-    private JComboBox<String> patternSelect;
+    private PraxisTableModels tableModels;
+    private PraxisTable table;
+    private JComboBox<String> tableSelect;
     private JSpinner rowSpinner;
     private JSpinner columnSpinner;
     private JButton addButton;
     private JButton removeButton;
     private boolean modified;
 
-    TrackerTopComponent(TrackerDataObject dob) {
+    TableEditorTopComponent(TableDataObject dob) {
         this.dob = dob;
         setDisplayName(dob.getPrimaryFile().getName());
         associateLookup(new ProxyLookup(dob.getLookup(),
                 Lookups.singleton(getActionMap())));
         setLayout(new BorderLayout());
         listener = new Listener();
-        patterns = new Patterns();
+        tableModels = new PraxisTableModels();
         initTable();
         initTopToolbar();
         initBottomToolbar();
-        updatePatterns(patterns);
+        updateTableModels(tableModels);
     }
 
     private void initTable() {
-        table = new TrackerTable();
+        table = new PraxisTable();
         add(new JScrollPane(table), BorderLayout.CENTER);
         getActionMap().setParent(table.getActionMap());
     }
@@ -97,9 +95,9 @@ public final class TrackerTopComponent extends TopComponent {
     private void initTopToolbar() {
         JToolBar toolbar = new JToolBar();
         toolbar.setFloatable(false);
-        patternSelect = new JComboBox<>();
-        patternSelect.addActionListener(listener);
-        toolbar.add(patternSelect);
+        tableSelect = new JComboBox<>();
+        tableSelect.addActionListener(listener);
+        toolbar.add(tableSelect);
         toolbar.addSeparator();
         removeButton = new JButton(
                 ImageUtilities.loadImageIcon(RESOURCE_DIR + "delete.png", true));
@@ -152,14 +150,14 @@ public final class TrackerTopComponent extends TopComponent {
         return super.canClose();
     }
 
-    void updatePatterns(Patterns patterns) {
+    void updateTableModels(PraxisTableModels models) {
         listener.ignore = true;
-        this.patterns = patterns;
-        if (patterns.size() == 0) {
-            patterns.addPattern(new Pattern(16, 4));
+        this.tableModels = models;
+        if (models.size() == 0) {
+            models.add(new PraxisTableModel(16, 4));
         }
         configurePatternSelect();
-        table.setModel(patterns.getPattern(0));
+        table.setModel(models.get(0));
         configureDimensions();
         listener.ignore = false;
     }
@@ -173,25 +171,25 @@ public final class TrackerTopComponent extends TopComponent {
     }
 
     private void configurePatternSelect() {
-        patternSelect.removeAllItems();
-        for (int i = 0; i < patterns.size(); i++) {
-            patternSelect.addItem(Bundle.label_pattern() + " : " + i);
+        tableSelect.removeAllItems();
+        for (int i = 0; i < tableModels.size(); i++) {
+            tableSelect.addItem(Bundle.label_table() + " : " + i);
         }
-        patternSelect.setSelectedIndex(0);
+        tableSelect.setSelectedIndex(0);
     }
 
-    private void addPattern() {
-        Pattern pattern = new Pattern(16, 4);
-        patterns.addPattern(pattern);
-        patternSelect.addItem(Bundle.label_pattern() + " : "
-                + patternSelect.getItemCount());
-        patternSelect.setSelectedIndex(patternSelect.getItemCount() - 1);
-        table.setModel(pattern);
+    private void addTable() {
+        PraxisTableModel model = new PraxisTableModel(16, 4);
+        tableModels.add(model);
+        tableSelect.addItem(Bundle.label_table() + " : "
+                + tableSelect.getItemCount());
+        tableSelect.setSelectedIndex(tableSelect.getItemCount() - 1);
+        table.setModel(model);
         configureDimensions();
     }
 
-    private void removePattern() {
-        int count = patterns.size();
+    private void removeTable() {
+        int count = tableModels.size();
         if (count < 2) {
             return;
         }
@@ -200,11 +198,11 @@ public final class TrackerTopComponent extends TopComponent {
                 Bundle.dialog_delete_title(),
                 NotifyDescriptor.YES_NO_OPTION);
         if (NotifyDescriptor.YES_OPTION.equals(DialogDisplayer.getDefault().notify(nd))) {
-            Pattern pattern = patterns.removePattern(count - 1);
-            patternSelect.removeItemAt(patternSelect.getItemCount() - 1);
-            if (pattern == table.getModel()) {
-                patternSelect.setSelectedIndex(0);
-                table.setModel(patterns.getPattern(0));
+            PraxisTableModel model = tableModels.remove(count - 1);
+            tableSelect.removeItemAt(tableSelect.getItemCount() - 1);
+            if (model == table.getModel()) {
+                tableSelect.setSelectedIndex(0);
+                table.setModel(tableModels.get(0));
                 configureDimensions();
             }
         }
@@ -240,16 +238,16 @@ public final class TrackerTopComponent extends TopComponent {
             }
             ignore = true;
             Object source = e.getSource();
-            if (source == patternSelect) {
-                int p = patternSelect.getSelectedIndex();
-                if (p >= 0 && p < patterns.size()) {
-                    table.setModel(patterns.getPattern(p));
+            if (source == tableSelect) {
+                int p = tableSelect.getSelectedIndex();
+                if (p >= 0 && p < tableModels.size()) {
+                    table.setModel(tableModels.get(p));
                     configureDimensions();
                 }
             } else if (source == addButton) {
-                addPattern();
+                addTable();
             } else if (source == removeButton) {
-                removePattern();
+                removeTable();
             } else {
 
             }

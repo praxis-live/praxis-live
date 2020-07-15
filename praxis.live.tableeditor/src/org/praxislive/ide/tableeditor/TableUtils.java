@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2015 Neil C Smith.
+ * Copyright 2020 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -19,7 +19,7 @@
  * Please visit http://neilcsmith.net if you need additional information or
  * have any questions.
  */
-package org.praxislive.ide.tracker;
+package org.praxislive.ide.tableeditor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,14 +29,13 @@ import org.praxislive.core.syntax.Tokenizer;
 
 /**
  *
- * @author Neil C Smith (http://neilcsmith.net)
  */
-class TrackerUtils {
+class TableUtils {
 
-    static Patterns parse(String data) throws ValueFormatException {
-        Patterns patterns = new Patterns();
+    static PraxisTableModels parse(String data) throws ValueFormatException {
+        PraxisTableModels models = new PraxisTableModels();
         List<Object> row = new ArrayList<>();
-        Pattern pattern = null;
+        PraxisTableModel model = null;
         int maxColumn = 0;
         int column = 0;
         Tokenizer tk = new Tokenizer(data);
@@ -56,10 +55,10 @@ class TrackerUtils {
                     break;
                 case EOL:
                     if (column > 0) {
-                        // inside pattern
-                        if (pattern == null) {
-                            pattern = new Pattern();
-                            pattern.setColumnCount(column);
+                        // inside table
+                        if (model == null) {
+                            model = new PraxisTableModel();
+                            model.setColumnCount(column);
                             maxColumn = column;
                         } else {
                             // pad to end of row
@@ -68,13 +67,13 @@ class TrackerUtils {
                                 column++;
                             }
                         }
-                        pattern.addRow(row.toArray());
+                        model.addRow(row.toArray());
                         row.clear();
                         column = 0;
-                    } else if (pattern != null) {
-                        // end of pattern
-                        patterns.addPattern(pattern);
-                        pattern = null;
+                    } else if (model != null) {
+                        // end of table
+                        models.add(model);
+                        model = null;
                         maxColumn = 0;
                     }
                     break;
@@ -85,21 +84,21 @@ class TrackerUtils {
                     throw new ValueFormatException();
             }
         }
-        if (pattern != null) {
-            patterns.addPattern(pattern);
+        if (model != null) {
+            models.add(model);
         }
-        return patterns;
+        return models;
     }
 
-    static String write(Patterns data) {
+    static String write(PraxisTableModels data) {
         StringBuilder sb = new StringBuilder();
         write(data, sb);
         return sb.toString();
     }
 
-    static void write(Patterns data, StringBuilder sb) {
+    static void write(PraxisTableModels data, StringBuilder sb) {
         boolean first = true;
-        for (Pattern table : data) {
+        for (PraxisTableModel table : data) {
             if (!first) {
                 sb.append('\n');
             }
@@ -108,11 +107,11 @@ class TrackerUtils {
         }
     }
 
-    static void write(Pattern data, StringBuilder sb) {
+    static void write(PraxisTableModel data, StringBuilder sb) {
         write(data, sb, 0, 0, data.getRowCount(), data.getColumnCount());
     }
 
-    static void write(Pattern data, StringBuilder sb,
+    static void write(PraxisTableModel data, StringBuilder sb,
             int rowOffset, int columnOffset, int rows, int columns) {
         for (int r = 0; r < rows; r++) {
             if (isEmpty(data, rowOffset + r, columnOffset, columnOffset + columns)) {
@@ -148,7 +147,7 @@ class TrackerUtils {
         return escape(value.toString());
     }
 
-    private static boolean isEmpty(Pattern data, int row, int start, int end) {
+    private static boolean isEmpty(PraxisTableModel data, int row, int start, int end) {
         for (int i = start; i < end; i++) {
             if (data.getValueAt(row, i) != null) {
                 return false;

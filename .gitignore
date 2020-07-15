@@ -56,8 +56,6 @@
 /praxis.live.pxr.graph/nbproject/private/
 /praxis.live.logging/nbproject/private/
 /praxis.live.logging/build/
-/praxis.live.tracker/nbproject/private/
-/praxis.live.tracker/build/
 /lib.nb-darcula/build/
 /lib.nb-darcula/nbproject/private/
 /praxis.live.editor.saveflash/build/
@@ -66,3 +64,5 @@
 /praxis.live.project.examples/nbproject/private/
 /praxiscore.embedder/build/
 /praxiscore.embedder/nbproject/private/
+/praxis.live.tableeditor/nbproject/private/
+/praxis.live.tableeditor/build/

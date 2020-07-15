@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2015 Neil C Smith.
+ * Copyright 2020 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -19,7 +19,7 @@
  * Please visit http://neilcsmith.net if you need additional information or
  * have any questions.
  */
-package org.praxislive.ide.tracker;
+package org.praxislive.ide.tableeditor;
 
 import java.awt.EventQueue;
 import java.awt.datatransfer.DataFlavor;
@@ -44,14 +44,13 @@ import org.openide.util.Exceptions;
 
 /**
  *
- * @author Neil C Smith (http://neilcsmith.net)
  */
-class TrackerTable extends JTable {
+class PraxisTable extends JTable {
 
-    private static final TrackerTransferHandler TRANSFER_HANDLER
-            = new TrackerTransferHandler();
+    private static final TableTransferHandler TRANSFER_HANDLER
+            = new TableTransferHandler();
 
-    public TrackerTable() {
+    public PraxisTable() {
         getTableHeader().setReorderingAllowed(false);
         setCellSelectionEnabled(true);
         setSurrendersFocusOnKeystroke(true);
@@ -131,10 +130,10 @@ class TrackerTable extends JTable {
     
     private class RedirectAction extends AbstractAction {
 
-        private final TrackerTable table;
+        private final PraxisTable table;
         private final Action action;
         
-        private RedirectAction(TrackerTable table, Action action) {
+        private RedirectAction(PraxisTable table, Action action) {
             super("redirect-" + String.valueOf(action.getValue(NAME)));
             this.table = table;
             this.action = action;
@@ -149,7 +148,7 @@ class TrackerTable extends JTable {
         
     }
 
-    private static class TrackerTransferHandler extends TransferHandler {
+    private static class TableTransferHandler extends TransferHandler {
 
         @Override
         public int getSourceActions(JComponent c) {
@@ -158,8 +157,8 @@ class TrackerTable extends JTable {
 
         @Override
         protected Transferable createTransferable(JComponent c) {
-            if (c instanceof TrackerTable) {
-                TrackerTable table = (TrackerTable) c;
+            if (c instanceof PraxisTable) {
+                PraxisTable table = (PraxisTable) c;
                 int row = table.getSelectedRow();
                 int rowCount = table.getSelectedRowCount();
                 int column = table.getSelectedColumn();
@@ -169,11 +168,11 @@ class TrackerTable extends JTable {
                     return null;
                 }
 
-                Pattern pattern = (Pattern) table.getModel();
+                PraxisTableModel model = (PraxisTableModel) table.getModel();
 
                 StringBuilder sb = new StringBuilder();
 
-                TrackerUtils.write(pattern, sb, row, column, rowCount, columnCount);
+                TableUtils.write(model, sb, row, column, rowCount, columnCount);
 
                 return new StringSelection(sb.toString());
 
@@ -188,10 +187,10 @@ class TrackerTable extends JTable {
 
         @Override
         public boolean importData(TransferSupport support) {
-            if (support.getComponent() instanceof TrackerTable
+            if (support.getComponent() instanceof PraxisTable
                     && canImport(support)) {
                 try {
-                    TrackerTable table = (TrackerTable) support.getComponent();
+                    PraxisTable table = (PraxisTable) support.getComponent();
                     int row = table.getSelectedRow();
                     int rowCount = table.getSelectedRowCount();
                     int column = table.getSelectedColumn();
@@ -204,25 +203,25 @@ class TrackerTable extends JTable {
                     String data = (String) support.getTransferable()
                             .getTransferData(DataFlavor.stringFlavor);
                     
-                    Patterns patterns = TrackerUtils.parse(data);
+                    PraxisTableModels models = TableUtils.parse(data);
                     
-                    if (patterns.size() != 1) {
+                    if (models.size() != 1) {
                         return false;
                     }
                     
-                    Pattern pattern = patterns.getPattern(0);
+                    PraxisTableModel model = models.get(0);
                     
-                    for (int r = 0; r < pattern.getRowCount(); r++) {
+                    for (int r = 0; r < model.getRowCount(); r++) {
                         int rd = r + row;
                         if (rd >= table.getRowCount()) {
                             break;
                         }
-                        for (int c = 0; c < pattern.getColumnCount(); c++) {
+                        for (int c = 0; c < model.getColumnCount(); c++) {
                             int cd = c + column;
                             if (cd >= table.getColumnCount()) {
                                 break;
                             }
-                            Object value = pattern.getValueAt(r, c);
+                            Object value = model.getValueAt(r, c);
                             table.setValueAt(value, rd, cd);
                         }
                     }

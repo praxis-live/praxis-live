@@ -45,9 +45,9 @@
         <antcall target="-install-nbjavac"/>
     </target>
     
-    <target name="build-zip" depends="build,build-launchers,build-core-javadoc,suite.build-zip">
+<!--    <target name="build-zip" depends="build,build-launchers,suite.build-zip">
         
-    </target>
+    </target>-->
     
     <target name="init-platform"></target>
     

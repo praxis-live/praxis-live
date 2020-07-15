@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2015 Neil C Smith.
+ * Copyright 2020 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -19,20 +19,19 @@
  * Please visit http://neilcsmith.net if you need additional information or
  * have any questions.
  */
-package org.praxislive.ide.tracker;
+package org.praxislive.ide.tableeditor;
 
 import javax.swing.table.DefaultTableModel;
 
 /**
  *
- * @author Neil C Smith (http://neilcsmith.net)
  */
-class Pattern extends DefaultTableModel {
+class PraxisTableModel extends DefaultTableModel {
 
-    Pattern() {
+    PraxisTableModel() {
     }
 
-    Pattern(int rows, int columns) {
+    PraxisTableModel(int rows, int columns) {
         super(rows, columns);
     }
 

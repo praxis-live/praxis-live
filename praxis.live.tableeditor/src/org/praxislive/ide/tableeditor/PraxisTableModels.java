@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2015 Neil C Smith.
+ * Copyright 2020 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -19,7 +19,7 @@
  * Please visit http://neilcsmith.net if you need additional information or
  * have any questions.
  */
-package org.praxislive.ide.tracker;
+package org.praxislive.ide.tableeditor;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -31,18 +31,17 @@ import org.openide.util.ChangeSupport;
 
 /**
  *
- * @author Neil C Smith (http://neilcsmith.net)
  */
-class Patterns implements Iterable<Pattern> {
+class PraxisTableModels implements Iterable<PraxisTableModel> {
     
-    private final List<Pattern> data;
+    private final List<PraxisTableModel> data;
     private final ChangeSupport cs;
-    private final PatternListener listener;
+    private final ModelListener listener;
 
-    Patterns() {
+    PraxisTableModels() {
         this.data = new ArrayList<>();
         this.cs = new ChangeSupport(this);
-        this.listener = new PatternListener();
+        this.listener = new ModelListener();
     }
     
     public void addChangeListener(ChangeListener listener) {
@@ -53,14 +52,14 @@ class Patterns implements Iterable<Pattern> {
         cs.removeChangeListener(listener);
     }
 
-    public void addPattern(Pattern pattern) {
-        data.add(pattern);
-        pattern.addTableModelListener(listener);
+    public void add(PraxisTableModel model) {
+        data.add(model);
+        model.addTableModelListener(listener);
         cs.fireChange();
     }
     
-    public Pattern removePattern(int index) {
-        Pattern r = data.remove(index);
+    public PraxisTableModel remove(int index) {
+        PraxisTableModel r = data.remove(index);
         if (r != null) {
             r.removeTableModelListener(listener);
             cs.fireChange();
@@ -72,16 +71,16 @@ class Patterns implements Iterable<Pattern> {
         return data.size();
     }
 
-    public Pattern getPattern(int i) {
+    public PraxisTableModel get(int i) {
         return data.get(i);
     }
 
     @Override
-    public Iterator<Pattern> iterator() {
+    public Iterator<PraxisTableModel> iterator() {
         return data.iterator();
     }
     
-    private class PatternListener implements TableModelListener {
+    private class ModelListener implements TableModelListener {
 
         @Override
         public void tableChanged(TableModelEvent e) {

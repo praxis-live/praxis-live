@@ -1,4 +1,25 @@
-package org.praxislive.ide.tracker;
+/*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright 2020 Neil C Smith.
+ *
+ * This code is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License version 3 only, as
+ * published by the Free Software Foundation.
+ *
+ * This code is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ * version 3 for more details.
+ *
+ * You should have received a copy of the GNU General Public License version 3
+ * along with this work; if not, see http://www.gnu.org/licenses/
+ *
+ *
+ * Please visit http://neilcsmith.net if you need additional information or
+ * have any questions.
+ */
+package org.praxislive.ide.tableeditor;
 
 import java.awt.EventQueue;
 import java.io.IOException;
@@ -24,43 +45,43 @@ import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
 
 @Messages({
-    "LBL_Tracker_LOADER=Files of Tracker"
+    "LBL_Table_LOADER=Files of Table"
 })
 @MIMEResolver.ExtensionRegistration(
-        displayName = "#LBL_Tracker_LOADER",
-        mimeType = "text/x-praxis-tracker",
+        displayName = "#LBL_Table_LOADER",
+        mimeType = "text/x-praxis-table",
         extension = {"pxt"}
 )
 @DataObject.Registration(
-        mimeType = "text/x-praxis-tracker",
-        iconBase = "org/praxislive/ide/tracker/resources/patterns.png",
-        displayName = "#LBL_Tracker_LOADER",
+        mimeType = "text/x-praxis-table",
+        iconBase = "org/praxislive/ide/tableeditor/resources/tables.png",
+        displayName = "#LBL_Table_LOADER",
         position = 300
 )
 @ActionReferences({
     @ActionReference(
-            path = "Loaders/text/x-praxis-tracker/Actions",
+            path = "Loaders/text/x-praxis-table/Actions",
             id = @ActionID(category = "System", id = "org.openide.actions.OpenAction"),
             position = 100,
             separatorAfter = 200
     ),
     @ActionReference(
-            path = "Loaders/text/x-praxis-tracker/Actions",
+            path = "Loaders/text/x-praxis-table/Actions",
             id = @ActionID(category = "System", id = "org.openide.actions.PropertiesAction"),
             position = 1400
     )
 })
-public class TrackerDataObject extends MultiDataObject {
+public class TableDataObject extends MultiDataObject {
 
     private final static RequestProcessor RP = new RequestProcessor();
 
     private final PatternsListener patternsListener;
     private final Saver saver;
 
-    private TrackerTopComponent editor;
-    private Patterns patterns;
+    private TableEditorTopComponent editor;
+    private PraxisTableModels patterns;
 
-    public TrackerDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException, IOException {
+    public TableDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException, IOException {
         super(pf, loader);
         CookieSet cookies = getCookieSet();
         cookies.add(new Opener());
@@ -97,14 +118,14 @@ public class TrackerDataObject extends MultiDataObject {
         assert EventQueue.isDispatchThread();
         super.dispose();
         if (editor != null) {
-            TrackerTopComponent ed = editor;
+            TableEditorTopComponent ed = editor;
             editor = null;
             ed.setModified(false);
             ed.close();
         }
     }
 
-    void editorClosed(TrackerTopComponent editor) {
+    void editorClosed(TableEditorTopComponent editor) {
         if (this.editor == editor) {
             this.editor = null;
             updatePatterns(null);
@@ -112,15 +133,15 @@ public class TrackerDataObject extends MultiDataObject {
     }
 
     private void createEditor() {
-        editor = new TrackerTopComponent(TrackerDataObject.this);
+        editor = new TableEditorTopComponent(TableDataObject.this);
         RP.post(new Runnable() {
 
             @Override
             public void run() {
                 try {
                     String data = getPrimaryFile().asText();
-                    final Patterns patterns
-                            = TrackerUtils.parse(data);
+                    final PraxisTableModels patterns
+                            = TableUtils.parse(data);
                     EventQueue.invokeLater(new Runnable() {
 
                         @Override
@@ -135,7 +156,7 @@ public class TrackerDataObject extends MultiDataObject {
         });
     }
 
-    private void updatePatterns(Patterns patterns) {
+    private void updatePatterns(PraxisTableModels patterns) {
         if (this.patterns != null) {
             this.patterns.removeChangeListener(patternsListener);
             this.patterns = null;
@@ -144,7 +165,7 @@ public class TrackerDataObject extends MultiDataObject {
         if (patterns != null && editor != null) {
             this.patterns = patterns;
             patterns.addChangeListener(patternsListener);
-            editor.updatePatterns(patterns);
+            editor.updateTableModels(patterns);
         }
     }
 
@@ -170,7 +191,7 @@ public class TrackerDataObject extends MultiDataObject {
                 editor.finishEditing();
             }
             setModified(false);
-            final String data = TrackerUtils.write(patterns);
+            final String data = TableUtils.write(patterns);
             RP.post(new Runnable() {
 
                 @Override
