@@ -83,7 +83,7 @@ import org.praxislive.ide.project.spi.ElementHandler;
 public class DefaultPraxisProject implements PraxisProject {
 
     public final static String LIBS_PATH = "config/libs/";
-    public final static String LIBS_COMMAND = "add-libs [file-list \"" + LIBS_PATH + "*.jar\"]";
+    final static String LIBS_COMMAND = "libraries {\n  " + LIBS_PATH + "*.jar\n}";
 
     public static final int MIN_JAVA_VERSION = 11;
     public static final int MAX_JAVA_VERSION;

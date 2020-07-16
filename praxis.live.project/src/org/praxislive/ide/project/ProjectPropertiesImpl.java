@@ -399,7 +399,7 @@ public class ProjectPropertiesImpl implements ProjectProperties {
 
     private class HubLineHandler implements LineHandler {
 
-        private final String DEFAULT_HUB = "hub-configure {\n"
+        private final String DEFAULT_HUB = "hub {\n"
                 + DEFAULT_HUB_CONFIG
                 + "\n}";
 
@@ -408,20 +408,20 @@ public class ProjectPropertiesImpl implements ProjectProperties {
         private String hubConfiguration;
 
         private HubLineHandler() {
-            commands = Set.of("hub-configure");
+            commands = Set.of("hub-configure", "hub");
             hubConfiguration = DEFAULT_HUB_CONFIG;
         }
 
         @Override
         public void process(Callback callback) throws Exception {
             project.getLookup().lookup(ProjectHelper.class)
-                    .executeScript("hub-configure {\n" + hubConfiguration + "\n}",
+                    .executeScript("hub {\n" + hubConfiguration + "\n}",
                             callback);
         }
 
         @Override
         public String rewrite(String line) {
-            return "hub-configure {\n" + hubConfiguration + "\n}";
+            return "hub {\n" + hubConfiguration + "\n}";
         }
 
         private boolean isSupportedCommand(String command) {
@@ -455,18 +455,18 @@ public class ProjectPropertiesImpl implements ProjectProperties {
         private final Set<String> commands;
 
         private CompilerLineHandler() {
-            commands = Set.of("java-compiler-release");
+            commands = Set.of("java-compiler-release", "compiler");
         }
 
         @Override
         public void process(Callback callback) throws Exception {
-            String script = "java-compiler-release " + getJavaRelease();
+            String script = compilerScript(getJavaRelease());
             project.getLookup().lookup(ProjectHelper.class).executeScript(script, callback);
         }
 
         @Override
         public String rewrite(String line) {
-            return "java-compiler-release " + getJavaRelease();
+            return compilerScript(getJavaRelease());
         }
 
         private boolean isSupportedCommand(String command) {
@@ -475,14 +475,23 @@ public class ProjectPropertiesImpl implements ProjectProperties {
 
         private void configure(ExecutionElement.Line element) {
             try {
-                setJavaRelease(Integer.parseInt(element.tokens().get(1).getText()));
+                if ("java-compiler-release".equals(element.tokens().get(0).getText())) {
+                    setJavaRelease(Integer.parseInt(element.tokens().get(1).getText()));
+                } else {
+                    var params = PMap.parse(element.tokens().get(1).getText());
+                    setJavaRelease(params.getInt("release", MIN_JAVA_VERSION));
+                }
             } catch (Exception ex) {
                 Exceptions.printStackTrace(ex);
             }
         }
+        
+        private String compilerScript(int release) {
+            return "compiler {\n  release " + release + "\n}";
+        }
 
         private ExecutionElement.Line defaultElement() {
-            return ExecutionElement.forLine("java-compiler-release " + MIN_JAVA_VERSION);
+            return ExecutionElement.forLine(compilerScript(MIN_JAVA_VERSION));
         }
     }
 
@@ -491,7 +500,7 @@ public class ProjectPropertiesImpl implements ProjectProperties {
         private final Set<String> commands;
 
         private LibrariesLineHandler() {
-            commands = Set.of("add-libs");
+            commands = Set.of("add-libs", "libraries");
         }
 
         @Override
