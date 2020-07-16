@@ -165,11 +165,12 @@ public class RootEditorTopComponent extends CloneableTopComponent {
         if (root == this.root) {
             return;
         }
-        uninstall(this.root);
-        this.root = root;
-        install(root);
         if (root == null) {
             close();
+        } else {
+            uninstall(this.root);
+            this.root = root;
+            install(root);
         }
     }
 

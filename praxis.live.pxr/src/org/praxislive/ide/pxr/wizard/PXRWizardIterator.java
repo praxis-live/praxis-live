@@ -21,10 +21,12 @@
  */
 package org.praxislive.ide.pxr.wizard;
 
+import java.awt.EventQueue;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
 import java.util.NoSuchElementException;
 import java.util.Set;
@@ -37,14 +39,26 @@ import org.praxislive.ide.project.api.PraxisProject;
 import org.praxislive.ide.pxr.PXRDataObject;
 import org.praxislive.ide.pxr.PXRFileHandler;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.templates.support.Templates;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.praxislive.ide.project.api.ProjectProperties;
+import org.praxislive.ide.pxr.PXRHelper;
 
+@NbBundle.Messages({
+    "TITLE_buildProject=Build project?",
+    "# {0} - project name",
+    "MSG_buildProject=Build project {0}?"
+})
 public final class PXRWizardIterator implements WizardDescriptor.InstantiatingIterator {
 
     final static Logger LOG = Logger.getLogger(PXRWizardIterator.class.getName());
@@ -56,10 +70,6 @@ public final class PXRWizardIterator implements WizardDescriptor.InstantiatingIt
     private WizardDescriptor wizard;
     private WizardDescriptor.Panel[] panels;
     private ComponentType rootType;
-
-    public PXRWizardIterator() {
-        LOG.fine("Creating PXRWizardIterator");
-    }
 
     /**
      * Initialize panels representing individual wizard's steps and sets various
@@ -135,23 +145,38 @@ public final class PXRWizardIterator implements WizardDescriptor.InstantiatingIt
         Project project = Templates.getProject(wizard);
         if (project != null) {
 
-//            FileObject autostarter = writeAutostartFile(project, id);
-
-            ProjectProperties props = project.getLookup().lookup(ProjectProperties.class);
-            if (props != null) {
-                try {
-                    props.addFile(ExecutionLevel.BUILD, fileObj);
-                    if (autostart) {
-                        props.addLine(ExecutionLevel.RUN, "/" + id + ".start");
+            Runnable task = () -> {
+                ProjectProperties props = project.getLookup().lookup(ProjectProperties.class);
+                if (props != null) {
+                    try {
+                        props.addFile(ExecutionLevel.BUILD, fileObj);
+                        if (autostart) {
+                            props.addLine(ExecutionLevel.RUN, "/" + id + ".start");
+                        }
+                    } catch (Exception ex) {
+                        Exceptions.printStackTrace(ex);
                     }
-                } catch (Exception ex) {
-                    Exceptions.printStackTrace(ex);
+
                 }
 
-            }
+                if (build) {
+                    buildFile(project, fileObj);
+                }
+            };
+            
+            if (EventQueue.isDispatchThread()) {
+                task.run();
+            } else {
 
-            if (build) {
-                buildFile(project, fileObj);
+                try {
+                    // need to invoke and wait or dialog is closed and project
+                    // built automatically when wizard closes.
+                    EventQueue.invokeAndWait(task);
+                } catch (InterruptedException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (InvocationTargetException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
             }
 
         } else {
@@ -205,7 +230,7 @@ public final class PXRWizardIterator implements WizardDescriptor.InstantiatingIt
                 + "}";
         return template.replace("/video", "/" + id);
     }
-    
+
     private CharSequence getAudioFileTemplate(String id) {
         String template = "@ /audio root:audio {\n"
                 + "  #%pxr.format 4\n"
@@ -215,42 +240,32 @@ public final class PXRWizardIterator implements WizardDescriptor.InstantiatingIt
                 + "    #%graph.y 200\n"
                 + "  }\n"
                 + "}";
-        return template.replace("/video", "/" + id);
+        return template.replace("/audio", "/" + id);
     }
 
-//    private FileObject writeAutostartFile(Project base, String id) throws IOException {
-//        FileObject configDir = base.getProjectDirectory().getFileObject("config");
-//        if (configDir == null) {
-//            configDir = base.getProjectDirectory().createFolder("config");
-//        }
-//        String fileName = id + "_autostart";
-//        FileObject autostarter = configDir.getFileObject(fileName);
-//        if (autostarter == null) {
-//            autostarter = configDir.createData(fileName);
-//        }
-//        String code = "/" + id + ".start";
-//
-//        Writer writer = null;
-//        try {
-//            writer = new OutputStreamWriter(autostarter.getOutputStream());
-//            writer.append(code);
-//        } finally {
-//            if (writer != null) {
-//                writer.close();
-//            }
-//        }
-//        return autostarter;
-//    }
-
     private void buildFile(Project base, FileObject file) {
-        PraxisProject project = base.getLookup().lookup(PraxisProject.class);
         try {
-            DataObject dob = DataObject.find(file);
-            if (dob instanceof PXRDataObject) {
+            var project = base.getLookup().lookup(PraxisProject.class);
+            var helper = project.getLookup().lookup(PXRHelper.class);
+            if (helper != null && helper.isConnected()) {
+                var dob = DataObject.find(file);
+                if (dob instanceof PXRDataObject) {
 
-                new PXRFileHandler(project, (PXRDataObject) dob).process(
-                        Callback.create(r -> {}));
+                    new PXRFileHandler(project, (PXRDataObject) dob).process(
+                            Callback.create(r -> {
+                            }));
 
+                }
+            } else {
+                var name = ProjectUtils.getInformation(project).getDisplayName();
+                var ret = DialogDisplayer.getDefault().notify(
+                        new NotifyDescriptor.Confirmation(Bundle.MSG_buildProject(name),
+                                Bundle.TITLE_buildProject(),
+                                NotifyDescriptor.OK_CANCEL_OPTION));
+                if (ret == NotifyDescriptor.OK_OPTION) {
+                    var actions = project.getLookup().lookup(ActionProvider.class);
+                    actions.invokeAction(ActionProvider.COMMAND_BUILD, Lookup.EMPTY);
+                }
             }
         } catch (Exception ex) {
             Exceptions.printStackTrace(ex);

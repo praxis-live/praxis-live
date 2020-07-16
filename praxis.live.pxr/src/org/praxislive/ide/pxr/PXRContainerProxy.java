@@ -333,6 +333,7 @@ public class PXRContainerProxy extends PXRComponentProxy implements ContainerPro
         for (PXRComponentProxy child : children.values()) {
             child.dispose();
         }
+        children.clear();
         if (conAdaptor != null) {
             getRoot().getHelper().unbind(ControlAddress.of(getAddress(),
                     ContainerProtocol.CONNECTIONS), conAdaptor);

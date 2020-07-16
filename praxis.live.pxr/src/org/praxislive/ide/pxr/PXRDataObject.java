@@ -21,6 +21,7 @@
  */
 package org.praxislive.ide.pxr;
 
+import java.awt.EventQueue;
 import java.awt.Image;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -49,7 +50,11 @@ import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.CloneableTopComponent;
+import org.praxislive.core.ComponentAddress;
 import org.praxislive.ide.components.api.Icons;
+import org.praxislive.ide.core.api.Callback;
+import org.praxislive.ide.project.api.ExecutionLevel;
+import org.praxislive.ide.project.api.ProjectProperties;
 
 public class PXRDataObject extends MultiDataObject {
 
@@ -142,6 +147,24 @@ public class PXRDataObject extends MultiDataObject {
                     file.delete();
                 }
             }
+            var proxy = PXRRootRegistry.findRootForFile(getPrimaryFile());
+            var id = getName();
+            EventQueue.invokeLater(() -> {
+                var props = owner.getLookup().lookup(ProjectProperties.class);
+                if (props != null) {
+                    try {
+                        props.removeLine(ExecutionLevel.RUN, "/" + id + ".start");
+                    } catch (Exception ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+                if (proxy != null) {
+                    proxy.getHelper().removeComponent(
+                            ComponentAddress.of("/" + id), Callback.create(r -> {}));
+                    proxy.dispose();
+                }
+            });
+
         }
         super.handleDelete();
     }
