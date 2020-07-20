@@ -261,8 +261,8 @@ public final class PXRWizardIterator implements WizardDescriptor.InstantiatingIt
                 var ret = DialogDisplayer.getDefault().notify(
                         new NotifyDescriptor.Confirmation(Bundle.MSG_buildProject(name),
                                 Bundle.TITLE_buildProject(),
-                                NotifyDescriptor.OK_CANCEL_OPTION));
-                if (ret == NotifyDescriptor.OK_OPTION) {
+                                NotifyDescriptor.YES_NO_OPTION));
+                if (ret == NotifyDescriptor.YES_OPTION) {
                     var actions = project.getLookup().lookup(ActionProvider.class);
                     actions.invokeAction(ActionProvider.COMMAND_BUILD, Lookup.EMPTY);
                 }
