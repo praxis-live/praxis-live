@@ -103,7 +103,6 @@ final class GeneralAudioPanel extends javax.swing.JPanel {
         buffersizeChooser = new javax.swing.JComboBox();
         inputDeviceLbl = new javax.swing.JLabel();
         inputDeviceChooser = new javax.swing.JComboBox();
-        slaveWarning = new javax.swing.JLabel();
 
         defaultConfigPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(GeneralAudioPanel.class, "GeneralAudioPanel.defaultConfigPanel.border.title"))); // NOI18N
 
@@ -136,11 +135,6 @@ final class GeneralAudioPanel extends javax.swing.JPanel {
 
         inputDeviceChooser.setEnabled(false);
 
-        slaveWarning.setFont(slaveWarning.getFont().deriveFont(slaveWarning.getFont().getStyle() | java.awt.Font.BOLD));
-        slaveWarning.setForeground(javax.swing.UIManager.getDefaults().getColor("textInactiveText"));
-        slaveWarning.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
-        org.openide.awt.Mnemonics.setLocalizedText(slaveWarning, org.openide.util.NbBundle.getMessage(GeneralAudioPanel.class, "GeneralAudioPanel.slaveWarning.text")); // NOI18N
-
         javax.swing.GroupLayout defaultConfigPanelLayout = new javax.swing.GroupLayout(defaultConfigPanel);
         defaultConfigPanel.setLayout(defaultConfigPanelLayout);
         defaultConfigPanelLayout.setHorizontalGroup(
@@ -162,8 +156,7 @@ final class GeneralAudioPanel extends javax.swing.JPanel {
                             .addComponent(inputDeviceChooser, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(buffersizeChooser, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(libraryChooser, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(deviceChooser, javax.swing.GroupLayout.Alignment.TRAILING, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                    .addComponent(slaveWarning, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                            .addComponent(deviceChooser, javax.swing.GroupLayout.Alignment.TRAILING, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
                 .addContainerGap())
         );
         defaultConfigPanelLayout.setVerticalGroup(
@@ -185,10 +178,8 @@ final class GeneralAudioPanel extends javax.swing.JPanel {
                 .addGroup(defaultConfigPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(buffersizeLbl)
                     .addComponent(buffersizeChooser, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 181, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 205, Short.MAX_VALUE)
                 .addComponent(defaultConfigDescription)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(slaveWarning)
                 .addContainerGap())
         );
 
@@ -339,7 +330,6 @@ final class GeneralAudioPanel extends javax.swing.JPanel {
     private javax.swing.JLabel inputDeviceLbl;
     private javax.swing.JComboBox libraryChooser;
     private javax.swing.JLabel libraryLbl;
-    private javax.swing.JLabel slaveWarning;
     // End of variables declaration//GEN-END:variables
 
     private static class Library {
