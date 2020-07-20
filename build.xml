@@ -52,11 +52,6 @@
     <target name="init-platform"></target>
     
     <target name="build-launchers" depends="suite.build-launchers">
-        <copy file="${build.launcher.dir}/bin/${app.name}64.exe" tofile="${build.launcher.dir}/bin/praxis64.exe"/>
-        <copy file="${build.launcher.dir}/bin/${app.name}.exe" tofile="${build.launcher.dir}/bin/praxis.exe"/>
-        <copy file="${build.launcher.dir}/bin/${app.name}" tofile="${build.launcher.dir}/bin/praxis"/>
-        <copy file="${basedir}/resources/praxis.conf" todir="${build.launcher.dir}/etc/"/>
-        <copy file="${basedir}/resources/praxis.clusters" todir="${build.launcher.dir}/etc/"/>
         <replace dir="${build.launcher.dir}/etc/" token="$${app.version}" value="${app.version}"/>
     </target>
     
