@@ -7,29 +7,19 @@
     
   <import file="nbproject/build-impl.xml"/>
     
-  <target name="build-core-javadoc" depends="-check-core-javadoc, -init, -jdk-init" unless="core.javadoc.exists">
-    <javadoc destdir="${suite.build.dir}/core-javadoc/" access="public" encoding="UTF-8" charset="UTF-8">
-      <sourcefiles>
-        <fileset dir="${praxis.core.project}">
-          <include name="*/src/**/*?CodeDelegate.java" />
-          <include name="*/src/**/userapi/*.java" />
-          <include name="*/src/**/praxis/core/types/*.java" />
-        </fileset>
-      </sourcefiles>
-      <classpath>
-        <fileset dir="${praxis.core.cluster}/modules/" />
-      </classpath>
-      <link href="https://docs.oracle.com/javase/8/docs/api/"/>
-    </javadoc>
-    <zip destfile="${suite.build.dir}/cluster/docs/core-javadoc.zip" basedir="${suite.build.dir}/core-javadoc/" />
+  <target name="praxiscore-javadoc" depends="-check-core-javadoc, -init, -jdk-init" unless="core.javadoc.exists">
+    <property name="praxiscore.javadoc.dir" value="../praxiscore/target/site/apidocs" />
+    <available file="${praxiscore.javadoc.dir}/index.html" property="praxiscore.javadoc.dir.exists" />
+    <fail unless="praxiscore.javadoc.dir.exists"
+          message="PraxisCORE JavaDoc not found for version ${praxiscore.version}" />
+    <zip destfile="${suite.build.dir}/cluster/docs/core-javadoc.zip" basedir="${praxiscore.javadoc.dir}" />
   </target>
     
   <target name="-check-core-javadoc" >
     <available file="${suite.build.dir}/cluster/docs/core-javadoc.zip" property="core.javadoc.exists" />
-    <echo message="JavaDoc already build : ${core.javadoc.exists}" />
   </target>
     
-  <target name="view-core-javadoc" depends="build-core-javadoc">
+  <target name="view-core-javadoc" depends="praxiscore-javadoc">
     <nbbrowse file="${suite.build.dir}/core-javadoc/index.html" />
   </target>
     
@@ -49,7 +39,8 @@
       
   </target>-->
     
-  <target name="build-zip" depends="build,build-launchers" description="Builds a ZIP distribution of the IDE.">
+  <target name="build-zip" depends="build,build-launchers,praxiscore-javadoc"
+          description="Builds a ZIP distribution of the IDE.">
     <mkdir dir="${dist.dir}"/>
     <!-- pathfileset does not support 'prefix' and 'filemode' parameters,
     we have to copy them to temp location -->
@@ -92,7 +83,7 @@
     </autoupdate>
   </target>
     
-  <target name="build-windows" depends="build,build-launchers,build-core-javadoc" if="release.windows.issc" description="Builds a Windows installer">
+  <target name="build-windows" depends="build,build-launchers,praxiscore-javadoc" if="release.windows.issc" description="Builds a Windows installer">
     <mkdir dir="${dist.dir}"/>
     <mkdir dir="${dist.dir}/windows"/>
     <mkdir dir="${dist.dir}/windows/${app.name}"/>
@@ -141,7 +132,7 @@
   </target>
     
     
-  <target name="build-mac" depends="build,build-launchers,build-core-javadoc,suite.build-mac,-bundle-macos-jdk,-build-mac-archive">
+  <target name="build-mac" depends="build,build-launchers,praxiscore-javadoc,suite.build-mac,-bundle-macos-jdk,-build-mac-archive">
     <!--<chmod file="${dist.dir}/${app.name}.app/Contents/Resources/${app.name}/bin/praxis" perm="755"/>-->
   </target>
     
