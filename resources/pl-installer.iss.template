@@ -40,6 +40,7 @@ Type: filesandordirs; Name: "{app}\java"
 Type: filesandordirs; Name: "{app}\jdk"
 Type: filesandordirs; Name: "{app}\platform"
 Type: filesandordirs; Name: "{app}\praxis"
+Type: filesandordirs; Name: "{app}\praxiscore"
 Type: filesandordirs; Name: "{app}\praxislive"
 Type: filesandordirs; Name: "{app}\praxis_live"
 
@@ -51,7 +52,7 @@ Source: "praxislive\ide\*"; DestDir: "{app}\ide"; Flags: ignoreversion recursesu
 Source: "praxislive\java\*"; DestDir: "{app}\java"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "praxislive\jdk\*"; DestDir: "{app}\jdk"; Flags: ignoreversion recursesubdirs createallsubdirs skipifsourcedoesntexist
 Source: "praxislive\platform\*"; DestDir: "{app}\platform"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "praxislive\praxis\*"; DestDir: "{app}\praxis"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "praxislive\praxiscore\*"; DestDir: "{app}\praxiscore"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "praxislive\praxislive\*"; DestDir: "{app}\praxislive"; Flags: ignoreversion recursesubdirs createallsubdirs
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
