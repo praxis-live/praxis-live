@@ -42,12 +42,11 @@ public class Installer implements Runnable {
             }
         }
         Core coreInfo = Core.getInstance();
-        coreInfo.setBuildVersion(build);
         
         String version = System.getProperty("praxis.version", "DEV");
         coreInfo.setVersion(version);
         System.setProperty("netbeans.buildnumber", version);
-        System.setProperty("netbeans.productversion", "Praxis LIVE " + version);
+        System.setProperty("netbeans.productversion", "PraxisLIVE " + version);
         
         coreInfo.checkForUpdates();
         

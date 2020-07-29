@@ -35,12 +35,10 @@ import org.openide.util.RequestProcessor;
  *
  */
 @NbBundle.Messages({
-    "LINK_ReleaseProperties=https://www.praxislive.org/v4/info.properties"
+    "LINK_ReleaseProperties=https://www.praxislive.org/v5/info.properties"
 })
 public class Core {
 
-    @Deprecated
-    public final static String KEY_LATEST_BUILD = "latest-build";
     public final static String KEY_LATEST_VERSION = "latest-version";
 
     private static final Core INSTANCE = new Core();
@@ -51,8 +49,6 @@ public class Core {
     private final static Preferences INTERNAL = NbPreferences.forModule(Core.class);
 
     private String version;
-    @Deprecated
-    private String build;
 
     public String getVersion() {
         return version;
@@ -72,10 +68,6 @@ public class Core {
 
     void setVersion(String version) {
         this.version = version;
-    }
-
-    void setBuildVersion(String build) {
-        this.build = build;
     }
 
     void checkForUpdates() {
