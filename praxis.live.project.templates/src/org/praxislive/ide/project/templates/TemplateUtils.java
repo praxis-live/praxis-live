@@ -19,7 +19,7 @@
  * Please visit http://neilcsmith.net if you need additional information or
  * have any questions.
  */
-package org.praxislive.ide.project.examples;
+package org.praxislive.ide.project.templates;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -40,25 +40,25 @@ import org.praxislive.ide.core.api.DynamicFileSystem;
 /**
  *
  */
-class Examples {
+class TemplateUtils {
 
-    static final RequestProcessor RP = new RequestProcessor("Examples");
+    static final RequestProcessor RP = new RequestProcessor("Templates");
 
-    static final String KEY_EXAMPLES_LINK = "project-examples-link";
-    static final String KEY_EXAMPLES_LINK_INSTALLED = "project-examples-link-installed";
+    static final String KEY_EXAMPLES_LINK = "project-templates-link";
+    static final String KEY_EXAMPLES_LINK_INSTALLED = "project-templates-link-installed";
 
     static final String LAYER_FILE_NAME = "layer.xml";
-    static final String EXAMPLE_FILE_NAME = "examples.zip";
-    static final String CONFIG_PATH = "Examples";
+    static final String EXAMPLE_FILE_NAME = "templates.zip";
+    static final String CONFIG_PATH = "Templates";
     static final String CONFIG_LAYER_PATH = CONFIG_PATH + "/" + LAYER_FILE_NAME;
     static final String CONFIG_ZIP_PATH = CONFIG_PATH + "/" + EXAMPLE_FILE_NAME;
     static final String ZIP_PATH_ATTRIBUTE = "zipPath";
 
+    private static final Preferences info = IDE.getPreferences();
+
     private static XMLFileSystem layer;
 
-    private static Preferences info = IDE.getPreferences();
-
-    private Examples() {
+    private TemplateUtils() {
     }
 
     static boolean isInstalled() {
@@ -172,7 +172,7 @@ class Examples {
             }
             StringBuilder sb = new StringBuilder();
             writeLayerPrefix(sb);
-            writeFolderProjects(sb, exampleRoot);
+            writeFolderProjects(sb, exampleRoot, 1000);
             writeLayerSuffix(sb);
             FileObject layerFile
                     = FileUtil.createData(FileUtil.getConfigFile(CONFIG_PATH), "layer.xml");
@@ -186,7 +186,7 @@ class Examples {
         }
     }
 
-    private static void writeFolderProjects(StringBuilder sb, FileObject folder) {
+    private static void writeFolderProjects(StringBuilder sb, FileObject folder, int position) {
         String[] children = Stream.of(folder.getChildren())
                 .map(FileObject::getNameExt)
                 .sorted()
@@ -197,8 +197,13 @@ class Examples {
                 if (file.getFileObject("project.pxp") != null) {
                     writeTemplateFile(sb, file);
                 } else {
-                    sb.append("<folder name=\"").append(file.getName()).append("\">");
-                    writeFolderProjects(sb, file);
+                    var folderName = file.getName();
+                    sb.append("<folder name=\"").append(folderName).append("\">");
+                    if (!"PraxisCORE".equals(folderName)) {
+                        sb.append("<attr name=\"position\" intvalue=\"" + position +"\"/>\n");
+                        position += 100;
+                    }
+                    writeFolderProjects(sb, file, 0);
                     sb.append("</folder>");
                 }
             }
@@ -211,29 +216,19 @@ class Examples {
         sb.append("<filesystem>\n");
         sb.append("<folder name=\"Templates\">\n");
         sb.append("<folder name=\"Project\">\n");
-        sb.append("<folder name=\"Examples\">\n");
-        sb.append("<attr name=\"position\" intvalue=\"1000\" />\n");
     }
 
     private static void writeTemplateFile(StringBuilder sb, FileObject project) {
         String path = project.getPath();
-//        String[] pathElements = path.split("/");
-//        for (int i = 0; i < pathElements.length - 1; i++) {
-//            sb.append("<folder name=\"").append(pathElements[i]).append("\">\n");
-//        }
         sb.append("<file name=\"").append(project.getName()).append("\">\n");
-        sb.append("<attr name=\"instantiatingIterator\" newvalue=\"org.praxislive.ide.project.examples.ExampleProjectWizardIterator\"/>\n");
+        sb.append("<attr name=\"instantiatingIterator\" newvalue=\"org.praxislive.ide.project.templates.TemplateProjectWizardIterator\"/>\n");
         sb.append("<attr name=\"template\" boolvalue=\"true\"/>\n");
         sb.append("<attr name=\"SystemFileSystem.icon\" urlvalue=\"nbresloc:/org/praxislive/ide/project/resources/pxp16.png\"/>\n");
         sb.append("<attr name=\"zipPath\" stringvalue=\"").append(path).append("\"/>\n");
         sb.append("</file>\n");
-//        for (int i = 0; i < pathElements.length - 1; i++) {
-//            sb.append("</folder>\n");
-//        }
     }
 
     private static void writeLayerSuffix(StringBuilder sb) {
-        sb.append("</folder>\n"); // Examples
         sb.append("</folder>\n"); // Project
         sb.append("</folder>\n"); // Templates
         sb.append("</filesystem>");

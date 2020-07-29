@@ -19,7 +19,7 @@
  * Please visit http://neilcsmith.net if you need additional information or
  * have any questions.
  */
-package org.praxislive.ide.project.examples;
+package org.praxislive.ide.project.templates;
 
 import org.openide.modules.OnStart;
 
@@ -28,11 +28,11 @@ import org.openide.modules.OnStart;
  * @author Neil C Smith - http://www.neilcsmith.net
  */
 @OnStart
-public class ExamplesInitializer implements Runnable {
+public class TemplatesInitializer implements Runnable {
 
     @Override
     public void run() {
-        Examples.mountLayer();
+        TemplateUtils.mountLayer();
     }
     
 }

@@ -19,7 +19,7 @@
  * Please visit http://neilcsmith.net if you need additional information or
  * have any questions.
  */
-package org.praxislive.ide.project.examples;
+package org.praxislive.ide.project.templates;
 
 import java.io.File;
 import javax.swing.JFileChooser;
@@ -32,13 +32,13 @@ import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 import org.openide.filesystems.FileUtil;
 
-class ExampleProjectPanelVisual extends JPanel implements DocumentListener {
+class TemplateProjectPanelVisual extends JPanel implements DocumentListener {
 
     public static final String PROP_PROJECT_NAME = "projectName";
 
-    private ExampleProjectWizardPanel panel;
+    private TemplateProjectWizardPanel panel;
 
-    public ExampleProjectPanelVisual(ExampleProjectWizardPanel panel) {
+    public TemplateProjectPanelVisual(TemplateProjectWizardPanel panel) {
         initComponents();
         this.panel = panel;
         // Register listener on the textFields to make the automatic updates
@@ -67,13 +67,13 @@ class ExampleProjectPanelVisual extends JPanel implements DocumentListener {
         createdFolderTextField = new javax.swing.JTextField();
 
         projectNameLabel.setLabelFor(projectNameTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(projectNameLabel, org.openide.util.NbBundle.getMessage(ExampleProjectPanelVisual.class, "ExampleProjectPanelVisual.projectNameLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(projectNameLabel, org.openide.util.NbBundle.getMessage(TemplateProjectPanelVisual.class, "TemplateProjectPanelVisual.projectNameLabel.text")); // NOI18N
 
         projectLocationLabel.setLabelFor(projectLocationTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(projectLocationLabel, org.openide.util.NbBundle.getMessage(ExampleProjectPanelVisual.class, "ExampleProjectPanelVisual.projectLocationLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(projectLocationLabel, org.openide.util.NbBundle.getMessage(TemplateProjectPanelVisual.class, "TemplateProjectPanelVisual.projectLocationLabel.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(browseButton, org.openide.util.NbBundle.getMessage(ExampleProjectPanelVisual.class, "ExampleProjectPanelVisual.browseButton.text")); // NOI18N
-        browseButton.setActionCommand(org.openide.util.NbBundle.getMessage(ExampleProjectPanelVisual.class, "ExampleProjectPanelVisual.browseButton.actionCommand")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(browseButton, org.openide.util.NbBundle.getMessage(TemplateProjectPanelVisual.class, "TemplateProjectPanelVisual.browseButton.text")); // NOI18N
+        browseButton.setActionCommand(org.openide.util.NbBundle.getMessage(TemplateProjectPanelVisual.class, "TemplateProjectPanelVisual.browseButton.actionCommand")); // NOI18N
         browseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 browseButtonActionPerformed(evt);
@@ -81,7 +81,7 @@ class ExampleProjectPanelVisual extends JPanel implements DocumentListener {
         });
 
         createdFolderLabel.setLabelFor(createdFolderTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(createdFolderLabel, org.openide.util.NbBundle.getMessage(ExampleProjectPanelVisual.class, "ExampleProjectPanelVisual.createdFolderLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(createdFolderLabel, org.openide.util.NbBundle.getMessage(TemplateProjectPanelVisual.class, "TemplateProjectPanelVisual.createdFolderLabel.text")); // NOI18N
 
         createdFolderTextField.setEditable(false);
 

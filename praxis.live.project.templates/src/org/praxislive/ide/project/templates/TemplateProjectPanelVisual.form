@@ -66,7 +66,7 @@
           <ComponentRef name="projectNameTextField"/>
         </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/praxislive/ide/project/examples/Bundle.properties" key="ExampleProjectPanelVisual.projectNameLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/praxislive/ide/project/templates/Bundle.properties" key="TemplateProjectPanelVisual.projectNameLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
       <AuxValues>
@@ -81,7 +81,7 @@
           <ComponentRef name="projectLocationTextField"/>
         </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/praxislive/ide/project/examples/Bundle.properties" key="ExampleProjectPanelVisual.projectLocationLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/praxislive/ide/project/templates/Bundle.properties" key="TemplateProjectPanelVisual.projectLocationLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
       <AuxValues>
@@ -93,10 +93,10 @@
     <Component class="javax.swing.JButton" name="browseButton">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/praxislive/ide/project/examples/Bundle.properties" key="ExampleProjectPanelVisual.browseButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/praxislive/ide/project/templates/Bundle.properties" key="TemplateProjectPanelVisual.browseButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
         <Property name="actionCommand" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/praxislive/ide/project/examples/Bundle.properties" key="ExampleProjectPanelVisual.browseButton.actionCommand" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/praxislive/ide/project/templates/Bundle.properties" key="TemplateProjectPanelVisual.browseButton.actionCommand" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
       <Events>
@@ -109,7 +109,7 @@
           <ComponentRef name="createdFolderTextField"/>
         </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/praxislive/ide/project/examples/Bundle.properties" key="ExampleProjectPanelVisual.createdFolderLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/praxislive/ide/project/templates/Bundle.properties" key="TemplateProjectPanelVisual.createdFolderLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
     </Component>

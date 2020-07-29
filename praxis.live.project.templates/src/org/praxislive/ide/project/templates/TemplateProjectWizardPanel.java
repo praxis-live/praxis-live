@@ -19,7 +19,7 @@
  * Please visit http://neilcsmith.net if you need additional information or
  * have any questions.
  */
-package org.praxislive.ide.project.examples;
+package org.praxislive.ide.project.templates;
 
 import java.awt.Component;
 import java.util.HashSet;
@@ -31,25 +31,25 @@ import org.openide.WizardValidationException;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
-class ExampleProjectWizardPanel implements WizardDescriptor.Panel,
+class TemplateProjectWizardPanel implements WizardDescriptor.Panel,
         WizardDescriptor.ValidatingPanel, WizardDescriptor.FinishablePanel {
 
     private WizardDescriptor wizardDescriptor;
-    private ExampleProjectPanelVisual component;
+    private TemplateProjectPanelVisual component;
 
-    public ExampleProjectWizardPanel() {
+    public TemplateProjectWizardPanel() {
     }
 
     public Component getComponent() {
         if (component == null) {
-            component = new ExampleProjectPanelVisual(this);
-            component.setName(NbBundle.getMessage(ExampleProjectWizardPanel.class, "LBL_CreateProjectStep"));
+            component = new TemplateProjectPanelVisual(this);
+            component.setName(NbBundle.getMessage(TemplateProjectWizardPanel.class, "LBL_CreateProjectStep"));
         }
         return component;
     }
 
     public HelpCtx getHelp() {
-        return new HelpCtx(ExampleProjectWizardPanel.class);
+        return new HelpCtx(TemplateProjectWizardPanel.class);
     }
 
     public boolean isValid() {

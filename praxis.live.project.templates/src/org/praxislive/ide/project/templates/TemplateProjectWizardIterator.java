@@ -1,5 +1,5 @@
 
-package org.praxislive.ide.project.examples;
+package org.praxislive.ide.project.templates;
 
 import java.awt.Component;
 import java.io.ByteArrayInputStream;
@@ -29,27 +29,27 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 
-public class ExampleProjectWizardIterator implements WizardDescriptor./*Progress*/InstantiatingIterator {
+public class TemplateProjectWizardIterator implements WizardDescriptor./*Progress*/InstantiatingIterator {
     
     private int index;
     private WizardDescriptor.Panel[] panels;
     private WizardDescriptor wiz;
 
-    public ExampleProjectWizardIterator() {
+    public TemplateProjectWizardIterator() {
     }
 
-    public static ExampleProjectWizardIterator createIterator() {
-        return new ExampleProjectWizardIterator();
+    public static TemplateProjectWizardIterator createIterator() {
+        return new TemplateProjectWizardIterator();
     }
 
     private WizardDescriptor.Panel[] createPanels() {
         return new WizardDescriptor.Panel[]{
-            new ExampleProjectWizardPanel(),};
+            new TemplateProjectWizardPanel(),};
     }
 
     private String[] createSteps() {
         return new String[]{
-            NbBundle.getMessage(ExampleProjectWizardIterator.class, "LBL_CreateProjectStep")
+            NbBundle.getMessage(TemplateProjectWizardIterator.class, "LBL_CreateProjectStep")
         };
     }
 
@@ -59,7 +59,7 @@ public class ExampleProjectWizardIterator implements WizardDescriptor./*Progress
         dirF.mkdirs();
 
         FileObject template = Templates.getTemplate(wiz);
-        String examplePath = template.getAttribute(Examples.ZIP_PATH_ATTRIBUTE).toString();
+        String examplePath = template.getAttribute(TemplateUtils.ZIP_PATH_ATTRIBUTE).toString();
         
         
         FileObject dir = FileUtil.toFileObject(dirF);
@@ -156,7 +156,7 @@ public class ExampleProjectWizardIterator implements WizardDescriptor./*Progress
     
     private static void unZipExample(FileObject projectDir, String examplePath) throws Exception {
         
-        FileObject exampleZip = FileUtil.getConfigFile(Examples.CONFIG_ZIP_PATH);
+        FileObject exampleZip = FileUtil.getConfigFile(TemplateUtils.CONFIG_ZIP_PATH);
         FileObject zipRoot = FileUtil.getArchiveRoot(exampleZip);
         
         FileObject exampleProject = zipRoot.getFileObject(examplePath);

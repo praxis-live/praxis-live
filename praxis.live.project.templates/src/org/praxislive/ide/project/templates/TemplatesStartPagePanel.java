@@ -19,7 +19,7 @@
  * Please visit http://neilcsmith.net if you need additional information or
  * have any questions.
  */
-package org.praxislive.ide.project.examples;
+package org.praxislive.ide.project.templates;
 
 import java.awt.EventQueue;
 import java.io.IOException;
@@ -42,24 +42,24 @@ import org.praxislive.ide.core.ui.spi.StartPagePanelProvider;
     "LBL_Installed=Installed",
     "LBL_Error=Error - please download manually from https://www.praxislive.org"
 })
-public class ExamplesStartPagePanel extends javax.swing.JPanel {
+public class TemplatesStartPagePanel extends javax.swing.JPanel {
 
     /**
      * Creates new form ExamplesStartPagePanel
      */
-    public ExamplesStartPagePanel() {
+    public TemplatesStartPagePanel() {
         initComponents();
         actionButton.setVisible(false);
         refresh();
     }
 
     private boolean refresh() {
-        if (Examples.canInstall()) {
+        if (TemplateUtils.canInstall()) {
             actionButton.setVisible(true);
-            if (!Examples.isInstalled()) {
+            if (!TemplateUtils.isInstalled()) {
                 actionButton.setText(Bundle.BTN_Install());
                 updateStatus.setText("");
-            } else if (!Examples.isLatest()) {
+            } else if (!TemplateUtils.isLatest()) {
                 actionButton.setText(Bundle.BTN_Install());
                 updateStatus.setText(Bundle.LBL_UpdateAvailable());
             } else {
@@ -84,10 +84,10 @@ public class ExamplesStartPagePanel extends javax.swing.JPanel {
         infoScrollPane = new javax.swing.JScrollPane();
         infoTextArea = new javax.swing.JTextArea();
 
-        org.openide.awt.Mnemonics.setLocalizedText(updateStatus, org.openide.util.NbBundle.getMessage(ExamplesStartPagePanel.class, "LBL_CheckingForUpdates")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(updateStatus, org.openide.util.NbBundle.getMessage(TemplatesStartPagePanel.class, "LBL_CheckingForUpdates")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(actionButton, org.openide.util.NbBundle.getMessage(ExamplesStartPagePanel.class, "BTN_DownloadExamples")); // NOI18N
-        actionButton.setToolTipText(org.openide.util.NbBundle.getMessage(ExamplesStartPagePanel.class, "ExamplesStartPagePanel.actionButton.toolTipText")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(actionButton, org.openide.util.NbBundle.getMessage(TemplatesStartPagePanel.class, "BTN_DownloadExamples")); // NOI18N
+        actionButton.setToolTipText(org.openide.util.NbBundle.getMessage(TemplatesStartPagePanel.class, "TemplatesStartPagePanel.actionButton.toolTipText")); // NOI18N
         actionButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 actionButtonActionPerformed(evt);
@@ -100,7 +100,7 @@ public class ExamplesStartPagePanel extends javax.swing.JPanel {
         infoTextArea.setColumns(20);
         infoTextArea.setLineWrap(true);
         infoTextArea.setRows(3);
-        infoTextArea.setText(org.openide.util.NbBundle.getMessage(ExamplesStartPagePanel.class, "INFO_ExamplesStartPanel")); // NOI18N
+        infoTextArea.setText(org.openide.util.NbBundle.getMessage(TemplatesStartPagePanel.class, "INFO_ExamplesStartPanel")); // NOI18N
         infoTextArea.setWrapStyleWord(true);
         infoTextArea.setBorder(null);
         infoTextArea.setOpaque(false);
@@ -137,9 +137,9 @@ public class ExamplesStartPagePanel extends javax.swing.JPanel {
 
     private void actionButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_actionButtonActionPerformed
         updateStatus.setText(Bundle.LBL_Installing());
-        Examples.RP.post(() -> {
+        TemplateUtils.RP.post(() -> {
             try {
-                Examples.install();
+                TemplateUtils.install();
                 EventQueue.invokeLater(() -> {
                     refresh();
                     updateStatus.setText(Bundle.LBL_Installed());
@@ -166,7 +166,7 @@ public class ExamplesStartPagePanel extends javax.swing.JPanel {
     @ServiceProvider(service = StartPagePanelProvider.class, position = 100)
     public static class Provider implements StartPagePanelProvider {
 
-        private final ExamplesStartPagePanel panel = new ExamplesStartPagePanel();
+        private final TemplatesStartPagePanel panel = new TemplatesStartPagePanel();
         
         @Override
         public String getTitle() {
