@@ -33,7 +33,6 @@ import org.praxislive.core.ComponentType;
 import org.praxislive.core.ComponentInfo;
 import org.praxislive.ide.core.api.Callback;
 import org.praxislive.ide.model.Connection;
-import org.praxislive.ide.model.ProxyException;
 import org.praxislive.ide.project.api.PraxisProject;
 import org.praxislive.ide.properties.PraxisProperty;
 import org.praxislive.ide.pxr.PXRParser.AttributeElement;
@@ -51,7 +50,7 @@ import org.praxislive.core.types.PError;
  *
  */
 @NbBundle.Messages({
-    "MSG_versionWarning=File was created with a newer version of Praxis LIVE"
+    "MSG_versionWarning=File was created with a newer version of PraxisLIVE"
 })
 class PXRBuilder {
 
@@ -104,7 +103,7 @@ class PXRBuilder {
         checkVersion();
         buildElementIterator();
         process();
-        }
+    }
 
     private void checkVersion() {
 //        try {
@@ -215,6 +214,9 @@ class PXRBuilder {
 
                     @Override
                     public void onError(List<Value> args) {
+                        if (p instanceof BoundCodeProperty) {
+                            p.setValue(BoundCodeProperty.KEY_LAST_SAVED, prop.args[0]);
+                        }
                         propertyError(prop, args);
                         process();
                     }

@@ -166,11 +166,17 @@ class BoundCodeProperty extends BoundArgumentProperty {
     }
 
     private String constructFileContent() {
-        String s = getValue().toString();
-        if (s.trim().isEmpty()) {
-            s = template;
+        var content = getValue().toString();
+        if (content.isBlank()) {
+            var lastSaved = getValue(KEY_LAST_SAVED);
+            if (lastSaved instanceof Value) {
+                content = lastSaved.toString();
+            }
         }
-        return s;
+        if (content.isBlank()) {
+            content = template;
+        }
+        return content;
     }
     
     private void updateFromFile() {
@@ -254,6 +260,9 @@ class BoundCodeProperty extends BoundArgumentProperty {
                     deleteFile();
                 } else {
                     restoreDefaultValue();
+                    if (last != null) {
+                        BoundCodeProperty.this.setValue(KEY_LAST_SAVED, PString.EMPTY);
+                    }
                 }
             }
         }
