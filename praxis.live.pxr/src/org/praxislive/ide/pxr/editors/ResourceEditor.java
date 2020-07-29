@@ -43,6 +43,7 @@ import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.praxislive.ide.properties.PraxisProperty.SubCommandEditor;
 
 /**
  *

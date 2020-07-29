@@ -32,9 +32,9 @@ import java.util.logging.Logger;
 import org.praxislive.core.ControlInfo;
 import org.praxislive.ide.properties.EditorSupport;
 import org.praxislive.ide.properties.PraxisProperty;
-import org.praxislive.ide.pxr.editors.SubCommandEditor;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
+import org.praxislive.ide.properties.PraxisProperty.SubCommandEditor;
 
 /**
  *

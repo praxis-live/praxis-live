@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2019 Neil C Smith.
+ * Copyright 2020 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -35,10 +35,10 @@ import org.praxislive.ide.properties.EditorSupport;
 import org.praxislive.ide.properties.SyntaxUtils;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
+import org.praxislive.ide.properties.PraxisProperty.SubCommandEditor;
 
 /**
  *
- * @author Neil C Smith (http://neilcsmith.net)
  */
 public class ArrayEditor extends EditorSupport
         implements SubCommandEditor, ExPropertyEditor {

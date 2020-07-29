@@ -42,6 +42,7 @@ import org.praxislive.ide.properties.PraxisProperty;
 import org.praxislive.ide.properties.SyntaxUtils;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
+import org.praxislive.ide.properties.PraxisProperty.SubCommandEditor;
 
 /**
  *
