@@ -39,9 +39,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -114,7 +112,6 @@ import org.praxislive.ide.project.api.PraxisProject;
 
 /**
  *
- * @author Neil C Smith (http://neilcsmith.net)
  */
 public class GraphEditor extends RootEditor {
 
@@ -172,7 +169,6 @@ public class GraphEditor extends RootEditor {
         scene.setOrthogonalRouting(false);
         this.customColours = false;
         manager = new ExplorerManager();
-        manager.setRootContext(root.getNodeDelegate());
         if (root instanceof ContainerProxy) {
             container = (ContainerProxy) root;
         }
@@ -184,6 +180,10 @@ public class GraphEditor extends RootEditor {
 
         PaletteController palette = PaletteUtils.getPalette(project, "core", category);
 
+        var rootNode = root.getNodeDelegate();
+        manager.setRootContext(rootNode);
+        manager.setExploredContext(rootNode, new Node[]{rootNode});
+        
         lookup = new ProxyLookup(ExplorerUtils.createLookup(manager, buildActionMap()),
                 Lookups.fixed(palette));
 
