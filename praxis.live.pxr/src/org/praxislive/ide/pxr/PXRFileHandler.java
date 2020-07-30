@@ -66,6 +66,7 @@ public class PXRFileHandler implements FileHandler {
             throw new NullPointerException();
         }
         this.callback = callback;
+        this.warnings.clear();
         
         RootProxy root = PXRRootRegistry.findRootForFile(source.getPrimaryFile());
         if (root != null) {
