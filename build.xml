@@ -73,7 +73,9 @@
   <target name="init-platform"></target>
     
   <target name="build-launchers" depends="suite.build-launchers">
-    <replace dir="${build.launcher.dir}/etc/" token="$${app.version}" value="${app.version}"/>
+    <echo message="praxiscore" file="${build.launcher.dir}/etc/${app.name}.clusters" append="true"/>
+    <echo message="&#10;" file="${build.launcher.dir}/etc/${app.name}.clusters" append="true"/>
+    <replace file="${build.launcher.dir}/etc/${app.name}.conf" token="$${app.version}" value="${app.version}"/>
   </target>
     
   <target name="-install-nbjavac" if="build.install.nbjavac">
