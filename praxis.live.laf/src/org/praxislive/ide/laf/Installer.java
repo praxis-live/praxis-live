@@ -27,18 +27,20 @@ import java.util.prefs.Preferences;
 import javax.swing.LookAndFeel;
 import javax.swing.UIManager;
 import org.openide.modules.ModuleInstall;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbPreferences;
+import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
 /**
  *
  */
 public class Installer extends ModuleInstall {
-    
+
     private static final String COLOR_MODEL_CLASS_NAME =
             "org.netbeans.modules.options.colors.ColorModel"; //NOI18N
-    
+
     private static boolean switchColors = false;
 
     @Override
@@ -48,7 +50,7 @@ public class Installer extends ModuleInstall {
             prefs.put("laf", "com.formdev.flatlaf.FlatDarkLaf");
             switchColors = true;
         }
-        
+
         System.setProperty("netbeans.ps.hideSingleExpansion", "true");
         System.setProperty("ps.quickSearch.disabled.global", "true");
     }
@@ -56,9 +58,9 @@ public class Installer extends ModuleInstall {
     @Override
     public void restored() {
         WindowManager.getDefault().invokeWhenUIReady(this::configureUI);
-        
+
     }
-    
+
     private void configureUI() {
         var defs = UIManager.getDefaults();
         var font = defs.getFont("Label.font");
@@ -66,10 +68,16 @@ public class Installer extends ModuleInstall {
             int size = font.getSize();
             defs.put("netbeans.ps.rowheight", size * 2);
         }
-        
+
         if (switchColors) {
             switchEditorColorsProfile();
         }
+
+        WindowManager wm = WindowManager.getDefault();
+        TopComponent tc = wm.findTopComponent("projectTabLogical_tc");
+        tc.setIcon(ImageUtilities.loadImage("org/netbeans/modules/project/ui/resources/projectTab.png", true));
+        tc = wm.findTopComponent("CommonPalette");
+        tc.setIcon(ImageUtilities.loadImage("org/netbeans/modules/palette/resources/palette.png", true));
     }
 
     private boolean isChangeEditorColorsPossible() {
@@ -98,7 +106,7 @@ public class Installer extends ModuleInstall {
         }
 
         String preferredProfile = getPreferredColorProfile();
-        
+
         ClassLoader loader = Lookup.getDefault().lookup(ClassLoader.class);
         if (loader == null) {
             loader = ClassLoader.getSystemClassLoader();
@@ -122,24 +130,26 @@ public class Installer extends ModuleInstall {
                     "Cannot change editors colors profile.", ex);
         }
     }
-    
-    private String getPreferredColorProfile() {
-        String className = NbPreferences.root().node( "laf" ).get( "laf", null );
-        if( null == className )
-            return null;
 
-        ClassLoader loader = Lookup.getDefault().lookup( ClassLoader.class );
-        if( null == loader )
+    private String getPreferredColorProfile() {
+        String className = NbPreferences.root().node("laf").get("laf", null);
+        if (null == className) {
+            return null;
+        }
+
+        ClassLoader loader = Lookup.getDefault().lookup(ClassLoader.class);
+        if (null == loader) {
             loader = ClassLoader.getSystemClassLoader();
+        }
 
         try {
-            Class clazz = loader.loadClass( className );
-            LookAndFeel laf = ( LookAndFeel ) clazz.getDeclaredConstructor().newInstance();
-            return laf.getDefaults().getString( "nb.preferred.color.profile" ); //NOI18N
-        } catch( Exception e ) {
+            Class clazz = loader.loadClass(className);
+            LookAndFeel laf = (LookAndFeel) clazz.getDeclaredConstructor().newInstance();
+            return laf.getDefaults().getString("nb.preferred.color.profile"); //NOI18N
+        } catch (Exception e) {
             //ignore
         }
         return null;
     }
-    
+
 }
