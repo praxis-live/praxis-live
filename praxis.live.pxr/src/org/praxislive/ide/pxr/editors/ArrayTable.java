@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2019 Neil C Smith.
+ * Copyright 2020 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -49,7 +49,6 @@ import org.openide.util.Exceptions;
 
 /**
  *
- * @author Neil C Smith (http://neilcsmith.net)
  */
 class ArrayTable extends JTable {
 
@@ -63,6 +62,7 @@ class ArrayTable extends JTable {
         setSurrendersFocusOnKeystroke(true);
         setTransferHandler(TRANSFER_HANDLER);
         setTableHeader(null);
+        setShowGrid(true);
         initActions();
     }
 

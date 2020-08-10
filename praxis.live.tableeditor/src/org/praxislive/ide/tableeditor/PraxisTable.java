@@ -55,6 +55,7 @@ class PraxisTable extends JTable {
         setCellSelectionEnabled(true);
         setSurrendersFocusOnKeystroke(true);
         setTransferHandler(TRANSFER_HANDLER);
+        setShowGrid(true);
         initActions();
     }
 
