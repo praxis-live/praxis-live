@@ -24,16 +24,20 @@ package org.praxislive.ide.pxr;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.praxislive.ide.project.spi.RootLifecycleHandler;
 import org.praxislive.ide.core.api.Task;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.praxislive.ide.core.api.Callback;
 import org.praxislive.ide.project.api.PraxisProject;
 
 /**
@@ -42,45 +46,41 @@ import org.praxislive.ide.project.api.PraxisProject;
 @ProjectServiceProvider(projectType = PraxisProject.TYPE,
         service = RootLifecycleHandler.class)
 public class RootLifecycleHandlerImpl implements RootLifecycleHandler {
-    
+
     private final PraxisProject project;
 
     public RootLifecycleHandlerImpl(Lookup lookup) {
         this.project = Objects.requireNonNull(lookup.lookup(PraxisProject.class));
     }
-    
+
     @Override
     public Optional<Task> getDeletionTask(String description, Set<String> rootIDs) {
         var reg = project.getLookup().lookup(PXRRootRegistry.class);
         if (reg == null) {
             return Optional.empty();
         }
-        Set<PXRDataObject> dobs = new HashSet<>();
-        for (String rootID : rootIDs) {
-            PXRRootProxy root = reg.getRootByID(rootID);
-            if (root != null) {
-                dobs.add(root.getSource());
-            }
-        }
-        if (!dobs.isEmpty()) {
-            return Optional.of(new DeletionSaveTask(description, dobs));
+        Set<PXRRootProxy> roots = rootIDs.stream()
+                .map(rootID -> reg.getRootByID(rootID))
+                .filter(root -> (root != null))
+                .collect(Collectors.toCollection(LinkedHashSet::new));
+        if (!roots.isEmpty()) {
+            return Optional.of(new DeletionSaveTask(description, roots));
         } else {
             return Optional.empty();
         }
     }
-   
-    
+
     private static class DeletionSaveTask implements Task, PropertyChangeListener {
-        
-        private Set<PXRDataObject> dobs;
+
+        private Set<PXRRootProxy> roots;
         private State state;
         private PropertyChangeSupport pcs;
         private SaveTask delegate;
         private String description;
-        
-        private DeletionSaveTask(String description, Set<PXRDataObject> dobs) {
+
+        private DeletionSaveTask(String description, Set<PXRRootProxy> roots) {
             this.description = description;
-            this.dobs = dobs;
+            this.roots = roots;
             this.state = State.NEW;
             pcs = new PropertyChangeSupport(this);
         }
@@ -91,10 +91,20 @@ public class RootLifecycleHandlerImpl implements RootLifecycleHandler {
                 throw new IllegalStateException();
             }
             updateState(State.RUNNING);
+            try {
+                roots.forEach(r -> r.send("stop", List.of(),
+                        Callback.create(res -> {
+                        })));
+            } catch (Exception ex) {
+                Exceptions.printStackTrace(ex);
+            }
             NotifyDescriptor nd = new NotifyDescriptor.Confirmation(buildDialogMessage(), description);
             Object ret = DialogDisplayer.getDefault().notify(nd);
             if (ret == NotifyDescriptor.YES_OPTION) {
                 // save
+                var dobs = roots.stream()
+                        .map(PXRRootProxy::getSource)
+                        .collect(Collectors.toCollection(LinkedHashSet::new));
                 delegate = SaveTask.createSaveTask(dobs);
                 delegate.addPropertyChangeListener(this);
                 return delegate.execute();
@@ -107,19 +117,15 @@ public class RootLifecycleHandlerImpl implements RootLifecycleHandler {
                 updateState(State.CANCELLED);
                 return state;
             }
-            
+
         }
-        
+
         private String buildDialogMessage() {
-            StringBuilder sb = new StringBuilder("Save changes to");
-            for (PXRDataObject dob : dobs) {
-                sb.append(" /");
-                sb.append(dob.getName());
-            }
-            sb.append("?");
-            return sb.toString();
+            return roots.stream()
+                    .map(r -> r.getSource().getName())
+                    .collect(Collectors.joining(" /", "Save changes to " + "/", "?"));
         }
-        
+
         private void updateState(State state) {
             State old = this.state;
             this.state = state;
@@ -156,8 +162,7 @@ public class RootLifecycleHandlerImpl implements RootLifecycleHandler {
                 updateState(delegate.getState());
             }
         }
-        
+
     }
-    
-    
+
 }
