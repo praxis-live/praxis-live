@@ -29,6 +29,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -94,6 +95,8 @@ public class DefaultPraxisProject implements PraxisProject {
     }
 
     private final static RequestProcessor RP = new RequestProcessor(PraxisProject.class);
+    private final static LinkedHashSet<DefaultPraxisProject> REGISTRY
+            = new LinkedHashSet<>();
 
     private final FileObject directory;
     private final FileObject projectFile;
@@ -164,6 +167,12 @@ public class DefaultPraxisProject implements PraxisProject {
         return hubManager.getState() == HubManager.State.Running;
     }
 
+    public static List<DefaultPraxisProject> activeProjects() {
+        // extra check required?
+        REGISTRY.removeIf(p -> !p.isActive());
+        return new ArrayList<>(REGISTRY);
+    }
+    
     private void execute(ExecutionLevel level) {
 
         if (properties.getJavaRelease() > MAX_JAVA_VERSION) {
@@ -208,14 +217,20 @@ public class DefaultPraxisProject implements PraxisProject {
             activeExec.addPropertyChangeListener(e -> {
                 actionsEnabled = true;
                 activeExec = null;
+                if (isActive()) {
+                    REGISTRY.add(this);
+                }
             });
         } else {
             actionsEnabled = true;
             activeExec = null;
+            if (isActive()) {
+                REGISTRY.add(this);
+            }
         }
 
     }
-    
+
     private void clean() {
         if (activeExec != null) {
             activeExec.cancel();
@@ -228,12 +243,14 @@ public class DefaultPraxisProject implements PraxisProject {
             activeExec.addPropertyChangeListener(e -> {
                 actionsEnabled = true;
                 activeExec = null;
+                REGISTRY.removeIf(p -> !p.isActive());
             });
         } else {
             actionsEnabled = true;
             activeExec = null;
+            REGISTRY.removeIf(p -> !p.isActive());
         }
-        
+
     }
 
     void registerLibs() {
@@ -421,8 +438,6 @@ public class DefaultPraxisProject implements PraxisProject {
                         .showWarningsDialog(DefaultPraxisProject.this, warnings);
             }
         }
-        
-        
 
     }
 
