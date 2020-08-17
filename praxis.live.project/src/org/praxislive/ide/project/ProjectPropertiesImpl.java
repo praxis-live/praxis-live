@@ -475,12 +475,17 @@ public class ProjectPropertiesImpl implements ProjectProperties {
 
         private void configure(ExecutionElement.Line element) {
             try {
+                int release;
                 if ("java-compiler-release".equals(element.tokens().get(0).getText())) {
-                    setJavaRelease(Integer.parseInt(element.tokens().get(1).getText()));
+                    release = (Integer.parseInt(element.tokens().get(1).getText()));
                 } else {
                     var params = PMap.parse(element.tokens().get(1).getText());
-                    setJavaRelease(params.getInt("release", MIN_JAVA_VERSION));
+                    release = params.getInt("release", MIN_JAVA_VERSION);
                 }
+                if (release < MIN_JAVA_VERSION) {
+                    release = MIN_JAVA_VERSION;
+                }
+                javaRelease = release;
             } catch (Exception ex) {
                 Exceptions.printStackTrace(ex);
             }
