@@ -144,6 +144,7 @@ public final class StartTopComponent extends TopComponent {
         logo = new javax.swing.JButton();
         scrollPane = new javax.swing.JScrollPane();
         container = new javax.swing.JPanel();
+        logo1 = new javax.swing.JButton();
 
         setBackground(java.awt.Color.black);
         setOpaque(true);
@@ -151,7 +152,7 @@ public final class StartTopComponent extends TopComponent {
         mainPanel.setBackground(new java.awt.Color(0, 0, 0));
         mainPanel.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
 
-        logo.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/praxislive/ide/core/ui/resources/praxis live.png"))); // NOI18N
+        logo.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/praxislive/ide/core/ui/resources/praxislive-text.png"))); // NOI18N
         logo.setBorderPainted(false);
         logo.setContentAreaFilled(false);
         logo.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
@@ -162,12 +163,21 @@ public final class StartTopComponent extends TopComponent {
         });
 
         scrollPane.setBackground(new java.awt.Color(0, 0, 0));
-        scrollPane.setBorder(null);
+        scrollPane.setBorder(javax.swing.BorderFactory.createMatteBorder(1, 0, 0, 0, new java.awt.Color(204, 204, 204)));
 
         container.setBackground(new java.awt.Color(0, 0, 0));
-        container.setBorder(null);
         container.setLayout(new java.awt.GridBagLayout());
         scrollPane.setViewportView(container);
+
+        logo1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/praxislive/ide/core/ui/resources/praxislive-bg.png"))); // NOI18N
+        logo1.setBorderPainted(false);
+        logo1.setContentAreaFilled(false);
+        logo1.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        logo1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                logo1ActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout mainPanelLayout = new javax.swing.GroupLayout(mainPanel);
         mainPanel.setLayout(mainPanelLayout);
@@ -179,16 +189,19 @@ public final class StartTopComponent extends TopComponent {
                     .addComponent(scrollPane)
                     .addGroup(mainPanelLayout.createSequentialGroup()
                         .addComponent(logo)
-                        .addGap(0, 560, Short.MAX_VALUE)))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 354, Short.MAX_VALUE)
+                        .addComponent(logo1)))
                 .addContainerGap())
         );
         mainPanelLayout.setVerticalGroup(
             mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, mainPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(logo)
-                .addGap(18, 18, 18)
-                .addComponent(scrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 442, Short.MAX_VALUE)
+                .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(logo)
+                    .addComponent(logo1))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(scrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 454, Short.MAX_VALUE)
                 .addGap(22, 22, 22))
         );
 
@@ -208,9 +221,14 @@ public final class StartTopComponent extends TopComponent {
         Utils.openExternalLink(Utils.WEBSITE_LINK);
     }//GEN-LAST:event_logoActionPerformed
 
+    private void logo1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_logo1ActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_logo1ActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel container;
     private javax.swing.JButton logo;
+    private javax.swing.JButton logo1;
     private javax.swing.JPanel mainPanel;
     private javax.swing.JScrollPane scrollPane;
     // End of variables declaration//GEN-END:variables
