@@ -138,7 +138,8 @@
   </target>
     
     
-  <target name="build-mac" depends="build,build-launchers,praxiscore-javadoc,suite.build-mac,-bundle-macos-praxiscore,-bundle-macos-jdk,-build-mac-archive"/>
+  <target name="build-mac" 
+          depends="build,build-launchers,praxiscore-javadoc,suite.build-mac,-bundle-macos-praxiscore,-bundle-macos-jdk,-build-mac-plist,-build-mac-archive"/>
   
   <target name="-build-mac-archive" depends="suite.build-mac">
     <zip destfile="${dist.dir}/PraxisLIVE-${app.version}-macOS.zip">
@@ -170,17 +171,24 @@
     <unzip src="${release.macos.jdk}" dest="${dist.dir}/${app.name}.app/Contents/Resources/${app.name}/jdk">
       <cutdirsmapper dirs="1" />
     </unzip>
-        
-    <replace dir="${dist.dir}/${app.name}.app/Contents/Resources/${app.name}/etc" includes="*.conf" token='#jdkhome="/path/to/jdk"' value='jdkhome="jdk"'/>
+    <replace dir="${dist.dir}/${app.name}.app/Contents/Resources/${app.name}/etc"
+             includes="*.conf" token='#jdkhome="/path/to/jdk"' value='jdkhome="jdk"'/>
   </target>
   
   <target name="-bundle-macos-praxiscore" depends="suite.build-mac">
     <copy todir="${dist.dir}/${app.name}.app/Contents/Resources/${app.name}/praxiscore">
       <fileset dir="${suite.build.dir}/praxiscore"/>
     </copy>
-    
   </target>
   
-        
+  <target name="-build-mac-plist" depends="suite.build-mac">
+    <copy file="${basedir}/resources/Info.plist" tofile="${dist.dir}/${app.name}.app/Contents/Info.plist"
+          overwrite="true">
+      <filterchain>
+        <replacestring from="$${app.version}" to="${app.version}"/>
+      </filterchain>
+    </copy>
+  </target>
+          
     
 </project>
