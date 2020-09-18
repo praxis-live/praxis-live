@@ -76,6 +76,7 @@
     <echo message="praxiscore" file="${build.launcher.dir}/etc/${app.name}.clusters" append="true"/>
     <echo message="&#10;" file="${build.launcher.dir}/etc/${app.name}.clusters" append="true"/>
     <replace file="${build.launcher.dir}/etc/${app.name}.conf" token="$${app.version}" value="${app.version}"/>
+    <copy file="${basedir}/resources/app.sh" tofile="${build.launcher.dir}/bin/${app.name}" overwrite="true"/>
   </target>
     
   <target name="-install-nbjavac" if="build.install.nbjavac">
