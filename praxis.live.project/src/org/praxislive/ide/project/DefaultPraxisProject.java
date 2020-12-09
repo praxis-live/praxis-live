@@ -24,7 +24,9 @@ package org.praxislive.ide.project;
 import java.beans.PropertyChangeEvent;
 import org.praxislive.ide.project.ui.PraxisCustomizerProvider;
 import java.beans.PropertyChangeListener;
+import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -35,20 +37,20 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Stream;
+import java.util.stream.Collectors;
 import javax.lang.model.SourceVersion;
 import javax.swing.Icon;
+import org.netbeans.api.java.classpath.*;
 import org.praxislive.ide.core.api.Callback;
 import org.praxislive.ide.project.api.ExecutionLevel;
 import org.praxislive.ide.project.api.PraxisProject;
 import org.praxislive.ide.project.ui.PraxisLogicalViewProvider;
 import org.praxislive.ide.project.ui.ProjectDialogManager;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ProjectState;
@@ -56,8 +58,6 @@ import org.netbeans.spi.project.support.LookupProviderSupport;
 import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.netbeans.spi.project.ui.support.UILookupMergerSupport;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -68,18 +68,25 @@ import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 import org.praxislive.core.Value;
+import org.praxislive.core.types.PArray;
+import org.praxislive.core.types.PResource;
 import org.praxislive.ide.core.api.AbstractTask;
 import org.praxislive.ide.core.api.SerialTasks;
 import org.praxislive.ide.core.api.Task;
 import org.praxislive.ide.project.api.ExecutionElement;
 import org.praxislive.ide.project.spi.ElementHandler;
+import org.praxislive.ide.project.spi.LineHandler;
 
 /**
  *
  */
 @NbBundle.Messages({
     "# {0} - required Java release",
-    "PraxisProject.javaVersionError=This project requires Java {0}"
+    "PraxisProject.javaVersionError=This project requires Java {0}",
+    "ERR_elementContinueBuild=Continue building project?",
+    "ERR_elementContinueRun=Continue running project?",
+    "# {0} - path or command",
+    "ERR_elementExecution=Error executing {0}"
 })
 public class DefaultPraxisProject implements PraxisProject {
 
@@ -108,7 +115,9 @@ public class DefaultPraxisProject implements PraxisProject {
     private final Set<ElementHandler> executedHandlers;
 
     private boolean actionsEnabled;
+    private List<URI> libPath;
     private ClassPath libsCP;
+    private ClassPath compileCP;
     private TaskExec activeExec;
 
     DefaultPraxisProject(FileObject directory, FileObject projectFile, ProjectState state)
@@ -130,6 +139,7 @@ public class DefaultPraxisProject implements PraxisProject {
                 new PraxisCustomizerProvider(this),
                 new PraxisLogicalViewProvider(this),
                 new BaseTemplates(),
+                new ClassPathImpl(),
                 UILookupMergerSupport.createPrivilegedTemplatesMerger()
         );
 
@@ -137,6 +147,8 @@ public class DefaultPraxisProject implements PraxisProject {
         this.lookup = LookupProviderSupport.createCompositeLookup(base, LOOKUP_PATH);
         executedHandlers = new HashSet<>();
         actionsEnabled = true;
+        libPath = List.of();
+        compileCP = CoreClassPathRegistry.getInstance().getCompileClasspath();
     }
 
     private ProjectPropertiesImpl parseProjectFile(FileObject projectFile) {
@@ -172,21 +184,18 @@ public class DefaultPraxisProject implements PraxisProject {
         REGISTRY.removeIf(p -> !p.isActive());
         return new ArrayList<>(REGISTRY);
     }
-    
+
     private void execute(ExecutionLevel level) {
 
         if (properties.getJavaRelease() > MAX_JAVA_VERSION) {
-            NotifyDescriptor nd = new NotifyDescriptor.Message(
-                    Bundle.PraxisProject_javaVersionError(properties.getJavaRelease()),
-                    NotifyDescriptor.ERROR_MESSAGE);
-            DialogDisplayer.getDefault().notify(nd);
+            ProjectDialogManager.get(this).reportError(
+                    Bundle.PraxisProject_javaVersionError(properties.getJavaRelease()));
             return;
         }
 
         List<Task> tasks = new ArrayList<>();
 
         if (!isActive()) {
-            registerLibs();
             executedHandlers.clear();
             tasks.add(hubManager.createStartupTask());
         }
@@ -253,10 +262,13 @@ public class DefaultPraxisProject implements PraxisProject {
 
     }
 
-    void registerLibs() {
+    void updateLibs(PArray libs) {
         clearLibs();
-        libsCP = buildLibsClasspath();
+        libPath = List.copyOf(buildLibList(libs));
+        libsCP = buildLibsClasspath(libPath);
         if (libsCP != null) {
+            compileCP = ClassPathSupport.createProxyClassPath(libsCP,
+                    CoreClassPathRegistry.getInstance().getCompileClasspath());
             GlobalPathRegistry.getDefault().register(ClassPath.COMPILE, new ClassPath[]{libsCP});
         }
     }
@@ -265,21 +277,48 @@ public class DefaultPraxisProject implements PraxisProject {
         if (libsCP != null) {
             GlobalPathRegistry.getDefault().unregister(ClassPath.COMPILE, new ClassPath[]{libsCP});
         }
+        libPath = List.of();
         libsCP = null;
+        compileCP = CoreClassPathRegistry.getInstance().getCompileClasspath();
     }
 
-    private ClassPath buildLibsClasspath() {
-        FileObject libsFolder = directory.getFileObject(LIBS_PATH);
-        if (libsFolder != null) {
+    private List<URI> buildLibList(PArray path) {
+        return path.stream()
+                .flatMap(v -> PResource.from(v).stream())
+                .map(PResource::value)
+                .filter(uri -> "file".equals(uri.getScheme()))
+                .collect(Collectors.toList());
+    }
+
+    private ClassPath buildLibsClasspath(List<URI> path) {
+        try {
             return ClassPathSupport.createClassPath(
-                    Stream.of(libsFolder.getChildren())
-                            .filter(f -> f.isData() && f.hasExt("jar"))
-                            .map(f -> FileUtil.urlForArchiveOrDir(FileUtil.toFile(f)))
+                    path.stream()
+                            .map(File::new)
+                            .map(FileUtil::urlForArchiveOrDir)
                             .toArray(URL[]::new)
             );
-        } else {
-            return null;
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
         }
+        return null;
+    }
+
+    private class ClassPathImpl implements ClassPathProvider {
+
+        @Override
+        public ClassPath findClassPath(FileObject file, String type) {
+            switch (type) {
+                case ClassPath.BOOT:
+                case JavaClassPathConstants.MODULE_BOOT_PATH:
+                    return CoreClassPathRegistry.getInstance().getBootClasspath();
+                case ClassPath.COMPILE:
+                    return compileCP;
+                default:
+                    return null;
+            }
+        }
+
     }
 
     private class Info implements ProjectInformation {
@@ -319,7 +358,6 @@ public class DefaultPraxisProject implements PraxisProject {
 
         @Override
         protected void projectOpened() {
-            registerLibs();
         }
 
         @Override
@@ -434,8 +472,8 @@ public class DefaultPraxisProject implements PraxisProject {
         protected void afterExecute() {
             progress.finish();
             if (!warnings.isEmpty()) {
-                ProjectDialogManager.getDefault()
-                        .showWarningsDialog(DefaultPraxisProject.this, warnings);
+                ProjectDialogManager.get(DefaultPraxisProject.this)
+                        .reportWarnings(warnings);
             }
         }
 
@@ -460,7 +498,7 @@ public class DefaultPraxisProject implements PraxisProject {
             }
             handler.process(Callback.create(result -> {
                 if (result.isError()) {
-                    if (continueOnError(element, result.args())) {
+                    if (continueOnError(result.args())) {
                         updateState(State.COMPLETED);
                     } else {
                         updateState(State.ERROR);
@@ -488,10 +526,41 @@ public class DefaultPraxisProject implements PraxisProject {
             return handler.warnings();
         }
 
-        private boolean continueOnError(ExecutionElement element, List<Value> args) {
-            return ProjectDialogManager.getDefault().continueOnError(
-                    DefaultPraxisProject.this, level, element, args);
+        private boolean continueOnError(List<Value> args) {
+            String pathOrCmd;
+            if (element instanceof ExecutionElement.File) {
+                var file = ((ExecutionElement.File) element).file();
+                var path = FileUtil.getRelativePath(getProjectDirectory(), file);
+                if (path == null) {
+                    path = file.getPath();
+                }
+                pathOrCmd = path;
+            } else if (element instanceof ExecutionElement.Line) {
+                var cmd = ((ExecutionElement.Line) element).line();
+                if (handler instanceof LineHandler) {
+                    cmd = ((LineHandler) handler).rewrite(cmd)
+                            .lines().limit(5).collect(Collectors.joining("\n"));
+                }
+                pathOrCmd = cmd;
+            } else {
+                pathOrCmd = "???"; // should never get here!
+            }
+            String extra = null;
+            if (!args.isEmpty()) {
+                extra = args.get(0).toString().lines().limit(5).collect(Collectors.joining("\n"));
+            }
+            String message = Bundle.ERR_elementExecution(pathOrCmd);
+            if (extra != null) {
+                message += "\n\n";
+                message += extra;
+            }
+            String title = level == ExecutionLevel.RUN ?
+                    Bundle.ERR_elementContinueRun() :
+                    Bundle.ERR_elementContinueBuild();
+            return ProjectDialogManager.get(DefaultPraxisProject.this)
+                    .confirmOnError(title, message);
         }
 
     }
 }
+ 

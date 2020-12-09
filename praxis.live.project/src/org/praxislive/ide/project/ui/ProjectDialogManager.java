@@ -42,14 +42,40 @@ public class ProjectDialogManager {
     private ProjectDialogManager() {
 
     }
-
-    public void showWarningsDialog(PraxisProject project,
-            Map<Task, List<String>> warnings) {
-        WarningsDialogPanel panel = new WarningsDialogPanel(project, warnings);
+    
+    public void reportError(String message) {
+        DialogDisplayer.getDefault().notify(
+                new NotifyDescriptor.Message(message,
+                        NotifyDescriptor.ERROR_MESSAGE));
+    }
+    
+    public void reportWarnings(Map<Task, List<String>> warnings) {
+        WarningsDialogPanel panel = new WarningsDialogPanel(warnings);
         NotifyDescriptor nd = new NotifyDescriptor.Message(panel, NotifyDescriptor.WARNING_MESSAGE);
         DialogDisplayer.getDefault().notify(nd);
     }
+    
+    @Deprecated
+    public void showWarningsDialog(PraxisProject project,
+            Map<Task, List<String>> warnings) {
+        reportWarnings(warnings);
+    }
 
+    public boolean confirm(String title, String message) {
+        return confirm(title, message, NotifyDescriptor.PLAIN_MESSAGE);
+    }
+    
+    public boolean confirmOnError(String title, String message) {
+        return confirm(title, message, NotifyDescriptor.ERROR_MESSAGE);
+    }
+    
+    private boolean confirm(String title, String message, int type) {
+        NotifyDescriptor nd = new NotifyDescriptor.Confirmation(message, title,
+                NotifyDescriptor.YES_NO_OPTION, type);
+        return DialogDisplayer.getDefault().notify(nd) == NotifyDescriptor.YES_OPTION;
+    }
+    
+    @Deprecated
     public boolean continueOnError(PraxisProject project, ExecutionLevel level, ExecutionElement element, List<Value> args) {
         StringBuilder sb = new StringBuilder();
         if (element instanceof ExecutionElement.File) {
@@ -89,6 +115,10 @@ public class ProjectDialogManager {
 
     public static ProjectDialogManager getDefault() {
         return INSTANCE;
+    }
+    
+    public static ProjectDialogManager get(PraxisProject project) {
+        return getDefault();
     }
 
 }

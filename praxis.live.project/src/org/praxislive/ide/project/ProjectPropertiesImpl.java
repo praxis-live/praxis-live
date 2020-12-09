@@ -30,7 +30,6 @@ import java.io.InputStreamReader;
 import java.net.URI;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -40,7 +39,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
@@ -48,11 +46,13 @@ import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
-import org.praxislive.core.services.ServiceUnavailableException;
+import org.openide.util.NbBundle;
+import org.praxislive.core.Value;
+import org.praxislive.core.syntax.Token;
+import org.praxislive.core.types.PArray;
 import org.praxislive.core.types.PMap;
 import org.praxislive.hub.net.HubConfiguration;
 import org.praxislive.ide.core.api.Callback;
-import org.praxislive.ide.core.api.HubUnavailableException;
 import org.praxislive.ide.project.api.ExecutionLevel;
 import org.praxislive.ide.project.api.ExecutionElement;
 import org.praxislive.ide.project.api.PraxisProject;
@@ -60,15 +60,17 @@ import org.praxislive.ide.project.api.ProjectProperties;
 import org.praxislive.ide.project.spi.ElementHandler;
 import org.praxislive.ide.project.spi.FileHandler;
 import org.praxislive.ide.project.spi.LineHandler;
+import org.praxislive.ide.project.ui.ProjectDialogManager;
+import org.praxislive.ide.properties.SyntaxUtils;
 
 import static org.praxislive.ide.project.api.ProjectProperties.PROP_LIBRARIES;
-import static org.praxislive.ide.project.DefaultPraxisProject.LIBS_COMMAND;
 import static org.praxislive.ide.project.DefaultPraxisProject.MAX_JAVA_VERSION;
 import static org.praxislive.ide.project.DefaultPraxisProject.MIN_JAVA_VERSION;
 
-/**
- *
- */
+@NbBundle.Messages({
+    "# {0} - library URI",
+    "ERR_addLibraryError=Error adding library {0}"
+})
 public class ProjectPropertiesImpl implements ProjectProperties {
 
     private final static String DEFAULT_HUB_CONFIG;
@@ -95,6 +97,7 @@ public class ProjectPropertiesImpl implements ProjectProperties {
     private final HubLineHandler hubHandler;
     private final CompilerLineHandler compilerHandler;
     private final LibrariesLineHandler librariesHandler;
+    private final List<URI> libraries;
     private final List<FileHandler.Provider> fileHandlerProviders;
     private final List<LineHandler.Provider> lineHandlerProviders;
 
@@ -109,6 +112,7 @@ public class ProjectPropertiesImpl implements ProjectProperties {
         hubHandler = new HubLineHandler();
         compilerHandler = new CompilerLineHandler();
         librariesHandler = new LibrariesLineHandler();
+        libraries = new ArrayList<>();
         fileHandlerProviders = new ArrayList<>(
                 Lookup.getDefault().lookupAll(FileHandler.Provider.class));
         lineHandlerProviders = new ArrayList<>();
@@ -282,68 +286,47 @@ public class ProjectPropertiesImpl implements ProjectProperties {
         }
     }
 
-    public void importLibrary(FileObject lib) throws IOException {
-        if (FileUtil.isParentOf(project.getProjectDirectory(), lib)) {
-            throw new IOException("Library file is already inside project");
+    public void setLibraries(List<URI> libs) {
+        var working = new ArrayList<>(libs);
+        var active = project.isActive();
+        if (!active) {
+            libraries.clear();
         }
-        if (!lib.hasExt("jar")) {
-            throw new IOException("Library must have a .jar extension");
+        working.removeAll(libraries);
+        if (working.isEmpty()) {
+            return;
         }
-        // @TODO move off EDT
-        FileObject libsFolder = FileUtil.createFolder(project.getProjectDirectory(),
-                DefaultPraxisProject.LIBS_PATH);
-        FileObject projectLib = FileUtil.copyFile(lib, libsFolder, lib.getName());
-        if (project.isActive()) {
-            String script = "add-lib " + projectLib.toURI();
+        libraries.addAll(working);
+        if (active) {
             try {
-                project.getLookup().lookup(ProjectHelper.class)
-                        .executeScript(script, Callback.create(r -> {
+                var helper = project.getLookup().lookup(ProjectHelper.class);
+                if (helper != null) {
+                    for (var lib : working) {
+                        var script = "set _PWD " + project.getProjectDirectory().toURI()
+                                + "\n" + librariesHandler.librariesScript(List.of(lib));
+                        helper.executeScript(script, Callback.create(r -> {
+                            if (r.isError()) {
+                                libraries.remove(lib);
+                                var msg = Bundle.ERR_addLibraryError(lib);
+                                if (!r.args().isEmpty()) {
+                                    msg += ("\n" + r.args().get(0));
+                                }
+                                ProjectDialogManager.get(project)
+                                        .reportError(msg);
+                            }
                         }));
-            } catch (HubUnavailableException | ServiceUnavailableException ex) {
+                    }
+                }
+            } catch (Exception ex) {
                 Exceptions.printStackTrace(ex);
             }
         }
-        project.registerLibs();
         pcs.firePropertyChange(PROP_LIBRARIES, null, null);
     }
 
-    public void removeLibrary(String name) throws IOException {
-        if (project.isActive()) {
-            throw new IOException("Cannot delete library from active project");
-        }
-        // @TODO move off EDT
-        FileObject libsFolder = project.getProjectDirectory()
-                .getFileObject(DefaultPraxisProject.LIBS_PATH);
-        if (libsFolder == null) {
-            throw new IOException("No libs folder");
-        }
-        FileObject lib = libsFolder.getFileObject(name);
-        if (lib != null) {
-            lib.delete();
-        }
-        project.registerLibs();
-        pcs.firePropertyChange(PROP_LIBRARIES, null, null);
-    }
-
-//    @Override
-//    public void addLibrary(URI library) throws Exception {
-//        
-//    }
-//
-//    @Override
-//    public void removeLibrary(URI library) throws Exception {
-//    }
     @Override
     public List<URI> getLibraries() {
-        FileObject libsFolder = project.getProjectDirectory().getFileObject(DefaultPraxisProject.LIBS_PATH);
-        if (libsFolder == null || !libsFolder.isFolder()) {
-            return Collections.EMPTY_LIST;
-        } else {
-            return Stream.of(libsFolder.getChildren())
-                    .filter(f -> f.hasExt("jar"))
-                    .map(FileObject::toURI)
-                    .collect(Collectors.toList());
-        }
+        return List.copyOf(libraries);
     }
 
     @Override
@@ -365,7 +348,7 @@ public class ProjectPropertiesImpl implements ProjectProperties {
     public int getJavaRelease() {
         return javaRelease;
     }
-    
+
     public void setHubConfiguration(String config) throws Exception {
         if (hubHandler.hubConfiguration.equals(config)) {
             return;
@@ -375,11 +358,10 @@ public class ProjectPropertiesImpl implements ProjectProperties {
         }
         hubHandler.configure(config);
     }
-    
+
     public String getHubConfiguration() {
         return hubHandler.hubConfiguration;
     }
-    
 
     private void checkFile(FileObject file) {
         if (!FileUtil.isParentOf(project.getProjectDirectory(), file)) {
@@ -490,7 +472,7 @@ public class ProjectPropertiesImpl implements ProjectProperties {
                 Exceptions.printStackTrace(ex);
             }
         }
-        
+
         private String compilerScript(int release) {
             return "compiler {\n  release " + release + "\n}";
         }
@@ -511,13 +493,13 @@ public class ProjectPropertiesImpl implements ProjectProperties {
         @Override
         public void process(Callback callback) throws Exception {
             String script = "set _PWD " + project.getProjectDirectory().toURI()
-                    + "\n" + LIBS_COMMAND;
+                    + "\n" + librariesScript(libraries);
             project.getLookup().lookup(ProjectHelper.class).executeScript(script, callback);
         }
 
         @Override
         public String rewrite(String line) {
-            return LIBS_COMMAND;
+            return librariesScript(libraries);
         }
 
         private boolean isSupportedCommand(String command) {
@@ -525,11 +507,39 @@ public class ProjectPropertiesImpl implements ProjectProperties {
         }
 
         private void configure(ExecutionElement.Line element) {
-            // no op
+            libraries.clear();
+            try {
+                var token = element.tokens().get(1);
+                if (token.getType() == Token.Type.SUBCOMMAND) {
+                    // legacy line
+                    libraries.add(new URI("config/libs/*.jar"));
+                } else {
+                    PArray arr = PArray.parse(element.tokens().get(1).getText());
+                    //                URI parent = project.getProjectDirectory().toURI();
+                    for (Value v : arr) {
+                        URI lib = new URI(v.toString());
+                        //                    lib = lib.resolve(parent);
+                        libraries.add(lib);
+                    }
+                }
+            } catch (Exception ex) {
+                Exceptions.printStackTrace(ex);
+            }
         }
 
         private ExecutionElement.Line defaultElement() {
-            return ExecutionElement.forLine(LIBS_COMMAND);
+            return ExecutionElement.forLine("libraries {}");
+        }
+
+        private String librariesScript(List<URI> libs) {
+            if (libs.isEmpty()) {
+                return "libraries {}";
+            }
+//            URI parent = project.getProjectDirectory().toURI();
+            return libs.stream()
+                    //                    .map(u -> u.relativize(parent))
+                    .map(u -> SyntaxUtils.escape(u.toString()))
+                    .collect(Collectors.joining("\n  ", "libraries {\n  ", "\n}"));
         }
 
     }

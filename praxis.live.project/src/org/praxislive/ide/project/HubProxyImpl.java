@@ -37,6 +37,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 import org.praxislive.base.Binding;
+import org.praxislive.code.CodeCompilerService;
 import org.praxislive.core.ComponentAddress;
 import org.praxislive.core.ComponentInfo;
 import org.praxislive.core.ComponentType;
@@ -59,13 +60,14 @@ class HubProxyImpl implements HubProxy {
 
     private final DefaultPraxisProject project;
     private final ValuePropertyAdaptor.ReadOnly rootsAdaptor;
+    private final ValuePropertyAdaptor.ReadOnly libsAdaptor;
     private final RootsChildren rootsChildren;
     private final Node hubNode;
     private final PropertyChangeSupport pcs;
     private final Map<String, RootProxy> roots;
     private final List<RootRegistry> rootRegistries;
     private final PropertyChangeListener regListener;
-    
+
     private boolean ignoreChanges;
 
     HubProxyImpl(DefaultPraxisProject project) {
@@ -78,6 +80,10 @@ class HubProxyImpl implements HubProxy {
         pcs = new PropertyChangeSupport(this);
         roots = new LinkedHashMap<>();
         rootRegistries = new ArrayList<>();
+
+        libsAdaptor = new ValuePropertyAdaptor.ReadOnly(this, "libpath", true, Binding.SyncRate.Low);
+        libsAdaptor.addPropertyChangeListener(e
+                -> this.project.updateLibs(PArray.from(libsAdaptor.getValue()).orElse(PArray.EMPTY)));
     }
 
     @Override
@@ -120,6 +126,14 @@ class HubProxyImpl implements HubProxy {
         } catch (Exception ex) {
             Exceptions.printStackTrace(ex);
         }
+        try {
+            var address = ControlAddress.of(
+                    helper.findService(CodeCompilerService.class),
+                    "libraries-path");
+            helper.bind(address, libsAdaptor);
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
+        }
         project.getLookup().lookupAll(RootRegistry.class).forEach(r -> {
             if (rootRegistries.add(r)) {
                 r.addPropertyChangeListener(regListener);
@@ -136,6 +150,15 @@ class HubProxyImpl implements HubProxy {
                     helper.findService(RootManagerService.class),
                     RootManagerService.ROOTS);
             helper.unbind(address, rootsAdaptor);
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        try {
+            var address = ControlAddress.of(
+                    helper.findService(CodeCompilerService.class),
+                    "libraries-path");
+            helper.unbind(address, libsAdaptor);
+            project.updateLibs(PArray.EMPTY);
         } catch (Exception ex) {
             Exceptions.printStackTrace(ex);
         }

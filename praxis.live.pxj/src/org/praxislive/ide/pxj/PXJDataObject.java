@@ -21,8 +21,6 @@
  */
 package org.praxislive.ide.pxj;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -45,7 +43,7 @@ import org.praxislive.core.ArgumentInfo;
 import org.praxislive.ide.project.api.PraxisProject;
 import org.netbeans.api.actions.Openable;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.classpath.JavaClassPathConstants;
+import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
@@ -111,14 +109,13 @@ public class PXJDataObject extends MultiDataObject {
     private final ControlAddress controlAddress;
     private final PraxisProject project;
     private final ProjectProperties projectProps;
-    private final LibsListener libsListener;
-    private final ClassPath sourceClasspath;
+    private final ClassPathProvider classPathProvider;
     
     private FileObject javaProxy;
     private String defaultImports;
     private String classDeclaration;
     private String classEnding;
-    private ClassPath compileClasspath;
+    private ClassPath sourceClassPath;
 
     public PXJDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException, IOException {
         super(pf, loader);
@@ -126,14 +123,11 @@ public class PXJDataObject extends MultiDataObject {
         classBodyContext = findClassBodyContext(pf);
         controlAddress = findControlAddress(pf);
         project = findProject(pf);
-        projectProps = project == null ? null : findProjectProperties(project);
-        libsListener = new LibsListener();
-        if (projectProps != null) {
-            projectProps.addPropertyChangeListener(libsListener);
-        }
+        projectProps = project == null ? null :
+                project.getLookup().lookup(ProjectProperties.class);
+        classPathProvider = project == null ? null :
+                project.getLookup().lookup(ClassPathProvider.class);
         getCookieSet().add(new Open());
-        sourceClasspath = ClassPathSupport.createClassPath(pf.getParent());
-        compileClasspath = createCompileClasspath(projectProps);
     }
 
     private ClassBodyContext<?> findClassBodyContext(FileObject f) {
@@ -172,24 +166,6 @@ public class PXJDataObject extends MultiDataObject {
         }
     }
 
-    private ProjectProperties findProjectProperties(PraxisProject project) {
-        return project.getLookup().lookup(ProjectProperties.class);
-    }
-
-    private ClassPath createCompileClasspath(ProjectProperties props) {
-        List<URI> libs = props.getLibraries();
-        if (libs.isEmpty()) {
-            return ClassPathRegistry.getInstance().getCompileClasspath();
-        } else {
-            ClassPath libCP = ClassPathSupport.createClassPath(
-                    libs.stream()
-                            .flatMap(uri -> archiveFileFromURI(uri).stream())
-                            .toArray(URL[]::new));
-            return ClassPathSupport.createProxyClassPath(libCP,
-                    ClassPathRegistry.getInstance().getCompileClasspath());
-        }
-    }
-    
     private Optional<URL> archiveFileFromURI(URI uri) {
         try {
             File file = Utilities.toFile(uri);
@@ -213,6 +189,7 @@ public class PXJDataObject extends MultiDataObject {
         try {
             if (javaProxy == null) {
                 javaProxy = constructProxy();
+                sourceClassPath = ClassPathSupport.createClassPath(javaProxy.getParent());
             }
             DataObject dob = DataObject.find(javaProxy);
             Openable openable = dob.getLookup().lookup(Openable.class);
@@ -228,9 +205,6 @@ public class PXJDataObject extends MultiDataObject {
     protected void dispose() {
         super.dispose();
         disposeProxy();
-        if (projectProps != null) {
-            projectProps.removePropertyChangeListener(libsListener);
-        }
     }
 
     void disposeProxy() {
@@ -238,6 +212,7 @@ public class PXJDataObject extends MultiDataObject {
             try {
                 javaProxy.delete();
                 javaProxy = null;
+                sourceClassPath = null;
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
@@ -248,17 +223,13 @@ public class PXJDataObject extends MultiDataObject {
         return projectProps.getJavaRelease();
     }
     
-    ClassPath getClassPath(String type) {
-        switch (type) {
-            case ClassPath.BOOT:
-            case JavaClassPathConstants.MODULE_BOOT_PATH:
-                return ClassPathRegistry.getInstance().getBootClasspath();
-            case ClassPath.COMPILE:
-                return compileClasspath;
-            case ClassPath.SOURCE:
-                return sourceClasspath;
-            default:
-                return null;
+    ClassPath getClassPath(FileObject file, String type) {
+        if (ClassPath.SOURCE.equals(type)) {
+            return sourceClassPath;
+        } else if (classPathProvider != null) {
+            return classPathProvider.findClassPath(file, type);
+        } else {
+            return null;
         }
     }
 
@@ -463,17 +434,6 @@ public class PXJDataObject extends MultiDataObject {
                 refreshDataFromProxy();
             } else {
                 fe.getFile().removeFileChangeListener(this);
-            }
-        }
-
-    }
-
-    private class LibsListener implements PropertyChangeListener {
-
-        @Override
-        public void propertyChange(PropertyChangeEvent evt) {
-            if (ProjectProperties.PROP_LIBRARIES.equals(evt.getPropertyName())) {
-                compileClasspath = createCompileClasspath(projectProps);
             }
         }
 

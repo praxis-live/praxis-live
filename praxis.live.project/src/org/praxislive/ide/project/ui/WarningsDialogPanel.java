@@ -24,38 +24,27 @@ package org.praxislive.ide.project.ui;
 import java.util.List;
 import java.util.Map;
 import javax.swing.DefaultListModel;
-import org.praxislive.ide.project.api.ExecutionLevel;
-import org.praxislive.ide.project.api.PraxisProject;
 import org.openide.awt.HtmlRenderer;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.praxislive.ide.core.api.Task;
-import org.praxislive.ide.project.api.ExecutionElement;
 
 /**
  *
  */
 class WarningsDialogPanel extends javax.swing.JPanel {
 
-    private final PraxisProject project;
 
-    /**
-     * Creates new form WarningsDialogPanel
-     */
-    WarningsDialogPanel(PraxisProject project,
-            Map<Task, List<String>> warnings) {
-        this.project = project;
+    WarningsDialogPanel(Map<Task, List<String>> warnings) {
         initComponents();
         initListModel(warnings);
         warningsList.setCellRenderer(HtmlRenderer.createRenderer());
         initLabel(warningsList.getModel().getSize());
     }
-
+    
     private void initListModel(Map<Task, List<String>> warnings) {
         DefaultListModel model = new DefaultListModel();
         for (var entry : warnings.entrySet()) {
             var taskDesc = entry.getKey().description()
-                    .orElse(project.getProjectDirectory().getName());
+                    .orElse(entry.getKey().getClass().getSimpleName());
             model.addElement("<html><b>" + taskDesc + "</b>");
             for (String warning : entry.getValue()) {
                 model.addElement(warning);

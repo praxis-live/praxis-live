@@ -19,7 +19,7 @@
  * Please visit http://neilcsmith.net if you need additional information or
  * have any questions.
  */
-package org.praxislive.ide.pxj;
+package org.praxislive.ide.project;
 
 import java.io.File;
 import java.lang.System.Logger.Level;
@@ -31,24 +31,24 @@ import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileUtil;
+import org.openide.modules.OnStart;
 import org.openide.util.Exceptions;
 import org.praxislive.ide.core.embedder.CORE;
 
 /**
  *
  */
-@Deprecated
-public class ClassPathRegistry {
+public class CoreClassPathRegistry {
 
     private final static System.Logger LOG
-            = System.getLogger(ClassPathRegistry.class.getName());
+            = System.getLogger(CoreClassPathRegistry.class.getName());
 
-    private final static ClassPathRegistry INSTANCE = new ClassPathRegistry();
+    private final static CoreClassPathRegistry INSTANCE = new CoreClassPathRegistry();
 
     private ClassPath classPath;
     private ClassPath bootClassPath;
 
-    private ClassPathRegistry() {
+    private CoreClassPathRegistry() {
         init();
     }
 
@@ -88,12 +88,11 @@ public class ClassPathRegistry {
         return bootClassPath;
     }
 
-    static ClassPathRegistry getInstance() {
+    static CoreClassPathRegistry getInstance() {
         return INSTANCE;
     }
 
-//    @OnStart
-    @Deprecated
+    @OnStart
     public static class Initializer implements Runnable {
 
         @Override

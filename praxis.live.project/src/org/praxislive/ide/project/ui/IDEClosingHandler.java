@@ -22,8 +22,6 @@
 package org.praxislive.ide.project.ui;
 
 import java.util.concurrent.Callable;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.modules.OnStop;
 import org.openide.util.NbBundle;
 import org.praxislive.ide.project.DefaultPraxisProject;
@@ -42,12 +40,9 @@ public class IDEClosingHandler implements Callable<Boolean> {
     public Boolean call() throws Exception {
         var active = DefaultPraxisProject.activeProjects();
         if (!active.isEmpty()) {
-            var notification = new NotifyDescriptor.Confirmation(
-                    Bundle.MESSAGE_ClosingActiveProjects(),
-                    Bundle.TITLE_ClosingActiveProjects(),
-                    NotifyDescriptor.OK_CANCEL_OPTION);
-            return DialogDisplayer.getDefault().notify(notification)
-                    == NotifyDescriptor.OK_OPTION;
+            return ProjectDialogManager.getDefault()
+                    .confirm(Bundle.TITLE_ClosingActiveProjects(),
+                            Bundle.MESSAGE_ClosingActiveProjects());
         } else {
             return true;
         }

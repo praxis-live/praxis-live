@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2018 Neil C Smith.
+ * Copyright 2020 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -24,11 +24,15 @@ package org.praxislive.ide.project.ui;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
-import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import javax.swing.Action;
-import javax.swing.ListSelectionModel;
 import javax.swing.filechooser.FileNameExtensionFilter;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.praxislive.ide.project.DefaultPraxisProject;
 import org.praxislive.ide.project.ProjectPropertiesImpl;
 import org.openide.explorer.ExplorerManager;
@@ -36,43 +40,79 @@ import org.openide.explorer.view.ListView;
 import org.openide.filesystems.FileChooserBuilder;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataFolder;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
-import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /**
  *
- * @author Neil C Smith (http://neilcsmith.net)
  */
+@NbBundle.Messages({
+    "ERR_removingInUse=Can't remove libraries in use by an active project",
+    "TTL_import=Import library",
+    "LBL_import=Import",
+    "TTL_libraryURI=Add library",
+    "LBL_libraryURI=Enter a library URI, path or Package URL",
+    "HLP_libraryURI=PURL - pkg:maven/[group]/[artifact]@[version]"
+})
 class LibrariesCustomizer extends javax.swing.JPanel implements ExplorerManager.Provider {
 
     private final ExplorerManager manager;
     private final DefaultPraxisProject project;
     private final ProjectPropertiesImpl props;
+    private final List<URI> libraries;
+    private final List<FileObject> filesToImport;
+    private final LibraryChildren children;
+    private final Node root;
 
-    private Node root;
-
-    /**
-     * Creates new form FilesCustomizer
-     */
     LibrariesCustomizer(DefaultPraxisProject project) {
         this.project = Objects.requireNonNull(project);
         props = project.getLookup().lookup(ProjectPropertiesImpl.class);
-        FileObject libsFolder = project.getProjectDirectory()
-                .getFileObject(DefaultPraxisProject.LIBS_PATH);
-        if (libsFolder == null || !libsFolder.isFolder()) {
-            root = new AbstractNode(Children.LEAF);
-        } else {
-            root = new FileNode(DataFolder.findFolder(libsFolder).getNodeDelegate());
-        }
+        libraries = new ArrayList<>();
+        filesToImport = new ArrayList<>();
+        children = new LibraryChildren();
+        root = new AbstractNode(children);
         manager = new ExplorerManager();
+        refresh();
         manager.setRootContext(root);
         manager.addPropertyChangeListener(new ManagerListener());
         initComponents();
-//        ((ListView) fileList).setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+    }
+
+    final void refresh() {
+        libraries.clear();
+        filesToImport.clear();
+        if (props != null) {
+            libraries.addAll(props.getLibraries());
+        }
+        refreshView();
+    }
+    
+    final void updateProject() {
+        copyFiles();
+        props.setLibraries(libraries);
+    }
+
+    private void refreshView() {
+        children.setLibraries(libraries);
+    }
+    
+    private void copyFiles() {
+        if (filesToImport.isEmpty()) {
+            return;
+        }
+        try {
+            FileObject libFolder = FileUtil.createFolder(project.getProjectDirectory(), "libs");
+            for (FileObject libFile : filesToImport) {
+                FileUtil.copyFile(libFile, libFolder, libFile.getName());
+            }
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
+        } finally {
+            filesToImport.clear();
+        }
     }
 
     /**
@@ -87,6 +127,7 @@ class LibrariesCustomizer extends javax.swing.JPanel implements ExplorerManager.
         fileList = new ListView();
         importButton = new javax.swing.JButton();
         removeButton = new javax.swing.JButton();
+        addButton = new javax.swing.JButton();
 
         importButton.setText(org.openide.util.NbBundle.getMessage(LibrariesCustomizer.class, "LibrariesCustomizer.importButton.text")); // NOI18N
         importButton.addActionListener(new java.awt.event.ActionListener() {
@@ -102,6 +143,13 @@ class LibrariesCustomizer extends javax.swing.JPanel implements ExplorerManager.
             }
         });
 
+        addButton.setText(org.openide.util.NbBundle.getMessage(LibrariesCustomizer.class, "LibrariesCustomizer.addButton.text")); // NOI18N
+        addButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                addButtonActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -110,8 +158,9 @@ class LibrariesCustomizer extends javax.swing.JPanel implements ExplorerManager.
                 .addComponent(fileList, javax.swing.GroupLayout.PREFERRED_SIZE, 312, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(importButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(removeButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(importButton, javax.swing.GroupLayout.DEFAULT_SIZE, 91, Short.MAX_VALUE)
+                    .addComponent(removeButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(addButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -121,55 +170,106 @@ class LibrariesCustomizer extends javax.swing.JPanel implements ExplorerManager.
                 .addContainerGap()
                 .addComponent(importButton)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(addButton)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(removeButton)
-                .addContainerGap(224, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
     private void importButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_importButtonActionPerformed
-        FileChooserBuilder fcb = new FileChooserBuilder(LibrariesCustomizer.class); // use project specific String?
-        fcb.setFilesOnly(true);
-        fcb.setTitle("Import library");
-        fcb.setApproveText("Import");
-        fcb.forceUseOfDefaultWorkingDirectory(true);
-        fcb.setFileFilter(new FileNameExtensionFilter("JAR files", "jar"));
-        File[] libs = fcb.showMultiOpenDialog();
-        if (libs != null) {
-            for (File lib : libs) {
-                importLibrary(FileUtil.toFileObject(lib));
-            }
-        }
+        importFiles();
     }//GEN-LAST:event_importButtonActionPerformed
 
-    private void importLibrary(FileObject lib) {
-        try {
-            props.importLibrary(lib);
-            if (!(root instanceof FileNode)) {
-                FileObject libs = FileUtil.createFolder(project.getProjectDirectory(), DefaultPraxisProject.LIBS_PATH);
-                root = new FileNode(DataFolder.findFolder(libs).getNodeDelegate());
-                manager.setRootContext(root);
+    private void removeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeButtonActionPerformed
+        removeSelectedNodes();
+    }//GEN-LAST:event_removeButtonActionPerformed
+
+    private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
+        addURI();
+    }//GEN-LAST:event_addButtonActionPerformed
+
+    private void importFiles() {
+        FileChooserBuilder fcb = new FileChooserBuilder(LibrariesCustomizer.class)
+                .setFilesOnly(true)
+                .setTitle(Bundle.TTL_import())
+                .setApproveText(Bundle.LBL_import())
+                .forceUseOfDefaultWorkingDirectory(true)
+                .setAcceptAllFileFilterUsed(true)
+                .setFileFilter(new FileNameExtensionFilter("JAR files", "jar"));
+        File[] files = fcb.showMultiOpenDialog();
+        if (files != null) {
+            for (File file : files) {
+                FileObject fo = FileUtil.toFileObject(file);
+                if (FileUtil.isParentOf(project.getProjectDirectory(), fo)) {
+                    if (fo.hasExt("jar")) {
+                        checkAndAddURI(fo.toURI().relativize(project.getProjectDirectory().toURI()));
+                    }
+                } else {
+                    filesToImport.add(fo);
+                    if (fo.hasExt("jar")) {
+                        try {
+                            checkAndAddURI(new URI(null, null, "libs/" + file.getName(), null));
+                        } catch (URISyntaxException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
+                }
             }
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+            refreshView();
         }
     }
-
-
-    private void removeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeButtonActionPerformed
-        if (project.isActive()) {
-
-        } else {
+    
+    
+    private void addURI() {
+        var input = new NotifyDescriptor.InputLine(Bundle.LBL_libraryURI(), Bundle.TTL_libraryURI());
+        input.createNotificationLineSupport().setInformationMessage(Bundle.HLP_libraryURI());
+        Object ret = DialogDisplayer.getDefault().notify(input);
+        if (ret == NotifyDescriptor.OK_OPTION) {
             try {
-                for (Node node : manager.getSelectedNodes()) {
-                    FileObject lib = node.getLookup().lookup(FileObject.class);
-                    props.removeLibrary(lib.getNameExt());
-                }
-            } catch (Exception ex) {
+                checkAndAddURI(new URI(input.getInputText().trim()));
+            } catch (URISyntaxException ex) {
                 Exceptions.printStackTrace(ex);
             }
         }
-    }//GEN-LAST:event_removeButtonActionPerformed
+        refreshView();
+    }
+    
+    private boolean checkAndAddURI(URI lib) {
+        if (libraries.contains(lib)) {
+            return false;
+        } else {
+            return libraries.add(lib);
+        }
+    }
+    
+    private void removeSelectedNodes() {
+        boolean inUse = false;
+        List<URI> existing = props.getLibraries();
+        for (Node node : manager.getSelectedNodes()) {
+            if (!(node instanceof LibraryNode)) {
+                continue;
+            }
+            final URI lib = ((LibraryNode) node).uri;
+            if (project.isActive()) {
+                if (existing.contains(lib)) {
+                    inUse = true;
+                } else {
+                    libraries.remove(lib);
+                }
+            } else {
+                libraries.remove(lib);
+            }
+        }
+        if (inUse) {
+            ProjectDialogManager.get(project).reportError(Bundle.ERR_removingInUse());
+        }
+        refreshView();
+    }
+    
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton addButton;
     private javax.swing.JScrollPane fileList;
     private javax.swing.JButton importButton;
     private javax.swing.JButton removeButton;
@@ -195,10 +295,13 @@ class LibrariesCustomizer extends javax.swing.JPanel implements ExplorerManager.
         }
     }
 
-    private class FileNode extends FilterNode {
+    private class LibraryNode extends AbstractNode {
 
-        FileNode(Node node) {
-            super(node, node.isLeaf() ? FilterNode.Children.LEAF : new FileChildren(node));
+        private final URI uri;
+
+        LibraryNode(URI uri) {
+            super(Children.LEAF);
+            this.uri = uri;
         }
 
         @Override
@@ -210,23 +313,25 @@ class LibrariesCustomizer extends javax.swing.JPanel implements ExplorerManager.
         public Action[] getActions(boolean context) {
             return new Action[0];
         }
+
+        @Override
+        public String getDisplayName() {
+            return uri.toString();
+        }
+
     }
 
-    private class FileChildren extends FilterNode.Children {
+    private class LibraryChildren extends Children.Keys<URI> {
 
-        public FileChildren(Node node) {
-            super(node);
+        void setLibraries(List<URI> keys) {
+            setKeys(keys);
         }
 
         @Override
-        protected Node[] createNodes(Node key) {
-            FileObject fo = key.getLookup().lookup(FileObject.class);
-            if (fo == null || !fo.isData() || !fo.hasExt("jar")) {
-                return new Node[0];
-            } else {
-                return super.createNodes(key);
-            }
+        protected Node[] createNodes(URI key) {
+            return new Node[]{new LibraryNode(key)};
         }
 
     }
+
 }

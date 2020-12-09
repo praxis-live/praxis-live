@@ -218,8 +218,7 @@ class ElementsCustomizer extends javax.swing.JPanel implements ExplorerManager.P
                 elements.add(line);
                 refreshView();
             } catch (Exception ex) {
-                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                        Bundle.ERR_invalidLine(), NotifyDescriptor.ERROR_MESSAGE));
+                ProjectDialogManager.get(project).reportError(Bundle.ERR_invalidLine());
             }
         }
     }//GEN-LAST:event_addLineButtonActionPerformed

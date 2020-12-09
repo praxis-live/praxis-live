@@ -40,8 +40,6 @@ import org.praxislive.core.services.RootManagerService;
 import org.praxislive.core.services.ServiceUnavailableException;
 import org.praxislive.core.services.SystemManagerService;
 import org.praxislive.ide.core.api.Task;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.praxislive.base.AbstractAsyncControl;
@@ -57,6 +55,7 @@ import org.praxislive.core.types.PReference;
 import org.praxislive.ide.core.api.AbstractIDERoot;
 import org.praxislive.ide.project.api.PraxisProject;
 import org.praxislive.ide.project.spi.RootLifecycleHandler;
+import org.praxislive.ide.project.ui.ProjectDialogManager;
 
 /**
  *
@@ -189,11 +188,9 @@ class ServicesOverride extends AbstractIDERoot implements RootHub.ServiceProvide
                         .collect(Collectors.toList());
                 if (tasks.isEmpty()) {
                     LOG.log(Level.FINE, "No tasks found for root removal /{0}", rootID);
-                    Object ret = DialogDisplayer.getDefault().notify(
-                            new NotifyDescriptor.Confirmation("Remove root " + call.args().get(0).toString(),
-                                    "Remove Root?",
-                                    NotifyDescriptor.YES_NO_OPTION));
-                    if (ret == NotifyDescriptor.YES_OPTION) {
+                    boolean remove = ProjectDialogManager.get(project)
+                            .confirm("Remove root?", "Remove root " + call.args().get(0).toString());
+                    if (remove) {
                         forwardCall(rootID, call, router);
                     } else {
                         router.route(call.error(List.of()));

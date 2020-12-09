@@ -37,7 +37,7 @@ public class ClassPathImpl implements ClassPathProvider {
         Object o = file.getAttribute(PXJDataObject.PXJ_DOB_KEY);
         if (o instanceof PXJDataObject) {
             PXJDataObject dob = (PXJDataObject) o;
-            return dob.getClassPath(type);
+            return dob.getClassPath(file, type);
         }
         return null;
 

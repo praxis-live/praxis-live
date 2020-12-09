@@ -57,6 +57,10 @@
         <binary-origin>../build/praxiscore/mods/praxiscore-code-5.1.0-SNAPSHOT.jar</binary-origin>
       </class-path-extension>
       <class-path-extension>
+        <runtime-relative-path>../../praxiscore/mods/praxiscore-code-ivy-5.1.0-SNAPSHOT.jar</runtime-relative-path>
+        <binary-origin>../build/praxiscore/mods/praxiscore-code-ivy-5.1.0-SNAPSHOT.jar</binary-origin>
+      </class-path-extension>
+      <class-path-extension>
         <runtime-relative-path>../../praxiscore/mods/praxiscore-code-services-5.1.0-SNAPSHOT.jar</runtime-relative-path>
         <binary-origin>../build/praxiscore/mods/praxiscore-code-services-5.1.0-SNAPSHOT.jar</binary-origin>
       </class-path-extension>
@@ -161,6 +165,10 @@
             
             
       <!-- core - libraries -->
+      <class-path-extension>
+        <runtime-relative-path>../../praxiscore/mods/ivy-2.5.0.jar</runtime-relative-path>
+        <binary-origin>../build/praxiscore/mods/ivy-2.5.0.jar</binary-origin>
+      </class-path-extension>
       <class-path-extension>
         <runtime-relative-path>../../praxiscore/mods/jna-5.5.0.jar</runtime-relative-path>
         <binary-origin>../build/praxiscore/mods/jna-5.5.0.jar</binary-origin>

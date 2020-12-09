@@ -94,6 +94,9 @@ public class PraxisCustomizerProvider implements CustomizerProvider,
         if (runFiles != null) {
             runFiles.refreshList();
         }
+        if (librariesCustomizer != null) {
+            librariesCustomizer.refresh();
+        }
         if (javaCustomizer != null) {
             javaCustomizer.refresh();
         }
@@ -125,6 +128,8 @@ public class PraxisCustomizerProvider implements CustomizerProvider,
         } else if (libraries.equals(category)) {
             if (librariesCustomizer == null) {
                 librariesCustomizer = new LibrariesCustomizer(project);
+            } else {
+                librariesCustomizer.refresh();
             }
             return librariesCustomizer;
         } else if (java.equals(category)) {
@@ -159,6 +164,9 @@ public class PraxisCustomizerProvider implements CustomizerProvider,
             }
             if (runFiles != null) {
                 props.setElements(ExecutionLevel.RUN, runFiles.getElements());
+            }
+            if (librariesCustomizer != null) {
+                librariesCustomizer.updateProject();
             }
             if (javaCustomizer != null) {
                 javaCustomizer.updateProject();
