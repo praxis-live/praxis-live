@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2020 Neil C Smith.
+ * Copyright 2021 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -29,7 +29,14 @@ import org.praxislive.ide.project.api.PraxisProject;
 import org.praxislive.ide.model.RootProxy;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ProxyLookup;
+import org.praxislive.core.ControlAddress;
+import org.praxislive.core.ControlInfo;
+import org.praxislive.core.types.PMap;
 import org.praxislive.ide.core.api.Disposable;
+import org.praxislive.ide.code.SharedCodeContext;
 
 /**
  *
@@ -40,6 +47,7 @@ public class PXRRootProxy extends PXRContainerProxy implements RootProxy, Dispos
     private final PXRDataObject source;
     private final PraxisProject project;
     private final PXRHelper helper;
+    private final SharedCodeContext sharedCode;
 
     PXRRootProxy(PraxisProject project, PXRHelper helper, PXRDataObject source, String id,
             ComponentType type, ComponentInfo info) {
@@ -48,6 +56,11 @@ public class PXRRootProxy extends PXRContainerProxy implements RootProxy, Dispos
         this.source = source;
         this.project = project;
         this.helper = helper;
+        if (info.controls().contains("shared-code")) {
+            sharedCode = new SharedCodeImpl();
+        } else {
+            sharedCode = null;
+        }
     }
 
     @Override
@@ -58,7 +71,7 @@ public class PXRRootProxy extends PXRContainerProxy implements RootProxy, Dispos
     public FileObject getSourceFile() {
         return source.getPrimaryFile();
     }
-    
+
     @Override
     public void dispose() {
         super.dispose();
@@ -85,14 +98,56 @@ public class PXRRootProxy extends PXRContainerProxy implements RootProxy, Dispos
     PXRHelper getHelper() {
         return helper;
     }
-    
-    
+
     File getWorkingDirectory() {
         if (project == null) {
             return FileUtil.toFile(source.getPrimaryFile().getParent());
         } else {
             return FileUtil.toFile(project.getProjectDirectory());
         }
+    }
+
+    @Override
+    Lookup createLookup() {
+        if (sharedCode != null) {
+            return new ProxyLookup(Lookups.singleton(sharedCode),
+                    super.createLookup());
+        } else {
+            return super.createLookup();
+        }
+    }
+
+    @Override
+    protected BoundArgumentProperty createPropertyForControl(ControlAddress address, ControlInfo info) {
+        if ("shared-code".equals(address.controlID())) {
+            if (info.controlType() == ControlInfo.Type.Property) {
+                var args = info.outputs();
+                if (args.size() == 1 && args.get(0).argumentType().asClass() == PMap.class) {
+                    return new BoundSharedCodeProperty(getProject(), address, info);
+                }
+            }
+        }
+        return super.createPropertyForControl(address, info);
+    }
+
+    private class SharedCodeImpl implements SharedCodeContext {
+
+        private FileObject sharedCodeFolder;
+
+        @Override
+        public FileObject getFolder() {
+            if (sharedCodeFolder == null) {
+                var property = getProperty("shared-code");
+                if (property instanceof BoundSharedCodeProperty) {
+                    sharedCodeFolder = ((BoundSharedCodeProperty) property)
+                            .getSharedCodeFolder();
+                } else {
+                    sharedCodeFolder = FileUtil.createMemoryFileSystem().getRoot();
+                }
+            }
+            return sharedCodeFolder;
+        }
+
     }
 
 }

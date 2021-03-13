@@ -98,6 +98,7 @@ import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerUtils;
 import org.openide.explorer.view.MenuView;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataFolder;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeAcceptor;
 import org.openide.nodes.NodeTransfer;
@@ -108,6 +109,7 @@ import org.openide.util.actions.Presenter;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 import org.praxislive.core.Value;
+import org.praxislive.ide.code.SharedCodeContext;
 import org.praxislive.ide.project.api.PraxisProject;
 
 /**
@@ -148,6 +150,7 @@ public class GraphEditor extends RootEditor {
     private final boolean customColours;
 
     private JComponent panel;
+    private JComponent sharedCodePanel;
     private JComponent actionPanel;
     private ContainerProxy container;
 
@@ -320,6 +323,11 @@ public class GraphEditor extends RootEditor {
             }
             menu.add(colorsMenu);
         }
+        if (sharedCodePanel != null) {
+            menu.add(new JCheckBoxMenuItem(new SharedCodeToggleAction("Shared Code")));
+            menu.addSeparator();
+        }
+        
         JMenu propertyModeMenu = new JMenu("Properties");
         propertyModeMenu.add(new JRadioButtonMenuItem(new PropertyModeAction("Default", PropertyMode.Default)));
         propertyModeMenu.add(new JRadioButtonMenuItem(new PropertyModeAction("Show all", PropertyMode.Show)));
@@ -384,38 +392,44 @@ public class GraphEditor extends RootEditor {
     public JComponent getEditorComponent() {
         if (panel == null) {
             JPanel viewPanel = new JPanel(new BorderLayout());
-            JComponent view = scene.createView();
-            view.addMouseListener(new ActivePointListener());
+            JComponent sceneView = scene.createView();
+            sceneView.addMouseListener(new ActivePointListener());
             JScrollPane scroll = new JScrollPane(
-                    view,
-                    JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
-                    JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
+                    sceneView,
+                    JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+                    JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
             viewPanel.add(scroll, BorderLayout.CENTER);
 
-            JPanel satellitePanel = new JPanel();
-            satellitePanel.setLayout(new GridBagLayout());
+            JPanel overlayPanel = new JPanel();
+            overlayPanel.setLayout(new GridBagLayout());
             GridBagConstraints gbc = new GridBagConstraints();
             gbc.weightx = 1;
             gbc.weighty = 1;
             gbc.insets = new Insets(0, 0, 25, 25);
             gbc.anchor = GridBagConstraints.SOUTHEAST;
-            view = scene.createSatelliteView();
-            JPanel holder = new JPanel(new BorderLayout());
-            holder.setBorder(new LineBorder(Color.LIGHT_GRAY, 1));
-            holder.add(view);
-            satellitePanel.add(holder, gbc);
-            satellitePanel.setOpaque(false);
+            JPanel satellitePanel = new JPanel(new BorderLayout());
+            satellitePanel.setBorder(new LineBorder(Color.LIGHT_GRAY, 1));
+            satellitePanel.add(scene.createSatelliteView());
+            overlayPanel.add(satellitePanel, gbc);
+            overlayPanel.setOpaque(false);
 
             JLayeredPane layered = new JLayeredPane();
             layered.setLayout(new OverlayLayout(layered));
             layered.add(viewPanel, JLayeredPane.DEFAULT_LAYER);
-            layered.add(satellitePanel, JLayeredPane.PALETTE_LAYER);
+            layered.add(overlayPanel, JLayeredPane.PALETTE_LAYER);
 
             panel = new JPanel(new BorderLayout());
             panel.add(layered, BorderLayout.CENTER);
 
             actionPanel = new JPanel(new BorderLayout());
             panel.add(actionPanel, BorderLayout.SOUTH);
+            
+            SharedCodeContext sharedCtxt = root.getLookup().lookup(SharedCodeContext.class);
+            if (sharedCtxt != null) {
+                sharedCodePanel = new SharedCodeComponent(this, sharedCtxt.getFolder());
+                sharedCodePanel.setVisible(false);
+                panel.add(sharedCodePanel, BorderLayout.WEST);
+            }
 
             InputMap im = panel.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
             ActionMap am = panel.getActionMap();
@@ -1224,6 +1238,20 @@ public class GraphEditor extends RootEditor {
             }
         }
 
+    }
+    
+    private class SharedCodeToggleAction extends AbstractAction {
+
+        private SharedCodeToggleAction(String text) {
+            super(text);
+            putValue(Action.SELECTED_KEY, sharedCodePanel.isVisible());
+        }
+        
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            sharedCodePanel.setVisible(Boolean.TRUE.equals(getValue(Action.SELECTED_KEY)));
+        }
+        
     }
 
     private class CommentAction extends AbstractAction {
