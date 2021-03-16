@@ -68,3 +68,9 @@
 /praxis.live.tableeditor/build/
 /praxis.live.project.templates/nbproject/private/
 /praxis.live.project.templates/build/
+/lib.nbjavac/nbproject/private/
+/lib.nbjavac.api/nbproject/private/
+/lib.nbjavac.impl/nbproject/private/
+/lib.nbjavac.impl/build/
+/lib.nbjavac.api/build/
+/lib.nbjavac/build/
