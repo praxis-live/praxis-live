@@ -23,22 +23,6 @@
     <nbbrowse file="${suite.build.dir}/core-javadoc/index.html" />
   </target>
     
-  <target name="build" depends="suite.build">
-    <condition property="build.install.nbjavac">
-      <and>
-        <not>
-          <available file="${nbplatform.active.dir}/java/modules/org-netbeans-modules-nbjavac.jar"/>
-        </not>
-        <isset property="nbjavac.catalog.url"/>
-      </and>
-    </condition>
-    <antcall target="-install-nbjavac"/>
-  </target>
-    
-  <!--    <target name="build-zip" depends="build,build-launchers,suite.build-zip">
-      
-  </target>-->
-    
   <target name="build-zip" depends="build,build-launchers,praxiscore-javadoc"
           description="Builds a ZIP distribution of the IDE.">
     <mkdir dir="${dist.dir}"/>
@@ -77,13 +61,6 @@
     <echo message="&#10;" file="${build.launcher.dir}/etc/${app.name}.clusters" append="true"/>
     <replace file="${build.launcher.dir}/etc/${app.name}.conf" token="$${app.version}" value="${app.version}"/>
     <copy file="${basedir}/resources/app.sh" tofile="${build.launcher.dir}/bin/${app.name}" overwrite="true"/>
-  </target>
-    
-  <target name="-install-nbjavac" if="build.install.nbjavac">
-    <echo>Installing nbjavac in cluster</echo>
-    <autoupdate todir="${suite.build.dir}/cluster/" updatecenter="${nbjavac.catalog.url}">
-      <modules includes=".*nbjavac.*" />
-    </autoupdate>
   </target>
     
   <target name="build-windows" depends="build,build-launchers,praxiscore-javadoc" if="release.windows.issc" description="Builds a Windows installer">

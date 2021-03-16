@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- You may freely edit this file. See harness/README in the NetBeans platform -->
+<!-- for some information on what you could do (e.g. targets to override). -->
+<!-- If you delete this file and reopen the project it will be recreated. -->
+<project name="org.netbeans.modules.nbjavac.impl" default="netbeans" basedir=".">
+  <description>Builds, tests, and runs the project org.netbeans.modules.nbjavac.impl.</description>
+  <import file="nbproject/build-impl.xml"/>
+    
+  <target name="build-init" depends="harness.build-init, -nbjavac-download" />
+  
+  <target name="clean" depends="projectized-common.clean, -nbjavac-clean" />
+  
+  <target name="-nbjavac-download" unless="${nbjavac.present}" depends="-nbjavac-check">
+    <mkdir dir="${build.dir}/download" />
+    <get src="${nbjavac.url}" dest="${build.dir}/download/${nbjavac.filename}"
+         verbose="true" />
+    <checksum file="${build.dir}/download/${nbjavac.filename}" property="${nbjavac.sha512}"
+              algorithm="SHA-512" verifyproperty="nbjavac.valid"/>
+    <echo message="Checking SHA512 is valid : ${nbjavac.valid}" />
+    <fail>
+      <condition>
+        <isfalse value="${nbjavac.valid}" />
+      </condition>
+    </fail>
+    <mkdir dir="release/modules/ext" />
+    <move file="${build.dir}/download/${nbjavac.filename}" todir="release/modules/ext" />
+  </target>
+  
+  <target name="-nbjavac-check">
+    <available file="release/modules/ext/${nbjavac.filename}" property="nbjavac.present"/>
+  </target> 
+  
+  <target name="-nbjavac-clean" if="${clean.downloads}" >
+    <delete file="release/modules/ext/${nbjavac.filename}" />
+  </target>
+    
+</project>
