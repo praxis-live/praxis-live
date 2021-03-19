@@ -109,7 +109,7 @@ import org.openide.util.actions.Presenter;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 import org.praxislive.core.Value;
-import org.praxislive.ide.code.SharedCodeContext;
+import org.praxislive.ide.code.api.SharedCodeInfo;
 import org.praxislive.ide.project.api.PraxisProject;
 
 /**
@@ -424,7 +424,7 @@ public class GraphEditor extends RootEditor {
             actionPanel = new JPanel(new BorderLayout());
             panel.add(actionPanel, BorderLayout.SOUTH);
             
-            SharedCodeContext sharedCtxt = root.getLookup().lookup(SharedCodeContext.class);
+            SharedCodeInfo sharedCtxt = root.getLookup().lookup(SharedCodeInfo.class);
             if (sharedCtxt != null) {
                 sharedCodePanel = new SharedCodeComponent(this, sharedCtxt.getFolder());
                 sharedCodePanel.setVisible(false);

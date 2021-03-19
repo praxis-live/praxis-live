@@ -19,15 +19,28 @@
  * Please visit http://neilcsmith.net if you need additional information or
  * have any questions.
  */
-package org.praxislive.ide.code;
+package org.praxislive.ide.code.api;
 
 import org.openide.filesystems.FileObject;
 
 /**
  * Provide access to the Shared Code files for a component hierarchy. Instances
- * should be retrieved from the container lookup.
+ * should be retrieved from the container lookup (eg. RootProxy).
+ * <p>
+ * To create a SharedCodeInfo, register a folder and classpath root with
+ * {@link DynamicPaths#registerShared(org.praxislive.ide.project.api.PraxisProject, org.openide.filesystems.FileObject, org.openide.filesystems.FileObject)}
+ * and obtain the info from {@link DynamicPaths.SharedKey#info}.
  */
-public interface SharedCodeContext {
+public final class SharedCodeInfo {
+    
+    private final FileObject root;
+    private final FileObject folder;
+    
+    SharedCodeInfo(FileObject root, FileObject folder) {
+        this.root = root;
+        this.folder = folder;
+    }
+    
 
     /**
      * The folder which contains all shared code files. Likely to be on a memory
@@ -35,6 +48,10 @@ public interface SharedCodeContext {
      *
      * @return shared code folder
      */
-    public FileObject getFolder();
-
+    public FileObject getFolder() {
+        return folder;
+    }
+    
+    
+    
 }

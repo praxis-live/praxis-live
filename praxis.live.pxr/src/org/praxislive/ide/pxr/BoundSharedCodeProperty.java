@@ -19,7 +19,6 @@
  * Please visit http://neilcsmith.net if you need additional information or
  * have any questions.
  */
-
 package org.praxislive.ide.pxr;
 
 import java.awt.EventQueue;
@@ -40,15 +39,18 @@ import org.praxislive.core.ControlAddress;
 import org.praxislive.core.ControlInfo;
 import org.praxislive.core.Value;
 import org.praxislive.core.types.PMap;
+import org.praxislive.ide.code.api.DynamicPaths;
+import org.praxislive.ide.code.api.SharedCodeInfo;
 import org.praxislive.ide.project.api.PraxisProject;
 
 class BoundSharedCodeProperty extends BoundArgumentProperty {
-    
+
     private final PraxisProject project;
     private final FileSystem fileSystem;
     private final FileObject sharedFolder;
     private final Listener fileListener;
-    
+
+    private DynamicPaths.SharedKey sharedKey;
     private boolean valueIsAdjusting;
 
     BoundSharedCodeProperty(PraxisProject project, ControlAddress address, ControlInfo info) {
@@ -62,20 +64,36 @@ class BoundSharedCodeProperty extends BoundArgumentProperty {
         } catch (IOException ex) {
             throw new IllegalStateException(ex);
         }
+        sharedKey = DynamicPaths.getDefault().registerShared(project,
+                fileSystem.getRoot(),
+                sharedFolder);
         setHidden(true);
         addPropertyChangeListener(this::updateFiles);
     }
 
-    FileObject getSharedCodeFolder() {
-        return sharedFolder;
+    @Override
+    public void dispose() {
+        super.dispose();
+        sharedKey.unregister();
+        sharedKey = null;
+        sharedFolder.removeRecursiveListener(fileListener);
+        try {
+            sharedFolder.delete();
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
-    
+
+    SharedCodeInfo getSharedCodeInfo() {
+        return sharedKey.info();
+    }
+
     private void updateFiles(PropertyChangeEvent update) {
-        
-        if (valueIsAdjusting) {
+
+        if (valueIsAdjusting || sharedKey == null) {
             return;
         }
-        
+
         try {
             valueIsAdjusting = true;
 
@@ -96,17 +114,16 @@ class BoundSharedCodeProperty extends BoundArgumentProperty {
             workingList.forEach(f -> addFile(f, newFiles.getString(f, "")));
 
             // ignore text updates?
-            
         } finally {
             valueIsAdjusting = false;
         }
-        
+
     }
-    
+
     private void addFile(String binaryName, String source) {
         try {
-            FileObject file = 
-                    FileUtil.createData(fileSystem.getRoot(), toFileName(binaryName));
+            FileObject file
+                    = FileUtil.createData(fileSystem.getRoot(), toFileName(binaryName));
             file.setAttribute("project", project);
             file.setAttribute("controlAddress", getAddress());
             try (OutputStreamWriter writer = new OutputStreamWriter(file.getOutputStream())) {
@@ -116,7 +133,7 @@ class BoundSharedCodeProperty extends BoundArgumentProperty {
             Exceptions.printStackTrace(ex);
         }
     }
-    
+
     private void removeFile(String binaryName) {
         FileObject file = fileSystem.findResource(toFileName(binaryName));
         if (file != null) {
@@ -127,11 +144,11 @@ class BoundSharedCodeProperty extends BoundArgumentProperty {
             }
         }
     }
-    
+
     private String toFileName(String binaryName) {
         return binaryName.replace('.', '/') + ".java";
     }
-    
+
     private String toBinaryName(String path) {
         int i = path.lastIndexOf('.');
         if (i > 0) {
@@ -140,7 +157,7 @@ class BoundSharedCodeProperty extends BoundArgumentProperty {
             return path.replace('/', '.');
         }
     }
-    
+
     private class Listener implements FileChangeListener {
 
         @Override
@@ -175,12 +192,12 @@ class BoundSharedCodeProperty extends BoundArgumentProperty {
         public void fileRenamed(FileRenameEvent fe) {
             update();
         }
-        
+
         private void update() {
             if (!EventQueue.isDispatchThread()) {
                 EventQueue.invokeLater(this::update);
             }
-            if (valueIsAdjusting) {
+            if (valueIsAdjusting || sharedKey == null) {
                 return;
             }
             valueIsAdjusting = true;
@@ -203,9 +220,9 @@ class BoundSharedCodeProperty extends BoundArgumentProperty {
             } finally {
                 valueIsAdjusting = false;
             }
-            
+
         }
-        
+
     }
 
 }

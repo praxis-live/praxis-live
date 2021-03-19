@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2018 Neil C Smith.
+ * Copyright 2021 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -19,7 +19,7 @@
  * Please visit http://neilcsmith.net if you need additional information or
  * have any questions.
  */
-package org.praxislive.ide.pxj;
+package org.praxislive.ide.code;
 
 import java.io.File;
 import java.net.URL;
@@ -32,7 +32,6 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author Neil C Smith - http://www.neilcsmith.net
  */
 @ServiceProvider(service = JavadocForBinaryQueryImplementation.class)
 public class JavadocQueryImpl implements JavadocForBinaryQueryImplementation {

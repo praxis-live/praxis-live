@@ -35,8 +35,9 @@ import org.openide.util.lookup.ProxyLookup;
 import org.praxislive.core.ControlAddress;
 import org.praxislive.core.ControlInfo;
 import org.praxislive.core.types.PMap;
+import org.praxislive.ide.code.api.DynamicPaths;
 import org.praxislive.ide.core.api.Disposable;
-import org.praxislive.ide.code.SharedCodeContext;
+import org.praxislive.ide.code.api.SharedCodeInfo;
 
 /**
  *
@@ -47,7 +48,6 @@ public class PXRRootProxy extends PXRContainerProxy implements RootProxy, Dispos
     private final PXRDataObject source;
     private final PraxisProject project;
     private final PXRHelper helper;
-    private final SharedCodeContext sharedCode;
 
     PXRRootProxy(PraxisProject project, PXRHelper helper, PXRDataObject source, String id,
             ComponentType type, ComponentInfo info) {
@@ -56,11 +56,6 @@ public class PXRRootProxy extends PXRContainerProxy implements RootProxy, Dispos
         this.source = source;
         this.project = project;
         this.helper = helper;
-        if (info.controls().contains("shared-code")) {
-            sharedCode = new SharedCodeImpl();
-        } else {
-            sharedCode = null;
-        }
     }
 
     @Override
@@ -109,8 +104,10 @@ public class PXRRootProxy extends PXRContainerProxy implements RootProxy, Dispos
 
     @Override
     Lookup createLookup() {
-        if (sharedCode != null) {
-            return new ProxyLookup(Lookups.singleton(sharedCode),
+        var property = getProperty("shared-code");
+        if (property instanceof BoundSharedCodeProperty) {
+            SharedCodeInfo sharedInfo = ((BoundSharedCodeProperty) property).getSharedCodeInfo();
+            return new ProxyLookup(Lookups.singleton(sharedInfo),
                     super.createLookup());
         } else {
             return super.createLookup();
@@ -128,26 +125,6 @@ public class PXRRootProxy extends PXRContainerProxy implements RootProxy, Dispos
             }
         }
         return super.createPropertyForControl(address, info);
-    }
-
-    private class SharedCodeImpl implements SharedCodeContext {
-
-        private FileObject sharedCodeFolder;
-
-        @Override
-        public FileObject getFolder() {
-            if (sharedCodeFolder == null) {
-                var property = getProperty("shared-code");
-                if (property instanceof BoundSharedCodeProperty) {
-                    sharedCodeFolder = ((BoundSharedCodeProperty) property)
-                            .getSharedCodeFolder();
-                } else {
-                    sharedCodeFolder = FileUtil.createMemoryFileSystem().getRoot();
-                }
-            }
-            return sharedCodeFolder;
-        }
-
     }
 
 }
