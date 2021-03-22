@@ -38,9 +38,11 @@ import org.praxislive.core.ControlAddress;
 import org.praxislive.core.ArgumentInfo;
 import org.praxislive.ide.project.api.PraxisProject;
 import org.netbeans.api.actions.Openable;
+import org.netbeans.api.actions.Savable;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionReferences;
+import org.openide.cookies.EditorCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
@@ -198,13 +200,31 @@ public class PXJDataObject extends MultiDataObject {
     void disposeProxy() {
         if (javaProxy != null) {
             try {
-                javaProxy.delete();
-                javaProxy = null;
                 pathsKey.unregister();
                 pathsKey = null;
+                FileObject file = javaProxy;
+                javaProxy = null; // make sure listener ignored
+                closeEditors(file);
+                file.delete();
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
+        }
+    }
+    
+    private void closeEditors(FileObject file) {
+        try {
+            var dob = DataObject.find(file);
+            var savable = dob.getLookup().lookup(Savable.class);
+            if (savable != null) {
+                savable.save();
+            }
+            var editor = dob.getLookup().lookup(EditorCookie.class);
+            if (editor != null) {
+                editor.close();
+            }
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
         }
     }
 

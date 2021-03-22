@@ -27,6 +27,8 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.api.actions.Savable;
+import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -34,6 +36,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
 import org.praxislive.core.ControlAddress;
 import org.praxislive.core.ControlInfo;
@@ -78,6 +81,11 @@ class BoundSharedCodeProperty extends BoundArgumentProperty {
         sharedKey = null;
         sharedFolder.removeRecursiveListener(fileListener);
         try {
+            sharedFolder.getChildren(true).asIterator().forEachRemaining(file -> {
+                if (file.isData()) {
+                    removeFile(file);
+                }
+            });
             sharedFolder.delete();
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
@@ -137,11 +145,23 @@ class BoundSharedCodeProperty extends BoundArgumentProperty {
     private void removeFile(String binaryName) {
         FileObject file = fileSystem.findResource(toFileName(binaryName));
         if (file != null) {
-            try {
-                file.delete();
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
+            removeFile(file);
+        }
+    }
+
+    private void removeFile(FileObject file) {
+        try {
+            var dob = DataObject.find(file);
+            var savable = dob.getLookup().lookup(Savable.class);
+            if (savable != null) {
+                savable.save();
             }
+            var editor = dob.getLookup().lookup(EditorCookie.class);
+            if (editor != null) {
+                editor.close();
+            }
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
         }
     }
 
