@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2020 Neil C Smith.
+ * Copyright 2021 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -19,7 +19,7 @@
  * Please visit http://neilcsmith.net if you need additional information or
  * have any questions.
  */
-package org.praxislive.ide.pxj;
+package org.praxislive.ide.code;
 
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
@@ -31,16 +31,22 @@ import org.openide.util.lookup.ServiceProvider;
  */
 @ServiceProvider(service = ClassPathProvider.class)
 public class ClassPathImpl implements ClassPathProvider {
+    
 
     @Override
     public ClassPath findClassPath(FileObject file, String type) {
-        Object o = file.getAttribute(PXJDataObject.PXJ_DOB_KEY);
-        if (o instanceof PXJDataObject) {
-            PXJDataObject dob = (PXJDataObject) o;
-            return dob.getClassPath(file, type);
+        var info = PathRegistry.getDefault().findInfo(file);
+        if (info != null) {
+            if (ClassPath.SOURCE.equals(type)) {
+                return info.classpath();
+            } else {
+                var cpp = info.project().getLookup().lookup(ClassPathProvider.class);
+                if (cpp != null) {
+                    return cpp.findClassPath(file, type);
+                }
+            }
         }
         return null;
-
     }
 
 }

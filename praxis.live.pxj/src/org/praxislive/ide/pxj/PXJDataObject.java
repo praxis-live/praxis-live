@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2020 Neil C Smith.
+ * Copyright 2021 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -22,17 +22,13 @@
 package org.praxislive.ide.pxj;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.StringReader;
-import java.net.URI;
-import java.net.URL;
 import java.nio.CharBuffer;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -42,12 +38,11 @@ import org.praxislive.core.ControlAddress;
 import org.praxislive.core.ArgumentInfo;
 import org.praxislive.ide.project.api.PraxisProject;
 import org.netbeans.api.actions.Openable;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.spi.java.classpath.ClassPathProvider;
-import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.netbeans.api.actions.Savable;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionReferences;
+import org.openide.cookies.EditorCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
@@ -61,8 +56,10 @@ import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.MultiFileLoader;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle.Messages;
-import org.openide.util.Utilities;
-import org.praxislive.ide.project.api.ProjectProperties;
+import org.praxislive.ide.code.api.DynamicPaths;
+import org.praxislive.ide.code.api.SharedCodeInfo;
+import org.praxislive.ide.model.HubProxy;
+import org.praxislive.ide.model.RootProxy;
 
 @Messages({
     "LBL_PXJ_LOADER=Files of PXJ"
@@ -108,14 +105,12 @@ public class PXJDataObject extends MultiDataObject {
     private final ClassBodyContext<?> classBodyContext;
     private final ControlAddress controlAddress;
     private final PraxisProject project;
-    private final ProjectProperties projectProps;
-    private final ClassPathProvider classPathProvider;
-    
+
     private FileObject javaProxy;
+    private DynamicPaths.Key pathsKey;
     private String defaultImports;
     private String classDeclaration;
     private String classEnding;
-    private ClassPath sourceClassPath;
 
     public PXJDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException, IOException {
         super(pf, loader);
@@ -123,10 +118,6 @@ public class PXJDataObject extends MultiDataObject {
         classBodyContext = findClassBodyContext(pf);
         controlAddress = findControlAddress(pf);
         project = findProject(pf);
-        projectProps = project == null ? null :
-                project.getLookup().lookup(ProjectProperties.class);
-        classPathProvider = project == null ? null :
-                project.getLookup().lookup(ClassPathProvider.class);
         getCookieSet().add(new Open());
     }
 
@@ -166,20 +157,6 @@ public class PXJDataObject extends MultiDataObject {
         }
     }
 
-    private Optional<URL> archiveFileFromURI(URI uri) {
-        try {
-            File file = Utilities.toFile(uri);
-            if (file.exists() && file.getName().endsWith(".jar")) {
-                return Optional.of(FileUtil.urlForArchiveOrDir(file));
-            } else {
-                return Optional.empty();
-            }
-        } catch (Exception ex) {
-            Exceptions.printStackTrace(ex);
-            return Optional.empty();
-        }
-    }
-
     @Override
     protected int associateLookup() {
         return 1;
@@ -189,7 +166,9 @@ public class PXJDataObject extends MultiDataObject {
         try {
             if (javaProxy == null) {
                 javaProxy = constructProxy();
-                sourceClassPath = ClassPathSupport.createClassPath(javaProxy.getParent());
+                pathsKey = DynamicPaths.getDefault().register(project,
+                        javaProxy.getFileSystem().getRoot(),
+                        findSharedInfo());
             }
             DataObject dob = DataObject.find(javaProxy);
             Openable openable = dob.getLookup().lookup(Openable.class);
@@ -201,6 +180,17 @@ public class PXJDataObject extends MultiDataObject {
         }
     }
 
+    private SharedCodeInfo findSharedInfo() {
+        HubProxy hub = project.getLookup().lookup(HubProxy.class);
+        if (hub != null) {
+            RootProxy root = hub.getRoot(controlAddress.component().rootID());
+            if (root != null) {
+                return root.getLookup().lookup(SharedCodeInfo.class);
+            }
+        }
+        return null;
+    }
+
     @Override
     protected void dispose() {
         super.dispose();
@@ -210,26 +200,31 @@ public class PXJDataObject extends MultiDataObject {
     void disposeProxy() {
         if (javaProxy != null) {
             try {
-                javaProxy.delete();
-                javaProxy = null;
-                sourceClassPath = null;
+                pathsKey.unregister();
+                pathsKey = null;
+                FileObject file = javaProxy;
+                javaProxy = null; // make sure listener ignored
+                closeEditors(file);
+                file.delete();
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
         }
     }
-
-    int getJavaRelease() {
-        return projectProps.getJavaRelease();
-    }
     
-    ClassPath getClassPath(FileObject file, String type) {
-        if (ClassPath.SOURCE.equals(type)) {
-            return sourceClassPath;
-        } else if (classPathProvider != null) {
-            return classPathProvider.findClassPath(file, type);
-        } else {
-            return null;
+    private void closeEditors(FileObject file) {
+        try {
+            var dob = DataObject.find(file);
+            var savable = dob.getLookup().lookup(Savable.class);
+            if (savable != null) {
+                savable.save();
+            }
+            var editor = dob.getLookup().lookup(EditorCookie.class);
+            if (editor != null) {
+                editor.close();
+            }
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
         }
     }
 
@@ -302,7 +297,7 @@ public class PXJDataObject extends MultiDataObject {
             boolean top = true;
             while ((line = r.readLine()) != null) {
                 if (top) {
-                    if ( line.trim().isEmpty()) {
+                    if (line.trim().isEmpty()) {
                         continue;
                     }
                     top = false;

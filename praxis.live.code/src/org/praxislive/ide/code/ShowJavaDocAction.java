@@ -19,7 +19,7 @@
  * Please visit http://neilcsmith.net if you need additional information or
  * have any questions.
  */
-package org.praxislive.ide.pxj;
+package org.praxislive.ide.code;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
