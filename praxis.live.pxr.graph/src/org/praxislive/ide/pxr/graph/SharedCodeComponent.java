@@ -33,11 +33,13 @@ import javax.swing.JPanel;
 import org.netbeans.api.actions.Openable;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.cookies.EditorCookie;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObject;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
@@ -47,12 +49,12 @@ import org.openide.util.NbBundle;
  *
  */
 @NbBundle.Messages({
-    "ACT_NewSharedFile=New File...",
+    "ACT_NewSharedType=New Type...",
     "ACT_Open=Open",
     "ACT_Delete=Delete",
-    "# {0} - File name",
-    "DLG_DeleteFile=Delete shared file {0}?",
-    "TTL_NewFile=New File",
+    "# {0} - Type name",
+    "DLG_DeleteType=Delete shared type {0}?",
+    "TTL_NewType=New Type",
     "DLG_EnterTypeName=Enter type name"
 })
 class SharedCodeComponent extends JPanel implements ExplorerManager.Provider {
@@ -208,7 +210,7 @@ class SharedCodeComponent extends JPanel implements ExplorerManager.Provider {
         public void actionPerformed(ActionEvent e) {
             String name = node.getDisplayName();
             if (DialogDisplayer.getDefault().notify(
-                    new NotifyDescriptor.Confirmation(Bundle.DLG_DeleteFile(name),
+                    new NotifyDescriptor.Confirmation(Bundle.DLG_DeleteType(name),
                             NotifyDescriptor.OK_CANCEL_OPTION))
                     == NotifyDescriptor.OK_OPTION) {
                 try {
@@ -229,7 +231,7 @@ class SharedCodeComponent extends JPanel implements ExplorerManager.Provider {
         private final Node node;
 
         private NewFileAction(Node node) {
-            super(Bundle.ACT_NewSharedFile());
+            super(Bundle.ACT_NewSharedType());
             this.node = node;
         }
 
@@ -237,7 +239,7 @@ class SharedCodeComponent extends JPanel implements ExplorerManager.Provider {
         public void actionPerformed(ActionEvent e) {
             try {
                 NotifyDescriptor.InputLine input = new NotifyDescriptor.InputLine(
-                        Bundle.DLG_EnterTypeName(), Bundle.TTL_NewFile());
+                        Bundle.DLG_EnterTypeName(), Bundle.TTL_NewType());
                 if (DialogDisplayer.getDefault().notify(input) == NotifyDescriptor.OK_OPTION) {
                     String typeName = input.getInputText().trim();
                     if (typeName.isBlank() || typeName.contains("/")) {
@@ -251,6 +253,9 @@ class SharedCodeComponent extends JPanel implements ExplorerManager.Provider {
                     try (OutputStreamWriter writer = new OutputStreamWriter(file.getOutputStream())) {
                         writer.append(source);
                     }
+                    DataObject dob = DataObject.find(file);
+                    EditorCookie editor = dob.getLookup().lookup(EditorCookie.class);
+                    editor.open();
                 }
             } catch (Exception ex) {
                 Exceptions.printStackTrace(ex);
