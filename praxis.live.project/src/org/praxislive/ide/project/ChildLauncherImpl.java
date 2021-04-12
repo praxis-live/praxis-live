@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2020 Neil C Smith.
+ * Copyright 2021 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -68,7 +68,7 @@ class ChildLauncherImpl implements ChildLauncher {
                 });
         var pb = ProcessBuilder.getLocal();
         pb.setExecutable(launcher.getCanonicalPath());
-        pb.setArguments(List.of("--child"));
+        pb.setArguments(List.of("--child", "--no-signal-handlers"));
         var env = pb.getEnvironment();
         env.setVariable("JAVA_HOME", System.getProperty("java.home"));
         env.setVariable("JAVA_OPTS", javaOptions.stream()
