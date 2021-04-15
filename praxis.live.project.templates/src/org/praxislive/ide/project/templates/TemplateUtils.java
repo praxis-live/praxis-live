@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 2020 Neil C Smith.
+ * Copyright 2021 Neil C Smith.
  * 
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -200,7 +200,7 @@ class TemplateUtils {
                     var folderName = file.getName();
                     sb.append("<folder name=\"").append(folderName).append("\">");
                     if (!"PraxisCORE".equals(folderName)) {
-                        sb.append("<attr name=\"position\" intvalue=\"" + position +"\"/>\n");
+                        sb.append("<attr name=\"position\" intvalue=\"").append(position).append("\"/>\n");
                         position += 100;
                     }
                     writeFolderProjects(sb, file, 0);

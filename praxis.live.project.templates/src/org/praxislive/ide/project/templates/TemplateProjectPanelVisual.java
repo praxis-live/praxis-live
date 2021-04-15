@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 2018 Neil C Smith.
+ * Copyright 2021 Neil C Smith.
  * 
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -36,7 +36,7 @@ class TemplateProjectPanelVisual extends JPanel implements DocumentListener {
 
     public static final String PROP_PROJECT_NAME = "projectName";
 
-    private TemplateProjectWizardPanel panel;
+    private final TemplateProjectWizardPanel panel;
 
     public TemplateProjectPanelVisual(TemplateProjectWizardPanel panel) {
         initComponents();
@@ -234,7 +234,7 @@ class TemplateProjectPanelVisual extends JPanel implements DocumentListener {
         // nothing to validate
     }
 
-    // Implementation of DocumentListener --------------------------------------
+    @Override
     public void changedUpdate(DocumentEvent e) {
         updateTexts(e);
         if (this.projectNameTextField.getDocument() == e.getDocument()) {
@@ -242,6 +242,7 @@ class TemplateProjectPanelVisual extends JPanel implements DocumentListener {
         }
     }
 
+    @Override
     public void insertUpdate(DocumentEvent e) {
         updateTexts(e);
         if (this.projectNameTextField.getDocument() == e.getDocument()) {
@@ -249,6 +250,7 @@ class TemplateProjectPanelVisual extends JPanel implements DocumentListener {
         }
     }
 
+    @Override
     public void removeUpdate(DocumentEvent e) {
         updateTexts(e);
         if (this.projectNameTextField.getDocument() == e.getDocument()) {

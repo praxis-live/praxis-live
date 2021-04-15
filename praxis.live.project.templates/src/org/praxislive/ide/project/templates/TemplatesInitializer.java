@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 2018 Neil C Smith.
+ * Copyright 2021 Neil C Smith.
  * 
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -23,10 +23,6 @@ package org.praxislive.ide.project.templates;
 
 import org.openide.modules.OnStart;
 
-/**
- *
- * @author Neil C Smith - http://www.neilcsmith.net
- */
 @OnStart
 public class TemplatesInitializer implements Runnable {
 

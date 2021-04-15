@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 2018 Neil C Smith.
+ * Copyright 2021 Neil C Smith.
  * 
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -40,6 +40,7 @@ class TemplateProjectWizardPanel implements WizardDescriptor.Panel,
     public TemplateProjectWizardPanel() {
     }
 
+    @Override
     public Component getComponent() {
         if (component == null) {
             component = new TemplateProjectPanelVisual(this);
@@ -48,23 +49,27 @@ class TemplateProjectWizardPanel implements WizardDescriptor.Panel,
         return component;
     }
 
+    @Override
     public HelpCtx getHelp() {
-        return new HelpCtx(TemplateProjectWizardPanel.class);
+        return new HelpCtx(TemplateProjectWizardPanel.class.getName());
     }
 
+    @Override
     public boolean isValid() {
         getComponent();
         return component.valid(wizardDescriptor);
     }
 
-    private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1); // or can use ChangeSupport in NB 6.0
+    private final Set<ChangeListener> listeners = new HashSet<>(1); // or can use ChangeSupport in NB 6.0
 
+    @Override
     public final void addChangeListener(ChangeListener l) {
         synchronized (listeners) {
             listeners.add(l);
         }
     }
 
+    @Override
     public final void removeChangeListener(ChangeListener l) {
         synchronized (listeners) {
             listeners.remove(l);
@@ -74,7 +79,7 @@ class TemplateProjectWizardPanel implements WizardDescriptor.Panel,
     protected final void fireChangeEvent() {
         Set<ChangeListener> ls;
         synchronized (listeners) {
-            ls = new HashSet<ChangeListener>(listeners);
+            ls = new HashSet<>(listeners);
         }
         ChangeEvent ev = new ChangeEvent(this);
         for (ChangeListener l : ls) {
@@ -82,20 +87,24 @@ class TemplateProjectWizardPanel implements WizardDescriptor.Panel,
         }
     }
 
+    @Override
     public void readSettings(Object settings) {
         wizardDescriptor = (WizardDescriptor) settings;
         component.read(wizardDescriptor);
     }
 
+    @Override
     public void storeSettings(Object settings) {
         WizardDescriptor d = (WizardDescriptor) settings;
         component.store(d);
     }
 
+    @Override
     public boolean isFinishPanel() {
         return true;
     }
 
+    @Override
     public void validate() throws WizardValidationException {
         getComponent();
         component.validate(wizardDescriptor);

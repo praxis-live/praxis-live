@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2018 Neil C Smith.
+ * Copyright 2021 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -29,10 +29,6 @@ import org.openide.util.NbBundle.Messages;
 import org.openide.util.lookup.ServiceProvider;
 import org.praxislive.ide.core.ui.spi.StartPagePanelProvider;
 
-/**
- *
- * @author Neil C Smith - http://www.neilcsmith.net
- */
 @Messages({
     "TITLE_ExamplesStartPanel=Examples",
     "BTN_Install=Install",
