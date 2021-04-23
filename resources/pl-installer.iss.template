@@ -43,6 +43,7 @@ Type: filesandordirs; Name: "{app}\praxis"
 Type: filesandordirs; Name: "{app}\praxiscore"
 Type: filesandordirs; Name: "{app}\praxislive"
 Type: filesandordirs; Name: "{app}\praxis_live"
+Type: filesandordirs; Name: "{localappdata}\praxislive\Cache\v5"
 
 [Files]
 Source: "praxislive\bin\*"; DestDir: "{app}\bin"; Flags: ignoreversion recursesubdirs createallsubdirs
