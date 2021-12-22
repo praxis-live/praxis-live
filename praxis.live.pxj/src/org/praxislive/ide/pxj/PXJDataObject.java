@@ -29,11 +29,11 @@ import java.io.StringReader;
 import java.nio.CharBuffer;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
+import java.util.Optional;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.praxislive.code.ClassBodyContext;
+import java.util.stream.Collectors;
 import org.praxislive.core.ControlAddress;
 import org.praxislive.core.ArgumentInfo;
 import org.praxislive.ide.project.api.PraxisProject;
@@ -56,6 +56,8 @@ import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.MultiFileLoader;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle.Messages;
+import org.praxislive.core.Value;
+import org.praxislive.core.types.PArray;
 import org.praxislive.ide.code.api.DynamicPaths;
 import org.praxislive.ide.code.api.SharedCodeInfo;
 import org.praxislive.ide.model.HubProxy;
@@ -94,15 +96,17 @@ import org.praxislive.ide.model.RootProxy;
  ),*/})
 public class PXJDataObject extends MultiDataObject {
 
-    private final static Logger LOG = Logger.getLogger(PXJDataObject.class.getName());
+    private static final Logger LOG = Logger.getLogger(PXJDataObject.class.getName());
 
-    final static String PXJ_DOB_KEY = "PXJ_DOB";
-    final static String CONTROL_ADDRESS_KEY = "controlAddress";
-    final static String PROJECT_KEY = "project";
-    private final static String ARGUMENT_INFO_KEY = "argumentInfo";
+    static final String PXJ_DOB_KEY = "PXJ_DOB";
+    static final String CONTROL_ADDRESS_KEY = "controlAddress";
+    static final String PROJECT_KEY = "project";
+    private static final String ARGUMENT_INFO_KEY = "argumentInfo";
+    private static final String BASE_CLASS_KEY = "base-class";
+    private static final String BASE_IMPORTS_KEY = "base-imports";
 
     private final FileObject pxjFile;
-    private final ClassBodyContext<?> classBodyContext;
+    private final ClassBodyInfo classBodyInfo;
     private final ControlAddress controlAddress;
     private final PraxisProject project;
 
@@ -115,29 +119,29 @@ public class PXJDataObject extends MultiDataObject {
     public PXJDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException, IOException {
         super(pf, loader);
         this.pxjFile = pf;
-        classBodyContext = findClassBodyContext(pf);
+        classBodyInfo = buildClassBodyInfo(pf);
         controlAddress = findControlAddress(pf);
         project = findProject(pf);
         getCookieSet().add(new Open());
     }
 
-    private ClassBodyContext<?> findClassBodyContext(FileObject f) {
-        try {
-            Object o = f.getAttribute(ARGUMENT_INFO_KEY);
-            if (o instanceof ArgumentInfo) {
-                o = ((ArgumentInfo) o).properties().get(ClassBodyContext.KEY);
-                if (o != null) {
-                    Class<?> cls = Class.forName(o.toString(), true, Thread.currentThread().getContextClassLoader());
-                    if (cls != null && ClassBodyContext.class.isAssignableFrom(cls)) {
-                        o = cls.getDeclaredConstructor().newInstance();
-                        return (ClassBodyContext<?>) o;
-                    }
-                }
-            }
-        } catch (Exception ex) {
-            LOG.log(Level.WARNING, "", ex);
+    private ClassBodyInfo buildClassBodyInfo(FileObject f) {
+        Object attr = f.getAttribute(ARGUMENT_INFO_KEY);
+        if (attr instanceof ArgumentInfo) {
+            ArgumentInfo info = (ArgumentInfo) attr;
+            String baseClassName = Optional.ofNullable(info.properties().get(BASE_CLASS_KEY))
+                    .map(Value::toString)
+                    .orElse("java.lang.Object");
+            List<String> baseImports = Optional.ofNullable(info.properties().get(BASE_IMPORTS_KEY))
+                    .flatMap(PArray::from)
+                    .orElse(PArray.EMPTY)
+                    .stream()
+                    .map(Value::toString)
+                    .collect(Collectors.toList());
+            return new ClassBodyInfo(baseClassName, baseImports);
+        } else {
+            return new ClassBodyInfo("java.lang.Object", List.of());
         }
-        return null;
     }
 
     private ControlAddress findControlAddress(FileObject f) {
@@ -211,7 +215,7 @@ public class PXJDataObject extends MultiDataObject {
             }
         }
     }
-    
+
     private void closeEditors(FileObject file) {
         try {
             var dob = DataObject.find(file);
@@ -280,18 +284,14 @@ public class PXJDataObject extends MultiDataObject {
         try {
             String fileContents = pxjFile.asText();
             BufferedReader r = new BufferedReader(new StringReader(fileContents));
-            ClassBodyContext<?> context = classBodyContext;
-            if (context == null) {
-                // what now?
-            }
             String[] extraImports = parseImportDeclarations(r);
             StringBuilder sb = new StringBuilder();
-            sb.append(getDefaultImports(context));
+            sb.append(getDefaultImports());
             for (String extraImp : extraImports) {
                 sb.append("import ").append(extraImp).append(";\n");
             }
             sb.append("\n");
-            sb.append(getClassDeclaration(context));
+            sb.append(getClassDeclaration());
             sb.append("\n");
             String line;
             boolean top = true;
@@ -308,7 +308,7 @@ public class PXJDataObject extends MultiDataObject {
             if (sb.charAt(sb.length() - 1) != '\n') {
                 sb.append('\n');
             }
-            sb.append(getClassEnding(context));
+            sb.append(getClassEnding());
 
             return sb.toString();
         } catch (IOException ex) {
@@ -317,14 +317,14 @@ public class PXJDataObject extends MultiDataObject {
 
     }
 
-    private String getDefaultImports(ClassBodyContext<?> context) {
+    private String getDefaultImports() {
         if (defaultImports == null) {
-            String[] importList = context.getDefaultImports();
-            if (importList.length > 0) {
+            List<String> imports = classBodyInfo.baseImports;
+            if (!imports.isEmpty()) {
                 StringBuilder sb = new StringBuilder();
                 sb.append("//<editor-fold defaultstate=\"collapsed\" desc=\"Default Imports\">");
                 sb.append("//GEN-BEGIN:imports");
-                for (String imp : importList) {
+                for (String imp : imports) {
                     sb.append("\nimport ");
                     sb.append(imp);
                     sb.append(";");
@@ -338,7 +338,7 @@ public class PXJDataObject extends MultiDataObject {
         return defaultImports;
     }
 
-    private String getClassDeclaration(ClassBodyContext<?> context) {
+    private String getClassDeclaration() {
         if (classDeclaration == null) {
             StringBuilder sb = new StringBuilder();
             sb.append("//<editor-fold defaultstate=\"collapsed\" desc=\"Class Declaration\">");
@@ -346,7 +346,7 @@ public class PXJDataObject extends MultiDataObject {
             sb.append("class ");
             sb.append(pxjFile.getName());
             sb.append(" extends ");
-            sb.append(context.getExtendedClass().getName());
+            sb.append(classBodyInfo.baseClassName);
             // @TODO support interfaces
             sb.append(" {\n");
             sb.append("//</editor-fold> --//GEN-END:classdec\n");
@@ -355,7 +355,7 @@ public class PXJDataObject extends MultiDataObject {
         return classDeclaration;
     }
 
-    private String getClassEnding(ClassBodyContext<?> context) {
+    private String getClassEnding() {
         if (classEnding == null) {
 //            StringBuilder sb = new StringBuilder();
 //            sb.append("//<editor-fold defaultstate=\"collapsed\" desc=\"Class Ending\">");
@@ -430,6 +430,18 @@ public class PXJDataObject extends MultiDataObject {
             } else {
                 fe.getFile().removeFileChangeListener(this);
             }
+        }
+
+    }
+
+    private static class ClassBodyInfo {
+
+        private final String baseClassName;
+        private final List<String> baseImports;
+
+        public ClassBodyInfo(String baseClassName, List<String> baseImports) {
+            this.baseClassName = baseClassName;
+            this.baseImports = List.copyOf(baseImports);
         }
 
     }
