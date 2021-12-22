@@ -1,7 +1,0 @@
-Manifest-Version: 1.0
-OpenIDE-Module: org.praxislive.ide.laf
-OpenIDE-Module-Install: org/praxislive/ide/laf/Installer.class
-OpenIDE-Module-Localizing-Bundle: org/praxislive/ide/laf/Bundle.properties
-OpenIDE-Module-Specification-Version: 5.0.0
-AutoUpdate-Essential-Module: true
-AutoUpdate-Show-In-Client: false
