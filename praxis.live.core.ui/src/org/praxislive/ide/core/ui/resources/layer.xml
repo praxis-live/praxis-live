@@ -27,6 +27,7 @@
   </folder>
     
   <folder name="Editors">
+    <attr name="currentFontColorProfile" stringvalue="FlatLaf Dark" />
     <folder name="Popup">
       <file name="org-netbeans-modules-project-ui-SelectInProjects.shadow_hidden"/>
     </folder>
