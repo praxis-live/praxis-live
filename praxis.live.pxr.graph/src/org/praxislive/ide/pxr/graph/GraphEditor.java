@@ -544,9 +544,15 @@ public class GraphEditor extends RootEditor {
         if (cmp instanceof ContainerProxy) {
             ContainerOpenAction containerOpenAction = new ContainerOpenAction((ContainerProxy) cmp);
             widget.getActions().addAction(ActionFactory.createEditAction(w -> {
-                containerOpenAction.actionPerformed(new ActionEvent(this,
-                        ActionEvent.ACTION_PERFORMED,
-                        "edit"));
+                AWTEvent current = EventQueue.getCurrentEvent();
+                if (current instanceof InputEvent && ((InputEvent) current).isShiftDown()) {
+                    cmp.getNodeDelegate().getPreferredAction().actionPerformed(
+                        new ActionEvent(this, ActionEvent.ACTION_PERFORMED, "edit", ActionEvent.SHIFT_MASK));
+                } else {
+                    containerOpenAction.actionPerformed(new ActionEvent(this,
+                            ActionEvent.ACTION_PERFORMED,
+                            "edit"));
+                }
             }));
         } else {
             widget.getActions().addAction(ActionFactory.createEditAction(w -> {
