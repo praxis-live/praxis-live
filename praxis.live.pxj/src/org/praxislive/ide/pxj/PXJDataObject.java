@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2021 Neil C Smith.
+ * Copyright 2022 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -21,16 +21,13 @@
  */
 package org.praxislive.ide.pxj;
 
-import java.io.BufferedReader;
+import java.awt.EventQueue;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
-import java.io.Reader;
-import java.io.StringReader;
-import java.nio.CharBuffer;
-import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
-import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -88,15 +85,9 @@ import org.praxislive.ide.model.RootProxy;
             path = "Loaders/text/x-praxis-java/Actions",
             id = @ActionID(category = "Edit", id = "org.openide.actions.DeleteAction"),
             position = 600
-    ), /*@ActionReference(
- path="Loaders/text/x-praxis-java/Actions", 
- id=@ActionID(category="System", id="org.openide.actions.RenameAction"),
- position=700,
- separatorAfter=800
- ),*/})
+    )
+})
 public class PXJDataObject extends MultiDataObject {
-
-    private static final Logger LOG = Logger.getLogger(PXJDataObject.class.getName());
 
     static final String PXJ_DOB_KEY = "PXJ_DOB";
     static final String CONTROL_ADDRESS_KEY = "controlAddress";
@@ -104,9 +95,11 @@ public class PXJDataObject extends MultiDataObject {
     private static final String ARGUMENT_INFO_KEY = "argumentInfo";
     private static final String BASE_CLASS_KEY = "base-class";
     private static final String BASE_IMPORTS_KEY = "base-imports";
+    private static final String NEW_LINE = "\n";
 
     private final FileObject pxjFile;
-    private final ClassBodyInfo classBodyInfo;
+    private final String baseClassName;
+    private final List<String> baseImports;
     private final ControlAddress controlAddress;
     private final PraxisProject project;
 
@@ -115,50 +108,33 @@ public class PXJDataObject extends MultiDataObject {
     private String defaultImports;
     private String classDeclaration;
     private String classEnding;
+    private String superClassName;
+    private boolean inRefresh;
 
-    public PXJDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException, IOException {
-        super(pf, loader);
-        this.pxjFile = pf;
-        classBodyInfo = buildClassBodyInfo(pf);
-        controlAddress = findControlAddress(pf);
-        project = findProject(pf);
-        getCookieSet().add(new Open());
-    }
-
-    private ClassBodyInfo buildClassBodyInfo(FileObject f) {
+    public PXJDataObject(FileObject f, MultiFileLoader loader) throws DataObjectExistsException, IOException {
+        super(f, loader);
+        this.pxjFile = f;
         Object attr = f.getAttribute(ARGUMENT_INFO_KEY);
         if (attr instanceof ArgumentInfo) {
             ArgumentInfo info = (ArgumentInfo) attr;
-            String baseClassName = Optional.ofNullable(info.properties().get(BASE_CLASS_KEY))
+            baseClassName = Optional.ofNullable(info.properties().get(BASE_CLASS_KEY))
                     .map(Value::toString)
                     .orElse("java.lang.Object");
-            List<String> baseImports = Optional.ofNullable(info.properties().get(BASE_IMPORTS_KEY))
+            baseImports = Optional.ofNullable(info.properties().get(BASE_IMPORTS_KEY))
                     .flatMap(PArray::from)
                     .orElse(PArray.EMPTY)
                     .stream()
                     .map(Value::toString)
-                    .collect(Collectors.toList());
-            return new ClassBodyInfo(baseClassName, baseImports);
+                    .collect(Collectors.toUnmodifiableList());
         } else {
-            return new ClassBodyInfo("java.lang.Object", List.of());
+            baseClassName = "java.lang.Object";
+            baseImports = List.of();
         }
-    }
-
-    private ControlAddress findControlAddress(FileObject f) {
-        Object o = f.getAttribute(CONTROL_ADDRESS_KEY);
-        if (o instanceof ControlAddress) {
-            return (ControlAddress) o;
-        }
-        return null;
-    }
-
-    private PraxisProject findProject(FileObject f) {
-        Object o = f.getAttribute(PROJECT_KEY);
-        if (o instanceof PraxisProject) {
-            return (PraxisProject) o;
-        } else {
-            return null;
-        }
+        attr = f.getAttribute(CONTROL_ADDRESS_KEY);
+        controlAddress = attr instanceof ControlAddress ? (ControlAddress) attr : null;
+        attr = f.getAttribute(PROJECT_KEY);
+        project = attr instanceof PraxisProject ? (PraxisProject) attr : null;
+        getCookieSet().add(new Open());
     }
 
     @Override
@@ -180,7 +156,7 @@ public class PXJDataObject extends MultiDataObject {
                 openable.open();
             }
         } catch (Exception ex) {
-
+            Exceptions.printStackTrace(ex);
         }
     }
 
@@ -202,7 +178,7 @@ public class PXJDataObject extends MultiDataObject {
     }
 
     void disposeProxy() {
-        if (javaProxy != null) {
+        if (javaProxy != null &&!inRefresh) {
             try {
                 pathsKey.unregister();
                 pathsKey = null;
@@ -238,20 +214,20 @@ public class PXJDataObject extends MultiDataObject {
                 return;
             }
             String data = javaProxy.asText();
+            if (superClassName != null) {
+                data = "extends " + superClassName + ";" + NEW_LINE + data;
+            }
             if (defaultImports != null && !defaultImports.isEmpty()) {
                 data = data.replace(defaultImports, "");
             }
             if (classDeclaration != null) {
                 data = data.replace(classDeclaration, "");
             }
-//            if (classEnding != null) {
-//                data = data.replace(classEnding, "");
-//            }
             int lastFold = data.lastIndexOf("}");
             if (lastFold > 0) {
                 data = data.substring(0, lastFold);
             }
-            try (OutputStreamWriter writer = new OutputStreamWriter(pxjFile.getOutputStream())) {
+            try ( OutputStreamWriter writer = new OutputStreamWriter(pxjFile.getOutputStream())) {
                 writer.append(data);
             }
         } catch (IOException ex) {
@@ -264,14 +240,8 @@ public class PXJDataObject extends MultiDataObject {
 
         FileSystem fs = FileUtil.createMemoryFileSystem();
         FileObject f = fs.getRoot().createData(pxjFile.getName(), "java");
-        OutputStreamWriter writer = null;
-        try {
-            writer = new OutputStreamWriter(f.getOutputStream());
-            writer.append(constructProxyContent());
-        } finally {
-            if (writer != null) {
-                writer.close();
-            }
+        try ( OutputStreamWriter writer = new OutputStreamWriter(f.getOutputStream())) {
+            writer.append(constructProxyContent(pxjFile.asText(), false));
         }
         f.setAttribute(PXJ_DOB_KEY, this);
         f.setAttribute(PROJECT_KEY, project);
@@ -280,137 +250,148 @@ public class PXJDataObject extends MultiDataObject {
         return f;
     }
 
-    private String constructProxyContent() {
-        try {
-            String fileContents = pxjFile.asText();
-            BufferedReader r = new BufferedReader(new StringReader(fileContents));
-            String[] extraImports = parseImportDeclarations(r);
-            StringBuilder sb = new StringBuilder();
-            sb.append(getDefaultImports());
-            for (String extraImp : extraImports) {
-                sb.append("import ").append(extraImp).append(";\n");
-            }
-            sb.append("\n");
-            sb.append(getClassDeclaration());
-            sb.append("\n");
-            String line;
-            boolean top = true;
-            while ((line = r.readLine()) != null) {
-                if (top) {
-                    if (line.trim().isEmpty()) {
-                        continue;
-                    }
-                    top = false;
+    // copied and adapted from org.praxislive.code.services.tools.ClassBodyWrapper
+    private String constructProxyContent(String source, boolean ignoreExtends) {
+        StringBuilder sb = new StringBuilder();
+
+        Map<LineCategory, List<String>> partitionedSource = source.lines()
+                .collect(Collectors.groupingBy(PXJDataObject::categorize,
+                        () -> new EnumMap<>(LineCategory.class),
+                        Collectors.toList()));
+
+        String superclass = superClassName == null ? baseClassName : superClassName;
+
+        if (!ignoreExtends) {
+            List<String> sourceExtends = partitionedSource.getOrDefault(
+                    LineCategory.EXTENDS, List.of());
+            if (!sourceExtends.isEmpty()) {
+                Matcher matcher = EXTENDS_STATEMENT_PATTERN.matcher(sourceExtends.get(0));
+                if (matcher.lookingAt()) {
+                    superclass = matcher.group(1);
                 }
-                sb.append(line).append('\n');
             }
+            superClassName = superclass.equals(baseClassName) ? null : superclass;
+        }
 
-            if (sb.charAt(sb.length() - 1) != '\n') {
-                sb.append('\n');
-            }
-            sb.append(getClassEnding());
+        defaultImports = constructDefaultImports(baseImports);
+        classDeclaration = constructClassDeclaration(pxjFile.getName(), superclass);
+        classEnding = constructClassEnding();
 
-            return sb.toString();
+        sb.append(defaultImports);
+        partitionedSource.getOrDefault(LineCategory.IMPORT, List.of())
+                .forEach(i -> sb.append(i).append(NEW_LINE));
+
+        sb.append(classDeclaration);
+
+        partitionedSource.getOrDefault(LineCategory.BODY, List.of())
+                .forEach(line -> sb.append(line).append(NEW_LINE));
+
+        sb.append(classEnding);
+
+        return sb.toString();
+    }
+
+    private void refreshProxy() {
+        if (javaProxy == null) {
+            assert false;
+            return;
+        }
+        inRefresh = true;
+        closeEditors(javaProxy);
+        try ( OutputStreamWriter writer = new OutputStreamWriter(javaProxy.getOutputStream())) {
+            writer.append(constructProxyContent(pxjFile.asText(), true));
+            EventQueue.invokeLater(this::openProxy);
         } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        } finally {
+            inRefresh = false;
+        }
+    }
+
+    void setBaseType(String baseType) {
+        String type = baseType == null ? baseClassName : baseType.strip();
+        if (type.isBlank() || type.equals(baseClassName)) {
+            if (superClassName != null) {
+                superClassName = null;
+                refreshProxy();
+            }
+        } else if (!type.equals(superClassName)) {
+            superClassName = type;
+            refreshProxy();
+        }
+    }
+
+    String getBaseType() {
+        return superClassName;
+    }
+
+    private static String constructDefaultImports(List<String> imports) {
+        if (!imports.isEmpty()) {
+            StringBuilder sb = new StringBuilder();
+            sb.append("//<editor-fold defaultstate=\"collapsed\" desc=\"Default Imports\">");
+            sb.append("//GEN-BEGIN:imports");
+            imports.forEach(i -> sb.append(NEW_LINE)
+                    .append("import ")
+                    .append(i)
+                    .append(";")
+            );
+            sb.append("//</editor-fold> --//GEN-END:imports").append(NEW_LINE);
+            return sb.toString();
+        } else {
             return "";
         }
-
     }
 
-    private String getDefaultImports() {
-        if (defaultImports == null) {
-            List<String> imports = classBodyInfo.baseImports;
-            if (!imports.isEmpty()) {
-                StringBuilder sb = new StringBuilder();
-                sb.append("//<editor-fold defaultstate=\"collapsed\" desc=\"Default Imports\">");
-                sb.append("//GEN-BEGIN:imports");
-                for (String imp : imports) {
-                    sb.append("\nimport ");
-                    sb.append(imp);
-                    sb.append(";");
-                }
-                sb.append("//</editor-fold> --//GEN-END:imports\n");
-                defaultImports = sb.toString();
-            } else {
-                defaultImports = "";
-            }
-        }
-        return defaultImports;
+    private static String constructClassDeclaration(String className, String superclass) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("//<editor-fold defaultstate=\"collapsed\" desc=\"Class Declaration\">");
+        sb.append("//GEN-BEGIN:classdec").append(NEW_LINE);
+        sb.append("class ");
+        sb.append(className);
+        sb.append(" extends ");
+        sb.append(superclass);
+        // @TODO support interfaces
+        sb.append(" {").append(NEW_LINE);
+        sb.append("//</editor-fold> --//GEN-END:classdec").append(NEW_LINE);
+        return sb.toString();
     }
 
-    private String getClassDeclaration() {
-        if (classDeclaration == null) {
-            StringBuilder sb = new StringBuilder();
-            sb.append("//<editor-fold defaultstate=\"collapsed\" desc=\"Class Declaration\">");
-            sb.append("//GEN-BEGIN:classdec\n");
-            sb.append("class ");
-            sb.append(pxjFile.getName());
-            sb.append(" extends ");
-            sb.append(classBodyInfo.baseClassName);
-            // @TODO support interfaces
-            sb.append(" {\n");
-            sb.append("//</editor-fold> --//GEN-END:classdec\n");
-            classDeclaration = sb.toString();
-        }
-        return classDeclaration;
+    private static String constructClassEnding() {
+        return "}//GEN-BEGIN:classend" + NEW_LINE + "//GEN-END:classend";
     }
 
-    private String getClassEnding() {
-        if (classEnding == null) {
-//            StringBuilder sb = new StringBuilder();
-//            sb.append("//<editor-fold defaultstate=\"collapsed\" desc=\"Class Ending\">");
-//            sb.append("//GEN-BEGIN:classend\n");
-//            sb.append("}\n");
-//            sb.append("//</editor-fold>//GEN-END:classend\n");
-//            classEnding = sb.toString();
-            classEnding = "}//GEN-BEGIN:classend\n//GEN-END:classend";
-        }
-        return classEnding;
-    }
-
-    /**
-     * Copied from Janino ClassBodyEvaluator
-     *
-     * Heuristically parse IMPORT declarations at the beginning of the character
-     * stream produced by the given {@link Reader}. After this method returns,
-     * all characters up to and including that last IMPORT declaration have been
-     * read from the {@link Reader}.
-     * <p>
-     * This method does not handle comments and string literals correctly, i.e.
-     * if a pattern that looks like an IMPORT declaration appears within a
-     * comment or a string literal, it will be taken as an IMPORT declaration.
-     *
-     * @param r A {@link Reader} that supports MARK, e.g. a
-     * {@link BufferedReader}
-     * @return The parsed imports, e.g. {@code { "java.util.*", "static java.util.Map.Entry"
-     * }}
-     */
-    private static String[]
-            parseImportDeclarations(Reader r) throws IOException {
-        final CharBuffer cb = CharBuffer.allocate(10000);
-        r.mark(cb.limit());
-        r.read(cb);
-        cb.rewind();
-
-        List<String> imports = new ArrayList<String>();
-        int afterLastImport = 0;
-        for (Matcher matcher = IMPORT_STATEMENT_PATTERN.matcher(cb); matcher.find();) {
-            imports.add(matcher.group(1));
-            afterLastImport = matcher.end();
-        }
-        r.reset();
-        r.skip(afterLastImport);
-        return imports.toArray(new String[imports.size()]);
-    }
     private static final Pattern IMPORT_STATEMENT_PATTERN = Pattern.compile(
-            "\\bimport\\s+"
+            "\\s*import\\s+"
             + "("
             + "(?:static\\s+)?"
-            + "[\\p{javaLowerCase}\\p{javaUpperCase}_\\$][\\p{javaLowerCase}\\p{javaUpperCase}\\d_\\$]*"
-            + "(?:\\.[\\p{javaLowerCase}\\p{javaUpperCase}_\\$][\\p{javaLowerCase}\\p{javaUpperCase}\\d_\\$]*)*"
+            + "\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*"
+            + "(?:\\.\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*)*"
             + "(?:\\.\\*)?"
             + ");"
     );
+
+    private static final Pattern EXTENDS_STATEMENT_PATTERN = Pattern.compile(
+            "\\s*extends\\s+"
+            + "("
+            + "\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*"
+            + "(?:\\.\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*)*"
+            + "(?:\\.\\*)?"
+            + ");"
+    );
+
+    private static enum LineCategory {
+        BODY, IMPORT, EXTENDS
+    };
+
+    private static LineCategory categorize(String line) {
+        if (IMPORT_STATEMENT_PATTERN.matcher(line).lookingAt()) {
+            return LineCategory.IMPORT;
+        } else if (EXTENDS_STATEMENT_PATTERN.matcher(line).lookingAt()) {
+            return LineCategory.EXTENDS;
+        } else {
+            return LineCategory.BODY;
+        }
+    }
 
     private class Open implements OpenCookie {
 
@@ -430,18 +411,6 @@ public class PXJDataObject extends MultiDataObject {
             } else {
                 fe.getFile().removeFileChangeListener(this);
             }
-        }
-
-    }
-
-    private static class ClassBodyInfo {
-
-        private final String baseClassName;
-        private final List<String> baseImports;
-
-        public ClassBodyInfo(String baseClassName, List<String> baseImports) {
-            this.baseClassName = baseClassName;
-            this.baseImports = List.copyOf(baseImports);
         }
 
     }
