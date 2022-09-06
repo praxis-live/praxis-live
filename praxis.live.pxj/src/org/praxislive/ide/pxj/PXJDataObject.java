@@ -24,12 +24,8 @@ package org.praxislive.ide.pxj;
 import java.awt.EventQueue;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
-import java.util.EnumMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import org.praxislive.core.ControlAddress;
 import org.praxislive.core.ArgumentInfo;
@@ -55,6 +51,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.NbBundle.Messages;
 import org.praxislive.core.Value;
 import org.praxislive.core.types.PArray;
+import org.praxislive.ide.code.api.ClassBodyWrapper;
 import org.praxislive.ide.code.api.DynamicPaths;
 import org.praxislive.ide.code.api.SharedCodeInfo;
 import org.praxislive.ide.model.HubProxy;
@@ -107,7 +104,7 @@ public class PXJDataObject extends MultiDataObject {
     private DynamicPaths.Key pathsKey;
     private String defaultImports;
     private String classDeclaration;
-    private String classEnding;
+    private final String classEnding;
     private String superClassName;
     private boolean inRefresh;
 
@@ -135,6 +132,7 @@ public class PXJDataObject extends MultiDataObject {
         attr = f.getAttribute(PROJECT_KEY);
         project = attr instanceof PraxisProject ? (PraxisProject) attr : null;
         getCookieSet().add(new Open());
+        classEnding = constructClassEnding();
     }
 
     @Override
@@ -178,7 +176,7 @@ public class PXJDataObject extends MultiDataObject {
     }
 
     void disposeProxy() {
-        if (javaProxy != null &&!inRefresh) {
+        if (javaProxy != null && !inRefresh) {
             try {
                 pathsKey.unregister();
                 pathsKey = null;
@@ -250,45 +248,42 @@ public class PXJDataObject extends MultiDataObject {
         return f;
     }
 
-    // copied and adapted from org.praxislive.code.services.tools.ClassBodyWrapper
     private String constructProxyContent(String source, boolean ignoreExtends) {
-        StringBuilder sb = new StringBuilder();
+        defaultImports = null;
+        classDeclaration = null;
 
-        Map<LineCategory, List<String>> partitionedSource = source.lines()
-                .collect(Collectors.groupingBy(PXJDataObject::categorize,
-                        () -> new EnumMap<>(LineCategory.class),
-                        Collectors.toList()));
+        return ClassBodyWrapper.create()
+                .className(pxjFile.getName())
+                .extendsType(superClassName == null ? baseClassName : superClassName)
+                .defaultImports(baseImports)
+                .ignoreExtends(ignoreExtends)
+                .filter(new ClassBodyWrapper.Filter() {
+                    @Override
+                    public void writeDefaultImports(StringBuilder sb, List<String> imports) {
+                        defaultImports = constructDefaultImports(imports);
+                        sb.append(defaultImports);
+                    }
 
-        String superclass = superClassName == null ? baseClassName : superClassName;
+                    @Override
+                    public void writeClassDeclaration(StringBuilder sb, String className, String extendedType, List<String> implementedTypes) {
+                        if (extendedType.equals(baseClassName)) {
+                            superClassName = null;
+                        } else {
+                            superClassName = extendedType;
+                        }
+                        sb.append(NEW_LINE);
+                        classDeclaration = constructClassDeclaration(className, extendedType);
+                        sb.append(classDeclaration);
+                    }
 
-        if (!ignoreExtends) {
-            List<String> sourceExtends = partitionedSource.getOrDefault(
-                    LineCategory.EXTENDS, List.of());
-            if (!sourceExtends.isEmpty()) {
-                Matcher matcher = EXTENDS_STATEMENT_PATTERN.matcher(sourceExtends.get(0));
-                if (matcher.lookingAt()) {
-                    superclass = matcher.group(1);
-                }
-            }
-            superClassName = superclass.equals(baseClassName) ? null : superclass;
-        }
+                    @Override
+                    public void writeClassEnding(StringBuilder sb) {
+                        sb.append(classEnding);
+                    }
 
-        defaultImports = constructDefaultImports(baseImports);
-        classDeclaration = constructClassDeclaration(pxjFile.getName(), superclass);
-        classEnding = constructClassEnding();
+                })
+                .wrap(source);
 
-        sb.append(defaultImports);
-        partitionedSource.getOrDefault(LineCategory.IMPORT, List.of())
-                .forEach(i -> sb.append(i).append(NEW_LINE));
-
-        sb.append(classDeclaration);
-
-        partitionedSource.getOrDefault(LineCategory.BODY, List.of())
-                .forEach(line -> sb.append(line).append(NEW_LINE));
-
-        sb.append(classEnding);
-
-        return sb.toString();
     }
 
     private void refreshProxy() {
@@ -358,39 +353,6 @@ public class PXJDataObject extends MultiDataObject {
 
     private static String constructClassEnding() {
         return "}//GEN-BEGIN:classend" + NEW_LINE + "//GEN-END:classend";
-    }
-
-    private static final Pattern IMPORT_STATEMENT_PATTERN = Pattern.compile(
-            "\\s*import\\s+"
-            + "("
-            + "(?:static\\s+)?"
-            + "\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*"
-            + "(?:\\.\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*)*"
-            + "(?:\\.\\*)?"
-            + ");"
-    );
-
-    private static final Pattern EXTENDS_STATEMENT_PATTERN = Pattern.compile(
-            "\\s*extends\\s+"
-            + "("
-            + "\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*"
-            + "(?:\\.\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*)*"
-            + "(?:\\.\\*)?"
-            + ");"
-    );
-
-    private static enum LineCategory {
-        BODY, IMPORT, EXTENDS
-    };
-
-    private static LineCategory categorize(String line) {
-        if (IMPORT_STATEMENT_PATTERN.matcher(line).lookingAt()) {
-            return LineCategory.IMPORT;
-        } else if (EXTENDS_STATEMENT_PATTERN.matcher(line).lookingAt()) {
-            return LineCategory.EXTENDS;
-        } else {
-            return LineCategory.BODY;
-        }
     }
 
     private class Open implements OpenCookie {
