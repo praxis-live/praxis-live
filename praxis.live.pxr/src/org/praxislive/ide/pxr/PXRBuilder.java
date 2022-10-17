@@ -45,6 +45,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.praxislive.core.Value;
 import org.praxislive.core.types.PError;
+import org.praxislive.core.types.PMap;
 
 /**
  *
@@ -133,9 +134,6 @@ class PXRBuilder {
         }
         if (!processed && !iterator.hasNext()) {
             processed = true;
-            if (registerRoot) {
-                project.getLookup().lookup(PXRRootRegistry.class).register(rootProxy);
-            }
             processCallback.onReturn(List.of());
 
         }
@@ -144,8 +142,6 @@ class PXRBuilder {
     private boolean process(Element element) {
         if (element instanceof PropertyElement) {
             return processProperty((PropertyElement) element);
-        } else if (element instanceof AttributeElement) {
-            return processAttribute((AttributeElement) element);
         } else if (element instanceof ConnectionElement) {
             return processConnection((ConnectionElement) element);
         } else if (element instanceof RootElement) {
@@ -235,14 +231,6 @@ class PXRBuilder {
         warn(err);
     }
 
-    private boolean processAttribute(AttributeElement attr) {
-        PXRComponentProxy cmp = findComponent(attr.component.address);
-        if (cmp != null) {
-            cmp.setAttr(attr.key, attr.value);
-        }
-        return true;
-    }
-
     private boolean processConnection(final ConnectionElement con) {
         LOG.fine("Processing Connection Element : " + con.port1 + " -> " + con.port2);
         try {
@@ -299,6 +287,9 @@ class PXRBuilder {
                                 ad.rootID(),
                                 type,
                                 ComponentInfo.from(args.get(0)).orElseThrow());
+                        if (registerRoot) {
+                            project.getLookup().lookup(PXRRootRegistry.class).register(rootProxy);
+                        }
                         process();
                     } catch (Exception ex) {
                         Exceptions.printStackTrace(ex);
@@ -324,9 +315,19 @@ class PXRBuilder {
         try {
             ComponentAddress address = cmp.address;
             final PXRComponentProxy parent = findComponent(address.parent());
+            PMap attrs;
+            if (cmp.attributes != null && cmp.attributes.length > 0) {
+                PMap.Builder map = PMap.builder(cmp.attributes.length);
+                for (AttributeElement a : cmp.attributes) {
+                    map.put(a.key, a.value);
+                }
+                attrs = map.build();
+            } else {
+                attrs = PMap.EMPTY;
+            }
             if (parent instanceof PXRContainerProxy) {
                 String id = address.componentID(address.depth() - 1);
-                ((PXRContainerProxy) parent).addChild(id, cmp.type, new Callback() {
+                ((PXRContainerProxy) parent).addChild(id, cmp.type, attrs, new Callback() {
                     @Override
                     public void onReturn(List<Value> args) {
                         if (parent.isDynamic()) {
@@ -408,7 +409,6 @@ class PXRBuilder {
     private void addComponentElements(ComponentElement component,
             List<Element> elements) {
         elements.add(component);
-        elements.addAll(Arrays.asList(component.attributes));
         elements.addAll(Arrays.asList(component.properties));
         for (ComponentElement child : component.children) {
             addComponentElements(child, elements);

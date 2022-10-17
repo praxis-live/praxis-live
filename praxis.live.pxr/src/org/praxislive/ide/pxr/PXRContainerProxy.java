@@ -50,6 +50,7 @@ import org.praxislive.ide.core.api.ValuePropertyAdaptor;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.praxislive.base.Binding;
+import org.praxislive.core.types.PMap;
 import org.praxislive.core.types.PString;
 
 /**
@@ -98,6 +99,10 @@ public class PXRContainerProxy extends PXRComponentProxy implements ContainerPro
 
     @Override
     public void addChild(final String id, final ComponentType type, final Callback callback) {
+        addChild(id, type, PMap.EMPTY, callback);
+    }
+    
+    void addChild(String id, ComponentType type, PMap attrs, Callback callback) {
 
         ComponentAddress childAddress = ComponentAddress.of(getAddress(), id);
         getRoot().getHelper().createComponentAndGetInfo(childAddress, type, new Callback() {
@@ -105,11 +110,14 @@ public class PXRContainerProxy extends PXRComponentProxy implements ContainerPro
             public void onReturn(List<Value> args) {
                 try {
                     ComponentInfo info = ComponentInfo.from(args.get(0)).orElseThrow();
+                    PXRComponentProxy child;
                     if (isContainer(info)) {
-                        children.put(id, new PXRContainerProxy(PXRContainerProxy.this, type, info));
+                        child = new PXRContainerProxy(PXRContainerProxy.this, type, info);
                     } else {
-                        children.put(id, new PXRComponentProxy(PXRContainerProxy.this, type, info));
+                        child = new PXRComponentProxy(PXRContainerProxy.this, type, info);
                     }
+                    attrs.keys().forEach(k -> child.setAttr(k, attrs.getString(k, null)));
+                    children.put(id, child);
                     if (node != null) {
                         node.refreshChildren();
                     }

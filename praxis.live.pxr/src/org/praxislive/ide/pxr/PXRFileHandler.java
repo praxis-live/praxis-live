@@ -110,14 +110,14 @@ public class PXRFileHandler implements FileHandler {
 
     private void build(PXRParser.RootElement root) {
         PXRBuilder builder = new PXRBuilder(project, source, root, warnings);
+        Openable open = source.getLookup().lookup(Openable.class);
+        if (open != null) {
+            open.open();
+        }
         builder.process(new Callback() {
 
             @Override
             public void onReturn(List<Value> args) {
-                Openable open = source.getLookup().lookup(Openable.class);
-                if (open != null) {
-                    open.open();
-                }
                 callback.onReturn(args);
             }
 
