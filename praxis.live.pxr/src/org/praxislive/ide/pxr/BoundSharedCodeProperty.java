@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2021 Neil C Smith.
+ * Copyright 2022 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.api.actions.Openable;
 import org.netbeans.api.actions.Savable;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileAttributeEvent;
@@ -37,6 +38,7 @@ import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
 import org.praxislive.core.ControlAddress;
 import org.praxislive.core.ControlInfo;
@@ -94,6 +96,21 @@ class BoundSharedCodeProperty extends BoundArgumentProperty {
 
     SharedCodeInfo getSharedCodeInfo() {
         return sharedKey.info();
+    }
+
+    void openFile(String binaryName) {
+        FileObject file = fileSystem.findResource(toFileName(binaryName));
+        if (file != null) {
+            try {
+                Openable openable = DataObject.find(file)
+                        .getLookup().lookup(Openable.class);
+                if (openable != null) {
+                    openable.open();
+                }
+            } catch (DataObjectNotFoundException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
     }
 
     private void updateFiles(PropertyChangeEvent update) {

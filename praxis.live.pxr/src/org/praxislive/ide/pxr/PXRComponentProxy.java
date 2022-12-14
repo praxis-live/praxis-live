@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2020 Neil C Smith.
+ * Copyright 2022 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -332,9 +332,13 @@ public class PXRComponentProxy implements ComponentProxy {
             }
             propActions.add(code.getEditAction());
             propActions.add(code.getResetAction());
-            codeAction = code.getEditAction();
+            Action sharedBaseAction = code.getSharedBaseAction();
+            if (sharedBaseAction != null) {
+                propActions.add(sharedBaseAction);
+            }
+            codeAction = code.getQuickEditAction();
         }
-        propActions = Collections.unmodifiableList(propActions);
+        propActions = List.copyOf(propActions);
     }
 
     Action getEditorAction() {
