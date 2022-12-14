@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2020 Neil C Smith.
+ * Copyright 2022 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -151,6 +151,7 @@ public class GraphEditor extends RootEditor {
 
     private JComponent panel;
     private JComponent sharedCodePanel;
+    private Action sharedCodeAction;
     private JComponent actionPanel;
     private ContainerProxy container;
 
@@ -323,8 +324,8 @@ public class GraphEditor extends RootEditor {
             }
             menu.add(colorsMenu);
         }
-        if (sharedCodePanel != null) {
-            menu.add(new JCheckBoxMenuItem(new SharedCodeToggleAction("Shared Code")));
+        if (sharedCodeAction != null) {
+            menu.add(new JCheckBoxMenuItem(sharedCodeAction));
             menu.addSeparator();
         }
         
@@ -403,9 +404,11 @@ public class GraphEditor extends RootEditor {
             JPanel overlayPanel = new JPanel();
             overlayPanel.setLayout(new GridBagLayout());
             GridBagConstraints gbc = new GridBagConstraints();
+            gbc.gridx = 1;
+            gbc.gridy = 1;
             gbc.weightx = 1;
             gbc.weighty = 1;
-            gbc.insets = new Insets(0, 0, 25, 25);
+            gbc.insets = new Insets(0, 0, 20, 20);
             gbc.anchor = GridBagConstraints.SOUTHEAST;
             JPanel satellitePanel = new JPanel(new BorderLayout());
             satellitePanel.setBorder(new LineBorder(Color.LIGHT_GRAY, 1));
@@ -429,6 +432,16 @@ public class GraphEditor extends RootEditor {
                 sharedCodePanel = new SharedCodeComponent(this, sharedCtxt.getFolder());
                 sharedCodePanel.setVisible(false);
                 panel.add(sharedCodePanel, BorderLayout.WEST);
+                sharedCodeAction = new SharedCodeToggleAction();
+                JToggleButton sharedCodeButton = new JToggleButton(sharedCodeAction);
+                gbc = new GridBagConstraints();
+                gbc.gridx = 0;
+                gbc.gridy = 1;
+                gbc.weightx = 1;
+                gbc.weighty = 1;
+                gbc.insets = new Insets(0, 20, 20, 0);
+                gbc.anchor = GridBagConstraints.SOUTHWEST;
+                overlayPanel.add(sharedCodeButton, gbc);
             }
 
             InputMap im = panel.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
@@ -1248,8 +1261,8 @@ public class GraphEditor extends RootEditor {
     
     private class SharedCodeToggleAction extends AbstractAction {
 
-        private SharedCodeToggleAction(String text) {
-            super(text);
+        private SharedCodeToggleAction() {
+            super("Shared Code");
             putValue(Action.SELECTED_KEY, sharedCodePanel.isVisible());
         }
         
