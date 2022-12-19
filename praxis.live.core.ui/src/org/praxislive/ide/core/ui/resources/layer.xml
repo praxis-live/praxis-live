@@ -32,6 +32,9 @@
     <folder name="Popup">
       <file name="org-netbeans-modules-project-ui-SelectInProjects.shadow_hidden"/>
     </folder>
+    <folder name="Preferences">
+      <file name="org-praxislive-ide-core-ui-EditorPreferences.xml" url="EditorPreferences.xml"/>
+    </folder>
     <folder name="text">
       <folder name="x-java">
         <folder name="Popup">
