@@ -10,7 +10,8 @@
     <folder name="Help">
       <file name="master-help.xml_hidden"/>
       <file name="org-netbeans-modules-javahelp-HelpAction.instance_hidden"/>
-    </folder>
+        <file name="org-netbeans-modules-utilities-ReportNBIssueAction.instance_hidden"/>
+        </folder>
     <folder name="Project">
       <file name="org-netbeans-modules-project-ui-CompileSingle.instance_hidden"/>
       <file name="org-netbeans-modules-project-ui-JavadocProject.instance_hidden"/>
@@ -27,7 +28,7 @@
   </folder>
     
   <folder name="Editors">
-    <attr name="currentFontColorProfile" stringvalue="FlatLaf Dark" />
+    <attr name="currentFontColorProfile" stringvalue="FlatLaf Dark"/>
     <folder name="Popup">
       <file name="org-netbeans-modules-project-ui-SelectInProjects.shadow_hidden"/>
     </folder>
@@ -100,7 +101,8 @@
       <file name="master-help.xml_hidden"/>
       <file name="Separator1.instance_hidden"/>
       <file name="SeparatorAfterJavadoc.instance_hidden"/>
-      <file name="org-praxislive-ide-core-ui-AboutAction-separatorBefore.instance">
+      <file name="org-netbeans-modules-utilities-ReportNBIssueAction.shadow_hidden"/>
+            <file name="org-praxislive-ide-core-ui-AboutAction-separatorBefore.instance">
         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
         <attr name="position" intvalue="250"/>
       </file>
