@@ -338,7 +338,7 @@ public class PXRComponentProxy implements ComponentProxy {
             }
             codeAction = code.getQuickEditAction();
         }
-        propActions = List.copyOf(propActions);
+        propActions = Collections.unmodifiableList(propActions);
     }
 
     Action getEditorAction() {
