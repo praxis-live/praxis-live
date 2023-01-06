@@ -65,8 +65,8 @@ Make sure the two repository folders are in the same parent directory. If checki
 version, make sure to use matching tags for both repositories - eg.
 
 ```
-git -C praxiscore/ checkout v5.1.0
-git -C praxis-live/ checkout v5.1.0
+git -C praxiscore/ checkout v5.5.0
+git -C praxis-live/ checkout v5.5.0
 ```
 
 PraxisLIVE is built on top of the [Apache NetBeans](https://netbeans.apache.org/) platform and IDE.
@@ -80,10 +80,13 @@ to features required by the build. To build a zip of the IDE with embedded Praxi
 the following steps from the parent folder (or similar steps inside your IDE).
 
 ```
-mvn -f praxiscore/ package javadoc:aggregate
+mvn -f praxiscore/ clean install javadoc:aggregate-jar
 mvn -f praxiscore/praxiscore-bin/ package appassembler:assemble
 ant -f praxis-live/build.xml build-zip
 ```
+
+NB. `mvn install` is required for now because of an issue between `appassembler` and other plugins
+in the build. It might be required to set `JAVA_HOME` on some systems.
 
 This will build a zip of the IDE, inside `praxis-live/dist`.
 

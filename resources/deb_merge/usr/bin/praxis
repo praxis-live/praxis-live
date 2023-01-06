@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+if [ -d "/usr/lib/praxislive/jdk" ] && [ -z "$JAVA_HOME" ] ; then
+  export JAVA_HOME="/usr/lib/praxislive/jdk/" 
+fi
+exec "/usr/lib/praxislive/praxiscore/bin/praxis" "$@"
+

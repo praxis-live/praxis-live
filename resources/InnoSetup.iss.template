@@ -1,0 +1,38 @@
+[Setup]
+AppId=${APP_ID}
+AppName=${APP_NAME}
+AppVersion=${APP_VERSION}
+${APP_LICENSE}
+
+AppPublisherURL=https://www.praxislive.org
+AppSupportURL=https://www.praxislive.org
+AppUpdatesURL=https://www.praxislive.org
+
+DefaultDirName="{autopf}\${APP_NAME_SAFE}"
+DisableProgramGroupPage=yes
+OutputBaseFilename="${APP_NAME_SAFE} ${APP_VERSION}"
+SetupIconFile="${EXEC_NAME}\etc\${EXEC_NAME}.ico"
+Compression=lzma
+SolidCompression=yes
+ArchitecturesAllowed=x64
+ArchitecturesInstallIn64BitMode=x64
+WizardStyle=modern
+
+[Languages]
+Name: "english"; MessagesFile: "compiler:Default.isl"
+
+[Tasks]
+Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: checkedonce
+
+[InstallDelete]
+${INSTALL_DELETE}
+
+[Files]
+${FILES}
+
+[Icons]
+Name: "{commonprograms}\${APP_NAME_SAFE}"; Filename: "{app}\bin\${EXEC_NAME}64.exe"; ${PARAMETERS} IconFilename: "{app}\etc\${EXEC_NAME}.ico";
+Name: "{commondesktop}\${APP_NAME_SAFE}"; Filename: "{app}\bin\${EXEC_NAME}64.exe"; ${PARAMETERS} IconFilename: "{app}\etc\${EXEC_NAME}.ico"; Tasks: desktopicon
+
+[Run]
+Filename: "{app}\bin\${EXEC_NAME}64.exe"; ${PARAMETERS} Description: "{cm:LaunchProgram,${APP_NAME_SAFE}}"; Flags: nowait postinstall skipifsilent
