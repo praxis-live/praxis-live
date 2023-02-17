@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Bug reports and feature requests
+    url: https://github.com/praxis-live/support/issues
+    about: Bug reports and feature requests should be opened on the support repository.
+  - name: Community support
+    url: https://github.com/praxis-live/support/discussions
+    about: Ask a question or request help in the discussions section on the support repository.
