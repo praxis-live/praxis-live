@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2022 Neil C Smith.
+ * Copyright 2023 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -324,6 +324,20 @@ public class GraphEditor extends RootEditor {
             }
             menu.add(colorsMenu);
         }
+        boolean addSep = false;
+        for (Action a : container.getNodeDelegate().getActions(false)) {
+            if (a == null) {
+                menu.add(new JSeparator());
+                addSep = false;
+            } else {
+                menu.add(a);
+                addSep = true;
+            }
+        }
+        if (addSep) {
+            menu.add(new JSeparator());
+        }
+        
         if (sharedCodeAction != null) {
             menu.add(new JCheckBoxMenuItem(sharedCodeAction));
             menu.addSeparator();
