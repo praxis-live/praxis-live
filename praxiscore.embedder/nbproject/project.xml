@@ -227,36 +227,36 @@
                 <binary-origin>../build/praxiscore/mods/gst1-java-core-1.4.0.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>../../praxiscore/mods/processing-core-0.353.0-beta-3.jar</runtime-relative-path>
-                <binary-origin>../build/praxiscore/mods/processing-core-0.353.0-beta-3.jar</binary-origin>
+                <runtime-relative-path>../../praxiscore/mods/processing-core-0.353.0-beta-4.jar</runtime-relative-path>
+                <binary-origin>../build/praxiscore/mods/processing-core-0.353.0-beta-4.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>../../praxiscore/mods/processing-lwjgl-0.353.0-beta-3.jar</runtime-relative-path>
-                <binary-origin>../build/praxiscore/mods/processing-lwjgl-0.353.0-beta-3.jar</binary-origin>
+                <runtime-relative-path>../../praxiscore/mods/processing-lwjgl-0.353.0-beta-4.jar</runtime-relative-path>
+                <binary-origin>../build/praxiscore/mods/processing-lwjgl-0.353.0-beta-4.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>../../praxiscore/mods/lwjgl-3.2.3.jar</runtime-relative-path>
-                <binary-origin>../build/praxiscore/mods/lwjgl-3.2.3.jar</binary-origin>
+                <runtime-relative-path>../../praxiscore/mods/lwjgl-3.3.2.jar</runtime-relative-path>
+                <binary-origin>../build/praxiscore/mods/lwjgl-3.3.2.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>../../praxiscore/mods/lwjgl-assimp-3.2.3.jar</runtime-relative-path>
-                <binary-origin>../build/praxiscore/mods/lwjgl-assimp-3.2.3.jar</binary-origin>
+                <runtime-relative-path>../../praxiscore/mods/lwjgl-assimp-3.3.2.jar</runtime-relative-path>
+                <binary-origin>../build/praxiscore/mods/lwjgl-assimp-3.3.2.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>../../praxiscore/mods/lwjgl-egl-3.2.3.jar</runtime-relative-path>
-                <binary-origin>../build/praxiscore/mods/lwjgl-egl-3.2.3.jar</binary-origin>
+                <runtime-relative-path>../../praxiscore/mods/lwjgl-egl-3.3.2.jar</runtime-relative-path>
+                <binary-origin>../build/praxiscore/mods/lwjgl-egl-3.3.2.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>../../praxiscore/mods/lwjgl-glfw-3.2.3.jar</runtime-relative-path>
-                <binary-origin>../build/praxiscore/mods/lwjgl-glfw-3.2.3.jar</binary-origin>
+                <runtime-relative-path>../../praxiscore/mods/lwjgl-glfw-3.3.2.jar</runtime-relative-path>
+                <binary-origin>../build/praxiscore/mods/lwjgl-glfw-3.3.2.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>../../praxiscore/mods/lwjgl-opengl-3.2.3.jar</runtime-relative-path>
-                <binary-origin>../build/praxiscore/mods/lwjgl-opengl-3.2.3.jar</binary-origin>
+                <runtime-relative-path>../../praxiscore/mods/lwjgl-opengl-3.3.2.jar</runtime-relative-path>
+                <binary-origin>../build/praxiscore/mods/lwjgl-opengl-3.3.2.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>../../praxiscore/mods/lwjgl-stb-3.2.3.jar</runtime-relative-path>
-                <binary-origin>../build/praxiscore/mods/lwjgl-stb-3.2.3.jar</binary-origin>
+                <runtime-relative-path>../../praxiscore/mods/lwjgl-stb-3.3.2.jar</runtime-relative-path>
+                <binary-origin>../build/praxiscore/mods/lwjgl-stb-3.3.2.jar</binary-origin>
             </class-path-extension>
       
             <!-- other - libraries -->
