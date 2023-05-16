@@ -276,6 +276,7 @@ class PXRBuilder {
         try {
             final ComponentAddress ad = root.address;
             final ComponentType type = root.type;
+            PMap attrs = attributesToMap(root.attributes);
             helper.createComponentAndGetInfo(ad, type, new Callback() {
                 @Override
                 public void onReturn(List<Value> args) {
@@ -287,6 +288,7 @@ class PXRBuilder {
                                 ad.rootID(),
                                 type,
                                 ComponentInfo.from(args.get(0)).orElseThrow());
+                        attrs.keys().forEach(k -> rootProxy.setAttr(k, attrs.getString(k, null)));
                         if (registerRoot) {
                             project.getLookup().lookup(PXRRootRegistry.class).register(rootProxy);
                         }
@@ -315,16 +317,7 @@ class PXRBuilder {
         try {
             ComponentAddress address = cmp.address;
             final PXRComponentProxy parent = findComponent(address.parent());
-            PMap attrs;
-            if (cmp.attributes != null && cmp.attributes.length > 0) {
-                PMap.Builder map = PMap.builder(cmp.attributes.length);
-                for (AttributeElement a : cmp.attributes) {
-                    map.put(a.key, a.value);
-                }
-                attrs = map.build();
-            } else {
-                attrs = PMap.EMPTY;
-            }
+            PMap attrs = attributesToMap(cmp.attributes);
             if (parent instanceof PXRContainerProxy) {
                 String id = address.componentID(address.depth() - 1);
                 ((PXRContainerProxy) parent).addChild(id, cmp.type, attrs, new Callback() {
@@ -368,6 +361,18 @@ class PXRBuilder {
         return true;
     }
 
+    private PMap attributesToMap(AttributeElement[] attrs) {
+        if (attrs == null || attrs.length == 0) {
+            return PMap.EMPTY;
+        } else {
+            var builder = PMap.builder();
+            for (var attr : attrs) {
+                builder.put(attr.key, attr.value);
+            }
+            return builder.build();
+        }
+    }
+    
     private void componentError(ComponentElement cmp, List<Value> args) {
         String err = "Couldn't create component " + cmp.address;
         warn(err);
