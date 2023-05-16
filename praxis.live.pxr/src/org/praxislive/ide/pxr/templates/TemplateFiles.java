@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2020 Neil C Smith.
+ * Copyright 2023 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -57,6 +57,7 @@ class TemplateFiles {
         display.put("root:tinkerforge", "TinkerForge Patch");
         display.put("root:osc", "OSC Bindings");
         display.put("root:data", "Generic Data Patch");
+        display.put("root:custom", "Custom Root");
     }
     private final static String templateFolder = "Templates/Praxis/";
     private final static TemplateFiles INSTANCE = new TemplateFiles();
