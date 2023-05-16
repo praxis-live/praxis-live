@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 2020 Neil C Smith.
+ * Copyright 2023 Neil C Smith.
  * 
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -22,6 +22,7 @@
 package org.praxislive.ide.core.api;
 
 import java.awt.EventQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.Timer;
 import org.praxislive.base.AbstractRootContainer;
 import org.praxislive.base.BindingContextControl;
@@ -72,6 +73,8 @@ public abstract class AbstractIDERoot extends AbstractRootContainer {
     protected void dispose() {}
 
     private class SwingDelegate extends Delegate {
+        
+        private final AtomicBoolean pollQueued = new AtomicBoolean();
 
         private Timer timer;
 
@@ -92,6 +95,16 @@ public abstract class AbstractIDERoot extends AbstractRootContainer {
                 timer.stop();
                 dispose();
                 detachDelegate(this);
+            }
+        }
+
+        @Override
+        protected void onQueueReceipt() {
+            if (pollQueued.compareAndSet(false, true)) {
+                EventQueue.invokeLater(() -> {
+                    pollQueued.set(false);
+                    doPollQueue();
+                });
             }
         }
 
