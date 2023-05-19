@@ -1,0 +1,46 @@
+name: Test Build
+
+on:
+  push:
+    paths: '.github/workflows/*.yml'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout PraxisCORE
+        uses: actions/checkout@v3
+        with:
+          repository: ${{ github.repository_owner }}/praxiscore
+          path: praxiscore
+      - name: Checkout PraxisLIVE
+        uses: actions/checkout@v3
+        with:
+          repository: ${{ github.repository }}
+          path: praxislive
+      - name: Setup JDK 11
+        uses: actions/setup-java@v3
+        with:
+          java-version: '11'
+          distribution: 'temurin'
+          cache: 'maven'
+      - name: Build PraxisCORE
+        run: mvn -B -U -f praxiscore/ install javadoc:aggregate-jar
+      - name: Assemble PraxisCORE
+        run: mvn -B -f praxiscore/praxiscore-bin/ package appassembler:assemble
+      - name: Cache NetBeans platform
+        uses: actions/cache@v3
+        with:
+          path: nbplatform
+          key: ${{ runner.os }}-${{ hashFiles('praxislive/nbproject/platform.properties') }}
+      - name: Build PraxisLIVE
+        run: ant -f praxislive/build.xml build-zip
+      - name: Upload Dev build
+        uses: actions/upload-artifact@v3
+        with:
+          name: dev-build
+          path: praxislive/dist/PraxisLIVE-*.zip
+          retention-days: 7
+          if-no-files-found: error
