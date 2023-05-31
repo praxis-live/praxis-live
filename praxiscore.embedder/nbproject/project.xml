@@ -167,16 +167,16 @@
             
             <!-- core - libraries -->
             <class-path-extension>
-                <runtime-relative-path>../../praxiscore/mods/ivy-2.5.0.jar</runtime-relative-path>
-                <binary-origin>../build/praxiscore/mods/ivy-2.5.0.jar</binary-origin>
+                <runtime-relative-path>../../praxiscore/mods/ivy-2.5.1.jar</runtime-relative-path>
+                <binary-origin>../build/praxiscore/mods/ivy-2.5.1.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>../../praxiscore/mods/jna-5.6.0.jar</runtime-relative-path>
-                <binary-origin>../build/praxiscore/mods/jna-5.6.0.jar</binary-origin>
+                <runtime-relative-path>../../praxiscore/mods/jna-5.13.0.jar</runtime-relative-path>
+                <binary-origin>../build/praxiscore/mods/jna-5.13.0.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>../../praxiscore/mods/jna-platform-5.6.0.jar</runtime-relative-path>
-                <binary-origin>../build/praxiscore/mods/jna-platform-5.6.0.jar</binary-origin>
+                <runtime-relative-path>../../praxiscore/mods/jna-platform-5.13.0.jar</runtime-relative-path>
+                <binary-origin>../build/praxiscore/mods/jna-platform-5.13.0.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>../../praxiscore/mods/picocli-4.3.2.jar</runtime-relative-path>
