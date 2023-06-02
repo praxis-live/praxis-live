@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2022 Neil C Smith.
+ * Copyright 2023 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -216,6 +216,7 @@ public class PXJDataObject extends MultiDataObject {
                 data = "extends " + superClassName + ";" + NEW_LINE + data;
             }
             if (defaultImports != null && !defaultImports.isEmpty()) {
+                data = data.replace(defaultImports + NEW_LINE, "");
                 data = data.replace(defaultImports, "");
             }
             if (classDeclaration != null) {
