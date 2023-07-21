@@ -101,7 +101,11 @@
                 <runtime-relative-path>../../praxiscore/mods/praxiscore-script-5.7.0-SNAPSHOT.jar</runtime-relative-path>
                 <binary-origin>../build/praxiscore/mods/praxiscore-script-5.7.0-SNAPSHOT.jar</binary-origin>
             </class-path-extension>
-            
+            <class-path-extension>
+                <runtime-relative-path>../../praxiscore/mods/praxiscore-purl-5.7.0-SNAPSHOT.jar</runtime-relative-path>
+                <binary-origin>../build/praxiscore/mods/praxiscore-purl-5.7.0-SNAPSHOT.jar</binary-origin>
+            </class-path-extension>
+
             <!-- audio -->
             <class-path-extension>
                 <runtime-relative-path>../../praxiscore/mods/praxiscore-audio-5.7.0-SNAPSHOT.jar</runtime-relative-path>
