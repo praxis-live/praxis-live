@@ -268,7 +268,8 @@ public class PXRContainerProxy extends PXRComponentProxy implements ContainerPro
     protected boolean isProxiedProperty(String id) {
         return super.isProxiedProperty(id)
                 || ContainerProtocol.CHILDREN.equals(id)
-                || ContainerProtocol.CONNECTIONS.equals(id);
+                || ContainerProtocol.CONNECTIONS.equals(id)
+                || ContainerProtocol.SUPPORTED_TYPES.equals(id);
 
     }
 
