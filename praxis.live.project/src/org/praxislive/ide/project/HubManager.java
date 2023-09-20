@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2020 Neil C Smith.
+ * Copyright 2023 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -22,6 +22,9 @@
 package org.praxislive.ide.project;
 
 import java.awt.EventQueue;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
 import org.praxislive.ide.core.api.Logging;
 import java.util.ArrayList;
 import java.util.List;
@@ -35,12 +38,16 @@ import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
-import org.praxislive.code.CodeCompilerService;
+import org.praxislive.core.ComponentType;
 import org.praxislive.core.MainThread;
 import org.praxislive.core.services.LogLevel;
-import org.praxislive.core.services.LogService;
+import org.praxislive.core.services.RootManagerService;
+import org.praxislive.core.services.ScriptService;
+import org.praxislive.core.services.Service;
 import org.praxislive.core.services.SystemManagerService;
+import org.praxislive.hub.net.HubConfiguration;
 import org.praxislive.hub.net.NetworkCoreFactory;
+import org.praxislive.hub.net.ProxyInfo;
 import org.praxislive.ide.core.api.AbstractTask;
 import org.praxislive.ide.core.api.ExtensionContainer;
 import org.praxislive.ide.project.spi.RootLifecycleHandler;
@@ -113,10 +120,12 @@ class HubManager {
         var core = NetworkCoreFactory.builder()
                 .childLauncher(new ChildLauncherImpl(project))
                 .exposeServices(List.of(
-                        CodeCompilerService.class,
-                        LogService.class,
+                        RootManagerService.class,
                         SystemManagerService.class
                 ))
+                .hubConfiguration(HubConfiguration.builder()
+                        .proxy(new Proxy())
+                        .build())
                 .build();
 
         var fakeMain = new FakeMain();
@@ -248,7 +257,6 @@ class HubManager {
 
     private static class FakeMain implements MainThread {
 
-
         @Override
         public void runLater(Runnable task) {
             // @TODO warn on first use? 
@@ -259,7 +267,31 @@ class HubManager {
         public boolean isMainThread() {
             return EventQueue.isDispatchThread();
         }
-        
+
+    }
+
+    private static class Proxy implements ProxyInfo {
+
+        @Override
+        public Optional<Exec> exec() {
+            return Optional.of(new Exec() {
+            });
+        }
+
+        @Override
+        public boolean matches(String string, ComponentType ct) {
+            return true;
+        }
+
+        @Override
+        public List<Class<? extends Service>> services() {
+            return List.of(ScriptService.class);
+        }
+
+        @Override
+        public SocketAddress socketAddress() {
+            return new InetSocketAddress(InetAddress.getLoopbackAddress(), 0);
+        }
 
     }
 
