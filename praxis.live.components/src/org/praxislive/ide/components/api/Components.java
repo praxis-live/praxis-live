@@ -23,8 +23,8 @@ package org.praxislive.ide.components.api;
 
 import java.awt.Image;
 import java.util.List;
+import org.openide.util.Lookup;
 import org.praxislive.core.ComponentType;
-import org.praxislive.core.services.ComponentFactory;
 import org.praxislive.ide.components.ComponentSettings;
 
 /**
@@ -37,7 +37,7 @@ public interface Components {
     
     public List<ComponentType> rootTypes();
     
-    public ComponentFactory.MetaData<?> metaData(ComponentType type);
+    public Lookup metaData(ComponentType type);
 
 
     public default Image getIcon(ComponentType type) {

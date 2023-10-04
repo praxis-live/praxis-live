@@ -45,6 +45,7 @@ import org.openide.filesystems.XMLFileSystem;
 import org.openide.loaders.DataFolder;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.praxislive.ide.project.api.PraxisProject;
 import org.xml.sax.SAXException;
 
@@ -84,9 +85,9 @@ public class ComponentPalette {
     }
 
     private FileSystem init() {
-        Map<String, Map<ComponentType, ComponentFactory.MetaData<?>>> core
+        Map<String, Map<ComponentType, Lookup>> core
                 = new TreeMap<>();
-        Map<String, Map<ComponentType, ComponentFactory.MetaData<?>>> others
+        Map<String, Map<ComponentType, Lookup>> others
                 = new TreeMap<>();
         buildMaps(core, others);
 
@@ -111,15 +112,15 @@ public class ComponentPalette {
     }
 
     private void buildMaps(
-            Map<String, Map<ComponentType, ComponentFactory.MetaData<?>>> core,
-            Map<String, Map<ComponentType, ComponentFactory.MetaData<?>>> others) {
+            Map<String, Map<ComponentType, Lookup>> core,
+            Map<String, Map<ComponentType, Lookup>> others) {
         var types = components.componentTypes();
         for (ComponentType type : types) {
             String str = type.toString();
-            ComponentFactory.MetaData<?> data = components.metaData(type);
+            Lookup data = components.metaData(type);
             str = str.substring(0, str.lastIndexOf(':'));
             boolean cr = str.startsWith("core");
-            Map<ComponentType, ComponentFactory.MetaData<?>> children = cr ? core.get(str) : others.get(str);
+            Map<ComponentType, Lookup> children = cr ? core.get(str) : others.get(str);
             if (children == null) {
                 children = new TreeMap<>(TypeComparator.INSTANCE);
                 if (cr) {
@@ -155,7 +156,7 @@ public class ComponentPalette {
     }
 
     private void writeMap(StringBuilder sb,
-            Map<String, Map<ComponentType, ComponentFactory.MetaData<?>>> map,
+            Map<String, Map<ComponentType, Lookup>> map,
             int position) {
         for (String category : map.keySet()) {
             startCategoryFolder(sb, category, position);
@@ -262,7 +263,7 @@ public class ComponentPalette {
         }
 
         @Override
-        public ComponentFactory.MetaData metaData(ComponentType type) {
+        public Lookup metaData(ComponentType type) {
             return null;
         }
 

@@ -26,8 +26,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 import org.praxislive.core.ComponentType;
-import org.praxislive.core.services.ComponentFactory;
 import org.praxislive.core.services.ComponentFactoryProvider;
 import org.praxislive.ide.components.api.Components;
 
@@ -38,8 +38,8 @@ class LocalComponents implements Components {
 
     private static final LocalComponents INSTANCE = new LocalComponents();
     
-    private final Map<ComponentType, ComponentFactory.MetaData<?>> componentData;
-    private final Map<ComponentType, ComponentFactory.MetaData<?>> rootData;
+    private final Map<ComponentType, Lookup> componentData;
+    private final Map<ComponentType, Lookup> rootData;
     private final List<ComponentType> components;
     private final List<ComponentType> roots;
 
@@ -55,12 +55,12 @@ class LocalComponents implements Components {
                 .forEachOrdered(factory -> {
                     factory.componentTypes().forEachOrdered(type -> {
                         cmps.add(type);
-                        componentData.put(type, factory.getMetaData(type));
+                        componentData.put(type, Lookups.fixed(factory.componentData(type).findAll(Object.class).toArray()));
                     }
                     );
                     factory.rootTypes().forEachOrdered(type -> {
                         rts.add(type);
-                        rootData.put(type, factory.getRootMetaData(type));
+                        rootData.put(type, Lookups.fixed(factory.rootData(type).findAll(Object.class).toArray()));
                     }
                     );
                 });
@@ -81,7 +81,7 @@ class LocalComponents implements Components {
     }
 
     @Override
-    public ComponentFactory.MetaData<?> metaData(ComponentType type) {
+    public Lookup metaData(ComponentType type) {
         var data = componentData.get(type);
         if (data == null) {
             data = rootData.get(type);
