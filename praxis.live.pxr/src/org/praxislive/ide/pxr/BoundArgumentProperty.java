@@ -200,7 +200,7 @@ public class BoundArgumentProperty extends
     }
 
     Class<? extends Value> getArgumentType() {
-        return info.outputs().get(0).argumentType().asClass();
+        return Value.Type.fromName(info.outputs().get(0).argumentType()).get().asClass();
     }
     
     ControlAddress getAddress() {

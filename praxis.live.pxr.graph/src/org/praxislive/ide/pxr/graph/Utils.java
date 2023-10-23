@@ -171,8 +171,8 @@ class Utils {
         return Stream.of(nodes).map(Node::getName).collect(Collectors.joining("|"));
     }
     
-    static Colors colorsForPortType(Port.Type<?> type) {
-        return colorsForString(type.name());
+    static Colors colorsForPortType(String type) {
+        return colorsForString(type);
     }
     
     static Colors colorsForComponent(ComponentProxy cmp) {

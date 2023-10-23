@@ -52,7 +52,7 @@ public class EditorManager {
 
     private static PraxisProperty.Editor getDefaultEditor(
             PraxisProperty property, ArgumentInfo info) {
-        Class<?> type = info.argumentType().asClass();
+        Class<?> type = Value.Type.fromName(info.argumentType()).get().asClass();
         if (PString.class.isAssignableFrom(type)) {
 //            return findStringEditor(property, info);
             return new StringEditor(property, info);
@@ -108,7 +108,7 @@ public class EditorManager {
 
     private static boolean hasAdditionalEditors(
             PraxisProperty<?> property, ArgumentInfo info) {
-        Class<? extends Value> type = info.argumentType().asClass();
+        Class<? extends Value> type = Value.Type.fromName(info.argumentType()).get().asClass();
         if (PArray.class.isAssignableFrom(type)) {
             return true;
         } else if (PMap.class.isAssignableFrom(type)) {
@@ -131,7 +131,7 @@ public class EditorManager {
 
     private static PraxisProperty.Editor[] getAdditionalEditors(
             PraxisProperty<?> property, ArgumentInfo info) {
-        Class<? extends Value> type = info.argumentType().asClass();
+        Class<? extends Value> type = Value.Type.fromName(info.argumentType()).get().asClass();
         if (PArray.class.isAssignableFrom(type)) {
             return new PraxisProperty.Editor[]{
                 new FileListEditor(property, info),

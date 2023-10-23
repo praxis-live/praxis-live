@@ -684,8 +684,8 @@ public class GraphEditor extends RootEditor {
     }
 
     private void buildPin(String cmpID, ComponentProxy cmp, String pinID, PortInfo info) {
-        boolean primary = info.portType().name().startsWith("Audio")
-                || info.portType().name().startsWith("Video");
+        boolean primary = info.portType().startsWith("Audio")
+                || info.portType().startsWith("Video");
         PinWidget pin = scene.addPin(cmpID, pinID, getPinAlignment(info));
         pin.setSchemeColors(Utils.colorsForPortType(info.portType()).getSchemeColors());
         Font font = pin.getFont();
@@ -696,9 +696,9 @@ public class GraphEditor extends RootEditor {
         }
         String category = info.properties().getString("category", "");
         if (category.isEmpty()) {
-            pin.setToolTipText(pinID + " : " + info.portType().name());
+            pin.setToolTipText(pinID + " : " + info.portType());
         } else {
-            pin.setToolTipText(pinID + " : " + info.portType().name() + " : " + category);
+            pin.setToolTipText(pinID + " : " + info.portType() + " : " + category);
         }
 
         if (propertyMode == PropertyMode.Hide) {

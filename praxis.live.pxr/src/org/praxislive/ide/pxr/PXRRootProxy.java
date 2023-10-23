@@ -119,7 +119,7 @@ public class PXRRootProxy extends PXRContainerProxy implements RootProxy, Dispos
         if ("shared-code".equals(address.controlID())) {
             if (info.controlType() == ControlInfo.Type.Property) {
                 var args = info.outputs();
-                if (args.size() == 1 && args.get(0).argumentType().asClass() == PMap.class) {
+                if (args.size() == 1 && "Map".equals(args.get(0).argumentType())) {
                     return new BoundSharedCodeProperty(getProject(), address, info);
                 }
             }

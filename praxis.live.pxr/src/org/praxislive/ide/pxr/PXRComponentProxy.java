@@ -374,7 +374,7 @@ public class PXRComponentProxy implements ComponentProxy {
         if (args.size() != 1) {
             return null;
         }
-        if (args.get(0).argumentType().asClass() == PString.class) {
+        if ("String".equals(args.get(0).argumentType())) {
             String mime = args.get(0).properties().getString(PString.KEY_MIME_TYPE, null);
             if (mime != null) {
                 return new BoundCodeProperty(getRoot().getProject(), address, info, mime);

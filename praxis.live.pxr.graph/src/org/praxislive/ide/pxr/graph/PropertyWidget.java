@@ -83,7 +83,8 @@ class PropertyWidget extends LabelWidget {
         if (args.size() != 1) {
             valueType = Value.Type.of(Value.class);
         } else {
-            valueType = args.get(0).argumentType();
+            valueType = Value.Type.fromName(args.get(0).argumentType())
+                    .orElse(Value.Type.of(Value.class));
         }
         initEditAction();
     }
@@ -115,7 +116,7 @@ class PropertyWidget extends LabelWidget {
         if (args.size() != 1) {
             return;
         }
-        Class<? extends Value> type = args.get(0).argumentType().asClass();
+        Class<? extends Value> type = valueType.asClass();
         
         if (PBytes.class == type) {
             return;
