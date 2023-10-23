@@ -195,7 +195,7 @@ class MapTable extends JTable {
                     return null;
                 }
 
-                PMap.Builder mapBldr = PMap.builder(rowCount);
+                PMap.Builder mapBldr = PMap.builder();
                 for (int i = 0; i < rowCount; i++) {
                     Object k = table.getValueAt(row + i, 0);
                     Object v = table.getValueAt(row + i, 1);

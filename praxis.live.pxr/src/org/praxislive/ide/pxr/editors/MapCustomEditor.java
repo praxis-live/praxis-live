@@ -153,7 +153,7 @@ class MapCustomEditor extends javax.swing.JPanel implements PropertyChangeListen
     // @TODO optimize and centralize String to Value support
     private void setFromTable() {
         int count = mapTable.getRowCount();
-        PMap.Builder mapBuilder = PMap.builder(count);
+        PMap.Builder mapBuilder = PMap.builder();
         for (int i = 0; i < count; i++) {
             Object k = mapTable.getValueAt(i, 0);
             String ks = k == null ? "" : k.toString();

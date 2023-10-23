@@ -93,7 +93,7 @@ class AddPortToParentAction extends AbstractAction {
                             NotifyDescriptor.ERROR_MESSAGE));
                 return;
             }
-            PMap.Builder bld = PMap.builder(ports.size() + 1);
+            PMap.Builder bld = PMap.builder();
             for (String key : ports.keys()) {
                 bld.put(key, ports.get(key));
             }
