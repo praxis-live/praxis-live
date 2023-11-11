@@ -11,7 +11,7 @@
     
   <target name="praxiscore-embed" depends="-check-praxiscore-embed" unless="praxiscore.exists">
     <echo message="Checking for PraxisCORE"/>
-    <property name="praxiscore.dist.dir" value="../../praxiscore/praxiscore-bin/target/appassembler/" />
+    <property name="praxiscore.dist.dir" value="../../praxiscore/praxiscore-bin/target/praxiscore/" />
     <available file="${praxiscore.dist.dir}/mods/praxiscore-api-${praxiscore.version}.jar"
                property="praxiscore.dist.dir.exists" />
     <fail unless="praxiscore.dist.dir.exists"

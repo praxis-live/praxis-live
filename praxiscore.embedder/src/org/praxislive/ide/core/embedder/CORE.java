@@ -50,7 +50,7 @@ public final class CORE {
         File binDir = new File(installDir, "bin");
         File launcher;
         if (BaseUtilities.isWindows()) {
-            launcher = new File(binDir, "praxis.bat");
+            launcher = new File(binDir, "praxis.cmd");
         } else {
             launcher = new File(binDir, "praxis");
         }
