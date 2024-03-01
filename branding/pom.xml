@@ -14,7 +14,7 @@
   <name>PraxisLIVE-branding</name>
 
   <properties>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <nbm.codeNameBase>org.praxislive.ide.branding</nbm.codeNameBase>
   </properties>
 
   <dependencies>
@@ -40,6 +40,9 @@
       <plugin>
         <groupId>org.apache.netbeans.utilities</groupId>
         <artifactId>nbm-maven-plugin</artifactId>
+        <configuration>
+          <codeNameBase>${nbm.codeNameBase}</codeNameBase>
+        </configuration>
         <executions>
           <execution>
             <id>default-branding</id>

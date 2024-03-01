@@ -29,6 +29,12 @@
       <artifactId>praxislive-branding</artifactId>
       <version>${project.version}</version>
     </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>praxislive-core-embedder</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    
     
     <!-- Tests -->
     <dependency>

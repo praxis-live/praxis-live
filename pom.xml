@@ -32,6 +32,7 @@
   <modules>
     <module>application</module>
     <module>branding</module>
+    <module>modules/praxiscore.embedder</module>
   </modules>
     
   <scm>
