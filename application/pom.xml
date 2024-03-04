@@ -34,6 +34,16 @@
       <artifactId>praxislive-core-embedder</artifactId>
       <version>${project.version}</version>
     </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>praxislive-core</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>praxislive-core-ui</artifactId>
+      <version>${project.version}</version>
+    </dependency>
     
     
     <!-- Tests -->

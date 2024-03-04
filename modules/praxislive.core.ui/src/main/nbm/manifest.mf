@@ -1,0 +1,3 @@
+OpenIDE-Module-Layer: org/praxislive/ide/core/ui/resources/layer.xml
+OpenIDE-Module-Install: org/praxislive/ide/core/ui/Installer.class
+OpenIDE-Module-Localizing-Bundle: org/praxislive/ide/core/ui/resources/Bundle.properties

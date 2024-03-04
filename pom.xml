@@ -33,6 +33,8 @@
     <module>application</module>
     <module>branding</module>
     <module>modules/praxiscore.embedder</module>
+    <module>modules/praxislive.core</module>
+    <module>modules/praxislive.core.ui</module>
   </modules>
     
   <scm>
