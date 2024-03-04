@@ -34,10 +34,15 @@
     <module>branding</module>
     <module>modules/praxiscore.embedder</module>
     <module>modules/praxislive.components</module>
+    <module>modules/praxislive.code</module>
     <module>modules/praxislive.core</module>
     <module>modules/praxislive.core.ui</module>
+    <module>modules/praxislive.graph</module>
     <module>modules/praxislive.model</module>
+    <module>modules/praxislive.project</module>
     <module>modules/praxislive.properties</module>
+    <module>modules/praxislive.pxr</module>
+    <module>modules/praxislive.pxr.graph</module>
   </modules>
     
   <scm>

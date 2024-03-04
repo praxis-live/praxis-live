@@ -8,43 +8,52 @@
     <relativePath>../../pom.xml</relativePath>
   </parent>
 
-  <artifactId>praxislive-core-embedder</artifactId>
+  <artifactId>praxislive-code</artifactId>
   <packaging>nbm</packaging>
   
-  <name>PraxisLIVE-CORE-embedder</name>
+  <name>PraxisLIVE-Code</name>
 
   <properties>
-    <nbm.codeNameBase>org.praxislive.ide.core.embedder</nbm.codeNameBase>
+    <nbm.codeNameBase>org.praxislive.ide.code</nbm.codeNameBase>
   </properties>
 
   <dependencies>
-    
     <dependency>
-      <groupId>org.praxislive</groupId>
-      <artifactId>praxiscore-api</artifactId>
-      <version>${praxiscore.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.praxislive</groupId>
-      <artifactId>praxiscore-base</artifactId>
-      <version>${praxiscore.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.praxislive</groupId>
-      <artifactId>praxiscore-hub</artifactId>
-      <version>${praxiscore.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.praxislive</groupId>
-      <artifactId>praxiscore-hub-net</artifactId>
-      <version>${praxiscore.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.praxislive</groupId>
-      <artifactId>praxiscore-script</artifactId>
-      <version>${praxiscore.version}</version>
+      <groupId>org.praxislive.ide</groupId>
+      <artifactId>praxislive-project</artifactId>
+      <version>${project.version}</version>
     </dependency>
     
+    <dependency>
+      <groupId>org.netbeans.api</groupId>
+      <artifactId>org-netbeans-api-java</artifactId>
+      <version>${netbeans.version}</version>
+      <type>jar</type>
+    </dependency>
+    <dependency>
+      <groupId>org.netbeans.api</groupId>
+      <artifactId>org-netbeans-api-java-classpath</artifactId>
+      <version>${netbeans.version}</version>
+      <type>jar</type>
+    </dependency>
+    <dependency>
+      <groupId>org.netbeans.api</groupId>
+      <artifactId>org-netbeans-modules-projectapi</artifactId>
+      <version>${netbeans.version}</version>
+      <type>jar</type>
+    </dependency>
+    <dependency>
+      <groupId>org.netbeans.api</groupId>
+      <artifactId>org-openide-awt</artifactId>
+      <version>${netbeans.version}</version>
+      <type>jar</type>
+    </dependency>
+    <dependency>
+      <groupId>org.netbeans.api</groupId>
+      <artifactId>org-openide-filesystems</artifactId>
+      <version>${netbeans.version}</version>
+      <type>jar</type>
+    </dependency>
     <dependency>
       <groupId>org.netbeans.api</groupId>
       <artifactId>org-openide-modules</artifactId>
@@ -54,6 +63,12 @@
     <dependency>
       <groupId>org.netbeans.api</groupId>
       <artifactId>org-openide-util</artifactId>
+      <version>${netbeans.version}</version>
+      <type>jar</type>
+    </dependency>
+    <dependency>
+      <groupId>org.netbeans.api</groupId>
+      <artifactId>org-openide-util-lookup</artifactId>
       <version>${netbeans.version}</version>
       <type>jar</type>
     </dependency>
@@ -67,16 +82,7 @@
         <configuration>
           <codeNameBase>${nbm.codeNameBase}</codeNameBase>
           <publicPackages>
-            <publicPackage>org.praxislive.ide.core.embedder</publicPackage>
-            <publicPackage>org.praxislive.core</publicPackage>
-            <publicPackage>org.praxislive.core.protocols</publicPackage>
-            <publicPackage>org.praxislive.core.services</publicPackage>
-            <publicPackage>org.praxislive.core.syntax</publicPackage>
-            <publicPackage>org.praxislive.core.types</publicPackage>
-            <publicPackage>org.praxislive.base</publicPackage>
-            <publicPackage>org.praxislive.hub</publicPackage>
-            <publicPackage>org.praxislive.hub.net</publicPackage>
-            <publicPackage>org.praxislive.script</publicPackage>
+            <publicPackage>org.praxislive.ide.code.api</publicPackage>
           </publicPackages>
         </configuration>
         <extensions>true</extensions>

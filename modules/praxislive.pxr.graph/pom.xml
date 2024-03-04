@@ -8,43 +8,73 @@
     <relativePath>../../pom.xml</relativePath>
   </parent>
 
-  <artifactId>praxislive-core-ui</artifactId>
+  <artifactId>praxislive-pxr-graph</artifactId>
   <packaging>nbm</packaging>
   
-  <name>PraxisLIVE-Core-UI</name>
+  <name>PraxisLIVE-PXR-Graph</name>
 
   <properties>
-    <nbm.codeNameBase>org.praxislive.ide.core.ui</nbm.codeNameBase>
+    <nbm.codeNameBase>org.praxislive.ide.pxr.graph</nbm.codeNameBase>
   </properties>
 
   <dependencies>
-       
+    <dependency>
+      <groupId>org.praxislive.ide</groupId>
+      <artifactId>praxislive-core-embedder</artifactId>
+      <version>${project.version}</version>
+    </dependency>
     <dependency>
       <groupId>org.praxislive.ide</groupId>
       <artifactId>praxislive-core</artifactId>
       <version>${project.version}</version>
     </dependency>
-    
-    
     <dependency>
-      <groupId>org.netbeans.api</groupId>
-      <artifactId>org-netbeans-libs-flatlaf</artifactId>
-      <version>${netbeans.version}</version>
+      <groupId>org.praxislive.ide</groupId>
+      <artifactId>praxislive-core-ui</artifactId>
+      <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.netbeans.api</groupId>
-      <artifactId>org-netbeans-modules-options-api</artifactId>
-      <version>${netbeans.version}</version>
+      <groupId>org.praxislive.ide</groupId>
+      <artifactId>praxislive-code</artifactId>
+      <version>${project.version}</version>
     </dependency>
     <dependency>
+      <groupId>org.praxislive.ide</groupId>
+      <artifactId>praxislive-graph</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.praxislive.ide</groupId>
+      <artifactId>praxislive-model</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.praxislive.ide</groupId>
+      <artifactId>praxislive-project</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.praxislive.ide</groupId>
+      <artifactId>praxislive-properties</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.praxislive.ide</groupId>
+      <artifactId>praxislive-pxr</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    
+    <dependency>
       <groupId>org.netbeans.api</groupId>
-      <artifactId>org-netbeans-modules-settings</artifactId>
+      <artifactId>org-netbeans-api-visual</artifactId>
       <version>${netbeans.version}</version>
+      <type>jar</type>
     </dependency>
     <dependency>
       <groupId>org.netbeans.api</groupId>
       <artifactId>org-netbeans-spi-palette</artifactId>
       <version>${netbeans.version}</version>
+      <type>jar</type>
     </dependency>
     <dependency>
       <groupId>org.netbeans.api</groupId>
@@ -78,13 +108,13 @@
     </dependency>
     <dependency>
       <groupId>org.netbeans.api</groupId>
-      <artifactId>org-openide-modules</artifactId>
+      <artifactId>org-openide-nodes</artifactId>
       <version>${netbeans.version}</version>
       <type>jar</type>
     </dependency>
     <dependency>
       <groupId>org.netbeans.api</groupId>
-      <artifactId>org-openide-nodes</artifactId>
+      <artifactId>org-openide-text</artifactId>
       <version>${netbeans.version}</version>
       <type>jar</type>
     </dependency>
@@ -106,32 +136,6 @@
       <version>${netbeans.version}</version>
       <type>jar</type>
     </dependency>
-    <dependency>
-      <groupId>org.netbeans.api</groupId>
-      <artifactId>org-openide-windows</artifactId>
-      <version>${netbeans.version}</version>
-      <type>jar</type>
-    </dependency>
-    
-    <dependency>
-      <groupId>org.netbeans.modules</groupId>
-      <artifactId>org-netbeans-modules-favorites</artifactId>
-      <version>${netbeans.version}</version>
-      <type>jar</type>
-    </dependency>
-    <dependency>
-      <groupId>org.netbeans.modules</groupId>
-      <artifactId>org-netbeans-modules-projectui</artifactId>
-      <version>${netbeans.version}</version>
-      <type>jar</type>
-    </dependency>
-    <dependency>
-      <groupId>org.netbeans.modules</groupId>
-      <artifactId>org-netbeans-swing-laf-flatlaf</artifactId>
-      <version>${netbeans.version}</version>
-      <type>jar</type>
-    </dependency>
-    
   </dependencies>
 
   <build>
@@ -142,17 +146,7 @@
         <configuration>
           <codeNameBase>${nbm.codeNameBase}</codeNameBase>
           <publicPackages>
-            <publicPackage>org.praxislive.ide.core.ui.api</publicPackage>
-            <publicPackage>org.praxislive.ide.core.ui.spi</publicPackage>
           </publicPackages>
-          <moduleDependencies>
-            <dependency>
-              <id>org.praxislive.ide:praxislive-core</id>
-              <type>impl</type>
-            </dependency>
-          </moduleDependencies>
-          <!-- Need to skip verify runtime due to dependencies on non-API modules -->
-          <verifyRuntime>skip</verifyRuntime>
         </configuration>
         <extensions>true</extensions>
       </plugin>
