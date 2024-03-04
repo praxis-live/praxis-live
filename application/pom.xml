@@ -44,6 +44,21 @@
       <artifactId>praxislive-core-ui</artifactId>
       <version>${project.version}</version>
     </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>praxislive-components</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>praxislive-model</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>praxislive-properties</artifactId>
+      <version>${project.version}</version>
+    </dependency>
     
     
     <!-- Tests -->

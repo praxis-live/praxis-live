@@ -8,13 +8,13 @@
     <relativePath>../../pom.xml</relativePath>
   </parent>
 
-  <artifactId>praxislive-core</artifactId>
+  <artifactId>praxislive-model</artifactId>
   <packaging>nbm</packaging>
   
-  <name>PraxisLIVE-Core</name>
+  <name>PraxisLIVE-Model</name>
 
   <properties>
-    <nbm.codeNameBase>org.praxislive.ide.core</nbm.codeNameBase>
+    <nbm.codeNameBase>org.praxislive.ide.model</nbm.codeNameBase>
   </properties>
 
   <dependencies>
@@ -23,16 +23,20 @@
       <artifactId>praxislive-core-embedder</artifactId>
       <version>${project.version}</version>
     </dependency>
+    <dependency>
+      <groupId>org.praxislive.ide</groupId>
+      <artifactId>praxislive-core</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.praxislive.ide</groupId>
+      <artifactId>praxislive-properties</artifactId>
+      <version>${project.version}</version>
+    </dependency>
     
     <dependency>
       <groupId>org.netbeans.api</groupId>
-      <artifactId>org-openide-filesystems</artifactId>
-      <version>${netbeans.version}</version>
-      <type>jar</type>
-    </dependency>
-    <dependency>
-      <groupId>org.netbeans.api</groupId>
-      <artifactId>org-openide-modules</artifactId>
+      <artifactId>org-openide-nodes</artifactId>
       <version>${netbeans.version}</version>
       <type>jar</type>
     </dependency>
@@ -58,8 +62,7 @@
         <configuration>
           <codeNameBase>${nbm.codeNameBase}</codeNameBase>
           <publicPackages>
-            <publicPackage>org.praxislive.core.api</publicPackage>
-            <publicPackage>org.praxislive.core.spi</publicPackage>
+            <publicPackage>org.praxislive.ide.model</publicPackage>
           </publicPackages>
         </configuration>
         <extensions>true</extensions>
