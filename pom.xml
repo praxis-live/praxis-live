@@ -33,6 +33,7 @@
     <module>application</module>
     <module>branding</module>
     <module>modules/praxiscore.embedder</module>
+    <module>modules/praxislive.audio</module>
     <module>modules/praxislive.components</module>
     <module>modules/praxislive.code</module>
     <module>modules/praxislive.core</module>
@@ -42,10 +43,15 @@
     <module>modules/praxislive.graph</module>
     <module>modules/praxislive.model</module>
     <module>modules/praxislive.project</module>
+    <module>modules/praxislive.project.templates</module>
     <module>modules/praxislive.properties</module>
     <module>modules/praxislive.pxj</module>
     <module>modules/praxislive.pxr</module>
     <module>modules/praxislive.pxr.graph</module>
+    <module>modules/praxislive.pxr.gui</module>
+    <module>modules/praxislive.pxs</module>
+    <module>modules/praxislive.tableeditor</module>
+    <module>modules/praxislive.video</module>
   </modules>
     
   <scm>

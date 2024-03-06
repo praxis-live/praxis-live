@@ -46,6 +46,11 @@
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
+      <artifactId>praxislive-audio</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
       <artifactId>praxislive-components</artifactId>
       <version>${project.version}</version>
     </dependency>
@@ -76,6 +81,11 @@
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
+      <artifactId>praxislive-project-templates</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
       <artifactId>praxislive-properties</artifactId>
       <version>${project.version}</version>
     </dependency>
@@ -92,6 +102,26 @@
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>praxislive-pxr-graph</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>praxislive-pxr-gui</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>praxislive-pxs</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>praxislive-tableeditor</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>praxislive-video</artifactId>
       <version>${project.version}</version>
     </dependency>
     

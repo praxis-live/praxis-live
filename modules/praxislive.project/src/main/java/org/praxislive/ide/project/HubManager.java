@@ -280,7 +280,7 @@ class HubManager {
 
         @Override
         public boolean matches(String string, ComponentType ct) {
-            return true;
+            return !ct.toString().equals("root:gui");
         }
 
         @Override
