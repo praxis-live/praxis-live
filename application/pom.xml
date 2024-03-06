@@ -56,6 +56,16 @@
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
+      <artifactId>praxislive-editor</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>praxislive-editor-saveflash</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
       <artifactId>praxislive-model</artifactId>
       <version>${project.version}</version>
     </dependency>
@@ -67,6 +77,11 @@
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>praxislive-properties</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>praxislive-pxj</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>

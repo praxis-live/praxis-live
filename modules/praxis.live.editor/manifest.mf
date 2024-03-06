@@ -1,7 +1,0 @@
-Manifest-Version: 1.0
-OpenIDE-Module: org.praxislive.ide.editor
-OpenIDE-Module-Layer: org/praxislive/ide/editor/resources/layer.xml
-OpenIDE-Module-Localizing-Bundle: org/praxislive/ide/editor/resources/Bundle.properties
-OpenIDE-Module-Specification-Version: 5.0.0
-AutoUpdate-Essential-Module: true
-AutoUpdate-Show-In-Client: false

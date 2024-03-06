@@ -1,37 +1,34 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>org.praxislive.ide</groupId>
     <artifactId>praxislive-parent</artifactId>
     <version>6.0.0-SNAPSHOT</version>
+    <relativePath>../../pom.xml</relativePath>
   </parent>
 
-  <artifactId>praxislive-branding</artifactId>
+  <artifactId>praxislive-editor</artifactId>
   <packaging>nbm</packaging>
-
-  <name>PraxisLIVE-Branding</name>
+  
+  <name>PraxisLIVE-Editor</name>
 
   <properties>
-    <nbm.codeNameBase>org.praxislive.ide.branding</nbm.codeNameBase>
+    <nbm.codeNameBase>org.praxislive.ide.editor</nbm.codeNameBase>
   </properties>
 
   <dependencies>
     <dependency>
       <groupId>org.netbeans.api</groupId>
-      <artifactId>org-netbeans-api-annotations-common</artifactId>
+      <artifactId>org-netbeans-modules-editor</artifactId>
       <version>${netbeans.version}</version>
+      <type>jar</type>
     </dependency>
     <dependency>
       <groupId>org.netbeans.api</groupId>
-      <artifactId>org-netbeans-libs-flatlaf</artifactId>
+      <artifactId>org-openide-text</artifactId>
       <version>${netbeans.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.netbeans.modules</groupId>
-      <artifactId>org-netbeans-swing-laf-flatlaf</artifactId>
-      <version>${netbeans.version}</version>
+      <type>jar</type>
     </dependency>
   </dependencies>
 
@@ -42,19 +39,15 @@
         <artifactId>nbm-maven-plugin</artifactId>
         <configuration>
           <codeNameBase>${nbm.codeNameBase}</codeNameBase>
+          <publicPackages>
+          </publicPackages>
         </configuration>
-        <executions>
-          <execution>
-            <id>default-branding</id>
-            <phase>package</phase>
-          </execution>
-        </executions>
+        <extensions>true</extensions>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jar-plugin</artifactId>
         <configuration>
-          <!-- to have the jar plugin pickup the nbm generated manifest -->
           <archive>
             <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
           </archive>
