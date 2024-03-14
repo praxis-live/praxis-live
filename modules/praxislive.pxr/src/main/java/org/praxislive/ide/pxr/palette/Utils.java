@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 2020 Neil C Smith.
+ * Copyright 2024 Neil C Smith.
  * 
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -48,7 +48,7 @@ class Utils {
     static final String PXG_FILE_NAME = "pxg.zip";
     static final String PXR_DOWNLOAD_FOLDER = "PXR/Downloads";
     static final String PXG_FILE_PATH = PXR_DOWNLOAD_FOLDER + "/" + PXG_FILE_NAME;
-    static final String PALETTE_PATH = ComponentPalette.FOLDER;
+    static final String PALETTE_PATH = PaletteFiles.FOLDER;
     
     private final static Map<String, String> knownFolders = new HashMap<>(6);
     static {

@@ -64,7 +64,10 @@ public class PXRContainerProxy extends PXRComponentProxy implements ContainerPro
     private final Set<Connection> connections;
     private final ChildrenProperty childProp;
     private final ConnectionsProperty conProp;
+    private final SupportedTypesProperty supportedTypesProp;
+
     private ValuePropertyAdaptor.ReadOnly conAdaptor;
+    private ValuePropertyAdaptor.ReadOnly typesAdaptor;
 
     boolean ignore;
 
@@ -75,6 +78,7 @@ public class PXRContainerProxy extends PXRComponentProxy implements ContainerPro
         connections = new LinkedHashSet<>();
         childProp = new ChildrenProperty();
         conProp = new ConnectionsProperty();
+        supportedTypesProp = new SupportedTypesProperty();
 
     }
 
@@ -84,6 +88,7 @@ public class PXRContainerProxy extends PXRComponentProxy implements ContainerPro
         proxies.addAll(super.getProxyProperties());
         proxies.add(childProp);
         proxies.add(conProp);
+        proxies.add(supportedTypesProp);
         return proxies;
     }
 
@@ -98,10 +103,15 @@ public class PXRContainerProxy extends PXRComponentProxy implements ContainerPro
     }
 
     @Override
+    public List<ComponentType> supportedTypes() {
+        return supportedTypesProp.types();
+    }
+
+    @Override
     public void addChild(final String id, final ComponentType type, final Callback callback) {
         addChild(id, type, PMap.EMPTY, callback);
     }
-    
+
     void addChild(String id, ComponentType type, PMap attrs, Callback callback) {
 
         ComponentAddress childAddress = ComponentAddress.of(getAddress(), id);
@@ -320,21 +330,28 @@ public class PXRContainerProxy extends PXRComponentProxy implements ContainerPro
     void checkSyncing() {
         super.checkSyncing();
         if (conAdaptor == null) {
-            initConAdaptor();
+            initAdaptors();
         }
         if (syncing) {
             conAdaptor.setSyncRate(Binding.SyncRate.Low);
+            typesAdaptor.setSyncRate(Binding.SyncRate.Low);
         } else {
             conAdaptor.setSyncRate(Binding.SyncRate.None);
+            typesAdaptor.setSyncRate(Binding.SyncRate.None);
         }
     }
 
-    private void initConAdaptor() {
-        conAdaptor = new ValuePropertyAdaptor.ReadOnly(this,
+    private void initAdaptors() {
+        conAdaptor = new ValuePropertyAdaptor.ReadOnly(null,
                 ContainerProtocol.CONNECTIONS, true, Binding.SyncRate.None);
         conAdaptor.addPropertyChangeListener(new ConnectionsListener());
+        typesAdaptor = new ValuePropertyAdaptor.ReadOnly(null,
+                SUPPORTED_TYPES, true, Binding.SyncRate.None);
+        typesAdaptor.addPropertyChangeListener(supportedTypesProp);
         getRoot().getHelper().bind(ControlAddress.of(getAddress(),
                 ContainerProtocol.CONNECTIONS), conAdaptor);
+        getRoot().getHelper().bind(ControlAddress.of(getAddress(), SUPPORTED_TYPES),
+                typesAdaptor);
     }
 
     @Override
@@ -346,6 +363,12 @@ public class PXRContainerProxy extends PXRComponentProxy implements ContainerPro
         if (conAdaptor != null) {
             getRoot().getHelper().unbind(ControlAddress.of(getAddress(),
                     ContainerProtocol.CONNECTIONS), conAdaptor);
+            conAdaptor = null;
+        }
+        if (typesAdaptor != null) {
+            getRoot().getHelper().unbind(ControlAddress.of(getAddress(),
+                    SUPPORTED_TYPES), typesAdaptor);
+            typesAdaptor = null;
         }
         super.dispose();
     }
@@ -428,6 +451,45 @@ public class PXRContainerProxy extends PXRComponentProxy implements ContainerPro
                         con.get(2).toString(), con.get(3).toString()));
             }
             return cons;
+        }
+
+    }
+
+    private class SupportedTypesProperty extends PraxisProperty<PArray> implements PropertyChangeListener {
+
+        private List<ComponentType> types;
+
+        public SupportedTypesProperty() {
+            super(PArray.class);
+            setName(SUPPORTED_TYPES);
+            types = List.of();
+        }
+
+        @Override
+        public boolean canRead() {
+            return true;
+        }
+
+        @Override
+        public PArray getValue() {
+            return PArray.of(types);
+        }
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            List<ComponentType> newTypes = PArray.from((Value) evt.getNewValue())
+                    .map(a -> a.stream()
+                    .flatMap(v -> ComponentType.from(v).stream())
+                    .toList()
+                    ).orElse(List.of());
+            if (!types.equals(newTypes)) {
+                types = List.copyOf(newTypes);
+                firePropertyChange(SUPPORTED_TYPES, null, null);
+            }
+        }
+
+        private List<ComponentType> types() {
+            return types;
         }
 
     }

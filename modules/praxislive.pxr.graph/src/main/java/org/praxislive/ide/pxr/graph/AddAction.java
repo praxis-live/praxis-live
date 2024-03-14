@@ -64,28 +64,14 @@ class AddAction extends AbstractAction {
 
     AddAction(GraphEditor editor) {
         this.editor = editor;
-        Node paletteRoot = editor.getLookup().lookup(PaletteController.class)
-                .getRoot().lookup(Node.class);
         typeMap = new LinkedHashMap<>();
-        Stream.of(paletteRoot.getChildren().getNodes(true))
-                .flatMap(category -> Stream.of(category.getChildren().getNodes(true)))
-                .forEachOrdered(item -> {
-                    ComponentType type = item.getLookup().lookup(ComponentType.class);
-                    if (type != null) {
-                        typeMap.put(type.toString(), type);
-                    } else {
-                        FileObject file = item.getLookup().lookup(FileObject.class);
-                        if (file != null) {
-                            typeMap.put(item.getDisplayName(), file);
-                        }
-                    }
-                });
-        suggestedTypes = new Vector(typeMap.keySet());
+        suggestedTypes = new Vector<>();
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
         Panel panel = new Panel(SwingUtilities.windowForComponent(editor.getEditorComponent()));
+        buildTypeMap();
         panel.typeField.setSuggestData(suggestedTypes);
         editor.installToActionPanel(panel);
         panel.typeField.requestFocusInWindow();
@@ -109,6 +95,27 @@ class AddAction extends AbstractAction {
         } else {
             editor.acceptImport((FileObject) obj);
         }
+    }
+
+    private void buildTypeMap() {
+        typeMap.clear();
+        suggestedTypes.clear();
+        Node paletteRoot = editor.getLookup().lookup(PaletteController.class)
+                .getRoot().lookup(Node.class);
+        Stream.of(paletteRoot.getChildren().getNodes(true))
+                .flatMap(category -> Stream.of(category.getChildren().getNodes(true)))
+                .forEachOrdered(item -> {
+                    ComponentType type = item.getLookup().lookup(ComponentType.class);
+                    if (type != null) {
+                        typeMap.put(type.toString(), type);
+                    } else {
+                        FileObject file = item.getLookup().lookup(FileObject.class);
+                        if (file != null) {
+                            typeMap.put(item.getDisplayName(), file);
+                        }
+                    }
+                });
+        suggestedTypes.addAll(typeMap.keySet());
     }
 
     class Panel extends JPanel {

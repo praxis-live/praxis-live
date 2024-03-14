@@ -2,7 +2,6 @@ package org.praxislive.ide.pxr.palette;
 
 import java.awt.event.ActionEvent;
 import java.io.File;
-import java.io.IOException;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.filechooser.FileFilter;

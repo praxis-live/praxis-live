@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2023 Neil C Smith.
+ * Copyright 2024 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -75,7 +75,6 @@ import org.praxislive.ide.model.ContainerProxy;
 import org.praxislive.ide.model.RootProxy;
 import org.praxislive.ide.pxr.api.ActionSupport;
 import org.praxislive.ide.pxr.api.EditorUtils;
-import org.praxislive.ide.pxr.api.PaletteUtils;
 import org.praxislive.ide.pxr.spi.RootEditor;
 import java.awt.AWTEvent;
 import java.awt.event.InputEvent;
@@ -90,7 +89,6 @@ import org.netbeans.api.visual.model.ObjectSceneEvent;
 import org.netbeans.api.visual.model.ObjectSceneEventType;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
-import org.netbeans.spi.palette.PaletteController;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -98,9 +96,7 @@ import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerUtils;
 import org.openide.explorer.view.MenuView;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataFolder;
 import org.openide.nodes.Node;
-import org.openide.nodes.NodeAcceptor;
 import org.openide.nodes.NodeTransfer;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
@@ -111,6 +107,7 @@ import org.openide.util.lookup.ProxyLookup;
 import org.praxislive.core.Value;
 import org.praxislive.ide.code.api.SharedCodeInfo;
 import org.praxislive.ide.project.api.PraxisProject;
+import org.praxislive.ide.pxr.api.ComponentPalette;
 
 /**
  *
@@ -136,6 +133,7 @@ public class GraphEditor extends RootEditor {
     private final PraxisGraphScene<String> scene;
     private final ExplorerManager manager;
     private final Lookup lookup;
+    private final ComponentPalette palette;
 
     private final LocationAction location;
     private final Action goUpAction;
@@ -182,34 +180,30 @@ public class GraphEditor extends RootEditor {
         pasteAction = new PasteActionPerformer(this, manager);
         duplicateAction = new DuplicateActionPerformer(this, manager);
 
-        PaletteController palette = PaletteUtils.getPalette(project, "core", category);
+        palette = ComponentPalette.create(container);
 
         var rootNode = root.getNodeDelegate();
         manager.setRootContext(rootNode);
         manager.setExploredContext(rootNode, new Node[]{rootNode});
         
         lookup = new ProxyLookup(ExplorerUtils.createLookup(manager, buildActionMap()),
-                Lookups.fixed(palette));
+                Lookups.fixed(palette.controller()));
 
         addMenu = new MenuView.Menu(
-                palette.getRoot().lookup(Node.class),
-                new NodeAcceptor() {
-            @Override
-            public boolean acceptNodes(Node[] nodes) {
-                if (nodes.length == 1) {
-                    ComponentType type = nodes[0].getLookup().lookup(ComponentType.class);
-                    if (type != null) {
-                        EventQueue.invokeLater(() -> acceptComponentType(type));
-                        return true;
+                palette.root(), (Node[] nodes) -> {
+                    if (nodes.length == 1) {
+                        ComponentType type = nodes[0].getLookup().lookup(ComponentType.class);
+                        if (type != null) {
+                            EventQueue.invokeLater(() -> acceptComponentType(type));
+                            return true;
+                        }
+                        FileObject fo = nodes[0].getLookup().lookup(FileObject.class);
+                        if (fo != null) {
+                            EventQueue.invokeLater(() -> acceptImport(fo));
+                            return true;
+                        }
                     }
-                    FileObject fo = nodes[0].getLookup().lookup(FileObject.class);
-                    if (fo != null) {
-                        EventQueue.invokeLater(() -> acceptImport(fo));
-                        return true;
-                    }
-                }
-                return false;
-            }
+                    return false;
         });
         addMenu.setIcon(null);
         addMenu.setText("Add");
@@ -401,6 +395,12 @@ public class GraphEditor extends RootEditor {
             return;
         }
         scene.getView().requestFocusInWindow();
+    }
+
+    @Override
+    public void dispose() {
+        super.dispose();
+        palette.dispose();
     }
 
     @Override

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2020 Neil C Smith.
+ * Copyright 2024 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -39,7 +39,6 @@ import javax.swing.KeyStroke;
 import javax.swing.OverlayLayout;
 import javax.swing.SwingUtilities;
 import org.praxislive.ide.model.RootProxy;
-import org.praxislive.ide.pxr.api.PaletteUtils;
 import org.praxislive.ide.pxr.spi.RootEditor;
 
 import static org.praxislive.ide.pxr.gui.LayoutAction.Type.*;
@@ -56,7 +55,9 @@ import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
+import org.praxislive.ide.model.ContainerProxy;
 import org.praxislive.ide.project.api.PraxisProject;
+import org.praxislive.ide.pxr.api.ComponentPalette;
 
 /**
  *
@@ -72,7 +73,8 @@ public class GuiEditor extends RootEditor {
     private final ExplorerManager em;
     private final Lookup lookup;
     private final InstanceContent content;
-    
+    private final ComponentPalette palette;
+
     private EditAction editAction;
     private EditLayer editLayer;
     private Action[] actions;
@@ -93,9 +95,10 @@ public class GuiEditor extends RootEditor {
         initActions(layeredPane.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT),
                 layeredPane.getActionMap());
         content = new InstanceContent();
+        palette = ComponentPalette.create(root instanceof ContainerProxy ? (ContainerProxy) root : null);
         lookup = new ProxyLookup(
                 ExplorerUtils.createLookup(em, layeredPane.getActionMap()),
-                Lookups.fixed(PaletteUtils.getPalette(project, "gui")),
+                Lookups.fixed(palette.controller()),
                 new AbstractLookup(content));
     }
 
@@ -133,10 +136,10 @@ public class GuiEditor extends RootEditor {
         actionMap.put("increase-span-y", actions[9]);
         inputMap.put(KeyStroke.getKeyStroke("shift UP"), "decrease-span-y");
         actionMap.put("decrease-span-y", actions[10]);
-        
+
         actionMap.put(DeleteAction.get(DeleteAction.class).getActionMapKey(),
                 ExplorerUtils.actionDelete(em, true));
-        
+
     }
 
     @Override
@@ -157,7 +160,7 @@ public class GuiEditor extends RootEditor {
     RootProxy getRoot() {
         return root;
     }
-    
+
     GuiHelper getHelper() {
         return helper;
     }
@@ -165,7 +168,7 @@ public class GuiEditor extends RootEditor {
     void setSelected(Node[] nodes) throws Exception {
         em.setSelectedNodes(nodes);
     }
-    
+
     void performPreferredAction() {
         Node[] nodes = em.getSelectedNodes();
         if (nodes.length == 1) {
@@ -209,6 +212,7 @@ public class GuiEditor extends RootEditor {
     @Override
     public void dispose() {
         super.dispose();
+        palette.dispose();
         SwingUtilities.invokeLater(new Runnable() {
 
             @Override
@@ -252,7 +256,6 @@ public class GuiEditor extends RootEditor {
                 putValue(SELECTED_KEY, Boolean.FALSE);
             }
         }
-
 
         @Override
         public Component getToolbarPresenter() {

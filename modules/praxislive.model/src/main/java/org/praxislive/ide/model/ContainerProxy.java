@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2020 Neil C Smith.
+ * Copyright 2024 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -21,22 +21,25 @@
  */
 package org.praxislive.ide.model;
 
+import java.util.List;
 import java.util.stream.Stream;
 import org.praxislive.ide.core.api.Callback;
 import org.praxislive.core.ComponentType;
+import org.praxislive.core.protocols.ContainerProtocol;
 
 /**
  *
  */
 public interface ContainerProxy extends ComponentProxy {
-    
-    public static final String CHILDREN = "children";
-    public static final String CONNECTIONS = "connections";
+
+    public static final String CHILDREN = ContainerProtocol.CHILDREN;
+    public static final String CONNECTIONS = ContainerProtocol.CONNECTIONS;
+    public static final String SUPPORTED_TYPES = ContainerProtocol.SUPPORTED_TYPES;
 
     public void addChild(String id, ComponentType type, Callback callback);
 
     public void removeChild(String id, Callback callback);
-    
+
     public ComponentProxy getChild(String id);
 
     public Stream<String> children();
@@ -46,5 +49,9 @@ public interface ContainerProxy extends ComponentProxy {
     public void disconnect(Connection connection, Callback callback);
 
     public Stream<Connection> connections();
+
+    public default List<ComponentType> supportedTypes() {
+        return List.of();
+    }
 
 }
