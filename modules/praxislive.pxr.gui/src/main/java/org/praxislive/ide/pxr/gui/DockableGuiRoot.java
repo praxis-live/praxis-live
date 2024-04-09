@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 2020 Neil C Smith.
+ * Copyright 2024 Neil C Smith.
  * 
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -38,7 +38,9 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import net.miginfocom.swing.MigLayout;
 import org.openide.util.Exceptions;
+import org.praxislive.base.FilteredTypes;
 import org.praxislive.core.ComponentInfo;
+import org.praxislive.core.ComponentType;
 import org.praxislive.core.Info;
 import org.praxislive.core.Lookup;
 import org.praxislive.core.protocols.ComponentProtocol;
@@ -53,17 +55,18 @@ import org.praxislive.ide.project.api.PraxisProject;
  *
  */
 public class DockableGuiRoot extends AbstractIDERoot {
-    
-    private final static Map<String, DockableGuiRoot> REGISTRY = 
-            new HashMap<String, DockableGuiRoot>();
+
+    private final static Map<String, DockableGuiRoot> REGISTRY = new HashMap<>();
     private final static ComponentInfo INFO = Info.component(cmp -> cmp
             .merge(ComponentProtocol.API_INFO)
             .merge(ContainerProtocol.API_INFO)
+            .control(ContainerProtocol.SUPPORTED_TYPES, ContainerProtocol.SUPPORTED_TYPES_INFO)
             .merge(StartableProtocol.API_INFO)
+            .property(ComponentInfo.KEY_COMPONENT_TYPE, ComponentType.of("root:gui"))
     );
-    
+
     private final PraxisProject project;
-    
+
     private JFrame frame;
 //    private JScrollPane scrollPane;
     private JPanel container;
@@ -106,16 +109,17 @@ public class DockableGuiRoot extends AbstractIDERoot {
         container.putClientProperty(Keys.Address, getAddress());
         layoutListener = new LayoutChangeListener();
         frame.getContentPane().add(new JScrollPane(container));
-        
+
         REGISTRY.put(computeID(project, getAddress().rootID()), this);
-        
+
     }
 
     @Override
     public Lookup getLookup() {
         if (lookup == null) {
             context = new Context();
-            lookup = Lookup.of(super.getLookup(), context);
+            var types = FilteredTypes.create(this, type -> type.toString().startsWith("gui:"));
+            lookup = Lookup.of(super.getLookup(), context, types);
         }
         return lookup;
     }
@@ -136,7 +140,7 @@ public class DockableGuiRoot extends AbstractIDERoot {
         Utils.disableAll(container);
         if (activeEditor == null) {
             frame.setVisible(false);
-        }      
+        }
     }
 
     @Override
@@ -148,7 +152,7 @@ public class DockableGuiRoot extends AbstractIDERoot {
         }
         frame.setVisible(false);
         frame.dispose();
-        
+
         REGISTRY.values().remove(this);
     }
 
@@ -176,7 +180,7 @@ public class DockableGuiRoot extends AbstractIDERoot {
             editor.removeRootPanel(container);
             activeEditor = null;
             frame.getContentPane().add(new JScrollPane(container));
-            if (getState() == State.ACTIVE_RUNNING) {           
+            if (getState() == State.ACTIVE_RUNNING) {
                 frame.pack();
                 frame.setVisible(true);
                 frame.requestFocus();
@@ -184,11 +188,11 @@ public class DockableGuiRoot extends AbstractIDERoot {
             }
         }
     }
-    
+
     static DockableGuiRoot find(PraxisProject project, String id) {
         return REGISTRY.get(computeID(project, id));
     }
-    
+
     private static String computeID(PraxisProject project, String rootID) {
         return project.getProjectDirectory().getPath() + "!" + rootID;
     }
@@ -204,7 +208,7 @@ public class DockableGuiRoot extends AbstractIDERoot {
     private void updateLayout(JComponent child) {
         if (child != null) {
             layout.setComponentConstraints(child, child.getClientProperty(Keys.LayoutConstraint));
-        }   
+        }
         container.revalidate();
         container.repaint();
     }
