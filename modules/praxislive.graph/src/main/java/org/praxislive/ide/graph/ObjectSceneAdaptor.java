@@ -8,7 +8,6 @@ import org.netbeans.api.visual.model.ObjectState;
 
 /**
  *
- * @author Neil C Smith (http://neilcsmith.net)
  */
 public class ObjectSceneAdaptor implements ObjectSceneListener {
 

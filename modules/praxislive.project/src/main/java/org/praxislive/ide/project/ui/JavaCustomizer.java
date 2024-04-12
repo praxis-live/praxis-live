@@ -16,7 +16,7 @@
  * along with this work; if not, see http://www.gnu.org/licenses/
  *
  *
- * Please visit http://neilcsmith.net if you need additional information or
+ * Please visit https://www.praxislive.org if you need additional information or
  * have any questions.
  */
 package org.praxislive.ide.project.ui;
@@ -31,7 +31,6 @@ import static org.praxislive.ide.project.DefaultPraxisProject.MAX_JAVA_VERSION;
 
 /**
  *
- * @author Neil C Smith (http://neilcsmith.net)
  */
 final class JavaCustomizer extends javax.swing.JPanel {
     

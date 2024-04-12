@@ -14,7 +14,6 @@ import static org.junit.Assert.*;
 
 /**
  *
- * @author Neil C Smith
  */
 public class EditorUtilsTest {
     

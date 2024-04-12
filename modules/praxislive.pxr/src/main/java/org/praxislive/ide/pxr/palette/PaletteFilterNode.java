@@ -7,7 +7,6 @@ import org.openide.nodes.Node;
 
 /**
  *
- * @author Neil C Smith <http://neilcsmith.net>
  */
 class PaletteFilterNode extends FilterNode {
 

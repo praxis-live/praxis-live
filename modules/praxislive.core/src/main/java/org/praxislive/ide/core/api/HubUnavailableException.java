@@ -7,7 +7,6 @@ package org.praxislive.ide.core.api;
 
 /**
  *
- * @author Neil C Smith (http://neilcsmith.net)
  */
 public class HubUnavailableException extends Exception {
 

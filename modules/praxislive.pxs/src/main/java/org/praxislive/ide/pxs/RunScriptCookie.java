@@ -7,7 +7,6 @@ package org.praxislive.ide.pxs;
 
 /**
  *
- * @author Neil C Smith (http://neilcsmith.net)
  */
 public interface RunScriptCookie {
 

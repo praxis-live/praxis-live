@@ -30,7 +30,7 @@
  * this exception to your version of the work, but you are not obligated to do so.
  * If you do not wish to do so, delete this exception statement from your version.
  *
- * Please visit http://neilcsmith.net if you need additional information or
+ * Please visit https://www.praxislive.org if you need additional information or
  * have any questions.
  *
  *
@@ -88,7 +88,6 @@ import org.netbeans.api.visual.widget.Widget;
 
 /**
  *
- * @author Neil C Smith (http://neilcsmith.net)
  */
 class PraxisCycleFocusProvider implements CycleFocusProvider {
 

@@ -16,7 +16,6 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author Neil C Smith <http://neilcsmith.net>
  */
 class DefaultPaletteActions extends PaletteActions {
     

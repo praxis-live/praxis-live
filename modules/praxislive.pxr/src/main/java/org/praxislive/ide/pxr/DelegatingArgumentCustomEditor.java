@@ -16,7 +16,7 @@
  * along with this work; if not, see http://www.gnu.org/licenses/
  *
  *
- * Please visit http://neilcsmith.net if you need additional information or
+ * Please visit https://www.praxislive.org if you need additional information or
  * have any questions.
  */
 package org.praxislive.ide.pxr;
@@ -35,7 +35,6 @@ import org.openide.explorer.propertysheet.PropertyEnv;
 
 /**
  *
- * @author Neil C Smith (http://neilcsmith.net)
  */
 @SuppressWarnings("deprecation")
 class DelegatingArgumentCustomEditor extends javax.swing.JPanel {

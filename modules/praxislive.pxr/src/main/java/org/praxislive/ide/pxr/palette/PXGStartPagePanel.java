@@ -16,7 +16,7 @@
  * along with this work; if not, see http://www.gnu.org/licenses/
  *
  *
- * Please visit http://neilcsmith.net if you need additional information or
+ * Please visit https://www.praxislive.org if you need additional information or
  * have any questions.
  */
 package org.praxislive.ide.pxr.palette;
@@ -31,7 +31,6 @@ import org.praxislive.ide.core.ui.spi.StartPagePanelProvider;
 
 /**
  *
- * @author Neil C Smith - http://www.neilcsmith.net
  */
 @Messages({
     "TITLE_PXGStartPanel=Additional components",

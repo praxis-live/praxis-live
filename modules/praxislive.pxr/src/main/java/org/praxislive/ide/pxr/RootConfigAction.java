@@ -16,7 +16,7 @@
  * along with this work; if not, see http://www.gnu.org/licenses/
  *
  *
- * Please visit http://neilcsmith.net if you need additional information or
+ * Please visit https://www.praxislive.org if you need additional information or
  * have any questions.
  */
 package org.praxislive.ide.pxr;
@@ -34,7 +34,6 @@ import org.openide.util.Utilities;
 
 /**
  *
- * @author Neil C Smith <http://neilcsmith.net>
  */
 class RootConfigAction extends AbstractAction
         implements ContextAwareAction, LookupListener {
