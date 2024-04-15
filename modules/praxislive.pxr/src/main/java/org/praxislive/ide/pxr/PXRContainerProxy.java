@@ -330,7 +330,11 @@ public class PXRContainerProxy extends PXRComponentProxy implements ContainerPro
     void checkSyncing() {
         super.checkSyncing();
         if (conAdaptor == null) {
-            initAdaptors();
+            if (syncing) {
+                initAdaptors();
+            } else {
+                return;
+            }
         }
         if (syncing) {
             conAdaptor.setSyncRate(Binding.SyncRate.Low);
