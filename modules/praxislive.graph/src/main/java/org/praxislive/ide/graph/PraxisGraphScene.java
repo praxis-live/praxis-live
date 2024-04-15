@@ -1,78 +1,44 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2017 Neil C Smith.
+ * Copyright 2024 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License version 2 only, as
+ * under the terms of the GNU General Public License version 3 only, as
  * published by the Free Software Foundation.
  *
  * This code is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
  * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
- * version 2 for more details.
+ * version 3 for more details.
  *
- * You should have received a copy of the GNU General Public License version 2
+ * You should have received a copy of the GNU General Public License version 3
  * along with this work; if not, see http://www.gnu.org/licenses/
  *
- *
- * Linking this work statically or dynamically with other modules is making a
- * combined work based on this work. Thus, the terms and conditions of the GNU
- * General Public License cover the whole combination.
- *
- * As a special exception, the copyright holders of this work give you permission
- * to link this work with independent modules to produce an executable,
- * regardless of the license terms of these independent modules, and to copy and
- * distribute the resulting executable under terms of your choice, provided that
- * you also meet, for each linked independent module, the terms and conditions of
- * the license of that module. An independent module is a module which is not
- * derived from or based on this work. If you modify this work, you may extend
- * this exception to your version of the work, but you are not obligated to do so.
- * If you do not wish to do so, delete this exception statement from your version.
  *
  * Please visit https://www.praxislive.org if you need additional information or
  * have any questions.
  *
  *
- * This class is derived from code in NetBeans Visual Library.
- * Original copyright notice follows.
+ * This file incorporates code from Apache NetBeans Visual Library, covered by
+ * the following terms :
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * The contents of this file are subject to the terms of either the GNU
- * General Public License Version 2 only ("GPL") or the Common
- * Development and Distribution License("CDDL") (collectively, the
- * "License"). You may not use this file except in compliance with the
- * License. You can obtain a copy of the License at
- * http://www.netbeans.org/cddl-gplv2.html
- * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
- * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
- * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
- * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
- * accompanied this code. If applicable, add the following below the
- * License Header, with the fields enclosed by brackets [] replaced by
- * your own identifying information:
- * "Portions Copyrighted [year] [name of copyright owner]"
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
- * If you wish your version of this file to be governed by only the CDDL
- * or only the GPL Version 2, indicate your decision by adding
- * "[Contributor] elects to include this software in this distribution
- * under the [CDDL or GPL Version 2] license." If you do not indicate a
- * single choice of license, a recipient has the option to distribute
- * your version of this file under either the CDDL, the GPL Version 2 or
- * to extend the choice of license to its licensees as provided above.
- * However, if you add GPL Version 2 code and therefore, elected the GPL
- * Version 2 license, then the option applies only if the new code is
- * made subject to such option by the copyright holder.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.praxislive.ide.graph;
 
@@ -101,17 +67,24 @@ import org.netbeans.api.visual.widget.EventProcessingType;
 import org.netbeans.api.visual.widget.LayerWidget;
 import org.netbeans.api.visual.widget.Widget;
 
+/**
+ * A graph scene providing node widgets with pins and edges. The graph scene is
+ * backed by a set of nodes of the given type. A graph cannot contain duplicate
+ * nodes.
+ *
+ * @param <N> node type
+ */
 public class PraxisGraphScene<N> extends GraphPinScene<N, EdgeID<N>, PinID<N>> {
 
     private final static double LOD_ZOOM = 0.7;
-    
+
     private final LayerWidget backgroundLayer = new LayerWidget(this);
     private final LayerWidget mainLayer = new LayerWidget(this);
     private final LayerWidget connectionLayer = new LayerWidget(this);
     private final LayerWidget upperLayer = new LayerWidget(this);
-    
+
     private final CommentWidget commentWidget;
-    
+
     private boolean orthogonal;
     private Router router;
     private final WidgetAction moveAction;
@@ -124,31 +97,46 @@ public class PraxisGraphScene<N> extends GraphPinScene<N, EdgeID<N>, PinID<N>> {
 
 //    private int edgeCount = 10;
     /**
-     * Creates a VMD graph scene.
+     * Create a Praxis graph scene.
      */
     public PraxisGraphScene() {
         this(null, null, null);
     }
 
     /**
-     * Creates a VMD graph scene with a specific color scheme.
+     * Create a Praxis graph scene with a specific look and feel scheme.
      *
-     * @param scheme the color scheme
+     * @param scheme the look and feel scheme
      */
     public PraxisGraphScene(LAFScheme scheme) {
         this(scheme, null, null);
     }
 
+    /**
+     * Create a Praxis graph scene with the provided connect and popup menu
+     * providers.
+     *
+     * @param connectProvider connect provider
+     * @param popupProvider popup menu provider
+     */
     public PraxisGraphScene(ConnectProvider connectProvider, PopupMenuProvider popupProvider) {
         this(null, connectProvider, popupProvider);
     }
 
+    /**
+     * Create a Praxis graph scene with a specific look and feel scheme, and the
+     * provided connect and popup menu providers.
+     *
+     * @param scheme the look and feel scheme
+     * @param connectProvider connect provider
+     * @param popupProvider popup menu provider
+     */
     public PraxisGraphScene(LAFScheme scheme, ConnectProvider connectProvider, PopupMenuProvider popupProvider) {
         if (scheme == null) {
             scheme = new LAFScheme();
         }
         this.scheme = scheme;
-        
+
         setFont(UIManager.getFont("controlFont"));
 
         setKeyEventProcessingType(EventProcessingType.FOCUSED_WIDGET_AND_ITS_PARENTS);
@@ -157,13 +145,13 @@ public class PraxisGraphScene<N> extends GraphPinScene<N, EdgeID<N>, PinID<N>> {
         addChild(mainLayer);
         addChild(connectionLayer);
         addChild(upperLayer);
-        
+
         PraxisMoveProvider mover = new PraxisMoveProvider(this, backgroundLayer);
         moveAction = ActionFactory.createMoveAction(mover, mover);
         keyboardMoveAction = new PraxisKeyboardMoveAction(mover, mover);
-        
+
         commentWidget = new CommentWidget(this);
-        commentWidget.setPreferredLocation(new Point(32,32));
+        commentWidget.setPreferredLocation(new Point(32, 32));
         commentWidget.setBorder(BorderFactory.createRoundedBorder(8, 8, 8, 8, Color.LIGHT_GRAY, null));
         commentWidget.setVisible(false);
         mainLayer.addChild(commentWidget);
@@ -184,15 +172,23 @@ public class PraxisGraphScene<N> extends GraphPinScene<N, EdgeID<N>, PinID<N>> {
             menuAction = ActionFactory.createPopupMenuAction(popupProvider);
             getActions().addAction(menuAction);
         }
-        
+
         getActions().addAction(ActionFactory.createRectangularSelectAction(this, backgroundLayer));
-        
+
         addSceneListener(new ZoomCorrector());
 
         sceneLayout = LayoutFactory.createSceneGraphLayout(this, new PraxisGraphLayout<>(true));
-        
+
     }
 
+    /**
+     * Add a node with the given name. Returns the node widget for further
+     * customization.
+     *
+     * @param node node
+     * @param name name of node
+     * @return node widget representation
+     */
     public NodeWidget addNode(N node, String name) {
         NodeWidget n = (NodeWidget) super.addNode(node);
         n.setNodeName(name);
@@ -205,15 +201,41 @@ public class PraxisGraphScene<N> extends GraphPinScene<N, EdgeID<N>, PinID<N>> {
         super.detachNodeWidget(node, widget);
     }
 
+    /**
+     * Add a pin with the given name to a node. The pin will be centrally
+     * aligned. Returns the pin widget attached to the node widget for further
+     * customization.
+     *
+     * @param node node to add pin to
+     * @param name name of pin
+     * @return pin widget representation
+     */
     public PinWidget addPin(N node, String name) {
-        return addPin(new PinID<N>(node, name),
+        return addPin(new PinID<>(node, name),
                 Alignment.Center);
     }
 
+    /**
+     * Add a pin with the given name and alignment to a node. Returns the pin
+     * widget attached to the node widget for further customization.
+     *
+     * @param node node to add pin to
+     * @param name name of pin
+     * @param alignment pin alignment
+     * @return pin widget representation
+     */
     public PinWidget addPin(N node, String name, Alignment alignment) {
-        return addPin(new PinID<N>(node, name), alignment);
+        return addPin(new PinID<>(node, name), alignment);
     }
 
+    /**
+     * Add a pin with the given ID and alignment. Returns the pin widget for
+     * further customization.
+     *
+     * @param pin pin ID
+     * @param alignment pin alignment
+     * @return pin widget representation
+     */
     public PinWidget addPin(PinID<N> pin, Alignment alignment) {
         if (pin == null || alignment == null) {
             throw new NullPointerException();
@@ -223,60 +245,111 @@ public class PraxisGraphScene<N> extends GraphPinScene<N, EdgeID<N>, PinID<N>> {
         return p;
     }
 
+    /**
+     * Add a connection between the given pins. Returns the edge widget for
+     * further customization.
+     *
+     * @param node1 first node
+     * @param pin1 first pin name
+     * @param node2 second node
+     * @param pin2 second pin name
+     * @return edge widget representation
+     */
     public EdgeWidget connect(N node1, String pin1, N node2, String pin2) {
-        return connect(new PinID<N>(node1, pin1),
-                new PinID<N>(node2, pin2));
+        return connect(new PinID<>(node1, pin1),
+                new PinID<>(node2, pin2));
     }
 
+    /**
+     * Add a connection between the given pins. Returns the edge widget for
+     * further customization.
+     *
+     * @param p1 first pin ID
+     * @param p2 second pin ID
+     * @return edge widget representation
+     */
     public EdgeWidget connect(PinID<N> p1, PinID<N> p2) {
-        EdgeID<N> d = new EdgeID<N>(p1, p2);
+        EdgeID<N> d = new EdgeID<>(p1, p2);
         EdgeWidget e = (EdgeWidget) addEdge(d);
         setEdgeSource(d, p1);
         setEdgeTarget(d, p2);
         return e;
     }
 
+    /**
+     * Disconnect the given pins.
+     *
+     * @param node1 first node
+     * @param pin1 first pin name
+     * @param node2 second node
+     * @param pin2 second pin name
+     */
     public void disconnect(N node1, String pin1, N node2, String pin2) {
-        PinID<N> p1 = new PinID<N>(node1, pin1);
-        PinID<N> p2 = new PinID<N>(node2, pin2);
-        EdgeID<N> d = new EdgeID<N>(p1, p2);
+        PinID<N> p1 = new PinID<>(node1, pin1);
+        PinID<N> p2 = new PinID<>(node2, pin2);
+        EdgeID<N> d = new EdgeID<>(p1, p2);
         removeEdge(d);
     }
 
+    /**
+     * Get the look and feel scheme.
+     *
+     * @return LAF scheme
+     */
     public LAFScheme getLookAndFeel() {
         return scheme;
     }
-    
+
+    /**
+     * Set the scheme colours.
+     *
+     * @param schemeColors scheme colours
+     */
     public void setSchemeColors(LAFScheme.Colors schemeColors) {
         this.schemeColors = schemeColors;
         revalidate();
     }
-    
+
+    /**
+     * Get the scheme colours.
+     *
+     * @return scheme colours
+     */
     public LAFScheme.Colors getSchemeColors() {
         return schemeColors;
     }
 
+    /**
+     * Set whether to use orthogonal routing (as opposed to curved edges).
+     *
+     * @param orthogonal use orthogonal routing
+     */
     public void setOrthogonalRouting(boolean orthogonal) {
         if (this.orthogonal != orthogonal) {
             this.orthogonal = orthogonal;
-            setRouter(orthogonal ?
-                    RouterFactory.createOrthogonalSearchRouter(mainLayer, upperLayer) :
-                    RouterFactory.createDirectRouter());
+            setRouter(orthogonal
+                    ? RouterFactory.createOrthogonalSearchRouter(mainLayer, upperLayer)
+                    : RouterFactory.createDirectRouter());
         }
     }
-    
+
+    /**
+     * Query whether the graph is using orthogonal routing.
+     *
+     * @return using orthogonal routing
+     */
     public boolean isOrthogonalRouting() {
         return orthogonal;
     }
-    
+
     void setRouter(Router router) {
         this.router = router;
         for (EdgeID<N> e : getEdges()) {
-            ((ConnectionWidget)findWidget(e)).setRouter(router);
+            ((ConnectionWidget) findWidget(e)).setRouter(router);
         }
         revalidate();
     }
-    
+
     Router getRouter() {
         return router;
     }
@@ -298,8 +371,6 @@ public class PraxisGraphScene<N> extends GraphPinScene<N, EdgeID<N>, PinID<N>> {
         }
         super.userSelectionSuggested(suggestedSelectedObjects, invertSelection);
     }
-    
-    
 
     /**
      * Implements attaching a widget to a node. The widget is NodeWidget and has
@@ -403,11 +474,23 @@ public class PraxisGraphScene<N> extends GraphPinScene<N, EdgeID<N>, PinID<N>> {
         PinWidget p = (PinWidget) findWidget(pin);
         return p.createAnchor();
     }
-    
+
+    /**
+     * Query whether the graph is zoomed out below the level of detail
+     * threshold. Pins and node names may not be visible below the threshold.
+     *
+     * @return below level of detail threshold
+     */
     public boolean isBelowLODThreshold() {
         return getZoomFactor() < LOD_ZOOM;
     }
-    
+
+    /**
+     * Set a comment text to be displayed on the graph. A null or empty comment
+     * will remove the display.
+     *
+     * @param comment comment text
+     */
     public void setComment(String comment) {
         if (comment == null || comment.trim().isEmpty()) {
             // remove comment
@@ -420,20 +503,30 @@ public class PraxisGraphScene<N> extends GraphPinScene<N, EdgeID<N>, PinID<N>> {
         }
     }
 
+    /**
+     * Get the comment text.
+     *
+     * @return comment text
+     */
     public String getComment() {
         return commentWidget.getText();
     }
-    
+
+    /**
+     * Get the widget used to display any comment.
+     *
+     * @return comment widget
+     */
     public Widget getCommentWidget() {
         return commentWidget;
     }
-    
+
     public void layoutScene() {
         sceneLayout.invokeLayout();
-    }  
-    
+    }
+
     private class ZoomCorrector implements SceneListener {
-        
+
         private final double minZoom = 0.2;
         private final double maxZoom = 2;
 
@@ -456,11 +549,9 @@ public class PraxisGraphScene<N> extends GraphPinScene<N, EdgeID<N>, PinID<N>> {
         public void sceneValidated() {
             // no op
         }
-        
+
     }
 
-    
-    
     private static class WidgetCollector implements ConnectionWidgetCollisionsCollector {
 
         @Override
