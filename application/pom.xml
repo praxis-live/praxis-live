@@ -76,6 +76,11 @@
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
+      <artifactId>praxislive-opengl</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
       <artifactId>praxislive-project</artifactId>
       <version>${project.version}</version>
     </dependency>
@@ -293,6 +298,12 @@
       <type>nbm-file</type>
     </dependency>
     <dependency>
+      <groupId>org.netbeans.api</groupId>
+      <artifactId>org-netbeans-core-netigso</artifactId>
+      <version>${netbeans.version}</version>
+      <type>nbm-file</type>
+    </dependency>
+    <dependency>
       <groupId>org.netbeans.modules</groupId>
       <artifactId>org-netbeans-core-output2</artifactId>
       <version>${netbeans.version}</version>
@@ -331,6 +342,12 @@
     <dependency>
       <groupId>org.netbeans.api</groupId>
       <artifactId>org-netbeans-libs-junit4</artifactId>
+      <version>${netbeans.version}</version>
+      <type>nbm-file</type>
+    </dependency>
+    <dependency>
+      <groupId>org.netbeans.api</groupId>
+      <artifactId>org-netbeans-libs-osgi</artifactId>
       <version>${netbeans.version}</version>
       <type>nbm-file</type>
     </dependency>
@@ -409,6 +426,12 @@
     <dependency>
       <groupId>org.netbeans.modules</groupId>
       <artifactId>org-netbeans-modules-masterfs</artifactId>
+      <version>${netbeans.version}</version>
+      <type>nbm-file</type>
+    </dependency>
+    <dependency>
+      <groupId>org.netbeans.api</groupId>
+      <artifactId>org-netbeans-modules-netbinox</artifactId>
       <version>${netbeans.version}</version>
       <type>nbm-file</type>
     </dependency>
@@ -1043,6 +1066,12 @@
     <dependency>
       <groupId>org.netbeans.api</groupId>
       <artifactId>org-netbeans-modules-servletapi</artifactId>
+      <version>${netbeans.version}</version>
+      <type>nbm-file</type>
+    </dependency>
+    <dependency>
+      <groupId>org.netbeans.api</groupId>
+      <artifactId>org-netbeans-modules-textmate-lexer</artifactId>
       <version>${netbeans.version}</version>
       <type>nbm-file</type>
     </dependency>
