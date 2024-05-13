@@ -26,6 +26,7 @@ import javax.swing.JPanel;
 /**
  *
  */
+@Deprecated
 public interface StartPagePanelProvider {
 
     public String getTitle();

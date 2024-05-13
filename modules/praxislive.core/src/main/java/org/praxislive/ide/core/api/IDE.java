@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 2020 Neil C Smith.
+ * Copyright 2024 Neil C Smith.
  * 
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -25,22 +25,40 @@ import java.util.prefs.Preferences;
 import org.praxislive.ide.core.Core;
 
 /**
- *
+ * Various utility methods for accessing information and configuring the IDE.
  */
 public final class IDE {
-    
-    private IDE() {}
-    
+
+    private IDE() {
+    }
+
+    /**
+     * The running version of the IDE.
+     *
+     * @return current version
+     */
     public static String getVersion() {
         return Core.getInstance().getVersion();
     }
 
+    /**
+     * The latest available version of the IDE. This information relies on
+     * online checking. Will return {@link #getVersion()} if no additional
+     * information is available.
+     *
+     * @return latest available version
+     */
     public static String getLatestAvailableVersion() {
         return Core.getInstance().getLatestAvailableVersion();
     }
-    
+
+    /**
+     * Get the global preferences.
+     *
+     * @return global preferences
+     */
     public static Preferences getPreferences() {
         return Core.getInstance().getPreferences();
     }
-    
+
 }

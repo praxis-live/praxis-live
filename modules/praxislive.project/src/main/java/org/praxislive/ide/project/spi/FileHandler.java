@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2020 Neil C Smith.
+ * Copyright 2024 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -27,13 +27,25 @@ import org.praxislive.ide.project.api.ExecutionLevel;
 import org.praxislive.ide.project.api.PraxisProject;
 
 /**
- *
+ * A handler for file elements.
  */
 public interface FileHandler extends ElementHandler {
 
-    
+    /**
+     * A provider of file handlers. Instances should be registered for global
+     * lookup.
+     */
     public static interface Provider {
 
+        /**
+         * Create a file handler, if possible, for the provided project,
+         * execution level and file element.
+         *
+         * @param project executing project
+         * @param level execution level
+         * @param element file execution element
+         * @return file handler if this provider can handle
+         */
         public Optional<FileHandler> createHandler(PraxisProject project,
                 ExecutionLevel level, ExecutionElement.File element);
 

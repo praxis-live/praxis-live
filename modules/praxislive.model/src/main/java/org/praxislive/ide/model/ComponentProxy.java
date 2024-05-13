@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2020 Neil C Smith.
+ * Copyright 2024 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -30,22 +30,58 @@ import org.praxislive.ide.core.api.Callback;
 import org.praxislive.ide.properties.PraxisProperty;
 
 /**
- *
+ * A proxy of a PraxisCORE component.
  */
 public interface ComponentProxy extends Proxy {
-    
+
+    /**
+     * Name of info property. Used in property change events.
+     */
     public static final String INFO = "info";
 
+    /**
+     * Address of component.
+     *
+     * @return component address
+     */
     public ComponentAddress getAddress();
 
+    /**
+     * Type of component.
+     *
+     * @return component type
+     */
     public ComponentType getType();
 
+    /**
+     * Info for component.
+     *
+     * @return component info
+     */
     public ComponentInfo getInfo();
 
+    /**
+     * Parent container.
+     *
+     * @return parent
+     */
     public ContainerProxy getParent();
-    
+
+    /**
+     * Access the component property with the given ID.
+     *
+     * @param id property ID
+     * @return property
+     */
     public PraxisProperty<?> getProperty(String id);
-    
+
+    /**
+     * Send a call to the specified control on the underlying component.
+     *
+     * @param control control ID
+     * @param args call arguments
+     * @param callback response callback
+     */
     public void send(String control, List<Value> args, Callback callback);
 
 }

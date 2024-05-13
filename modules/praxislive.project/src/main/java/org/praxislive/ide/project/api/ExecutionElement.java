@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2020 Neil C Smith.
+ * Copyright 2024 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -29,14 +29,20 @@ import org.praxislive.core.syntax.Token;
 import org.praxislive.core.syntax.Tokenizer;
 
 /**
- *
+ * An execution element of a project.
  */
 public abstract class ExecutionElement {
-    
+
     private ExecutionElement() {
-        
+
     }
-    
+
+    /**
+     * Create an execution element wrapping a single line of Pcl script.
+     *
+     * @param script script line
+     * @return execution element
+     */
     public static ExecutionElement.Line forLine(String script) {
         var tokens = new ArrayList<Token>();
         var itr = new Tokenizer(script).iterator();
@@ -58,15 +64,24 @@ public abstract class ExecutionElement {
         }
         return new Line(script, List.copyOf(tokens));
     }
-    
+
+    /**
+     * Create an execution element referencing a file.
+     *
+     * @param file element file
+     * @return execution element
+     */
     public static ExecutionElement forFile(FileObject file) {
         return new File(file);
     }
-    
+
+    /**
+     * An execution element referencing a file.
+     */
     public static final class File extends ExecutionElement {
-        
+
         private final FileObject file;
-        
+
         private File(FileObject file) {
             this.file = file;
         }
@@ -95,33 +110,49 @@ public abstract class ExecutionElement {
             }
             return true;
         }
-        
+
+        /**
+         * The reference file.
+         *
+         * @return file
+         */
         public FileObject file() {
             return file;
         }
-        
+
     }
-    
+
+    /**
+     * An execution element wrapping a single line of Pcl script.
+     */
     public static final class Line extends ExecutionElement {
-        
+
         private final String line;
         private final List<Token> tokens;
-        
+
         private Line(String line, List<Token> tokens) {
             this.line = line;
             this.tokens = tokens;
         }
-        
+
+        /**
+         * The script line as text.
+         *
+         * @return line
+         */
         public String line() {
             return line;
         }
-        
+
+        /**
+         * The line as a series of script tokens.
+         *
+         * @return line tokens
+         */
         public List<Token> tokens() {
             return tokens;
         }
-        
-        
+
     }
-    
-    
+
 }

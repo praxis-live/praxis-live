@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2020 Neil C Smith.
+ * Copyright 2024 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -32,13 +32,15 @@ import org.praxislive.core.Info;
 import org.praxislive.ide.core.spi.ExtensionProvider;
 
 /**
- *
+ * A container for holding extension components provided by
+ * {@link ExtensionProvider}. Extensions allow modules to interact with the
+ * PraxisCORE system. This container root executes on the Swing event thread.
  */
 public final class ExtensionContainer extends AbstractIDERoot {
-    
+
     private static final ComponentInfo INFO = Info.component().build();
     private static final String EXT_PREFIX = "_ext_";
-    
+
     private final List<Component> extensions;
 
     private ExtensionContainer(List<Component> extensions) {
@@ -73,16 +75,29 @@ public final class ExtensionContainer extends AbstractIDERoot {
         }
     }
 
-
     @Override
     public ComponentInfo getInfo() {
         return INFO;
     }
-    
+
+    /**
+     * Access a list of all the extensions installed in this container. The list
+     * is immutable.
+     *
+     * @return installed extensions
+     */
     public List<Component> extensions() {
         return extensions;
     }
 
+    /**
+     * Create an extension container with all available extensions installed.
+     * The provided context is passed through to
+     * {@link ExtensionProvider#createExtension(org.openide.util.Lookup)}.
+     *
+     * @param context context to pass through to create extensions
+     * @return new extension container
+     */
     public static ExtensionContainer create(Lookup context) {
         var exts = Lookup.getDefault().lookupAll(ExtensionProvider.class)
                 .stream()
@@ -90,6 +105,5 @@ public final class ExtensionContainer extends AbstractIDERoot {
                 .collect(Collectors.toList());
         return new ExtensionContainer(List.copyOf(exts));
     }
-    
 
 }

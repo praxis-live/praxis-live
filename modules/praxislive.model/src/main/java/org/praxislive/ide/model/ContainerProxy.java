@@ -28,28 +28,85 @@ import org.praxislive.core.ComponentType;
 import org.praxislive.core.protocols.ContainerProtocol;
 
 /**
- *
+ * A proxy of a PraxisCORE container.
  */
 public interface ContainerProxy extends ComponentProxy {
 
+    /**
+     * Name of children property. Used in property change events.
+     */
     public static final String CHILDREN = ContainerProtocol.CHILDREN;
+
+    /**
+     * Name of connections property. Used in property change events.
+     */
     public static final String CONNECTIONS = ContainerProtocol.CONNECTIONS;
+
+    /**
+     * Name of supported types property. Used in property change events.
+     */
     public static final String SUPPORTED_TYPES = ContainerProtocol.SUPPORTED_TYPES;
 
+    /**
+     * Add a child component to the underlying container.
+     *
+     * @param id child ID
+     * @param type component type
+     * @param callback result callback
+     */
     public void addChild(String id, ComponentType type, Callback callback);
 
+    /**
+     * Remove a child from the underlying container.
+     *
+     * @param id child ID
+     * @param callback result callback
+     */
     public void removeChild(String id, Callback callback);
 
+    /**
+     * Get the proxy for the given child.
+     *
+     * @param id child ID
+     * @return
+     */
     public ComponentProxy getChild(String id);
 
+    /**
+     * Stream of all child IDs.
+     *
+     * @return childs IDs
+     */
     public Stream<String> children();
 
+    /**
+     * Create a connection between two child component ports.
+     *
+     * @param connection connection description
+     * @param callback result callback
+     */
     public void connect(Connection connection, Callback callback);
 
+    /**
+     * Break a connection between two child component ports.
+     *
+     * @param connection connection description
+     * @param callback result callback
+     */
     public void disconnect(Connection connection, Callback callback);
 
+    /**
+     * Stream of connections.
+     *
+     * @return connection
+     */
     public Stream<Connection> connections();
 
+    /**
+     * List of supported child types (if available).
+     *
+     * @return support child types
+     */
     public default List<ComponentType> supportedTypes() {
         return List.of();
     }

@@ -40,6 +40,7 @@ import org.praxislive.ide.core.spi.LogHandler;
 /**
  *
  */
+@Deprecated
 public final class Logging extends AbstractIDERoot {
     
     private static final ComponentInfo INFO = Info.component()

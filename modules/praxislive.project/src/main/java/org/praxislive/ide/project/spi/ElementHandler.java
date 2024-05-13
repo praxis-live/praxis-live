@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2020 Neil C Smith.
+ * Copyright 2024 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -25,15 +25,27 @@ import java.util.List;
 import org.praxislive.ide.core.api.Callback;
 
 /**
- *
+ * A base handler for execution elements.
  */
 public interface ElementHandler {
-    
+
+    /**
+     * Process the element.
+     *
+     * @param callback response callback
+     * @throws Exception
+     */
     public void process(Callback callback) throws Exception;
-    
+
+    /**
+     * List of any warning messages generated during process of this handler.
+     * There may be warnings whether the process results in a complete or error
+     * response callback.
+     *
+     * @return list of warnings
+     */
     public default List<String> warnings() {
         return List.of();
     }
 
-    
 }

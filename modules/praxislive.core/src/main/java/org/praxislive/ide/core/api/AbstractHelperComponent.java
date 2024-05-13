@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2020 Neil C Smith.
+ * Copyright 2024 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -42,10 +42,17 @@ import org.praxislive.core.services.Service;
 import org.praxislive.core.services.ServiceUnavailableException;
 
 /**
- *
+ * A base class for components to be provided via {@link ExtensionProvider} to
+ * allow modules to communicate with the PraxisCORE system. Unless otherwise
+ * stated, all methods should be called on, and all listeners are fired on, the
+ * Swing event thread.
  */
 public class AbstractHelperComponent extends AbstractComponent {
 
+    /**
+     * Property name of events fired when the component is connected into and
+     * removed from a PraxisCORE hub.
+     */
     public final static String PROP_HUB_CONNECTED = "connected";
 
     private final PropertyChangeSupport pcs;
@@ -57,6 +64,9 @@ public class AbstractHelperComponent extends AbstractComponent {
     private PacketRouter router;
     private ExecutionContext context;
 
+    /**
+     * Create a helper component.
+     */
     protected AbstractHelperComponent() {
         pcs = new PropertyChangeSupport(this);
         sendID = "_send_" + Integer.toHexString(System.identityHashCode(this));
@@ -64,14 +74,31 @@ public class AbstractHelperComponent extends AbstractComponent {
         registerControl(sendID, sender);
     }
 
+    /**
+     * Add a property listener.
+     *
+     * @param listener property listener
+     */
     public void addPropertyChangeListener(PropertyChangeListener listener) {
         pcs.addPropertyChangeListener(listener);
     }
 
+    /**
+     * Remove a property listener.
+     *
+     * @param listener property listener
+     */
     public void removePropertyChangeListener(PropertyChangeListener listener) {
         pcs.removePropertyChangeListener(listener);
     }
 
+    /**
+     * Fire a property change event.
+     *
+     * @param property name of property
+     * @param oldValue old value of property
+     * @param newValue new value of property
+     */
     protected void firePropertyChange(String property, Object oldValue, Object newValue) {
         pcs.firePropertyChange(property, oldValue, newValue);
     }
@@ -95,21 +122,52 @@ public class AbstractHelperComponent extends AbstractComponent {
 
     }
 
+    /**
+     * Query whether this helper component is connected into a running
+     * PraxisCORE hub.
+     *
+     * @return connected to hub
+     */
     public final boolean isConnected() {
         return connected;
     }
 
+    /**
+     * Find the address of a service.
+     *
+     * @param service type of service
+     * @return address of service
+     * @throws ServiceUnavailableException if no service provider found
+     */
     @Override
     public ComponentAddress findService(Class<? extends Service> service) throws ServiceUnavailableException {
         return super.findService(service);
     }
-    
+
+    /**
+     * Send a call to a control with the provided arguments.
+     *
+     * @param to control to call
+     * @param args arguments
+     * @param callback callback to handle response
+     * @throws HubUnavailableException if not connected
+     */
     // @TODO track and sync sends to existing bindings?
     public void send(ControlAddress to, List<Value> args, Callback callback)
             throws HubUnavailableException {
         sender.send(to, args, callback);
     }
 
+    /**
+     * Send a call to a control on a service with the provided arguments.
+     *
+     * @param service service to look up
+     * @param control control to call
+     * @param args arguments
+     * @param callback callback to handle response
+     * @throws HubUnavailableException if not connected
+     * @throws ServiceUnavailableException if no service provider found
+     */
     public void send(Class<? extends Service> service, String control,
             List<Value> args, Callback callback)
             throws HubUnavailableException, ServiceUnavailableException {
@@ -117,6 +175,12 @@ public class AbstractHelperComponent extends AbstractComponent {
         send(to, args, callback);
     }
 
+    /**
+     * Add a binding to the provided control.
+     *
+     * @param address control address
+     * @param adaptor binding adaptor
+     */
     public void bind(ControlAddress address, Binding.Adaptor adaptor) {
         if (address == null || adaptor == null) {
             throw new NullPointerException();
@@ -124,6 +188,12 @@ public class AbstractHelperComponent extends AbstractComponent {
         bindingContext.bind(address, adaptor);
     }
 
+    /**
+     * Remove a binding to the provided control.
+     *
+     * @param address control address
+     * @param adaptor binding adaptor
+     */
     public void unbind(ControlAddress address, Binding.Adaptor adaptor) {
         if (adaptor == null) {
             throw new NullPointerException();

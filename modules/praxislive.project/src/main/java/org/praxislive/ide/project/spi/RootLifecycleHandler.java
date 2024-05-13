@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2020 Neil C Smith.
+ * Copyright 2024 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -26,10 +26,18 @@ import java.util.Set;
 import org.praxislive.ide.core.api.Task;
 
 /**
- *
+ * A provider interface for handling tasks based on the lifecycle of roots.
+ * Instances should be registered in the project lookup.
  */
 public interface RootLifecycleHandler {
-    
+
+    /**
+     * Provide a task to run when one or more roots are about to be deleted.
+     *
+     * @param description user readable description of event triggering deletion
+     * @param rootIDs roots to be deleted
+     * @return optional task to run
+     */
     public Optional<Task> getDeletionTask(String description, Set<String> rootIDs);
-    
+
 }

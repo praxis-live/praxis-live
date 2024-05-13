@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2020 Neil C Smith.
+ * Copyright 2024 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -27,18 +27,44 @@ import java.util.Optional;
 import org.praxislive.ide.model.RootProxy;
 
 /**
- *
+ * A provider of root proxies. Instances should be registered in the project
+ * lookup.
  */
 public interface RootRegistry {
-    
+
+    /**
+     * Name of roots property. Used in property change events when the available
+     * root proxies changes.
+     */
     public static final String ROOTS = "roots";
-    
+
+    /**
+     * Find a proxy for the given root ID, if available from this provider.
+     *
+     * @param id root ID
+     * @return root proxy of available
+     */
     public Optional<RootProxy> find(String id);
 
+    /**
+     * Find all root proxies available from this provider.
+     *
+     * @return all root proxies
+     */
     public List<RootProxy> findAll();
-    
+
+    /**
+     * Add a property change listener
+     *
+     * @param listener property change listener
+     */
     public void addPropertyChangeListener(PropertyChangeListener listener);
-    
+
+    /**
+     * Remove a property change listener
+     *
+     * @param listener property change listener
+     */
     public void removePropertyChangeListener(PropertyChangeListener listener);
-    
+
 }

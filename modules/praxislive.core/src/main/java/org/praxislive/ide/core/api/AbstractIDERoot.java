@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 2023 Neil C Smith.
+ * Copyright 2024 Neil C Smith.
  * 
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -30,29 +30,37 @@ import org.praxislive.core.ControlAddress;
 import org.praxislive.core.Lookup;
 
 /**
- *
+ * Base class for a root to allow connection between a PraxisCORE hub and the
+ * IDE. The root runs on the Swing event thread.
  */
 public abstract class AbstractIDERoot extends AbstractRootContainer {
-    
+
     private final boolean startOnActivation;
-    
+
     private BindingContextControl bindings;
     private Lookup lookup;
 
+    /**
+     * Create an IDE root that starts automatically on activation.
+     */
     public AbstractIDERoot() {
         this(true);
     }
-    
+
+    /**
+     * Create an IDE root.
+     *
+     * @param startOnActivation whether to automatically start when activated
+     */
     public AbstractIDERoot(boolean startOnActivation) {
         this.startOnActivation = startOnActivation;
     }
 
-    
     @Override
     public Lookup getLookup() {
         return lookup == null ? super.getLookup() : lookup;
     }
-    
+
     @Override
     protected final void activating() {
         bindings = new BindingContextControl(ControlAddress.of(getAddress(), "_bindings"),
@@ -66,14 +74,17 @@ public abstract class AbstractIDERoot extends AbstractRootContainer {
     }
 
     @Override
-    protected final void terminating() {}
+    protected final void terminating() {
+    }
 
-    protected void setup() {}
-    
-    protected void dispose() {}
+    protected void setup() {
+    }
+
+    protected void dispose() {
+    }
 
     private class SwingDelegate extends Delegate {
-        
+
         private final AtomicBoolean pollQueued = new AtomicBoolean();
 
         private Timer timer;
@@ -109,5 +120,5 @@ public abstract class AbstractIDERoot extends AbstractRootContainer {
         }
 
     }
-    
+
 }

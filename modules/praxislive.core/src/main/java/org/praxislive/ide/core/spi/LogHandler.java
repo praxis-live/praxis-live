@@ -30,6 +30,7 @@ import org.praxislive.core.services.LogLevel;
 /**
  *
  */
+@Deprecated
 public interface LogHandler {
     
     public void log(ComponentAddress source,

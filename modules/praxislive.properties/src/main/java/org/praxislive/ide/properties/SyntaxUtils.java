@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2014 Neil C Smith.
+ * Copyright 2024 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -22,29 +22,38 @@
 package org.praxislive.ide.properties;
 
 /**
- *
+ * Utility methods for quoting values in Pcl script.
  */
 public class SyntaxUtils {
 
     private SyntaxUtils() {
     }
 
+    /**
+     * Escape the provided text into a single token. Will attempt to escape
+     * without surrounding quotes if possible. The returned text will include
+     * the surrounding quotes if necessary.
+     *
+     * @param input value
+     * @return safe token text for input
+     */
     public static String escape(String input) {
         String res = doPlain(input);
         if (res == null) {
             res = doQuoted(input);
         }
-//        if (res == null) {
-//            res = doBraced(input);
-//        }
         return res;
     }
 
+    /**
+     * Escape the provided text into a single token. This method always
+     * surrounds the value in quotes, which are included in the returned text.
+     *
+     * @param input value
+     * @return safe quoted token text for input
+     */
     public static String escapeQuoted(String input) {
         String res = doQuoted(input);
-//        if (res == null) {
-//            res = doBraced(input);
-//        }
         return res;
     }
 

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2020 Neil C Smith.
+ * Copyright 2024 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -29,13 +29,20 @@ import org.openide.nodes.Node;
 import org.praxislive.core.Value;
 
 /**
+ * Node property supporting PraxisCORE values.
  *
+ * @param <T> value type
  */
 public abstract class PraxisProperty<T extends Value> extends Node.Property<T>
         implements Disposable {
 
     private Editor editor;
 
+    /**
+     * Create a property for the given Value type.
+     *
+     * @param type value type
+     */
     public PraxisProperty(Class<T> type) {
         super(type);
     }
@@ -53,6 +60,13 @@ public abstract class PraxisProperty<T extends Value> extends Node.Property<T>
         return editor;
     }
 
+    /**
+     * Checks if the provided editor is the active editor for this property,
+     * unwrapping {@link DelegateEditor} if necessary.
+     *
+     * @param editor property editor
+     * @return is active editor
+     */
     public boolean isActiveEditor(PropertyEditor editor) {
         if (this.editor == editor) {
             return true;
@@ -76,7 +90,13 @@ public abstract class PraxisProperty<T extends Value> extends Node.Property<T>
     public void setValue(T val) {
         throw new UnsupportedOperationException();
     }
-   
+
+    /**
+     * Set the property value with response callback.
+     *
+     * @param value new value
+     * @param callback response callback
+     */
     public void setValue(T value, Callback callback) {
         throw new UnsupportedOperationException();
     }
@@ -85,7 +105,7 @@ public abstract class PraxisProperty<T extends Value> extends Node.Property<T>
     public boolean canWrite() {
         return false;
     }
-    
+
     @Override
     public abstract T getValue(); // override without Exceptions.
 
@@ -113,30 +133,72 @@ public abstract class PraxisProperty<T extends Value> extends Node.Property<T>
         }
     }
 
-    
-            
+    /**
+     * An extension of PropertyEditor for PraxisProperty instances.
+     */
     public static interface Editor extends PropertyEditor {
 
+        /**
+         * The initialization code as Pcl script.
+         *
+         * @return initialization code
+         */
         public String getPraxisInitializationString();
 
+        /**
+         * Get attribute for the given key.
+         *
+         * @param key attribute key
+         * @return attribute or null
+         */
         public Object getAttribute(String key);
 
+        /**
+         * Array of attribute keys.
+         *
+         * @return attribute keys
+         */
         public String[] getAttributeKeys();
 
+        /**
+         * Reset the editor.
+         */
         public void reset();
 
     }
 
+    /**
+     * An editor that can delegate to other underlying editors.
+     */
     public static interface DelegateEditor extends Editor {
 
+        /**
+         * Query the current active editor.
+         *
+         * @return current editor
+         */
         public Editor getCurrentEditor();
 
     }
 
+    /**
+     * An editor that can set a value from a Pcl command.
+     */
     public static interface SubCommandEditor extends Editor {
 
+        /**
+         * Set from the provided snippet (command and arguments) of Pcl script.
+         *
+         * @param command line of Pcl script
+         * @throws Exception
+         */
         public void setFromCommand(String command) throws Exception;
 
+        /**
+         * The Pcl commands that this editor supports.
+         *
+         * @return supported commands
+         */
         public String[] getSupportedCommands();
 
     }

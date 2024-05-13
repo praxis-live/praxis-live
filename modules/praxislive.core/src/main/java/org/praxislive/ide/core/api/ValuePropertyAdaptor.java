@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2020 Neil C Smith.
+ * Copyright 2024 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -29,7 +29,9 @@ import org.praxislive.core.Value;
 import org.praxislive.core.types.PString;
 
 /**
- *
+ * A {@link Binding.Adaptor} with support for firing property change events. Use
+ * one of {@link ReadOnly} or {@link ReadWrite} depending on whether the binding
+ * should support setting the value.
  */
 public abstract class ValuePropertyAdaptor extends Binding.Adaptor {
 
@@ -38,6 +40,14 @@ public abstract class ValuePropertyAdaptor extends Binding.Adaptor {
     private boolean alwaysActive;
     private Value value = PString.EMPTY;
 
+    /**
+     * Create a ValuePropertyAdaptor.
+     *
+     * @param source source of events (may be null to use the adaptor itself)
+     * @param property name of property for events
+     * @param alwaysActive whether to sync even without listeners
+     * @param rate sync rate
+     */
     public ValuePropertyAdaptor(Object source, String property,
             boolean alwaysActive, Binding.SyncRate rate) {
         if (property == null || rate == null) {
@@ -91,6 +101,11 @@ public abstract class ValuePropertyAdaptor extends Binding.Adaptor {
         setValueImpl(arg, false);
     }
 
+    /**
+     * Add a property change listener.
+     *
+     * @param listener property change listener
+     */
     public void addPropertyChangeListener(PropertyChangeListener listener) {
         pcs.addPropertyChangeListener(listener);
         if (!alwaysActive) {
@@ -98,6 +113,11 @@ public abstract class ValuePropertyAdaptor extends Binding.Adaptor {
         }
     }
 
+    /**
+     * Remove a property change listener.
+     *
+     * @param listener property change listener
+     */
     public void removePropertyChangeListener(PropertyChangeListener listener) {
         pcs.removePropertyChangeListener(listener);
         if (!alwaysActive && !pcs.hasListeners(null)) {
@@ -105,18 +125,30 @@ public abstract class ValuePropertyAdaptor extends Binding.Adaptor {
         }
     }
 
-//    @Override
-//    public void updateBindingConfiguration() {
-//        // no op?
-//    }
-
+    /**
+     * A writable value property adaptor.
+     */
     public static class ReadWrite extends ValuePropertyAdaptor {
 
+        /**
+         * Create a writable value property adaptor.
+         *
+         * @param source source of events (may be null to use the adaptor
+         * itself)
+         * @param property name of property for events
+         * @param alwaysActive whether to sync even without listeners
+         * @param rate sync rate
+         */
         public ReadWrite(Object source, String property,
                 boolean alwaysActive, Binding.SyncRate rate) {
             super(source, property, alwaysActive, rate);
         }
 
+        /**
+         * Set the value and send to the bound control.
+         *
+         * @param value new value
+         */
         public void setValue(Value value) {
             setValueImpl(value, true);
         }
@@ -124,6 +156,15 @@ public abstract class ValuePropertyAdaptor extends Binding.Adaptor {
 
     public static class ReadOnly extends ValuePropertyAdaptor {
 
+        /**
+         * Create a read-only value property adaptor.
+         *
+         * @param source source of events (may be null to use the adaptor
+         * itself)
+         * @param property name of property for events
+         * @param alwaysActive whether to sync even without listeners
+         * @param rate sync rate
+         */
         public ReadOnly(Object source, String property,
                 boolean alwaysActive, Binding.SyncRate rate) {
             super(source, property, alwaysActive, rate);

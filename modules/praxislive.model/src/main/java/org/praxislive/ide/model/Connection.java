@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2020 Neil C Smith.
+ * Copyright 2024 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -19,11 +19,10 @@
  * Please visit https://www.praxislive.org if you need additional information or
  * have any questions.
  */
-
 package org.praxislive.ide.model;
 
 /**
- *
+ * A representation of a port connection.
  */
 public final class Connection {
 
@@ -32,6 +31,14 @@ public final class Connection {
     private final String child2;
     private final String port2;
 
+    /**
+     * Create a connection representation.
+     *
+     * @param child1 name of first child
+     * @param port1 name of port on first child
+     * @param child2 name of second child
+     * @param port2 name of port on second child
+     */
     public Connection(String child1, String port1, String child2, String port2) {
         if (child1 == null || port1 == null || child2 == null || port2 == null) {
             throw new NullPointerException();
@@ -64,18 +71,38 @@ public final class Connection {
         return hash;
     }
 
+    /**
+     * Name of first child component.
+     *
+     * @return first child name
+     */
     public final String getChild1() {
         return child1;
     }
 
+    /**
+     * Name of second child component.
+     *
+     * @return second child name
+     */
     public final String getChild2() {
         return child2;
     }
 
+    /**
+     * Name of port on first child component.
+     *
+     * @return name of port
+     */
     public final String getPort1() {
         return port1;
     }
 
+    /**
+     * Name of port on second child component.
+     *
+     * @return name of port
+     */
     public final String getPort2() {
         return port2;
     }
@@ -84,7 +111,5 @@ public final class Connection {
     public final String toString() {
         return "~ " + child1 + "!" + port1 + " " + child2 + "!" + port2;
     }
-    
-    
 
 }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2020 Neil C Smith.
+ * Copyright 2024 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -23,7 +23,7 @@ package org.praxislive.ide.model;
 
 
 /**
- *
+ * A proxy for a PraxisCORE root.
  */
 public interface RootProxy extends ComponentProxy {
 
