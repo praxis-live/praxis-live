@@ -1,6 +1,0 @@
-Manifest-Version: 1.0
-AutoUpdate-Show-In-Client: false
-OpenIDE-Module: org.praxislive.ide.code
-OpenIDE-Module-Localizing-Bundle: org/praxislive/ide/code/Bundle.properties
-OpenIDE-Module-Specification-Version: 5.0.0
-

@@ -1,0 +1,56 @@
+/*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ * 
+ * Copyright 2020 Neil C Smith.
+ * 
+ * This code is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License version 3 only, as
+ * published by the Free Software Foundation.
+ * 
+ * This code is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ * version 3 for more details.
+ * 
+ * You should have received a copy of the GNU General Public License version 3
+ * along with this work; if not, see http://www.gnu.org/licenses/
+ * 
+ * 
+ * Please visit https://www.praxislive.org if you need additional information or
+ * have any questions.
+ */
+package org.praxislive.ide.core;
+
+import org.openide.modules.ModuleInfo;
+import org.openide.modules.OnStart;
+import org.openide.util.Lookup;
+
+/**
+ *
+ */
+@OnStart
+public class Installer implements Runnable {
+    
+    @Override
+    public void run() {
+
+        String build = null;
+
+        for (ModuleInfo info : Lookup.getDefault().lookupAll(ModuleInfo.class)) {
+            if (info.owns(this.getClass())) {
+                build = info.getImplementationVersion();
+            }
+        }
+        Core coreInfo = Core.getInstance();
+        
+        String version = System.getProperty("praxis.version", "DEV");
+        coreInfo.setVersion(version);
+        System.setProperty("netbeans.buildnumber", version);
+        System.setProperty("netbeans.productversion", "PraxisLIVE " + version);
+        
+        coreInfo.checkForUpdates();
+        
+    }
+    
+    
+}

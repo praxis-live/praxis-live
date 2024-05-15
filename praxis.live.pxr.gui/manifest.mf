@@ -1,8 +1,0 @@
-Manifest-Version: 1.0
-OpenIDE-Module: org.praxislive.ide.pxr.gui
-OpenIDE-Module-Install: org/praxislive/ide/pxr/gui/Installer.class
-OpenIDE-Module-Layer: org/praxislive/ide/pxr/gui/resources/layer.xml
-OpenIDE-Module-Localizing-Bundle: org/praxislive/ide/pxr/gui/resources/Bundle.properties
-OpenIDE-Module-Specification-Version: 5.0.0
-AutoUpdate-Essential-Module: true
-AutoUpdate-Show-In-Client: false

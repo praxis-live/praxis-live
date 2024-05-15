@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<actions>
+  <action>
+    <actionName>debug</actionName>
+    <packagings>
+      <packaging>nbm-application</packaging>
+    </packagings>
+    <goals>
+      <goal>package</goal>
+      <goal>nbm:run-platform</goal>
+    </goals>
+    <properties>
+      <jpda.listen>true</jpda.listen>
+      <netbeans.run.params.debug>-J-agentlib:jdwp=transport=dt_socket,suspend=n,server=n,address=${jpda.address}</netbeans.run.params.debug>
+    </properties>
+  </action>
+  <action>
+    <actionName>run</actionName>
+    <packagings>
+      <packaging>nbm-application</packaging>
+    </packagings>
+    <goals>
+      <goal>package</goal>
+      <goal>nbm:run-platform</goal>
+    </goals>
+  </action>
+</actions>

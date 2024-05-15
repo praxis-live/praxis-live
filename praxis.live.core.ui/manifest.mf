@@ -1,8 +1,0 @@
-Manifest-Version: 1.0
-OpenIDE-Module: org.praxislive.ide.core.ui
-OpenIDE-Module-Install: org/praxislive/ide/core/ui/Installer.class
-OpenIDE-Module-Layer: org/praxislive/ide/core/ui/resources/layer.xml
-OpenIDE-Module-Localizing-Bundle: org/praxislive/ide/core/ui/resources/Bundle.properties
-OpenIDE-Module-Specification-Version: 5.0.0
-AutoUpdate-Essential-Module: true
-AutoUpdate-Show-In-Client: false

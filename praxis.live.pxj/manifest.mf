@@ -1,7 +1,0 @@
-Manifest-Version: 1.0
-OpenIDE-Module: org.praxislive.ide.pxj
-OpenIDE-Module-Layer: org/praxislive/ide/pxj/resources/layer.xml
-OpenIDE-Module-Localizing-Bundle: org/praxislive/ide/pxj/resources/Bundle.properties
-OpenIDE-Module-Specification-Version: 5.0.0
-AutoUpdate-Essential-Module: true
-AutoUpdate-Show-In-Client: false

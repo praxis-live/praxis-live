@@ -1,0 +1,3 @@
+OpenIDE-Module-Install: org/praxislive/ide/pxr/gui/Installer.class
+OpenIDE-Module-Layer: org/praxislive/ide/pxr/gui/resources/layer.xml
+

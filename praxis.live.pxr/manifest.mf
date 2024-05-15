@@ -1,8 +1,0 @@
-Manifest-Version: 1.0
-OpenIDE-Module: org.praxislive.ide.pxr
-OpenIDE-Module-Layer: org/praxislive/ide/pxr/resources/layer.xml
-OpenIDE-Module-Localizing-Bundle: org/praxislive/ide/pxr/resources/Bundle.properties
-OpenIDE-Module-Requires: org.openide.windows.WindowManager
-OpenIDE-Module-Specification-Version: 5.0.0
-AutoUpdate-Essential-Module: true
-AutoUpdate-Show-In-Client: false

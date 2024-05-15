@@ -1,0 +1,3 @@
+OpenIDE-Module-Layer: org/praxislive/ide/pxr/resources/layer.xml
+OpenIDE-Module-Localizing-Bundle: org/praxislive/ide/pxr/resources/Bundle.properties
+OpenIDE-Module-Requires: org.openide.windows.WindowManager

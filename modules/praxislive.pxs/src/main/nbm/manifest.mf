@@ -1,0 +1,2 @@
+OpenIDE-Module-Layer: org/praxislive/ide/pxs/resources/layer.xml
+

@@ -1,1 +1,0 @@
-Creates a new GLSL (OpenGL Shading Language) file.
