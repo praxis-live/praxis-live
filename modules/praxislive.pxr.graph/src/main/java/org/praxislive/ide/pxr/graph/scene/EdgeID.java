@@ -19,7 +19,7 @@
  * Please visit https://www.praxislive.org if you need additional information or
  * have any questions.
  */
-package org.praxislive.ide.graph;
+package org.praxislive.ide.pxr.graph.scene;
 
 /**
  * ID of a connection (edge) between two pin IDs on nodes.

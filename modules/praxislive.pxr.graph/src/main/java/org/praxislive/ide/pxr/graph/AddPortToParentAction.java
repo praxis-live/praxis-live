@@ -24,7 +24,7 @@ package org.praxislive.ide.pxr.graph;
 import org.praxislive.core.PortAddress;
 import org.praxislive.core.Value;
 import org.praxislive.core.types.PMap;
-import org.praxislive.ide.graph.PinID;
+import org.praxislive.ide.pxr.graph.scene.PinID;
 import org.praxislive.ide.model.ContainerProxy;
 import org.praxislive.ide.properties.PraxisProperty;
 import java.awt.EventQueue;

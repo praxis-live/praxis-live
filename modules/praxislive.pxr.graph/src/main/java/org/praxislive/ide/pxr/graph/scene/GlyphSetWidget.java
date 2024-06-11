@@ -40,7 +40,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.praxislive.ide.graph;
+package org.praxislive.ide.pxr.graph.scene;
 
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.widget.ImageWidget;

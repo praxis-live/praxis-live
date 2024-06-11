@@ -40,11 +40,6 @@
     </dependency>
     <dependency>
       <groupId>org.praxislive.ide</groupId>
-      <artifactId>praxislive-graph</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.praxislive.ide</groupId>
       <artifactId>praxislive-model</artifactId>
       <version>${project.version}</version>
     </dependency>

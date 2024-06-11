@@ -40,7 +40,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.praxislive.ide.graph;
+package org.praxislive.ide.pxr.graph.scene;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -68,7 +68,7 @@ public class LAFScheme {
             = BorderFactory.createOpaqueBorder(2, 2, 2, 2);
     private static final PointShape POINT_SHAPE_IMAGE
             = PointShapeFactory.createImagePointShape(
-                    ImageUtilities.loadImage("org/praxislive/ide/graph/resources/vmd-pin.png")); // NOI18N
+                    ImageUtilities.loadImage("org/praxislive/ide/pxr/graph/scene/resources/vmd-pin.png")); // NOI18N
 
     private static final Colors DEFAULT_RESOURCES
             = new Colors(new Color(0x748CC0), new Color(0xBACDF0));
@@ -189,8 +189,8 @@ public class LAFScheme {
 
     protected Image getMinimizeWidgetImage(NodeWidget widget) {
         return widget.isMinimized()
-                ? ImageUtilities.loadImage("org/praxislive/ide/graph/resources/vmd-expand.png") // NOI18N
-                : ImageUtilities.loadImage("org/praxislive/ide/graph/resources/vmd-collapse.png"); // NOI18N
+                ? ImageUtilities.loadImage("org/praxislive/ide/pxr/graph/scene/resources/vmd-expand.png") // NOI18N
+                : ImageUtilities.loadImage("org/praxislive/ide/pxr/graph/scene/resources/vmd-collapse.png"); // NOI18N
     }
 
     protected void installUI(EdgeWidget widget) {
