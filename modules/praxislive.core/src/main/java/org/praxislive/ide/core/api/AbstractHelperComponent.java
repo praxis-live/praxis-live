@@ -26,6 +26,10 @@ import java.beans.PropertyChangeSupport;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
+import org.openide.util.Exceptions;
 import org.praxislive.base.AbstractComponent;
 import org.praxislive.base.Binding;
 import org.praxislive.base.BindingContext;
@@ -38,8 +42,10 @@ import org.praxislive.core.ExecutionContext;
 import org.praxislive.core.Info;
 import org.praxislive.core.PacketRouter;
 import org.praxislive.core.Value;
+import org.praxislive.core.services.ScriptService;
 import org.praxislive.core.services.Service;
 import org.praxislive.core.services.ServiceUnavailableException;
+import org.praxislive.core.types.PString;
 
 /**
  * A base class for components to be provided via {@link ExtensionProvider} to
@@ -159,6 +165,24 @@ public class AbstractHelperComponent extends AbstractComponent {
     }
 
     /**
+     * Send a call to a control with the provided arguments, returning a
+     * {@link CompletionStage} that will complete with the result of the call.
+     *
+     * @param to control to call
+     * @param args arguments
+     * @return completion stage
+     */
+    public CompletionStage<List<Value>> send(ControlAddress to, List<Value> args) {
+        try {
+            CompletableFuture<List<Value>> future = new CompletableFuture<>();
+            send(to, args, Callback.create(future));
+            return future.minimalCompletionStage();
+        } catch (HubUnavailableException ex) {
+            return CompletableFuture.failedStage(ex);
+        }
+    }
+
+    /**
      * Send a call to a control on a service with the provided arguments.
      *
      * @param service service to look up
@@ -173,6 +197,59 @@ public class AbstractHelperComponent extends AbstractComponent {
             throws HubUnavailableException, ServiceUnavailableException {
         var to = ControlAddress.of(findService(service), control);
         send(to, args, callback);
+    }
+
+    /**
+     * Send a call to a control on a service with the provided arguments,
+     * returning a {@link CompletionStage} that will complete with the result of
+     * the call.
+     *
+     * @param service service to look up
+     * @param control control to call
+     * @param args arguments
+     * @return completion stage
+     */
+    public CompletionStage<List<Value>> send(Class<? extends Service> service, String control,
+            List<Value> args) {
+        try {
+            CompletableFuture<List<Value>> future = new CompletableFuture<>();
+            send(service, control, args, Callback.create(future));
+            return future.minimalCompletionStage();
+        } catch (Exception ex) {
+            return CompletableFuture.failedStage(ex);
+        }
+    }
+
+    /**
+     * Execute the provided script in the registered {@link ScriptService}.
+     *
+     * @param script script to execute
+     * @param callback callback to handle response
+     * @throws HubUnavailableException if not connected
+     * @throws ServiceUnavailableException if no script service found
+     */
+    public void execScript(String script, Callback callback)
+            throws HubUnavailableException, ServiceUnavailableException {
+        Objects.requireNonNull(script);
+        send(ScriptService.class, ScriptService.EVAL, List.of(PString.of(script)), callback);
+    }
+
+    /**
+     * Execute the provided script in the registered {@link ScriptService},
+     * returning a {@link CompletionStage} that will complete with the result of
+     * execution.
+     *
+     * @param script script to execute
+     * @return completion stage
+     */
+    public CompletionStage<List<Value>> execScript(String script) {
+        try {
+            CompletableFuture<List<Value>> future = new CompletableFuture<>();
+            execScript(script, Callback.create(future));
+            return future.minimalCompletionStage();
+        } catch (Exception ex) {
+            return CompletableFuture.failedStage(ex);
+        }
     }
 
     /**

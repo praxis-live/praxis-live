@@ -48,7 +48,6 @@
             <EmptyBorder/>
           </Border>
         </Property>
-        <Property name="floatable" type="boolean" value="false"/>
         <Property name="rollover" type="boolean" value="true"/>
       </Properties>
 

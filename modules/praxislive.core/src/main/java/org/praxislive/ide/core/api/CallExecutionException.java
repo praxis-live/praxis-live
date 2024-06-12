@@ -19,36 +19,35 @@
  * Please visit https://www.praxislive.org if you need additional information or
  * have any questions.
  */
-package org.praxislive.ide.model;
-
-import java.beans.PropertyChangeListener;
-import org.openide.nodes.Node;
-import org.openide.util.Lookup;
+package org.praxislive.ide.core.api;
 
 /**
- * Base interface for proxies of PraxisCORE types.
+ * Exception thrown when a call into the PraxisCORE system returns an error.
  */
-public interface Proxy extends Lookup.Provider {
+public class CallExecutionException extends Exception {
 
     /**
-     * Get the node representation of this proxy.
-     *
-     * @return node
+     * Creates a new instance of <code>HubUnavailableException</code> without
+     * detail message.
      */
-    public Node getNodeDelegate();
+    public CallExecutionException() {
+    }
 
     /**
-     * Add a property change listener.
+     * Constructs an instance of <code>HubUnavailableException</code> with the
+     * specified detail message.
      *
-     * @param listener property change listener
+     * @param msg the detail message.
      */
-    public void addPropertyChangeListener(PropertyChangeListener listener);
+    public CallExecutionException(String msg) {
+        super(msg);
+    }
 
-    /**
-     * Remove a property change listener.
-     *
-     * @param listener property change listener
-     */
-    public void removePropertyChangeListener(PropertyChangeListener listener);
+    public CallExecutionException(Throwable cause) {
+        super(cause);
+    }
 
+    public CallExecutionException(String msg, Throwable cause) {
+        super(msg, cause);
+    }
 }

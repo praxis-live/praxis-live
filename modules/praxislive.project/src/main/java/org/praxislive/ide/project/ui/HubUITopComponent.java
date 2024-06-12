@@ -481,7 +481,7 @@ public final class HubUITopComponent extends TopComponent implements ExplorerMan
         @Override
         public void actionPerformed(ActionEvent e) {
             root.send(start ? StartableProtocol.START : StartableProtocol.STOP,
-                    List.of(), null);
+                    List.of());
         }
         
     }

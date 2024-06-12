@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2020 Neil C Smith.
+ * Copyright 2024 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -26,13 +26,13 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.praxislive.core.ComponentAddress;
 import org.praxislive.core.ComponentType;
 import org.praxislive.core.ComponentInfo;
 import org.praxislive.ide.core.api.Callback;
-import org.praxislive.ide.model.Connection;
 import org.praxislive.ide.project.api.PraxisProject;
 import org.praxislive.ide.properties.PraxisProperty;
 import org.praxislive.ide.pxr.PXRParser.AttributeElement;
@@ -43,6 +43,7 @@ import org.praxislive.ide.pxr.PXRParser.PropertyElement;
 import org.praxislive.ide.pxr.PXRParser.RootElement;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.praxislive.core.Connection;
 import org.praxislive.core.Value;
 import org.praxislive.core.types.PError;
 import org.praxislive.core.types.PMap;
@@ -182,27 +183,16 @@ class PXRBuilder {
                             p.setValue(BoundCodeProperty.KEY_LAST_SAVED, prop.args[0]);
                         }
                         if (cmp.isDynamic()) {
-                            try {
-                                cmp.send("info", List.of(), new Callback() {
-                                    @Override
-                                    public void onReturn(List<Value> args) {
-                                        try {
-                                            cmp.refreshInfo(ComponentInfo.from(args.get(0)).orElseThrow());
-                                        } catch (Exception ex) {
-                                            Exceptions.printStackTrace(ex);
-                                        }
-                                        process();
-                                    }
+                            cmp.send("info", List.of())
+                                    .thenAccept(res -> {
+                                        cmp.refreshInfo(ComponentInfo.from(res.get(0)).orElseThrow());
+                                    })
+                                    .exceptionally(ex -> {
+                                        Exceptions.printStackTrace(ex);
+                                        return null;
+                                    })
+                                    .thenRun(() -> process());
 
-                                    @Override
-                                    public void onError(List<Value> args) {
-                                        process();
-                                    }
-                                });
-                                return;
-                            } catch (Exception ex) {
-                                Exceptions.printStackTrace(ex);
-                            }
                         } else {
                             process();
                         }
@@ -237,19 +227,13 @@ class PXRBuilder {
             PXRComponentProxy parent = findComponent(con.container.address);
             if (parent instanceof PXRContainerProxy) {
                 ((PXRContainerProxy) parent).connect(
-                        new Connection(con.component1, con.port1, con.component2, con.port2),
-                        new Callback() {
-                    @Override
-                    public void onReturn(List<Value> args) {
-                        process();
-                    }
-
-                    @Override
-                    public void onError(List<Value> args) {
-                        connectionError(con, args);
-                        process();
-                    }
-                });
+                        Connection.of(con.component1, con.port1, con.component2, con.port2))
+                        .whenComplete((c, ex) -> {
+                            if (ex != null) {
+                                connectionError(con, List.of());
+                            }
+                            process();
+                        });
                 return false;
             }
         } catch (Exception ex) {
@@ -277,32 +261,22 @@ class PXRBuilder {
             final ComponentAddress ad = root.address;
             final ComponentType type = root.type;
             PMap attrs = attributesToMap(root.attributes);
-            helper.createComponentAndGetInfo(ad, type, new Callback() {
-                @Override
-                public void onReturn(List<Value> args) {
-                    try {
-                        rootProxy = new PXRRootProxy(
-                                project,
-                                helper,
-                                source,
-                                ad.rootID(),
-                                type,
-                                ComponentInfo.from(args.get(0)).orElseThrow());
-                        attrs.keys().forEach(k -> rootProxy.setAttr(k, attrs.getString(k, null)));
-                        if (registerRoot) {
-                            project.getLookup().lookup(PXRRootRegistry.class).register(rootProxy);
-                        }
-                        process();
-                    } catch (Exception ex) {
-                        Exceptions.printStackTrace(ex);
-                        onError(args);
-                    }
+            helper.createComponentAndGetInfo(ad, type).thenAccept(info -> {
+                rootProxy = new PXRRootProxy(
+                        project,
+                        helper,
+                        source,
+                        ad.rootID(),
+                        type,
+                        info);
+                attrs.keys().forEach(k -> rootProxy.setAttr(k, attrs.getString(k, null)));
+                if (registerRoot) {
+                    project.getLookup().lookup(PXRRootRegistry.class).register(rootProxy);
                 }
-
-                @Override
-                public void onError(List<Value> args) {
-                    processError(args);
-                }
+                process();
+            }).exceptionally(t -> {
+                processError(List.of(PError.of(t instanceof Exception ex ? ex : new Exception())));
+                return null;
             });
 
         } catch (Exception ex) {
@@ -320,38 +294,21 @@ class PXRBuilder {
             PMap attrs = attributesToMap(cmp.attributes);
             if (parent instanceof PXRContainerProxy) {
                 String id = address.componentID(address.depth() - 1);
-                ((PXRContainerProxy) parent).addChild(id, cmp.type, attrs, new Callback() {
-                    @Override
-                    public void onReturn(List<Value> args) {
-                        if (parent.isDynamic()) {
-                            parent.send("info", List.of(), new Callback() {
-                                @Override
-                                public void onReturn(List<Value> args) {
-                                    try {
-                                        parent.refreshInfo(ComponentInfo.from(args.get(0)).orElseThrow());
-                                    } catch (Exception ex) {
-                                        Exceptions.printStackTrace(ex);
-                                    }
-                                    process();
-                                }
+                ((PXRContainerProxy) parent).addChild(id, cmp.type, attrs)
+                        .thenCompose(child -> {
+                            if (parent.isDynamic()) {
+                                return helper.componentInfo(parent.getAddress())
+                                        .thenAccept(info -> parent.refreshInfo(info));
+                            } else {
+                                return CompletableFuture.completedStage(null);
+                            }
+                        })
+                        .exceptionally(ex -> {
+                            componentError(cmp, List.of(PError.of((Exception) ex)));
+                            return null;
+                        })
+                        .thenRun(() -> process());
 
-                                @Override
-                                public void onError(List<Value> args) {
-                                    process();
-                                }
-                            });
-                            return;
-                        } else {
-                            process();
-                        }
-                    }
-
-                    @Override
-                    public void onError(List<Value> args) {
-                        componentError(cmp, args);
-                        process();
-                    }
-                });
                 return false;
             }
         } catch (Exception ex) {
@@ -372,7 +329,7 @@ class PXRBuilder {
             return builder.build();
         }
     }
-    
+
     private void componentError(ComponentElement cmp, List<Value> args) {
         String err = "Couldn't create component " + cmp.address;
         warn(err);

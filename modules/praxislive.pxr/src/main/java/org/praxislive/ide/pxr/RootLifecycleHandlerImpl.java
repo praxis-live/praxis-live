@@ -91,13 +91,7 @@ public class RootLifecycleHandlerImpl implements RootLifecycleHandler {
                 throw new IllegalStateException();
             }
             updateState(State.RUNNING);
-            try {
-                roots.forEach(r -> r.send("stop", List.of(),
-                        Callback.create(res -> {
-                        })));
-            } catch (Exception ex) {
-                Exceptions.printStackTrace(ex);
-            }
+            roots.forEach(r -> r.send("stop", List.of()));
             NotifyDescriptor nd = new NotifyDescriptor.Confirmation(buildDialogMessage(), description);
             Object ret = DialogDisplayer.getDefault().notify(nd);
             if (ret == NotifyDescriptor.YES_OPTION) {

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2020 Neil C Smith.
+ * Copyright 2024 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -24,32 +24,29 @@ package org.praxislive.ide.pxr;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CompletionStage;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 import org.praxislive.core.Value;
-import org.praxislive.core.ValueFormatException;
 import org.praxislive.core.ComponentAddress;
 import org.praxislive.core.ComponentType;
 import org.praxislive.core.ControlAddress;
 import org.praxislive.core.ComponentInfo;
 import org.praxislive.core.protocols.ContainerProtocol;
 import org.praxislive.core.types.PArray;
-import org.praxislive.ide.core.api.Callback;
 import org.praxislive.ide.properties.PraxisProperty;
-import org.praxislive.ide.model.Connection;
 import org.praxislive.ide.model.ContainerProxy;
 import org.praxislive.ide.core.api.ValuePropertyAdaptor;
 import org.openide.nodes.Node;
-import org.openide.util.Exceptions;
 import org.praxislive.base.Binding;
+import org.praxislive.core.Connection;
 import org.praxislive.core.types.PMap;
 import org.praxislive.core.types.PString;
 
@@ -68,8 +65,6 @@ public class PXRContainerProxy extends PXRComponentProxy implements ContainerPro
 
     private ValuePropertyAdaptor.ReadOnly conAdaptor;
     private ValuePropertyAdaptor.ReadOnly typesAdaptor;
-
-    boolean ignore;
 
     PXRContainerProxy(PXRContainerProxy parent, ComponentType type,
             ComponentInfo info) {
@@ -108,18 +103,15 @@ public class PXRContainerProxy extends PXRComponentProxy implements ContainerPro
     }
 
     @Override
-    public void addChild(final String id, final ComponentType type, final Callback callback) {
-        addChild(id, type, PMap.EMPTY, callback);
+    public CompletionStage<? extends PXRComponentProxy> addChild(final String id, final ComponentType type) {
+        return addChild(id, type, PMap.EMPTY);
     }
 
-    void addChild(String id, ComponentType type, PMap attrs, Callback callback) {
+    CompletionStage<? extends PXRComponentProxy> addChild(String id, ComponentType type, PMap attrs) {
 
         ComponentAddress childAddress = ComponentAddress.of(getAddress(), id);
-        getRoot().getHelper().createComponentAndGetInfo(childAddress, type, new Callback() {
-            @Override
-            public void onReturn(List<Value> args) {
-                try {
-                    ComponentInfo info = ComponentInfo.from(args.get(0)).orElseThrow();
+        return getRoot().getHelper().createComponentAndGetInfo(childAddress, type)
+                .thenApply(info -> {
                     PXRComponentProxy child;
                     if (isContainer(info)) {
                         child = new PXRContainerProxy(PXRContainerProxy.this, type, info);
@@ -132,22 +124,8 @@ public class PXRContainerProxy extends PXRComponentProxy implements ContainerPro
                         node.refreshChildren();
                     }
                     firePropertyChange(ContainerProtocol.CHILDREN, null, null);
-                    if (callback != null) {
-                        callback.onReturn(args);
-                    }
-                } catch (Exception ex) {
-                    Exceptions.printStackTrace(ex);
-                    onError(args);
-                }
-            }
-
-            @Override
-            public void onError(List<Value> args) {
-                if (callback != null) {
-                    callback.onError(args);
-                }
-            }
-        });
+                    return child;
+                });
 
     }
 
@@ -156,90 +134,55 @@ public class PXRContainerProxy extends PXRComponentProxy implements ContainerPro
     }
 
     @Override
-    public void removeChild(final String id, final Callback callback) {
+    public CompletionStage<?> removeChild(final String id) {
         ComponentAddress childAddress = ComponentAddress.of(getAddress(), id);
-        getRoot().getHelper().removeComponent(childAddress, new Callback() {
-            @Override
-            public void onReturn(List<Value> args) {
-                PXRComponentProxy child = children.get(id);
-                if (child != null) {
-                    child.dispose();
-                }
-                children.remove(id);
-                Iterator<Connection> itr = connections.iterator();
-                boolean conChanged = false;
-                while (itr.hasNext()) {
-                    Connection con = itr.next();
-                    if (con.getChild1().equals(id)
-                            || con.getChild2().equals(id)) {
-                        itr.remove();
-                        conChanged = true;
+        return getRoot().getHelper().removeComponent(childAddress)
+                .thenRun(() -> {
+                    PXRComponentProxy child = children.get(id); // dispose needs child in map
+                    if (child != null) {
+                        child.dispose();
                     }
-                }
-                if (conChanged) {
+                    children.remove(id);
+                    Iterator<Connection> itr = connections.iterator();
+                    boolean conChanged = false;
+                    while (itr.hasNext()) {
+                        Connection con = itr.next();
+                        if (con.sourceComponent().equals(id)
+                                || con.targetComponent().equals(id)) {
+                            itr.remove();
+                            conChanged = true;
+                        }
+                    }
+                    if (conChanged) {
+                        firePropertyChange(ContainerProtocol.CONNECTIONS, null, null);
+                    }
+                    if (node != null) {
+                        node.refreshChildren();
+                    }
+                    firePropertyChange(ContainerProtocol.CHILDREN, null, null);
+                });
+    }
+
+    @Override
+    public CompletionStage<Connection> connect(final Connection connection) {
+        return getRoot().getHelper().connect(getAddress(), connection)
+                .thenApply(c -> {
+                    connections.add(c);
                     firePropertyChange(ContainerProtocol.CONNECTIONS, null, null);
-                }
-                if (node != null) {
-                    node.refreshChildren();
-                }
-                firePropertyChange(ContainerProtocol.CHILDREN, null, null);
-                if (callback != null) {
-                    callback.onReturn(args);
-                }
+                    return c;
+                });
 
-            }
-
-            @Override
-            public void onError(List<Value> args) {
-                if (callback != null) {
-                    callback.onError(args);
-                }
-            }
-        });
     }
 
     @Override
-    public void connect(final Connection connection, final Callback callback) {
+    public CompletionStage<?> disconnect(final Connection connection) {
 
-        getRoot().getHelper().connect(getAddress(), connection, new Callback() {
-            @Override
-            public void onReturn(List<Value> args) {
-                connections.add(connection);
-                firePropertyChange(ContainerProtocol.CONNECTIONS, null, null);
-                if (callback != null) {
-                    callback.onReturn(args);
-                }
-            }
-
-            @Override
-            public void onError(List<Value> args) {
-                if (callback != null) {
-                    callback.onError(args);
-                }
-            }
-        });
-    }
-
-    @Override
-    public void disconnect(final Connection connection, final Callback callback) {
-
-        getRoot().getHelper().disconnect(getAddress(), connection, new Callback() {
-            @Override
-            public void onReturn(List<Value> args) {
-                connections.remove(connection);
-                firePropertyChange(ContainerProtocol.CONNECTIONS, null, null);
-                if (callback != null) {
-                    callback.onReturn(args);
-                }
-            }
-
-            @Override
-            public void onError(List<Value> args) {
-                if (callback != null) {
-                    callback.onError(args);
-                }
-            }
-        });
+        return getRoot().getHelper().disconnect(getAddress(), connection)
+                .thenApply(c -> {
+                    connections.remove(c);
+                    firePropertyChange(ContainerProtocol.CONNECTIONS, null, null);
+                    return c;
+                });
 
     }
 
@@ -405,13 +348,7 @@ public class PXRContainerProxy extends PXRComponentProxy implements ContainerPro
 
         @Override
         public PArray getValue() {
-            return connections()
-                    .map(c -> PArray.of(
-                    PString.of(c.getChild1()),
-                    PString.of(c.getPort1()),
-                    PString.of(c.getChild2()),
-                    PString.of(c.getPort2())
-            )).collect(PArray.collector());
+            return PArray.of(connections);
         }
 
         @Override
@@ -440,21 +377,8 @@ public class PXRContainerProxy extends PXRComponentProxy implements ContainerPro
             }
         }
 
-        private Set<Connection> externalToConnections(Value extCons) throws ValueFormatException {
-            if (extCons.isEmpty()) {
-                return Collections.emptySet();
-            }
-            PArray extArr = PArray.from(extCons).orElseThrow(ValueFormatException::new);
-            Set<Connection> cons = new LinkedHashSet<>(extArr.size());
-            for (Value arg : extArr) {
-                PArray con = PArray.from(arg).orElseThrow(ValueFormatException::new);
-                if (con.size() != 4) {
-                    throw new ValueFormatException("Connection array has invalid number of parts\n" + extCons);
-                }
-                cons.add(new Connection(con.get(0).toString(), con.get(1).toString(),
-                        con.get(2).toString(), con.get(3).toString()));
-            }
-            return cons;
+        private Set<Connection> externalToConnections(Value extCons) throws Exception {
+            return new LinkedHashSet<>(PArray.from(extCons).orElseThrow().asListOf(Connection.class));
         }
 
     }

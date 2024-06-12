@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletionStage;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.swing.Action;
@@ -48,7 +49,6 @@ import org.praxislive.core.Info;
 import org.praxislive.core.Value;
 import org.praxislive.core.services.RootManagerService;
 import org.praxislive.core.types.PArray;
-import org.praxislive.ide.core.api.Callback;
 import org.praxislive.ide.core.api.ValuePropertyAdaptor;
 import org.praxislive.ide.model.HubProxy;
 import org.praxislive.ide.model.RootProxy;
@@ -288,7 +288,7 @@ class HubProxyImpl implements HubProxy {
         }
 
         @Override
-        public void send(String control, List<Value> args, Callback callback) {
+        public CompletionStage<List<Value>> send(String control, List<Value> args) {
             throw new UnsupportedOperationException();
         }
 

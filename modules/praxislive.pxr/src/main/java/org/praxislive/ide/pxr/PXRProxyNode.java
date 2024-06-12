@@ -146,7 +146,7 @@ class PXRProxyNode extends AbstractNode {
     private void destroyImpl() {
         assert EventQueue.isDispatchThread();
         PXRContainerProxy container = component.getParent();
-        container.removeChild(container.getChildID(component), null);
+        container.removeChild(container.getChildID(component));
     }
 
     @Override

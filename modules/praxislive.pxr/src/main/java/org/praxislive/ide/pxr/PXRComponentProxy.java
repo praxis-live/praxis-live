@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2022 Neil C Smith.
+ * Copyright 2024 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -35,6 +35,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
@@ -269,13 +271,14 @@ public class PXRComponentProxy implements ComponentProxy {
         }
     }
 
-    public void send(String control, List<Value> args, final Callback callback) {
+    @Override
+    public CompletionStage<List<Value>> send(String control, List<Value> args) {
         try {
             ControlAddress to = ControlAddress.of(getAddress(), control);
-            getRoot().getHelper().send(to, args, callback);
+            return getRoot().getHelper().send(to, args);
         } catch (Exception ex) {
             Exceptions.printStackTrace(ex);
-            EventQueue.invokeLater(() -> callback.onError(List.of(PError.of(ex))));
+            return CompletableFuture.failedStage(ex);
         }
     }
 
@@ -568,8 +571,7 @@ public class PXRComponentProxy implements ComponentProxy {
 
         @Override
         public void actionPerformed(ActionEvent ae) {
-            send(control, List.of(), Callback.create(r -> {
-            }));
+            send(control, List.of());
         }
     }
 

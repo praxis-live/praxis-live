@@ -159,8 +159,7 @@ public class PXRDataObject extends MultiDataObject {
                     }
                 }
                 if (proxy != null) {
-                    proxy.getHelper().removeComponent(
-                            ComponentAddress.of("/" + id), Callback.create(r -> {}));
+                    proxy.getHelper().removeComponent(ComponentAddress.of("/" + id));
                     proxy.dispose();
                 }
             });

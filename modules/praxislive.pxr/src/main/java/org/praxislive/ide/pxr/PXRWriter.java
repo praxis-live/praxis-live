@@ -26,8 +26,8 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.praxislive.core.ComponentAddress;
+import org.praxislive.core.Connection;
 import org.praxislive.ide.core.api.IDE;
-import org.praxislive.ide.model.Connection;
 import org.praxislive.ide.properties.PraxisProperty;
 
 /**
@@ -162,10 +162,10 @@ class PXRWriter {
     private void writeConnections(Appendable sb, PXRContainerProxy container, int level) throws IOException {
         Connection[] connections = container.connections().toArray(Connection[]::new);
         for (Connection connection : connections) {
-            String c1 = connection.getChild1();
-            String c2 = connection.getChild2();
-            String p1 = connection.getPort1();
-            String p2 = connection.getPort2();
+            String c1 = connection.sourceComponent();
+            String c2 = connection.targetComponent();
+            String p1 = connection.sourcePort();
+            String p2 = connection.targetPort();
             if (level == 0 && children != null && 
                     !(children.contains(c1) && children.contains(c2))) {
                 LOG.log(Level.FINEST, "Skipping connection : {0}", connection);

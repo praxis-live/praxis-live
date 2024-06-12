@@ -23,8 +23,11 @@ package org.praxislive.ide.core.api;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
 import org.praxislive.core.Value;
+import org.praxislive.core.types.PError;
 
 /**
  * Handle result of a Call into the PraxisCORE system.
@@ -53,6 +56,25 @@ public interface Callback {
      */
     public static Callback create(Consumer<Result> callback) {
         return new Result.ResultCallback(callback);
+    }
+
+    public static Callback create(CompletableFuture<List<Value>> future) {
+        return new Callback() {
+            @Override
+            public void onError(List<Value> args) {
+                CallExecutionException ex = args.stream()
+                        .flatMap(v -> PError.from(v).stream())
+                        .map(err -> err.exception().map(e -> new CallExecutionException(e))
+                                .orElseGet(() -> new CallExecutionException(err.toString())))
+                        .findFirst().orElseGet(() -> new CallExecutionException("Unknown call error"));
+                future.completeExceptionally(ex);
+            }
+
+            @Override
+            public void onReturn(List<Value> args) {
+                future.complete(args);
+            }
+        };
     }
 
     /**

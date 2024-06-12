@@ -70,7 +70,6 @@ import org.praxislive.ide.graph.PinID;
 import org.praxislive.ide.graph.PinWidget;
 import org.praxislive.ide.graph.PraxisGraphScene;
 import org.praxislive.ide.model.ComponentProxy;
-import org.praxislive.ide.model.Connection;
 import org.praxislive.ide.model.ContainerProxy;
 import org.praxislive.ide.model.RootProxy;
 import org.praxislive.ide.pxr.api.ActionSupport;
@@ -104,6 +103,7 @@ import org.openide.util.Lookup;
 import org.openide.util.actions.Presenter;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
+import org.praxislive.core.Connection;
 import org.praxislive.core.Value;
 import org.praxislive.ide.code.api.SharedCodeInfo;
 import org.praxislive.ide.project.api.PraxisProject;
@@ -185,25 +185,25 @@ public class GraphEditor extends RootEditor {
         var rootNode = root.getNodeDelegate();
         manager.setRootContext(rootNode);
         manager.setExploredContext(rootNode, new Node[]{rootNode});
-        
+
         lookup = new ProxyLookup(ExplorerUtils.createLookup(manager, buildActionMap()),
                 Lookups.fixed(palette.controller()));
 
         addMenu = new MenuView.Menu(
                 palette.root(), (Node[] nodes) -> {
-                    if (nodes.length == 1) {
-                        ComponentType type = nodes[0].getLookup().lookup(ComponentType.class);
-                        if (type != null) {
-                            EventQueue.invokeLater(() -> acceptComponentType(type));
-                            return true;
-                        }
-                        FileObject fo = nodes[0].getLookup().lookup(FileObject.class);
-                        if (fo != null) {
-                            EventQueue.invokeLater(() -> acceptImport(fo));
-                            return true;
-                        }
-                    }
-                    return false;
+            if (nodes.length == 1) {
+                ComponentType type = nodes[0].getLookup().lookup(ComponentType.class);
+                if (type != null) {
+                    EventQueue.invokeLater(() -> acceptComponentType(type));
+                    return true;
+                }
+                FileObject fo = nodes[0].getLookup().lookup(FileObject.class);
+                if (fo != null) {
+                    EventQueue.invokeLater(() -> acceptImport(fo));
+                    return true;
+                }
+            }
+            return false;
         });
         addMenu.setIcon(null);
         addMenu.setText("Add");
@@ -331,12 +331,12 @@ public class GraphEditor extends RootEditor {
         if (addSep) {
             menu.add(new JSeparator());
         }
-        
+
         if (sharedCodeAction != null) {
             menu.add(new JCheckBoxMenuItem(sharedCodeAction));
             menu.addSeparator();
         }
-        
+
         JMenu propertyModeMenu = new JMenu("Properties");
         propertyModeMenu.add(new JRadioButtonMenuItem(new PropertyModeAction("Default", PropertyMode.Default)));
         propertyModeMenu.add(new JRadioButtonMenuItem(new PropertyModeAction("Show all", PropertyMode.Show)));
@@ -440,7 +440,7 @@ public class GraphEditor extends RootEditor {
 
             actionPanel = new JPanel(new BorderLayout());
             panel.add(actionPanel, BorderLayout.SOUTH);
-            
+
             SharedCodeInfo sharedCtxt = root.getLookup().lookup(SharedCodeInfo.class);
             if (sharedCtxt != null) {
                 sharedCodePanel = new SharedCodeComponent(this, sharedCtxt.getFolder());
@@ -574,7 +574,7 @@ public class GraphEditor extends RootEditor {
                 AWTEvent current = EventQueue.getCurrentEvent();
                 if (current instanceof InputEvent && ((InputEvent) current).isShiftDown()) {
                     cmp.getNodeDelegate().getPreferredAction().actionPerformed(
-                        new ActionEvent(this, ActionEvent.ACTION_PERFORMED, "edit", ActionEvent.SHIFT_MASK));
+                            new ActionEvent(this, ActionEvent.ACTION_PERFORMED, "edit", ActionEvent.SHIFT_MASK));
                 } else {
                     containerOpenAction.actionPerformed(new ActionEvent(this,
                             ActionEvent.ACTION_PERFORMED,
@@ -618,7 +618,7 @@ public class GraphEditor extends RootEditor {
         Iterator<Connection> itr = knownConnections.iterator();
         while (itr.hasNext()) {
             Connection con = itr.next();
-            if (con.getChild1().equals(id) || con.getChild2().equals(id)) {
+            if (con.sourceComponent().equals(id) || con.targetComponent().equals(id)) {
                 LOG.finest("Removing connection : " + con);
                 itr.remove();
             }
@@ -731,21 +731,21 @@ public class GraphEditor extends RootEditor {
     }
 
     private boolean buildConnection(Connection connection) {
-        PinID<String> p1 = new PinID<>(connection.getChild1(), connection.getPort1());
-        PinID<String> p2 = new PinID<>(connection.getChild2(), connection.getPort2());
+        PinID<String> p1 = new PinID<>(connection.sourceComponent(), connection.sourcePort());
+        PinID<String> p2 = new PinID<>(connection.targetComponent(), connection.targetPort());
         if (scene.isPin(p1) && scene.isPin(p2)) {
             PinWidget pw1 = (PinWidget) scene.findWidget(p1);
             PinWidget pw2 = (PinWidget) scene.findWidget(p2);
             if (pw1.getAlignment() == Alignment.Left && pw2.getAlignment() == Alignment.Right) {
-                EdgeWidget widget = scene.connect(connection.getChild2(), connection.getPort2(),
-                        connection.getChild1(), connection.getPort1());
-                widget.setToolTipText(connection.getChild2() + "!" + connection.getPort2() + " -> "
-                        + connection.getChild1() + "!" + connection.getPort1());
+                EdgeWidget widget = scene.connect(connection.targetComponent(), connection.targetPort(),
+                        connection.sourceComponent(), connection.sourcePort());
+                widget.setToolTipText(connection.targetComponent() + "!" + connection.targetPort() + " -> "
+                        + connection.sourceComponent() + "!" + connection.sourcePort());
             } else {
-                EdgeWidget widget = scene.connect(connection.getChild1(), connection.getPort1(),
-                        connection.getChild2(), connection.getPort2());
-                widget.setToolTipText(connection.getChild1() + "!" + connection.getPort1() + " -> "
-                        + connection.getChild2() + "!" + connection.getPort2());
+                EdgeWidget widget = scene.connect(connection.sourceComponent(), connection.sourcePort(),
+                        connection.targetComponent(), connection.targetPort());
+                widget.setToolTipText(connection.sourceComponent() + "!" + connection.sourcePort() + " -> "
+                        + connection.targetComponent() + "!" + connection.targetPort());
             }
             return true;
         } else {
@@ -755,11 +755,11 @@ public class GraphEditor extends RootEditor {
     }
 
     private boolean removeConnection(Connection connection) {
-        EdgeID<String> edge = new EdgeID<>(new PinID<>(connection.getChild1(), connection.getPort1()),
-                new PinID<>(connection.getChild2(), connection.getPort2()));
+        EdgeID<String> edge = new EdgeID<>(new PinID<>(connection.sourceComponent(), connection.sourcePort()),
+                new PinID<>(connection.targetComponent(), connection.targetPort()));
         if (scene.isEdge(edge)) {
-            scene.disconnect(connection.getChild1(), connection.getPort1(),
-                    connection.getChild2(), connection.getPort2());
+            scene.disconnect(connection.sourceComponent(), connection.sourcePort(),
+                    connection.targetComponent(), connection.targetPort());
             return true;
         } else {
             return false;
@@ -905,23 +905,15 @@ public class GraphEditor extends RootEditor {
         Object retval = DialogDisplayer.getDefault().notify(dlg);
         if (retval == NotifyDescriptor.OK_OPTION) {
             final String id = dlg.getInputText();
-            try {
-                container.addChild(id, type, new Callback() {
-                    @Override
-                    public void onReturn(List<Value> args) {
-                        syncGraph(true, true);
-                    }
-
-                    @Override
-                    public void onError(List<Value> args) {
+            container.addChild(id, type)
+                    .thenRun(() -> syncGraph(true, true))
+                    .exceptionally(ex -> {
                         syncGraph(true);
                         DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message("Error creating component", NotifyDescriptor.ERROR_MESSAGE));
-                    }
-                });
-                syncGraph(false);
-            } catch (Exception ex) {
-                Exceptions.printStackTrace(ex);
-            }
+                        return null;
+                    });
+
+            syncGraph(false);
 
         }
     }
@@ -1026,17 +1018,12 @@ public class GraphEditor extends RootEditor {
             }
             PinID<String> p1 = (PinID<String>) scene.findObject(pw1);
             PinID<String> p2 = (PinID<String>) scene.findObject(pw2);
-            try {
-                container.connect(new Connection(p1.getParent(),
-                        p1.getName(),
-                        p2.getParent(),
-                        p2.getName()),
-                        Callback.create(r -> {
-                        })
-                );
-            } catch (Exception ex) {
-                Exceptions.printStackTrace(ex);
-            }
+            container.connect(Connection.of(
+                    p1.getParent(),
+                    p1.getName(),
+                    p2.getParent(),
+                    p2.getName())
+            );
         }
     }
 
@@ -1169,16 +1156,14 @@ public class GraphEditor extends RootEditor {
             }
             for (Object obj : sel) {
                 if (obj instanceof String) {
-                    container.removeChild((String) obj, Callback.create(r -> {
-                    }));
+                    container.removeChild((String) obj);
                 } else if (obj instanceof EdgeID) {
                     EdgeID edge = (EdgeID) obj;
                     PinID p1 = edge.getPin1();
                     PinID p2 = edge.getPin2();
-                    Connection con = new Connection(p1.getParent().toString(), p1.getName(),
+                    Connection con = Connection.of(p1.getParent().toString(), p1.getName(),
                             p2.getParent().toString(), p2.getName());
-                    container.disconnect(con, Callback.create(r -> {
-                    }));
+                    container.disconnect(con);
                 }
             }
         }
@@ -1272,19 +1257,19 @@ public class GraphEditor extends RootEditor {
         }
 
     }
-    
+
     private class SharedCodeToggleAction extends AbstractAction {
 
         private SharedCodeToggleAction() {
             super("Shared Code");
             putValue(Action.SELECTED_KEY, sharedCodePanel.isVisible());
         }
-        
+
         @Override
         public void actionPerformed(ActionEvent e) {
             sharedCodePanel.setVisible(Boolean.TRUE.equals(getValue(Action.SELECTED_KEY)));
         }
-        
+
     }
 
     private class CommentAction extends AbstractAction {

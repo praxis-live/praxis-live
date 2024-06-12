@@ -286,36 +286,13 @@ class EditLayer extends JComponent {
         Utils.ensureSpace(container, pos[0], pos[1], 1, 1, Collections.<JComponent>emptySet(), true);
         final PString layout = PString.of("cell " + pos[0] + " " + pos[1]);
         final String id = getFreeID(pxy, type);
-        pxy.addChild(id, type, new Callback() {
-
-            @Override
-            public void onReturn(List<Value> args) {
-
-                try {
-                    editor.getHelper().send(ControlAddress.of(pxy.getChild(id).getAddress(), "layout"),
-                            List.of(layout), new Callback() {
-
-                                @Override
-                                public void onReturn(List<Value> args) {
-                                    Utils.compactGrid(container);
-                                }
-
-                                @Override
-                                public void onError(List<Value> args) {
-                                }
-                            });
-                    
-                } catch (Exception ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-            }
-
-            @Override
-            public void onError(List<Value> args) {
-                DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message("Error creating component", NotifyDescriptor.ERROR_MESSAGE));
-            }
-        });
-
+        pxy.addChild(id, type)
+                .thenCompose(c -> c.send("layout", List.of(layout)))
+                .thenRun(() -> Utils.compactGrid(container))
+                .exceptionally(ex -> {
+                    DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message("Error creating component", NotifyDescriptor.ERROR_MESSAGE));
+                    return null;
+                });
     }
 
     private String getFreeID(ContainerProxy container, ComponentType type) {

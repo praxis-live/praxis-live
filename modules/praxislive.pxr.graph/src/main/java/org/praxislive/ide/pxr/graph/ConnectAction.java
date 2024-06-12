@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2020 Neil C Smith.
+ * Copyright 2024 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -44,12 +44,12 @@ import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import org.praxislive.core.PortInfo;
 import org.praxislive.ide.graph.PinID;
-import org.praxislive.ide.model.Connection;
 import org.praxislive.ide.model.ProxyException;
 import org.openide.awt.CloseButtonFactory;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.praxislive.core.Connection;
 
 /**
  *
@@ -133,7 +133,7 @@ class ConnectAction extends AbstractAction {
         List<Connection> connections = possibleConnections(src, srcPin, dst, dstPin, true);
 
         for (Connection connection : connections) {
-            editor.getContainer().connect(connection, null);
+            editor.getContainer().connect(connection);
         }
 
     }
@@ -143,7 +143,7 @@ class ConnectAction extends AbstractAction {
         List<Connection> connections = possibleConnections(src, srcPin, dst, dstPin, false);
 
         for (Connection connection : connections) {
-            editor.getContainer().disconnect(connection, null);
+            editor.getContainer().disconnect(connection);
         }
 
     }
@@ -177,14 +177,14 @@ class ConnectAction extends AbstractAction {
         } else {
             return sources.stream()
                     .flatMap(s -> destinations.stream()
-                    .map(d -> new Connection(s.getParent(), s.getName(), d.getParent(), d.getName())))
+                    .map(d -> Connection.of(s.getParent(), s.getName(), d.getParent(), d.getName())))
                     .collect(Collectors.toList());
         }
 
     }
 
     private Connection createConnection(PinID<String> source, PinID<String> destination) {
-        return new Connection(source.getParent(), source.getName(),
+        return Connection.of(source.getParent(), source.getName(),
                 destination.getParent(), destination.getName());
     }
 
