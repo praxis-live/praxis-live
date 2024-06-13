@@ -21,6 +21,7 @@
  */
 package org.praxislive.ide.pxr;
 
+import java.awt.EventQueue;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
@@ -58,19 +59,22 @@ public class PXRContainerProxy extends PXRComponentProxy implements ContainerPro
     private final static Logger LOG = Logger.getLogger(PXRContainerProxy.class.getName());
 
     private final Map<String, PXRComponentProxy> children;
+    private final Set<String> pendingChildren;
     private final Set<Connection> connections;
     private final ChildrenProperty childProp;
     private final ConnectionsProperty conProp;
     private final SupportedTypesProperty supportedTypesProp;
 
-    private ValuePropertyAdaptor.ReadOnly conAdaptor;
+    private ValuePropertyAdaptor.ReadOnly connectionsAdaptor;
     private ValuePropertyAdaptor.ReadOnly typesAdaptor;
+    private ValuePropertyAdaptor.ReadOnly childrenAdaptor;
 
     PXRContainerProxy(PXRContainerProxy parent, ComponentType type,
             ComponentInfo info) {
         super(parent, type, info);
         children = new LinkedHashMap<>();
         connections = new LinkedHashSet<>();
+        pendingChildren = new LinkedHashSet<>();
         childProp = new ChildrenProperty();
         conProp = new ConnectionsProperty();
         supportedTypesProp = new SupportedTypesProperty();
@@ -108,25 +112,56 @@ public class PXRContainerProxy extends PXRComponentProxy implements ContainerPro
     }
 
     CompletionStage<? extends PXRComponentProxy> addChild(String id, ComponentType type, PMap attrs) {
-
+        pendingChildren.add(id);
         ComponentAddress childAddress = ComponentAddress.of(getAddress(), id);
-        return getRoot().getHelper().createComponentAndGetInfo(childAddress, type)
-                .thenApply(info -> {
-                    PXRComponentProxy child;
-                    if (isContainer(info)) {
-                        child = new PXRContainerProxy(PXRContainerProxy.this, type, info);
-                    } else {
-                        child = new PXRComponentProxy(PXRContainerProxy.this, type, info);
-                    }
-                    attrs.keys().forEach(k -> child.setAttr(k, attrs.getString(k, null)));
-                    children.put(id, child);
-                    if (node != null) {
-                        node.refreshChildren();
-                    }
-                    firePropertyChange(ContainerProtocol.CHILDREN, null, null);
-                    return child;
+        PXRHelper helper = getRoot().getHelper();
+        return helper.createComponent(childAddress, type)
+                .thenCompose(ad -> {
+                    assert EventQueue.isDispatchThread();
+                    return helper.componentData(ad);
+                })
+                .thenApply(data -> {
+                    assert EventQueue.isDispatchThread();
+                    return addChildProxy(id, data, attrs);
+                })
+                .whenComplete((c, ex) -> {
+                    assert EventQueue.isDispatchThread();
+                    pendingChildren.remove(id);
                 });
+    }
 
+    // called from listener for pre-existing children
+    private void addChildProxy(String id) {
+        pendingChildren.add(id);
+        ComponentAddress childAddress = ComponentAddress.of(getAddress(), id);
+        PXRHelper helper = getRoot().getHelper();
+        helper.componentData(childAddress)
+                .thenApply(data -> {
+                    assert EventQueue.isDispatchThread();
+                    return addChildProxy(id, data, PMap.EMPTY);
+                })
+                .whenComplete((c, ex) -> {
+                    assert EventQueue.isDispatchThread();
+                    pendingChildren.remove(id);
+                });
+    }
+
+    private PXRComponentProxy addChildProxy(String id, PMap data, PMap attrs) {
+        ComponentInfo info = ComponentInfo.from(data.get("%info")).orElseThrow();
+        ComponentType type = ComponentType.from(data.get("%type")).orElseThrow();
+        PXRComponentProxy child;
+        if (isContainer(info)) {
+            child = new PXRContainerProxy(PXRContainerProxy.this, type, info);
+        } else {
+            child = new PXRComponentProxy(PXRContainerProxy.this, type, info);
+        }
+        attrs.keys().forEach(k -> child.setAttr(k, attrs.getString(k, null)));
+        children.put(id, child);
+        if (node != null) {
+            node.refreshChildren();
+        }
+        firePropertyChange(ContainerProtocol.CHILDREN, null, null);
+        return child;
     }
 
     private boolean isContainer(ComponentInfo info) {
@@ -138,29 +173,35 @@ public class PXRContainerProxy extends PXRComponentProxy implements ContainerPro
         ComponentAddress childAddress = ComponentAddress.of(getAddress(), id);
         return getRoot().getHelper().removeComponent(childAddress)
                 .thenRun(() -> {
-                    PXRComponentProxy child = children.get(id); // dispose needs child in map
-                    if (child != null) {
-                        child.dispose();
-                    }
-                    children.remove(id);
-                    Iterator<Connection> itr = connections.iterator();
-                    boolean conChanged = false;
-                    while (itr.hasNext()) {
-                        Connection con = itr.next();
-                        if (con.sourceComponent().equals(id)
-                                || con.targetComponent().equals(id)) {
-                            itr.remove();
-                            conChanged = true;
-                        }
-                    }
-                    if (conChanged) {
-                        firePropertyChange(ContainerProtocol.CONNECTIONS, null, null);
-                    }
-                    if (node != null) {
-                        node.refreshChildren();
-                    }
-                    firePropertyChange(ContainerProtocol.CHILDREN, null, null);
+                    removeChildProxies(List.of(id));
                 });
+    }
+
+    private void removeChildProxies(List<String> ids) {
+        boolean conChanged = false;
+        for (String id : ids) {
+            PXRComponentProxy child = children.get(id); // dispose needs child in map
+            if (child != null) {
+                child.dispose();
+            }
+            children.remove(id);
+            Iterator<Connection> itr = connections.iterator();
+            while (itr.hasNext()) {
+                Connection con = itr.next();
+                if (con.sourceComponent().equals(id)
+                        || con.targetComponent().equals(id)) {
+                    itr.remove();
+                    conChanged = true;
+                }
+            }
+        }
+        if (conChanged) {
+            firePropertyChange(ContainerProtocol.CONNECTIONS, null, null);
+        }
+        if (node != null) {
+            node.refreshChildren();
+        }
+        firePropertyChange(ContainerProtocol.CHILDREN, null, null);
     }
 
     @Override
@@ -226,53 +267,10 @@ public class PXRContainerProxy extends PXRComponentProxy implements ContainerPro
 
     }
 
-    void revalidate(PXRComponentProxy child) {
-//        String id = getChildID(child);
-//        if (id == null) {
-//            return;
-//        }
-//
-//        ignore = true;
-//
-//        // remove all connections temporarily
-//        List<Connection> tmpCons = connections;
-//        connections = Collections.emptyList();
-//        if (!tmpCons.isEmpty()) {
-//            firePropertyChange(PROP_CONNECTIONS, null, null);
-//        }
-//
-//        // temporarily remove child
-//        Map<String, PXRComponentProxy> tmpChildren = children;
-//        children = new LinkedHashMap<String, PXRComponentProxy>(tmpChildren);
-//        children.remove(id);
-//        firePropertyChange(PROP_CHILDREN, null, null);
-//
-//        // re-add child
-//        children.clear();
-//        children = tmpChildren;
-//        firePropertyChange(PROP_CHILDREN, null, null);
-//
-//        // re-add and validate connections
-//        connections = tmpCons;
-//        List<String> ports = Arrays.asList(child.getInfo().getPorts());
-//        Iterator<Connection> itr = connections.iterator();
-//        while (itr.hasNext()) {
-//            Connection con = itr.next();
-//            if ((con.getChild1().equals(id) && !ports.contains(con.getPort1()))
-//                    || (con.getChild2().equals(id) && !ports.contains(con.getPort2()))) {
-//                itr.remove();
-//            }
-//        }
-//        firePropertyChange(ContainerProxy.PROP_CONNECTIONS, null, null);
-//
-//        ignore = false;
-
-    }
-
     @Override
     void checkSyncing() {
         super.checkSyncing();
-        if (conAdaptor == null) {
+        if (connectionsAdaptor == null) {
             if (syncing) {
                 initAdaptors();
             } else {
@@ -280,23 +278,30 @@ public class PXRContainerProxy extends PXRComponentProxy implements ContainerPro
             }
         }
         if (syncing) {
-            conAdaptor.setSyncRate(Binding.SyncRate.Low);
+            childrenAdaptor.setSyncRate(Binding.SyncRate.Low);
+            connectionsAdaptor.setSyncRate(Binding.SyncRate.Low);
             typesAdaptor.setSyncRate(Binding.SyncRate.Low);
         } else {
-            conAdaptor.setSyncRate(Binding.SyncRate.None);
+            childrenAdaptor.setSyncRate(Binding.SyncRate.None);
+            connectionsAdaptor.setSyncRate(Binding.SyncRate.None);
             typesAdaptor.setSyncRate(Binding.SyncRate.None);
         }
     }
 
     private void initAdaptors() {
-        conAdaptor = new ValuePropertyAdaptor.ReadOnly(null,
+        childrenAdaptor = new ValuePropertyAdaptor.ReadOnly(null,
+                ContainerProtocol.CHILDREN, true, Binding.SyncRate.None);
+        childrenAdaptor.addPropertyChangeListener(new ChildrenListener());
+        connectionsAdaptor = new ValuePropertyAdaptor.ReadOnly(null,
                 ContainerProtocol.CONNECTIONS, true, Binding.SyncRate.None);
-        conAdaptor.addPropertyChangeListener(new ConnectionsListener());
+        connectionsAdaptor.addPropertyChangeListener(new ConnectionsListener());
         typesAdaptor = new ValuePropertyAdaptor.ReadOnly(null,
                 SUPPORTED_TYPES, true, Binding.SyncRate.None);
         typesAdaptor.addPropertyChangeListener(supportedTypesProp);
         getRoot().getHelper().bind(ControlAddress.of(getAddress(),
-                ContainerProtocol.CONNECTIONS), conAdaptor);
+                ContainerProtocol.CHILDREN), childrenAdaptor);
+        getRoot().getHelper().bind(ControlAddress.of(getAddress(),
+                ContainerProtocol.CONNECTIONS), connectionsAdaptor);
         getRoot().getHelper().bind(ControlAddress.of(getAddress(), SUPPORTED_TYPES),
                 typesAdaptor);
     }
@@ -307,10 +312,15 @@ public class PXRContainerProxy extends PXRComponentProxy implements ContainerPro
             child.dispose();
         }
         children.clear();
-        if (conAdaptor != null) {
+        if (childrenAdaptor != null) {
             getRoot().getHelper().unbind(ControlAddress.of(getAddress(),
-                    ContainerProtocol.CONNECTIONS), conAdaptor);
-            conAdaptor = null;
+                    ContainerProtocol.CHILDREN), childrenAdaptor);
+            childrenAdaptor = null;
+        }
+        if (connectionsAdaptor != null) {
+            getRoot().getHelper().unbind(ControlAddress.of(getAddress(),
+                    ContainerProtocol.CONNECTIONS), connectionsAdaptor);
+            connectionsAdaptor = null;
         }
         if (typesAdaptor != null) {
             getRoot().getHelper().unbind(ControlAddress.of(getAddress(),
@@ -363,7 +373,7 @@ public class PXRContainerProxy extends PXRComponentProxy implements ContainerPro
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
             try {
-                Set<Connection> updated = externalToConnections((Value) evt.getNewValue());
+                Set<Connection> updated = eventToConnections(evt);
                 if (connections.equals(updated)) {
                     LOG.fine("Connections change reported but we're up to date.");
                 } else {
@@ -377,8 +387,42 @@ public class PXRContainerProxy extends PXRComponentProxy implements ContainerPro
             }
         }
 
-        private Set<Connection> externalToConnections(Value extCons) throws Exception {
-            return new LinkedHashSet<>(PArray.from(extCons).orElseThrow().asListOf(Connection.class));
+        private Set<Connection> eventToConnections(PropertyChangeEvent evt) throws Exception {
+            return new LinkedHashSet<>(PArray.from((Value) evt.getNewValue())
+                    .orElseThrow()
+                    .asListOf(Connection.class));
+        }
+
+    }
+
+    private class ChildrenListener implements PropertyChangeListener {
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            try {
+                Set<String> childIDs = eventToChildIDs(evt);
+                Set<String> scratch = new LinkedHashSet<>(childIDs);
+                scratch.removeAll(children.keySet());
+                scratch.removeAll(pendingChildren);
+                if (!scratch.isEmpty()) {
+                    scratch.forEach(id -> addChildProxy(id));
+                }
+                scratch.clear();
+                scratch.addAll(children.keySet());
+                scratch.removeAll(childIDs);
+                if (!scratch.isEmpty()) {
+                    removeChildProxies(List.copyOf(scratch));
+                }
+            } catch (Exception ex) {
+                LOG.log(Level.WARNING, "Invalid Children list", ex);
+
+            }
+        }
+
+        private Set<String> eventToChildIDs(PropertyChangeEvent evt) throws Exception {
+            return new LinkedHashSet<>(PArray.from((Value) evt.getNewValue())
+                    .orElseThrow()
+                    .asListOf(String.class));
         }
 
     }

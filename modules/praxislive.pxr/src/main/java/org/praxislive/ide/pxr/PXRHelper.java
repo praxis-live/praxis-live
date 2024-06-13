@@ -54,6 +54,11 @@ public class PXRHelper extends AbstractHelperComponent {
                 });
     }
 
+    CompletionStage<ComponentAddress> createComponent(ComponentAddress address, ComponentType type) {
+        return execScript("@ " + address + " " + type)
+                .thenApply(result -> address);
+    }
+
     CompletionStage<PMap> componentData(ComponentAddress address) {
         String script;
         if (address.depth() == 1) {

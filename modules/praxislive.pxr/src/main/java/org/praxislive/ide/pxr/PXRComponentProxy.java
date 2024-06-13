@@ -128,12 +128,6 @@ public class PXRComponentProxy implements ComponentProxy {
         } else {
             oldProps = properties;
         }
-//        if (!oldProps.isEmpty()) {
-//            for (BoundArgumentProperty prop : oldProps.values()) {
-//                ((BoundArgumentProperty) prop).dispose();
-//            }
-//            oldProps.clear();
-//        }
         properties = new LinkedHashMap<>();
         File workingDir = getRoot().getWorkingDirectory();
         for (String ctlID : info.controls()) {
@@ -199,9 +193,6 @@ public class PXRComponentProxy implements ComponentProxy {
             node.refreshProperties();
             node.refreshActions();
         }
-//        if (parent != null) {
-//            parent.revalidate(this);
-//        }
         firePropertyChange(ComponentProtocol.INFO, null, null);
     }
 
@@ -232,7 +223,6 @@ public class PXRComponentProxy implements ComponentProxy {
     @Override
     public Node getNodeDelegate() {
         if (node == null) {
-//            node = new PXRProxyNode(this, getRoot().getSource());
             node = new PXRProxyNode(this);
         }
         return node;
@@ -358,6 +348,7 @@ public class PXRComponentProxy implements ComponentProxy {
         return properties.keySet().toArray(new String[0]);
     }
 
+    @Override
     public BoundArgumentProperty getProperty(String id) {
         if (properties == null) {
             initProperties();
@@ -421,7 +412,7 @@ public class PXRComponentProxy implements ComponentProxy {
                 ((BoundArgumentProperty) prop).dispose();
             }
         }
-        
+
         parent = null;
         properties = null;
     }
