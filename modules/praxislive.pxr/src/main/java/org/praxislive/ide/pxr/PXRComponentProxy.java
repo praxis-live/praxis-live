@@ -34,6 +34,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
@@ -49,7 +50,6 @@ import org.praxislive.core.ComponentInfo;
 import org.praxislive.core.ControlInfo;
 import org.praxislive.core.protocols.ComponentProtocol;
 import org.praxislive.core.types.PString;
-import org.praxislive.ide.core.api.Callback;
 import org.praxislive.ide.core.api.Syncable;
 import org.praxislive.ide.model.ComponentProxy;
 import org.praxislive.ide.properties.PraxisProperty;
@@ -61,7 +61,7 @@ import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 import org.openide.windows.TopComponent;
 import org.praxislive.base.Binding;
-import org.praxislive.core.types.PError;
+import org.praxislive.core.types.PMap;
 
 /**
  *
@@ -77,6 +77,7 @@ public class PXRComponentProxy implements ComponentProxy {
     private final ComponentType type;
     private final boolean dynamic;
     private final InfoProperty infoProp;
+    private final MetaProperty metaProp;
 
     PXRProxyNode node;
 
@@ -90,10 +91,10 @@ public class PXRComponentProxy implements ComponentProxy {
     private Action codeAction;
     private EditorAction editorAction;
     boolean syncing;
-//    private int listenerCount = 0;
     boolean nodeSyncing;
     boolean parentSyncing;
     private ValuePropertyAdaptor.ReadOnly dynInfoAdaptor;
+    private ValuePropertyAdaptor.ReadOnly metaAdaptor;
 
     PXRComponentProxy(PXRContainerProxy parent, ComponentType type,
             ComponentInfo info) {
@@ -105,14 +106,15 @@ public class PXRComponentProxy implements ComponentProxy {
         pcs = new PropertyChangeSupport(this);
         dynamic = info.properties().getBoolean(ComponentInfo.KEY_DYNAMIC, false);
         infoProp = new InfoProperty();
+        metaProp = new MetaProperty(PMap.EMPTY);
     }
 
     Lookup createLookup() {
-        return Lookups.fixed(getRoot().getProject(), new Sync(), new Attr());
+        return Lookups.fixed(getRoot().getProject(), metaProp, new Sync());
     }
 
     List<? extends PraxisProperty<?>> getProxyProperties() {
-        return Collections.singletonList(infoProp);
+        return List.of(infoProp, metaProp);
     }
 
     private void initProperties() {
@@ -177,6 +179,12 @@ public class PXRComponentProxy implements ComponentProxy {
         getRoot().getHelper().bind(ControlAddress.of(getAddress(), ComponentProtocol.INFO), dynInfoAdaptor);
     }
 
+    private void initMeta() {
+        metaAdaptor = new ValuePropertyAdaptor.ReadOnly(this, ComponentProtocol.META, true, Binding.SyncRate.None);
+        metaAdaptor.addPropertyChangeListener(metaProp);
+        getRoot().getHelper().bind(ControlAddress.of(getAddress(), ComponentProtocol.META), metaAdaptor);
+    }
+
     void refreshInfo(ComponentInfo info) {
         if (this.info.equals(info)) {
             // should happen once on first sync?
@@ -229,19 +237,15 @@ public class PXRComponentProxy implements ComponentProxy {
     }
 
     void setAttr(String key, String value) {
-        if (value == null) {
-            attributes.remove(key);
-        } else {
-            attributes.put(key, value);
-        }
+        metaProp.setAttribute(key, value);
     }
 
     String getAttr(String key) {
-        return attributes.get(key);
+        return metaProp.getAttribute(key);
     }
 
     String[] getAttrKeys() {
-        return attributes.keySet().toArray(new String[attributes.size()]);
+        return new String[0];
     }
 
     @Override
@@ -287,7 +291,7 @@ public class PXRComponentProxy implements ComponentProxy {
                 triggers.add(new TriggerAction(ctlID));
             }
         }
-        triggers = Collections.unmodifiableList(triggers);
+        triggers = List.copyOf(triggers);
     }
 
     List<Action> getPropertyActions() {
@@ -380,7 +384,7 @@ public class PXRComponentProxy implements ComponentProxy {
     }
 
     protected boolean isProxiedProperty(String id) {
-        return ComponentProtocol.INFO.equals(id);
+        return ComponentProtocol.INFO.equals(id) || ComponentProtocol.META.equals(id);
     }
 
     PXRRootProxy getRoot() {
@@ -391,6 +395,12 @@ public class PXRComponentProxy implements ComponentProxy {
 
         if (LOG.isLoggable(Level.FINE)) {
             LOG.log(Level.FINE, "Dispose called on {0}", getAddress());
+        }
+
+        if (metaAdaptor != null) {
+            getRoot().getHelper().unbind(
+                    ControlAddress.of(getAddress(), ComponentProtocol.META),
+                    metaAdaptor);
         }
 
         if (dynInfoAdaptor != null) {
@@ -441,6 +451,14 @@ public class PXRComponentProxy implements ComponentProxy {
                 LOG.log(Level.FINE, "Setting properties syncing {0} on {1}", new Object[]{toSync, getAddress()});
             }
             setPropertiesSyncing(toSync);
+        }
+        if (metaAdaptor == null) {
+            initMeta();
+        }
+        if (syncing || parentSyncing) {
+            metaAdaptor.setSyncRate(Binding.SyncRate.Low);
+        } else {
+            metaAdaptor.setSyncRate(Binding.SyncRate.None);
         }
         if (dynamic) {
             if (dynInfoAdaptor == null) {
@@ -508,30 +526,52 @@ public class PXRComponentProxy implements ComponentProxy {
 
     }
 
-    private class Attr implements Attributes {
+    private class MetaProperty extends PraxisProperty<PMap> implements Attributes, PropertyChangeListener {
+
+        private PMap meta;
+
+        private MetaProperty(PMap value) {
+            super(PMap.class);
+            setName(ComponentProtocol.META);
+            this.meta = Objects.requireNonNull(value);
+        }
+
+        @Override
+        public boolean canRead() {
+            return true;
+        }
+
+        @Override
+        public PMap getValue() {
+            return meta;
+        }
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            PMap newMeta = PMap.from((Value) evt.getNewValue()).orElse(PMap.EMPTY);
+            PMap oldMeta = meta;
+            meta = newMeta;
+            if (!newMeta.equivalent(oldMeta)) {
+                pcs.firePropertyChange(ComponentProtocol.META, oldMeta, newMeta);
+            }
+        }
 
         @Override
         public void setAttribute(String key, String value) {
-            setAttr(key, value);
+            PMap oldMeta = meta;
+            PMap metaMerge = PMap.of(key, value == null ? PString.EMPTY : value);
+            meta = PMap.merge(oldMeta, metaMerge, PMap.REPLACE);
+            send(ComponentProtocol.META_MERGE, List.of(metaMerge));
+            pcs.firePropertyChange(ComponentProtocol.META, oldMeta, meta);
         }
 
         @Override
         public String getAttribute(String key) {
-            return getAttr(key);
+            return meta.getString(key, null);
         }
 
     }
 
-//    private class DynPropListener implements PropertyChangeListener {
-//
-//        @Override
-//        public void propertyChange(PropertyChangeEvent evt) {
-//            // info changed
-//            LOG.finest("Info changed event");
-//
-//
-//        }
-//    }
     private class InfoProperty extends PraxisProperty<ComponentInfo> {
 
         private InfoProperty() {
@@ -553,7 +593,7 @@ public class PXRComponentProxy implements ComponentProxy {
 
     private class TriggerAction extends AbstractAction {
 
-        private String control;
+        private final String control;
 
         TriggerAction(String control) {
             super(control);

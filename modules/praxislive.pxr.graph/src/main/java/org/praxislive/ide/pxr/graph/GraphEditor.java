@@ -118,7 +118,6 @@ public class GraphEditor extends RootEditor {
     final static String ATTR_GRAPH_X = "graph.x";
     final static String ATTR_GRAPH_Y = "graph.y";
     final static String ATTR_GRAPH_MINIMIZED = "graph.minimized";
-    final static String ATTR_GRAPH_COLORS = "graph.colors";
     final static String ATTR_GRAPH_COMMENT = "graph.comment";
     final static String ATTR_GRAPH_PROPERTIES = "graph.properties";
 
@@ -128,7 +127,7 @@ public class GraphEditor extends RootEditor {
     private final Map<String, ComponentProxy> knownChildren;
     private final Set<Connection> knownConnections;
     private final ContainerListener containerListener;
-    private final InfoListener infoListener;
+    private final ComponentListener infoListener;
 
     private final PraxisGraphScene<String> scene;
     private final ExplorerManager manager;
@@ -145,8 +144,6 @@ public class GraphEditor extends RootEditor {
     private final Action duplicateAction;
     private final JMenuItem addMenu;
 
-    private final boolean customColours;
-
     private JComponent panel;
     private JComponent sharedCodePanel;
     private Action sharedCodeAction;
@@ -157,8 +154,7 @@ public class GraphEditor extends RootEditor {
     private final Point activePoint = new Point();
     private PropertyMode propertyMode = PropertyMode.Default;
     private boolean sync;
-
-    private final ColorsAction[] colorsActions;
+    private boolean ignoreAttrbuteChanges;
 
     public GraphEditor(PraxisProject project, FileObject file, RootProxy root, String category) {
         this.project = project;
@@ -169,7 +165,6 @@ public class GraphEditor extends RootEditor {
 
         scene = new PraxisGraphScene<>(new ConnectProviderImpl(), new MenuProviderImpl());
         scene.setOrthogonalRouting(false);
-        this.customColours = false;
         manager = new ExplorerManager();
         if (root instanceof ContainerProxy) {
             container = (ContainerProxy) root;
@@ -213,13 +208,7 @@ public class GraphEditor extends RootEditor {
         goUpAction = new GoUpAction();
         location = new LocationAction();
         containerListener = new ContainerListener();
-        infoListener = new InfoListener();
-
-        Colors[] colorsValues = Colors.values();
-        colorsActions = new ColorsAction[colorsValues.length];
-        for (int i = 0; i < colorsValues.length; i++) {
-            colorsActions[i] = new ColorsAction(colorsValues[i]);
-        }
+        infoListener = new ComponentListener();
 
         sceneCommentAction = new CommentAction(scene);
         exportAction = new ExportAction(this, manager);
@@ -278,13 +267,6 @@ public class GraphEditor extends RootEditor {
         menu.addSeparator();
         menu.add(exportAction);
         menu.addSeparator();
-        if (customColours) {
-            JMenu colorsMenu = new JMenu("Colors");
-            for (ColorsAction action : colorsActions) {
-                colorsMenu.add(action);
-            }
-            menu.add(colorsMenu);
-        }
         menu.add(new CommentAction(widget));
         return menu;
     }
@@ -307,17 +289,9 @@ public class GraphEditor extends RootEditor {
 
     private JPopupMenu getScenePopup() {
         JPopupMenu menu = new JPopupMenu();
-//        menu.add(deleteAction);
         menu.add(addMenu);
         menu.add(pasteAction);
         menu.addSeparator();
-        if (customColours) {
-            JMenu colorsMenu = new JMenu("Colors");
-            for (ColorsAction action : colorsActions) {
-                colorsMenu.add(action);
-            }
-            menu.add(colorsMenu);
-        }
         boolean addSep = false;
         for (Action a : container.getNodeDelegate().getActions(false)) {
             if (a == null) {
@@ -543,31 +517,16 @@ public class GraphEditor extends RootEditor {
         goUpAction.setEnabled(container.getParent() != null);
         location.address.setText(container.getAddress().toString());
 
-        scene.setSchemeColors(getColorsFromAttribute(container).getSchemeColors());
         scene.setComment(Utils.getAttr(container, ATTR_GRAPH_COMMENT));
         scene.validate();
     }
 
     private void buildChild(String id, final ComponentProxy cmp) {
-
-        if (LOG.isLoggable(Level.FINEST)) {
-            LOG.finest("Adding " + cmp.getAddress() + " to graph.");
-        }
         String name = cmp instanceof ContainerProxy ? id + "/.." : id;
         NodeWidget widget = scene.addNode(id, name);
-        if (customColours) {
-            widget.setSchemeColors(getColorsFromAttribute(cmp).getSchemeColors());
-        } else {
-            widget.setSchemeColors(Utils.colorsForComponent(cmp).getSchemeColors());
-        }
+        widget.setSchemeColors(Utils.colorsForComponent(cmp).getSchemeColors());
         widget.setToolTipText(cmp.getType().toString());
-        widget.setPreferredLocation(resolveLocation(id, cmp));
-        if ("true".equals(Utils.getAttr(cmp, ATTR_GRAPH_MINIMIZED))) {
-            widget.setMinimized(true);
-        }
-        updateWidgetComment(widget,
-                Utils.getAttr(cmp, ATTR_GRAPH_COMMENT, ""),
-                cmp instanceof ContainerProxy);
+        configureWidgetFromAttributes(widget, cmp);
         if (cmp instanceof ContainerProxy) {
             ContainerOpenAction containerOpenAction = new ContainerOpenAction((ContainerProxy) cmp);
             widget.getActions().addAction(ActionFactory.createEditAction(w -> {
@@ -602,40 +561,28 @@ public class GraphEditor extends RootEditor {
         ComponentInfo info = cmp.getInfo();
         for (String portID : info.ports()) {
             PortInfo pi = info.portInfo(portID);
-            if (LOG.isLoggable(Level.FINEST)) {
-                LOG.finest("Building port " + portID);
-            }
             buildPin(id, cmp, portID, pi);
         }
         cmp.addPropertyChangeListener(infoListener);
     }
 
     private void rebuildChild(String id, ComponentProxy cmp) {
-        if (LOG.isLoggable(Level.FINEST)) {
-            LOG.finest("Rebuilding " + cmp.getAddress() + " in graph.");
-        }
         // remove all connections to this component from known connections list
         Iterator<Connection> itr = knownConnections.iterator();
         while (itr.hasNext()) {
             Connection con = itr.next();
             if (con.sourceComponent().equals(id) || con.targetComponent().equals(id)) {
-                LOG.finest("Removing connection : " + con);
                 itr.remove();
             }
         }
         // match visual state by removing all pins and edges from graph node
         List<PinID<String>> pins = new ArrayList<>(scene.getNodePins(id));
-        LOG.finest(pins.toString());
         for (PinID<String> pin : pins) {
-            LOG.finest("Removing pin : " + pin);
             scene.removePinWithEdges(pin);
         }
         ComponentInfo info = cmp.getInfo();
         for (String portID : info.ports()) {
             PortInfo pi = info.portInfo(portID);
-            if (LOG.isLoggable(Level.FINEST)) {
-                LOG.finest("Building port " + portID);
-            }
             buildPin(id, cmp, portID, pi);
         }
         syncConnections();
@@ -649,38 +596,34 @@ public class GraphEditor extends RootEditor {
         activePoint.y = 0;
     }
 
-    private Point resolveLocation(String id, ComponentProxy cmp) {
+    private void configureWidgetFromAttributes(NodeWidget widget, ComponentProxy cmp) {
+        widget.setPreferredLocation(resolveLocation(cmp));
+        if ("true".equals(Utils.getAttr(cmp, ATTR_GRAPH_MINIMIZED))) {
+            widget.setMinimized(true);
+        }
+        updateWidgetComment(widget,
+                Utils.getAttr(cmp, ATTR_GRAPH_COMMENT, ""),
+                cmp instanceof ContainerProxy);
+    }
+
+    private Point resolveLocation(ComponentProxy cmp) {
         int x = activePoint.x;
         int y = activePoint.y;
         try {
             String xStr = Utils.getAttr(cmp, ATTR_GRAPH_X);
             String yStr = Utils.getAttr(cmp, ATTR_GRAPH_Y);
             if (xStr != null) {
-                x = Integer.parseInt(xStr) + x;
+                x = Integer.parseInt(xStr);
             }
             if (yStr != null) {
-                y = Integer.parseInt(yStr) + y;
+                y = Integer.parseInt(yStr);
             }
-            LOG.log(Level.FINEST, "Resolved location for {0} : {1} x {2}", new Object[]{id, x, y});
         } catch (Exception ex) {
-            LOG.log(Level.FINEST, "Cannot resolve location for " + id, ex);
 
         }
         // @TODO what to do about importing components without positions?
         // if point not set, check for widget at point?
         return new Point(x, y);
-    }
-
-    private Colors getColorsFromAttribute(ComponentProxy cmp) {
-        String colorsAttr = Utils.getAttr(cmp, ATTR_GRAPH_COLORS);
-        if (colorsAttr != null) {
-            try {
-                return Colors.valueOf(colorsAttr);
-            } catch (Exception e) {
-                Exceptions.printStackTrace(e);
-            }
-        }
-        return Colors.Default;
     }
 
     private void buildPin(String cmpID, ComponentProxy cmp, String pinID, PortInfo info) {
@@ -882,6 +825,7 @@ public class GraphEditor extends RootEditor {
     }
 
     private void syncAttributes(ComponentProxy cmp) {
+        ignoreAttrbuteChanges = true;
         Widget widget = scene.findWidget(cmp.getAddress().componentID());
         if (widget instanceof NodeWidget) {
             NodeWidget nodeWidget = (NodeWidget) widget;
@@ -896,6 +840,7 @@ public class GraphEditor extends RootEditor {
             Utils.setAttr(cmp, ATTR_GRAPH_MINIMIZED,
                     nodeWidget.isMinimized() ? "true" : null);
         }
+        ignoreAttrbuteChanges = false;
     }
 
     void acceptComponentType(final ComponentType type) {
@@ -964,7 +909,7 @@ public class GraphEditor extends RootEditor {
         }
     }
 
-    private class InfoListener implements PropertyChangeListener {
+    private class ComponentListener implements PropertyChangeListener {
 
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
@@ -976,7 +921,19 @@ public class GraphEditor extends RootEditor {
                     String id = cmp.getAddress().componentID();
                     rebuildChild(id, cmp);
                 }
+            } else if (ComponentProtocol.META.equals(evt.getPropertyName())) {
+                if (!ignoreAttrbuteChanges) {
+                    Object src = evt.getSource();
+                    assert src instanceof ComponentProxy;
+                    if (src instanceof ComponentProxy cmp) {
+                        Widget w = scene.findWidget(cmp.getAddress().componentID());
+                        if (w instanceof NodeWidget node) {
+                            configureWidgetFromAttributes(node, cmp);
+                        }
+                    }
+                }
             }
+
         }
 
     }
@@ -1186,44 +1143,6 @@ public class GraphEditor extends RootEditor {
             NotifyDescriptor desc = new NotifyDescriptor.Confirmation(msg, title, NotifyDescriptor.YES_NO_OPTION);
 
             return NotifyDescriptor.YES_OPTION.equals(DialogDisplayer.getDefault().notify(desc));
-        }
-
-    }
-
-    private class ColorsAction extends AbstractAction {
-
-        private final Colors colors;
-
-        private ColorsAction(Colors colors) {
-            super(colors.name());
-            this.colors = colors;
-        }
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            boolean foundNode = false;
-            for (Object obj : scene.getSelectedObjects()) {
-                if (obj instanceof String) {
-                    ComponentProxy cmp = container.getChild(obj.toString());
-                    NodeWidget widget = (NodeWidget) scene.findWidget(obj);
-                    widget.setSchemeColors(colors.getSchemeColors());
-                    setColorsAttr(cmp);
-                    foundNode = true;
-                }
-            }
-            if (!foundNode) {
-                scene.setSchemeColors(colors.getSchemeColors());
-                setColorsAttr(container);
-            }
-            scene.revalidate();
-        }
-
-        private void setColorsAttr(ComponentProxy cmp) {
-            if (colors == Colors.Default) {
-                Utils.setAttr(cmp, ATTR_GRAPH_COLORS, null);
-            } else {
-                Utils.setAttr(cmp, ATTR_GRAPH_COLORS, colors.name());
-            }
         }
 
     }

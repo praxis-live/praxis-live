@@ -155,8 +155,11 @@ public class PXRContainerProxy extends PXRComponentProxy implements ContainerPro
         } else {
             child = new PXRComponentProxy(PXRContainerProxy.this, type, info);
         }
-        attrs.keys().forEach(k -> child.setAttr(k, attrs.getString(k, null)));
         children.put(id, child);
+        attrs.keys().forEach(k -> child.setAttr(k, attrs.getString(k, null)));
+        if (syncing) {
+            child.setParentSyncing(true);
+        }
         if (node != null) {
             node.refreshChildren();
         }
@@ -281,10 +284,12 @@ public class PXRContainerProxy extends PXRComponentProxy implements ContainerPro
             childrenAdaptor.setSyncRate(Binding.SyncRate.Low);
             connectionsAdaptor.setSyncRate(Binding.SyncRate.Low);
             typesAdaptor.setSyncRate(Binding.SyncRate.Low);
+            children.forEach((id, child) -> child.setParentSyncing(true));
         } else {
             childrenAdaptor.setSyncRate(Binding.SyncRate.None);
             connectionsAdaptor.setSyncRate(Binding.SyncRate.None);
             typesAdaptor.setSyncRate(Binding.SyncRate.None);
+            children.forEach((id, child) -> child.setParentSyncing(false));
         }
     }
 
