@@ -21,33 +21,41 @@
  */
 package org.praxislive.ide.core.api;
 
+import org.praxislive.core.types.PError;
+
 /**
- * Exception thrown when a call into the PraxisCORE system returns an error.
+ * Exception thrown when a call into the PraxisCORE system returns an error. The
+ * Exception wraps the PError.
  */
 public class CallExecutionException extends Exception {
 
-    /**
-     * Creates a new instance of <code>HubUnavailableException</code> without
-     * detail message.
-     */
-    public CallExecutionException() {
-    }
+    private static final String UNKNOWN_MESSAGE = "Unknown Error";
+    private static final PError UNKNOWN = PError.of(UNKNOWN_MESSAGE);
+
+    private final PError error;
 
     /**
-     * Constructs an instance of <code>HubUnavailableException</code> with the
-     * specified detail message.
+     * Create a new instance wrapping the given {@link PError}.
      *
-     * @param msg the detail message.
+     * @param error wrapped error
      */
-    public CallExecutionException(String msg) {
-        super(msg);
+    public CallExecutionException(PError error) {
+        // Don't want to throw an NPE when already in exception!
+        this(error == null ? UNKNOWN : error, error == null ? UNKNOWN_MESSAGE : error.toString());
     }
 
-    public CallExecutionException(Throwable cause) {
-        super(cause);
+    private CallExecutionException(PError error, String message) {
+        super(message, error.exception().orElse(null));
+        this.error = error;
     }
 
-    public CallExecutionException(String msg, Throwable cause) {
-        super(msg, cause);
+    /**
+     * Access the wrapped {@link PError}.
+     *
+     * @return wrapped error
+     */
+    public PError error() {
+        return error;
     }
+
 }

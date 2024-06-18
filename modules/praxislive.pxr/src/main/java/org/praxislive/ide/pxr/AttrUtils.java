@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2016 Neil C Smith.
+ * Copyright 2024 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -21,20 +21,30 @@
  */
 package org.praxislive.ide.pxr;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import org.praxislive.core.protocols.ComponentProtocol;
+import org.praxislive.core.types.PMap;
+import org.praxislive.project.GraphBuilder;
+import org.praxislive.project.GraphElement;
+import org.praxislive.project.GraphModel;
+
 /**
  *
  */
 class AttrUtils {
-    
-    private AttrUtils() {}
-    
+
+    private AttrUtils() {
+    }
+
     static String unescape(String text) {
         if (!text.contains("\\")) {
             return text;
         }
         int len = text.length();
         StringBuilder sb = new StringBuilder(len);
-        for (int i=0; i < len; i++) {
+        for (int i = 0; i < len; i++) {
             char c = text.charAt(i);
             if (c == '\\') {
                 i++;
@@ -54,11 +64,11 @@ class AttrUtils {
         }
         return sb.toString();
     }
-    
+
     static String escape(String text) {
         int len = text.length();
         StringBuilder sb = new StringBuilder(len * 2);
-        for (int i=0; i < len; i++) {
+        for (int i = 0; i < len; i++) {
             char c = text.charAt(i);
             switch (c) {
                 case '{':
@@ -81,12 +91,61 @@ class AttrUtils {
                     sb.append(c);
             }
         }
-        
+
         // just in case, make sure newline isn't escaped
         if (sb.length() > 0 && sb.charAt(sb.length() - 1) == '\\') {
             sb.append(' ');
         }
         return sb.toString();
     }
+
+    static GraphModel rewriteAttr(GraphModel model) {
+        return model.withTransform(r -> rewriteAttrImpl(r));
+    }
     
+    private static void rewriteAttrImpl(GraphBuilder.Base<?> cmp) {
+        PMap.Builder mb = PMap.builder();
+        for (GraphElement.Comment comment : cmp.comments()) {
+            String txt = comment.text().strip();
+            if (txt.startsWith("%")) {
+                int delim = txt.indexOf(" ");
+                if (delim > 1) {
+                    mb.put(txt.substring(1, delim), unescape(txt.substring(delim + 1)));
+                }
+            }
+        }
+        PMap attr = mb.build();
+        cmp.transformProperties(props -> {
+            List<Map.Entry<String, GraphElement.Property>> result = new ArrayList<>(props.toList());
+            int index = -1;
+            for (int i = 0; i < result.size(); i++) {
+                if ("meta".equals(result.get(i).getKey())) {
+                    index = i;
+                    break;
+                }
+            }
+            if (index > -1) {
+                PMap existing = PMap.from(result.get(index).getValue().value()).orElseThrow();
+                result.set(index, Map.entry(ComponentProtocol.META,
+                        GraphElement.property(PMap.merge(existing, attr, PMap.REPLACE))));
+            } else {
+                result.add(0, Map.entry(ComponentProtocol.META, GraphElement.property(attr)));
+            }
+            return result;
+        });
+
+        cmp.transformComments(comments -> comments
+                .filter(c -> !c.text().strip().startsWith("%"))
+                .toList());
+
+        cmp.transformChildren(children
+                -> children.map(e -> {
+                    GraphBuilder.Component child = GraphBuilder.component(e.getValue());
+                    rewriteAttrImpl(child);
+                    return Map.entry(e.getKey(), child.build());
+                }).toList()
+        );
+
+    }
+
 }

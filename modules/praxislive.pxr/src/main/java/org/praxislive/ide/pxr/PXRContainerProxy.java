@@ -281,8 +281,8 @@ public class PXRContainerProxy extends PXRComponentProxy implements ContainerPro
             }
         }
         if (syncing) {
-            childrenAdaptor.setSyncRate(Binding.SyncRate.Low);
-            connectionsAdaptor.setSyncRate(Binding.SyncRate.Low);
+            childrenAdaptor.setSyncRate(Binding.SyncRate.Medium);
+            connectionsAdaptor.setSyncRate(Binding.SyncRate.Medium);
             typesAdaptor.setSyncRate(Binding.SyncRate.Low);
             children.forEach((id, child) -> child.setParentSyncing(true));
         } else {

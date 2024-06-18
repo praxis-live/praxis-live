@@ -29,7 +29,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
-import org.openide.util.Exceptions;
 import org.praxislive.base.AbstractComponent;
 import org.praxislive.base.Binding;
 import org.praxislive.base.BindingContext;

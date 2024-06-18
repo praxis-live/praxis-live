@@ -154,7 +154,7 @@ public class GraphEditor extends RootEditor {
     private final Point activePoint = new Point();
     private PropertyMode propertyMode = PropertyMode.Default;
     private boolean sync;
-    private boolean ignoreAttrbuteChanges;
+    private boolean ignoreAttributeChanges;
 
     public GraphEditor(PraxisProject project, FileObject file, RootProxy root, String category) {
         this.project = project;
@@ -564,6 +564,7 @@ public class GraphEditor extends RootEditor {
             buildPin(id, cmp, portID, pi);
         }
         cmp.addPropertyChangeListener(infoListener);
+        syncConnections();
     }
 
     private void rebuildChild(String id, ComponentProxy cmp) {
@@ -604,6 +605,7 @@ public class GraphEditor extends RootEditor {
         updateWidgetComment(widget,
                 Utils.getAttr(cmp, ATTR_GRAPH_COMMENT, ""),
                 cmp instanceof ContainerProxy);
+        scene.validate();
     }
 
     private Point resolveLocation(ComponentProxy cmp) {
@@ -825,7 +827,7 @@ public class GraphEditor extends RootEditor {
     }
 
     private void syncAttributes(ComponentProxy cmp) {
-        ignoreAttrbuteChanges = true;
+        ignoreAttributeChanges = true;
         Widget widget = scene.findWidget(cmp.getAddress().componentID());
         if (widget instanceof NodeWidget) {
             NodeWidget nodeWidget = (NodeWidget) widget;
@@ -840,7 +842,7 @@ public class GraphEditor extends RootEditor {
             Utils.setAttr(cmp, ATTR_GRAPH_MINIMIZED,
                     nodeWidget.isMinimized() ? "true" : null);
         }
-        ignoreAttrbuteChanges = false;
+        ignoreAttributeChanges = false;
     }
 
     void acceptComponentType(final ComponentType type) {
@@ -922,7 +924,7 @@ public class GraphEditor extends RootEditor {
                     rebuildChild(id, cmp);
                 }
             } else if (ComponentProtocol.META.equals(evt.getPropertyName())) {
-                if (!ignoreAttrbuteChanges) {
+                if (!ignoreAttributeChanges) {
                     Object src = evt.getSource();
                     assert src instanceof ComponentProxy;
                     if (src instanceof ComponentProxy cmp) {

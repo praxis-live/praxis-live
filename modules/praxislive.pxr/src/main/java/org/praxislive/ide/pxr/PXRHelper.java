@@ -22,6 +22,7 @@
 package org.praxislive.ide.pxr;
 
 import java.awt.EventQueue;
+import java.net.URI;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletionStage;
@@ -36,6 +37,7 @@ import org.praxislive.core.ComponentInfo;
 import org.praxislive.core.Connection;
 import org.praxislive.core.ControlAddress;
 import org.praxislive.core.PortAddress;
+import org.praxislive.core.Value;
 import org.praxislive.core.types.PMap;
 
 /**
@@ -43,7 +45,33 @@ import org.praxislive.core.types.PMap;
  */
 public class PXRHelper extends AbstractHelperComponent {
 
+    private static final String ALLOWED_COMMANDS = "[array @ ~ file array map cd]";
+    private static final String EVAL_COMMAND = "eval --trap-errors --allowed-commands "
+            + ALLOWED_COMMANDS + " ";
+    private static final String ROOT_SCRIPT = EVAL_COMMAND + """
+                                                             {
+                                                             cd %1$s
+                                                             %2$s
+                                                             }
+                                                             """;
+    private static final String SUB_SCRIPT = EVAL_COMMAND + """
+                                                            {
+                                                            cd %1$s
+                                                            @ %2$s {
+                                                            %3$s
+                                                            }
+                                                            }
+                                                            """;
+
     private PXRHelper() {
+    }
+
+    CompletionStage<List<Value>> safeEval(URI workingDir, String script) {
+        return execScript(ROOT_SCRIPT.formatted(workingDir, script));
+    }
+
+    CompletionStage<List<Value>> safeContextEval(URI workingDir, ComponentAddress address, String script) {
+        return execScript(SUB_SCRIPT.formatted(workingDir, address, script));
     }
 
     CompletionStage<ComponentInfo> createComponentAndGetInfo(ComponentAddress address, ComponentType type) {
