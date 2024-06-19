@@ -106,6 +106,7 @@ import org.openide.util.lookup.ProxyLookup;
 import org.praxislive.core.Connection;
 import org.praxislive.core.Value;
 import org.praxislive.ide.code.api.SharedCodeInfo;
+import org.praxislive.ide.core.api.Task;
 import org.praxislive.ide.project.api.PraxisProject;
 import org.praxislive.ide.pxr.api.ComponentPalette;
 
@@ -182,7 +183,9 @@ public class GraphEditor extends RootEditor {
         manager.setExploredContext(rootNode, new Node[]{rootNode});
 
         lookup = new ProxyLookup(ExplorerUtils.createLookup(manager, buildActionMap()),
-                Lookups.fixed(palette.controller()));
+                Lookups.fixed(palette.controller(),
+                        new PositionTransform.CopyExport(this),
+                        new PositionTransform.ImportPaste(this)));
 
         addMenu = new MenuView.Menu(
                 palette.root(), (Node[] nodes) -> {
@@ -866,28 +869,21 @@ public class GraphEditor extends RootEditor {
     }
 
     void acceptImport(FileObject file) {
-        List<String> warnings = new ArrayList<>(1);
-        if (getActionSupport().importSubgraph(container, file, warnings, new Callback() {
-            @Override
-            public void onReturn(List<Value> args) {
-                syncGraph(true, true);
-                if (!warnings.isEmpty()) {
-                    String errors = warnings.stream().collect(Collectors.joining("\n"));
-                    DialogDisplayer.getDefault().notify(
-                            new NotifyDescriptor.Message(errors, NotifyDescriptor.WARNING_MESSAGE));
+        Task task = getActionSupport().createImportTask(container, file);
+        task.addPropertyChangeListener(e -> {
+            if (task.getState() == Task.State.ERROR) {
+                List<String> log = task.log();
+                String msg;
+                if (log.isEmpty()) {
+                    msg = "Import error";
+                } else {
+                    msg = log.stream().collect(Collectors.joining("\n"));
+                    DialogDisplayer.getDefault().notifyLater(
+                            new NotifyDescriptor.Message(msg, NotifyDescriptor.WARNING_MESSAGE));
                 }
             }
-
-            @Override
-            public void onError(List<Value> args) {
-                syncGraph(true);
-                String errors = warnings.stream().collect(Collectors.joining("\n"));
-                DialogDisplayer.getDefault().notify(
-                        new NotifyDescriptor.Message(errors, NotifyDescriptor.ERROR_MESSAGE));
-            }
-        })) {
-            syncGraph(false);
-        }
+        });
+        task.execute();
     }
 
     private String getFreeID(ComponentType type) {

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2020 Neil C Smith.
+ * Copyright 2024 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -30,18 +30,20 @@ import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
+import java.io.UncheckedIOException;
+import java.net.URI;
 import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
-import javax.swing.SwingUtilities;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
+import java.util.concurrent.CompletionStage;
 import org.praxislive.core.ComponentAddress;
-import org.praxislive.ide.core.api.Callback;
 import org.praxislive.ide.core.api.Task;
 import org.praxislive.ide.model.ContainerProxy;
 import org.praxislive.ide.core.api.AbstractTask;
-import org.praxislive.ide.core.api.SerialTasks;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
@@ -50,7 +52,12 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
+import org.praxislive.ide.core.api.CallExecutionException;
+import org.praxislive.ide.pxr.spi.ModelTransform;
 import org.praxislive.ide.pxr.wizard.PXGExportWizard;
+import org.praxislive.project.GraphElement;
+import org.praxislive.project.GraphModel;
+import org.praxislive.project.ParseException;
 
 /**
  *
@@ -65,79 +72,166 @@ public class ActionBridge {
         // non instantiable
     }
 
-    @Deprecated
-    public void copyToClipboard(ContainerProxy container, Set<String> children) {
-        StringBuilder sb = new StringBuilder();
-        try {
-            PXRWriter.writeSubGraph((PXRContainerProxy) container, children, sb);
-            SubGraphTransferable tf = new SubGraphTransferable(sb.toString());
-            getClipboard().setContents(tf, tf);
-        } catch (Exception ex) {
-            Exceptions.printStackTrace(ex);
-        }
-    }
-
+    @SuppressWarnings("deprecation")
     public Task createCopyTask(ContainerProxy container,
             Set<String> children,
-            Runnable preWriteTask, Runnable postWriteTask) {
+            ModelTransform.Copy copyTransform) {
+        return createCopyTask(container, children, null, copyTransform, null);
+    }
+
+    @Deprecated
+    public Task createCopyTask(ContainerProxy container,
+            Set<String> children,
+            Runnable preWriteTask,
+            ModelTransform.Copy copyTransform,
+            Runnable postWriteTask) {
         SubGraphTransferable empty = new SubGraphTransferable("");
         getClipboard().setContents(empty, empty);
-        SyncTask sync = new SyncTask(
-                children.stream()
-                        .map(container::getChild)
-                        .filter(cmp -> cmp != null)
-                        .collect(Collectors.toSet()), 250);
-        WriteClipboardTask write
-                = new WriteClipboardTask(container, children, preWriteTask, postWriteTask);
-        return new SerialTasks(sync, write);
+        return new CopyTask(Objects.requireNonNull(container),
+                Objects.requireNonNull(children),
+                preWriteTask,
+                copyTransform,
+                postWriteTask);
     }
 
+    public Task createPasteTask(ContainerProxy container, ModelTransform.Paste pasteTransform) {
+        return new PasteTask(Objects.requireNonNull(container), pasteTransform);
+    }
+
+    @SuppressWarnings("deprecation")
     public Task createExportTask(ContainerProxy container,
             Set<String> children,
-            Runnable preWriteTask, Runnable postWriteTask) {
-        SyncTask sync = new SyncTask(
-                children.stream()
-                        .map(container::getChild)
-                        .filter(cmp -> cmp != null)
-                        .collect(Collectors.toSet()), 250);
-        ExportTask write
-                = new ExportTask(container, children, preWriteTask, postWriteTask);
-        return new SerialTasks(sync, write);
+            ModelTransform.Export exportTransform) {
+        return createExportTask(container, children, null, exportTransform, null);
     }
 
-    private static class WriteClipboardTask extends AbstractTask {
+    @Deprecated
+    public Task createExportTask(ContainerProxy container,
+            Set<String> children,
+            Runnable preWriteTask,
+            ModelTransform.Export exportTransform,
+            Runnable postWriteTask) {
+        return new ExportTask(Objects.requireNonNull(container),
+                Objects.requireNonNull(children),
+                preWriteTask,
+                exportTransform,
+                postWriteTask);
+    }
+
+    public Task createImportTask(ContainerProxy container,
+            FileObject file,
+            ModelTransform.Import importTransform) {
+        return new ImportTask(Objects.requireNonNull(container),
+                Objects.requireNonNull(file),
+                importTransform);
+    }
+
+    private static class CopyTask extends AbstractTask {
 
         private final ContainerProxy container;
         private final Set<String> children;
         private final Runnable preWriteTask;
+        private final ModelTransform.Copy copyTransform;
         private final Runnable postWriteTask;
 
-        WriteClipboardTask(ContainerProxy container,
+        CopyTask(ContainerProxy container,
                 Set<String> children,
                 Runnable preWriteTask,
+                ModelTransform.Copy copyTransform,
                 Runnable postWriteTask) {
             this.container = container;
             this.children = children;
             this.preWriteTask = preWriteTask;
+            this.copyTransform = copyTransform == null ? m -> m : copyTransform;
             this.postWriteTask = postWriteTask;
         }
 
         @Override
         protected void handleExecute() throws Exception {
-            try {
-                if (preWriteTask != null) {
-                    preWriteTask.run();
-                }
-                StringBuilder sb = new StringBuilder();
-                PXRWriter.writeSubGraph((PXRContainerProxy) container, children, sb);
-                SubGraphTransferable tf = new SubGraphTransferable(sb.toString());
-                getClipboard().setContents(tf, tf);
-            } finally {
-                if (postWriteTask != null) {
-                    postWriteTask.run();
-                }
+            if (preWriteTask != null) {
+                preWriteTask.run();
             }
-            updateState(State.COMPLETED);
+            PXRHelper helper = findRootProxy(container).getHelper();
+            CompletionStage<GraphModel> modelStage;
+            if (children.size() == 1) {
+                String childID = children.iterator().next();
+                modelStage = helper.componentData(ComponentAddress.of(
+                        container.getAddress(), childID))
+                        .thenApply(data -> GraphModel.fromSerializedComponent(childID, data));
+            } else {
+                modelStage = helper.componentData(container.getAddress())
+                        .thenApply(data -> GraphModel.fromSerializedSubgraph(data, children::contains));
+            }
+            modelStage.thenApply(copyTransform)
+                    .thenAccept(model -> {
+                        SubGraphTransferable trans = new SubGraphTransferable(model.writeToString());
+                        getClipboard().setContents(trans, trans);
+                    })
+                    .whenComplete((r, ex) -> {
+                        if (ex != null) {
+                            Exceptions.printStackTrace(ex);
+                            updateState(State.ERROR);
+                        } else {
+                            updateState(State.COMPLETED);
+                        }
+                        if (postWriteTask != null) {
+                            postWriteTask.run();
+                        }
+                    });
+        }
+
+    }
+
+    private static class PasteTask extends AbstractTask {
+
+        private final ContainerProxy container;
+        private final ModelTransform.Paste pasteTransform;
+        private List<String> log;
+
+        PasteTask(ContainerProxy container, ModelTransform.Paste pasteTransform) {
+            this.container = container;
+            this.pasteTransform = pasteTransform == null ? m -> m : pasteTransform;
+            this.log = List.of();
+        }
+
+        @Override
+        protected void handleExecute() throws Exception {
+            Clipboard clipboard = getClipboard();
+            PXRRootProxy root = findRootProxy(container);
+            PXRHelper helper = root.getHelper();
+            URI projectDir = root.getProject().getProjectDirectory().toURI();
+            if (clipboard.isDataFlavorAvailable(DataFlavor.stringFlavor)) {
+                String script = (String) clipboard.getData(DataFlavor.stringFlavor);
+                if (script.strip().isEmpty()) {
+                    updateState(State.COMPLETED);
+                    return;
+                }
+                GraphModel model = GraphModel.parseSubgraph(projectDir, script);
+                model = ImportRenameSupport.prepareForPaste(container, model);
+                if (model == null) {
+                    updateState(State.CANCELLED);
+                    return;
+                }
+                model = pasteTransform.apply(model);
+                helper.safeContextEval(projectDir, container.getAddress(),
+                        model.writeToString())
+                        .whenComplete((r, ex) -> {
+                            if (ex != null) {
+                                log = handleException(ex);
+                                updateState(State.ERROR);
+                            } else {
+                                updateState(State.COMPLETED);
+                            }
+                        });
+            } else {
+                updateState(State.ERROR);
+            }
+
+        }
+
+        @Override
+        public List<String> log() {
+            return log;
         }
 
     }
@@ -147,15 +241,18 @@ public class ActionBridge {
         private final ContainerProxy container;
         private final Set<String> children;
         private final Runnable preWriteTask;
+        private final ModelTransform.Export exportTransform;
         private final Runnable postWriteTask;
 
         ExportTask(ContainerProxy container,
                 Set<String> children,
                 Runnable preWriteTask,
+                ModelTransform.Export exportTransform,
                 Runnable postWriteTask) {
             this.container = container;
             this.children = children;
             this.preWriteTask = preWriteTask;
+            this.exportTransform = exportTransform == null ? m -> m : exportTransform;
             this.postWriteTask = postWriteTask;
         }
 
@@ -164,19 +261,35 @@ public class ActionBridge {
             if (preWriteTask != null) {
                 preWriteTask.run();
             }
-            StringBuilder sb = new StringBuilder();
-            PXRWriter.writeSubGraph((PXRContainerProxy) container, children, sb);
+            PXRHelper helper = findRootProxy(container).getHelper();
+            CompletionStage<GraphModel> modelStage;
+            if (children.size() == 1) {
+                String childID = children.iterator().next();
+                modelStage = helper.componentData(ComponentAddress.of(
+                        container.getAddress(), childID))
+                        .thenApply(data -> GraphModel.fromSerializedComponent(childID, data));
+            } else {
+                modelStage = helper.componentData(container.getAddress())
+                        .thenApply(data -> GraphModel.fromSerializedSubgraph(data, children::contains));
+            }
+            modelStage.thenApply(exportTransform)
+                    .thenAccept(model -> handleSave(model.writeToString()))
+                    .exceptionally(ex -> {
+                        updateState(State.ERROR);
+                        return null;
+                    });
+        }
 
-            if (postWriteTask != null) {
-                postWriteTask.run();
+        private void handleSave(String export) {
+            PXGExportWizard wizard = new PXGExportWizard();
+            try {
+                GraphElement.Root root = GraphModel.parseSubgraph(export).root();
+                wizard.setSuggestedFileName(findSuggestedName(root));
+                wizard.setSuggestedPaletteCategory(findPaletteCategory(root));
+            } catch (ParseException ex) {
+                throw new RuntimeException(ex);
             }
 
-            String export = sb.toString();
-            PXGExportWizard wizard = new PXGExportWizard();
-            PXRParser.RootElement root = PXRParser.parseInContext(container.getAddress(), export);
-            wizard.setSuggestedFileName(findSuggestedName(root));
-            wizard.setSuggestedPaletteCategory(findPaletteCategory(root));
-            
             if (wizard.display() != WizardDescriptor.FINISH_OPTION) {
                 updateState(State.CANCELLED);
                 return;
@@ -190,15 +303,21 @@ public class ActionBridge {
                     EventQueue.invokeLater(() -> {
                         DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message("File already exists.", NotifyDescriptor.ERROR_MESSAGE));
                         updateState(State.ERROR);
+                        if (postWriteTask != null) {
+                            postWriteTask.run();
+                        }
                     });
                 } else {
                     try {
-                        Files.write(file.toPath(), export.getBytes(StandardCharsets.UTF_8));
+                        Files.writeString(file.toPath(), export, StandardOpenOption.CREATE_NEW);
                         FileUtil.toFileObject(file.getParentFile()).refresh();
                     } catch (IOException ex) {
                         Exceptions.printStackTrace(ex);
                         EventQueue.invokeLater(() -> {
                             updateState(State.ERROR);
+                            if (postWriteTask != null) {
+                                postWriteTask.run();
+                            }
                         });
                         return;
                     }
@@ -213,36 +332,41 @@ public class ActionBridge {
                         Exceptions.printStackTrace(ex);
                         EventQueue.invokeLater(() -> {
                             updateState(State.ERROR);
+                            if (postWriteTask != null) {
+                                postWriteTask.run();
+                            }
                         });
                         return;
                     }
 
                     EventQueue.invokeLater(() -> {
                         updateState(State.COMPLETED);
+                        if (postWriteTask != null) {
+                            postWriteTask.run();
+                        }
                     });
 
                 }
 
             });
-
         }
 
-        private String findSuggestedName(PXRParser.RootElement root) {
-            if (root.children.length == 1) {
-                return root.children[0].address.componentID();
+        private String findSuggestedName(GraphElement.Root root) {
+            if (root.children().size() == 1) {
+                return root.children().firstEntry().getKey();
             } else {
                 return "";
             }
         }
 
-        private String findPaletteCategory(PXRParser.RootElement root) {
+        private String findPaletteCategory(GraphElement.Root root) {
             String ret = "core:custom";
-            for (PXRParser.ComponentElement cmp : root.children) {
-                if (cmp.children.length > 0) {
+            for (GraphElement.Component cmp : root.children().sequencedValues()) {
+                if (!cmp.children().isEmpty()) {
                     // container ??
                     return "";
                 }
-                String type = cmp.type.toString();
+                String type = cmp.type().toString();
                 if (type.startsWith("video:gl:")) {
                     // short circuit for GL
                     return "video:gl:custom";
@@ -256,25 +380,63 @@ public class ActionBridge {
 
     }
 
-    public boolean pasteFromClipboard(ContainerProxy container, Callback callback) {
-        Clipboard c = getClipboard();
-        if (c.isDataFlavorAvailable(DataFlavor.stringFlavor)) {
-            try {
-                String script = (String) c.getData(DataFlavor.stringFlavor);
-                if (script.trim().isEmpty()) {
-                    return false;
-                }
-                PXRParser.RootElement fakeRoot = PXRParser.parseInContext(container.getAddress(), script);
-                if (ImportRenameSupport.prepareForPaste(container, fakeRoot)) {
-                    PXRBuilder builder = new PXRBuilder(findRootProxy(container), fakeRoot, null);
-                    builder.process(callback);
-                    return true;
-                }
-            } catch (Exception ex) {
-                Exceptions.printStackTrace(ex);
-            }
+    private static class ImportTask extends AbstractTask {
+
+        private final ContainerProxy container;
+        private final FileObject file;
+        private final ModelTransform.Import importTransform;
+        private List<String> log;
+
+        ImportTask(ContainerProxy container, FileObject file, ModelTransform.Import importTransform) {
+            this.container = container;
+            this.file = file;
+            this.importTransform = importTransform == null ? m -> m : importTransform;
+            log = List.of();
         }
-        return false;
+
+        @Override
+        protected void handleExecute() throws Exception {
+            PXRRootProxy root = findRootProxy(container);
+            PXRHelper helper = root.getHelper();
+            URI projectDir = root.getProject().getProjectDirectory().toURI();
+
+            CompletableFuture
+                    .supplyAsync(() -> {
+                        try {
+                            return file.asText();
+                        } catch (IOException ex) {
+                            throw new UncheckedIOException(ex);
+                        }
+                    }, RP)
+                    .thenComposeAsync(script -> {
+                        try {
+                            GraphModel model = GraphModel.parseSubgraph(projectDir, script);
+                            model = ImportRenameSupport.prepareForImport(container, model);
+                            if (model == null) {
+                                updateState(State.CANCELLED);
+                                return CompletableFuture.completedStage(null);
+                            }
+                            model = importTransform.apply(model);
+                            return helper.safeContextEval(projectDir,
+                                    container.getAddress(), model.writeToString());
+                        } catch (ParseException pex) {
+                            throw new RuntimeException(pex);
+                        }
+                    }, EventQueue::invokeLater)
+                    .whenCompleteAsync((r, ex) -> {
+                        if (ex != null) {
+                            log = handleException(ex);
+                            updateState(State.ERROR);
+                        } else if (getState() == Task.State.RUNNING) {
+                            updateState(State.COMPLETED);
+                        }
+                    }, EventQueue::invokeLater);
+        }
+
+        @Override
+        public List<String> log() {
+            return log;
+        }
     }
 
     private static Clipboard getClipboard() {
@@ -285,56 +447,25 @@ public class ActionBridge {
         return c;
     }
 
-    public boolean importSubgraph(final ContainerProxy container,
-            final FileObject file,
-            final List<String> warnings,
-            final Callback callback) {
-        if (!file.hasExt("pxg")) {
-            return false;
-        }
-        final ComponentAddress context = container.getAddress();
-        RP.execute(new Runnable() {
-            @Override
-            public void run() {
-                PXRParser.RootElement r = null;
-                try {
-                    r = PXRParser.parseInContext(context, file.asText());
-                } catch (Exception ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-                final PXRParser.RootElement root = r;
-                SwingUtilities.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            if (root != null) {
-                                if (ImportRenameSupport.prepareForImport(container, root)) {
-                                    PXRBuilder builder = new PXRBuilder(findRootProxy(container), root, warnings);
-                                    builder.process(callback);
-                                } else {
-                                    callback.onReturn(List.of());
-                                }
-                            } else {
-                                callback.onError(List.of());
-                            }
-                        } catch (Exception ex) {
-                            Exceptions.printStackTrace(ex);
-                        }
-                    }
-                });
-            }
-        });
-        return true;
-    }
-
-    private PXRRootProxy findRootProxy(ContainerProxy container) {
+    private static PXRRootProxy findRootProxy(ContainerProxy container) {
         while (container != null) {
-            if (container instanceof PXRRootProxy) {
-                return (PXRRootProxy) container;
+            if (container instanceof PXRRootProxy root) {
+                return root;
             }
             container = container.getParent();
         }
         throw new IllegalStateException("No root proxy found");
+    }
+
+    private static List<String> handleException(Throwable ex) {
+        if (ex instanceof CompletionException ce) {
+            return handleException(ce.getCause());
+        }
+        if (ex instanceof CallExecutionException err) {
+            return err.error().message().lines().toList();
+        } else {
+            return List.of(ex.toString());
+        }
     }
 
     public static ActionBridge getDefault() {

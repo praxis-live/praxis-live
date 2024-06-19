@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2020 Neil C Smith.
+ * Copyright 2024 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -24,8 +24,6 @@ package org.praxislive.ide.pxr.graph;
 import java.awt.EventQueue;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -45,19 +43,14 @@ import org.openide.nodes.Node;
 class CopyActionPerformer extends AbstractAction {
     
     private final static Logger LOG = Logger.getLogger(CopyActionPerformer.class.getName());
-    private GraphEditor editor;
-    private ExplorerManager em;
+    private final GraphEditor editor;
+    private final ExplorerManager em;
     
     CopyActionPerformer(GraphEditor editor, ExplorerManager em) {
         super("Copy");
         this.editor = editor;
         this.em = em;
-        em.addPropertyChangeListener(new PropertyChangeListener() {
-            @Override
-            public void propertyChange(PropertyChangeEvent evt) {
-                refresh();
-            }
-        });
+        em.addPropertyChangeListener(e -> refresh());
         refresh();
     }
     
@@ -78,9 +71,7 @@ class CopyActionPerformer extends AbstractAction {
                 .collect(Collectors.toSet());
         Task copyTask = editor.getActionSupport().createCopyTask(
                 container,
-                childIDs,
-                () -> Utils.offsetComponents(cmps, offset, false),
-                () -> Utils.offsetComponents(cmps, offset, true)
+                childIDs
         );
         copyTask.execute();
     }

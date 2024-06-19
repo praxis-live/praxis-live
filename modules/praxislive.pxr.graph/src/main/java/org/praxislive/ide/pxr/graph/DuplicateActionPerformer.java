@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2020 Neil C Smith.
+ * Copyright 2024 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -22,14 +22,10 @@
 package org.praxislive.ide.pxr.graph;
 
 import java.awt.EventQueue;
-import java.awt.Point;
 import java.awt.event.ActionEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import org.praxislive.ide.core.api.Callback;
@@ -42,6 +38,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.Node;
 import org.praxislive.core.Value;
+import org.praxislive.ide.core.api.SerialTasks;
 
 /**
  *
@@ -56,12 +53,7 @@ class DuplicateActionPerformer extends AbstractAction implements Callback {
         super("Duplicate");
         this.editor = editor;
         this.em = em;
-        em.addPropertyChangeListener(new PropertyChangeListener() {
-            @Override
-            public void propertyChange(PropertyChangeEvent evt) {
-                refresh();
-            }
-        });
+        em.addPropertyChangeListener(e -> refresh());
         refresh();
     }
     
@@ -75,21 +67,14 @@ class DuplicateActionPerformer extends AbstractAction implements Callback {
             LOG.finest("No container found");
             return;
         }
-        Point offset = Utils.findOffset(cmps);
-        LOG.log(Level.FINEST, "Found offset : {0}", offset);
         Set<String> childIDs = cmps.stream()
                 .map(cmp -> cmp.getAddress().componentID())
                 .collect(Collectors.toSet());
-        Task copyTask = editor.getActionSupport().createCopyTask(
-                container,
-                childIDs,
-                () -> Utils.offsetComponents(cmps, offset, false),
-                () -> {
-                    Utils.offsetComponents(cmps, offset, true);
-                    initiatePaste();
-                }
+        Task task = new SerialTasks(
+                editor.getActionSupport().createCopyTask(container, childIDs),
+                editor.getActionSupport().createPasteTask(container)
         );
-        copyTask.execute();
+        task.execute();
     }
     
     private void refresh() {
@@ -122,14 +107,6 @@ class DuplicateActionPerformer extends AbstractAction implements Callback {
             }
         }
         return parent;
-    }
-    
-    private void initiatePaste() {
-        EventQueue.invokeLater(() -> {
-            if (editor.getActionSupport().pasteFromClipboard(editor.getContainer(), this)) {
-                editor.syncGraph(false);
-            }
-        });
     }
     
     @Override
