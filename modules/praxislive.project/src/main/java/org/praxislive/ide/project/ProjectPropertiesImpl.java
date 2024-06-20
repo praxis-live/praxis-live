@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2020 Neil C Smith.
+ * Copyright 2024 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -302,9 +302,9 @@ public class ProjectPropertiesImpl implements ProjectProperties {
                 var helper = project.getLookup().lookup(ProjectHelper.class);
                 if (helper != null) {
                     for (var lib : working) {
-                        var script = "set _PWD " + project.getProjectDirectory().toURI()
+                        var script = "cd " + project.getProjectDirectory().toURI()
                                 + "\n" + librariesHandler.librariesScript(List.of(lib));
-                        helper.executeScript(script, Callback.create(r -> {
+                        helper.execScript(script, Callback.create(r -> {
                             if (r.isError()) {
                                 libraries.remove(lib);
                                 var msg = Bundle.ERR_addLibraryError(lib);
@@ -397,7 +397,7 @@ public class ProjectPropertiesImpl implements ProjectProperties {
         @Override
         public void process(Callback callback) throws Exception {
             project.getLookup().lookup(ProjectHelper.class)
-                    .executeScript("hub {\n" + hubConfiguration + "\n}",
+                    .execScript("hub {\n" + hubConfiguration + "\n}",
                             callback);
         }
 
@@ -443,7 +443,7 @@ public class ProjectPropertiesImpl implements ProjectProperties {
         @Override
         public void process(Callback callback) throws Exception {
             String script = compilerScript(getJavaRelease());
-            project.getLookup().lookup(ProjectHelper.class).executeScript(script, callback);
+            project.getLookup().lookup(ProjectHelper.class).execScript(script, callback);
         }
 
         @Override
@@ -492,9 +492,9 @@ public class ProjectPropertiesImpl implements ProjectProperties {
 
         @Override
         public void process(Callback callback) throws Exception {
-            String script = "set _PWD " + project.getProjectDirectory().toURI()
+            String script = "cd " + project.getProjectDirectory().toURI()
                     + "\n" + librariesScript(libraries);
-            project.getLookup().lookup(ProjectHelper.class).executeScript(script, callback);
+            project.getLookup().lookup(ProjectHelper.class).execScript(script, callback);
         }
 
         @Override
