@@ -184,7 +184,7 @@ public class PXRDataObject extends MultiDataObject {
         RP.execute(() -> {
             try {
                 String script = file.asText();
-                GraphModel model = GraphModel.parse(script);
+                GraphModel model = GraphModel.parse(file.getParent().toURI(), script);
                 ComponentType modelType = model.root().type();
                 SwingUtilities.invokeLater(() -> {
                     setType(modelType);
