@@ -28,6 +28,8 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -76,6 +78,8 @@ import org.praxislive.ide.core.api.Task;
 import org.praxislive.ide.project.api.ExecutionElement;
 import org.praxislive.ide.project.spi.ElementHandler;
 import org.praxislive.ide.project.spi.LineHandler;
+import org.praxislive.project.ProjectElement;
+import org.praxislive.project.ProjectModel;
 
 /**
  *
@@ -154,7 +158,23 @@ public class DefaultPraxisProject implements PraxisProject {
     private ProjectPropertiesImpl parseProjectFile(FileObject projectFile) {
         ProjectPropertiesImpl props = new ProjectPropertiesImpl(this);
         try {
-            PXPReader.initializeProjectProperties(directory, projectFile, props);
+            ProjectModel model = ProjectModel.parse(directory.toURI(), projectFile.asText());
+            List<ExecutionElement> config = model.setupElements().stream()
+                    .map(this::fromModelElement)
+                    .filter(e -> e != null)
+                    .toList();
+            List<ExecutionElement> build = model.buildElements().stream()
+                    .map(this::fromModelElement)
+                    .filter(e -> e != null)
+                    .toList();
+            List<ExecutionElement> run = model.runElements().stream()
+                    .map(this::fromModelElement)
+                    .filter(e -> e != null)
+                    .toList();
+            props.initElements(Map.of(
+                    ExecutionLevel.CONFIGURE, config,
+                    ExecutionLevel.BUILD, build,
+                    ExecutionLevel.RUN, run));
         } catch (Exception ex) {
             Exceptions.printStackTrace(ex);
         }
@@ -172,7 +192,17 @@ public class DefaultPraxisProject implements PraxisProject {
     }
 
     public void save() throws IOException {
-        PXPWriter.writeProjectProperties(directory, projectFile, properties);
+        ProjectModel.Builder builder = ProjectModel.builder();
+        builder.context(directory.toURI());
+        Map<ExecutionLevel, List<ExecutionEntry>> elements = properties.elements();
+        elements.get(ExecutionLevel.CONFIGURE)
+                .forEach(e -> builder.setupElement(toModelElement(e)));
+        elements.get(ExecutionLevel.BUILD)
+                .forEach(e -> builder.buildElement(toModelElement(e)));
+        elements.get(ExecutionLevel.RUN)
+                .forEach(e -> builder.runElement(toModelElement(e)));
+        String script = builder.build().writeToString();
+        Files.writeString(FileUtil.toPath(projectFile), script);
     }
 
     public boolean isActive() {
@@ -302,6 +332,34 @@ public class DefaultPraxisProject implements PraxisProject {
             Exceptions.printStackTrace(ex);
         }
         return null;
+    }
+
+    private ExecutionElement fromModelElement(ProjectElement element) {
+        try {
+            if (element instanceof ProjectElement.File fileElement) {
+                return ExecutionElement.forFile(FileUtil.toFileObject(Path.of(fileElement.file())));
+            } else if (element instanceof ProjectElement.Line lineElement) {
+                return ExecutionElement.forLine(lineElement.line());
+            }
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return null;
+    }
+
+    private ProjectElement toModelElement(ExecutionEntry entry) {
+        ExecutionElement element = entry.element();
+        ElementHandler handler = entry.handler();
+        if (element instanceof ExecutionElement.File fileElement) {
+            return ProjectElement.file(fileElement.file().toURI());
+        } else if (element instanceof ExecutionElement.Line lineElement) {
+            String line = lineElement.line();
+            if (handler instanceof LineHandler lineHandler) {
+                line = lineHandler.rewrite(line);
+            }
+            return ProjectElement.line(line);
+        }
+        throw new IllegalArgumentException();
     }
 
     private class ClassPathImpl implements ClassPathProvider {
@@ -554,13 +612,12 @@ public class DefaultPraxisProject implements PraxisProject {
                 message += "\n\n";
                 message += extra;
             }
-            String title = level == ExecutionLevel.RUN ?
-                    Bundle.ERR_elementContinueRun() :
-                    Bundle.ERR_elementContinueBuild();
+            String title = level == ExecutionLevel.RUN
+                    ? Bundle.ERR_elementContinueRun()
+                    : Bundle.ERR_elementContinueBuild();
             return ProjectDialogManager.get(DefaultPraxisProject.this)
                     .confirmOnError(title, message);
         }
 
     }
 }
- 
