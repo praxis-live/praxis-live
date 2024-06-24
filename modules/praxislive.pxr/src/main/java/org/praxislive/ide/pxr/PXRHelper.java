@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2020 Neil C Smith.
+ * Copyright 2024 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -21,128 +21,121 @@
  */
 package org.praxislive.ide.pxr;
 
+import java.awt.EventQueue;
+import java.net.URI;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletionStage;
 import org.praxislive.core.Component;
 import org.praxislive.core.ComponentAddress;
 import org.praxislive.core.ComponentType;
-import org.praxislive.core.ControlAddress;
-import org.praxislive.core.protocols.ComponentProtocol;
-import org.praxislive.core.protocols.ContainerProtocol;
-import org.praxislive.core.services.RootManagerService;
-import org.praxislive.core.types.PString;
-import org.praxislive.ide.core.api.Callback;
 import org.praxislive.ide.core.spi.ExtensionProvider;
-import org.praxislive.ide.model.Connection;
-import org.praxislive.ide.model.ProxyException;
 import org.praxislive.ide.core.api.AbstractHelperComponent;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.ServiceProvider;
+import org.praxislive.core.ComponentInfo;
+import org.praxislive.core.Connection;
+import org.praxislive.core.ControlAddress;
+import org.praxislive.core.PortAddress;
 import org.praxislive.core.Value;
-import org.praxislive.core.types.PError;
+import org.praxislive.core.types.PMap;
 
 /**
  *
  */
 public class PXRHelper extends AbstractHelperComponent {
 
+    private static final String ALLOWED_COMMANDS = "[array @ ~ file array map cd]";
+    private static final String EVAL_COMMAND = "eval --trap-errors --allowed-commands "
+            + ALLOWED_COMMANDS + " ";
+    private static final String ROOT_SCRIPT = EVAL_COMMAND + """
+                                                             {
+                                                             cd %1$s
+                                                             %2$s
+                                                             }
+                                                             """;
+    private static final String SUB_SCRIPT = EVAL_COMMAND + """
+                                                            {
+                                                            cd %1$s
+                                                            @ %2$s {
+                                                            %3$s
+                                                            }
+                                                            }
+                                                            """;
+
     private PXRHelper() {
     }
 
-    void createComponentAndGetInfo(ComponentAddress address, ComponentType type,
-            Callback callback) {
-        try {
-            if (address.depth() == 1) {
-                String id = address.rootID();
-                send(RootManagerService.class, RootManagerService.ADD_ROOT,
-                        List.of(PString.of(id), type),
-                        new GetInfoCallback(address, callback));
-            } else {
-                String id = address.componentID();
-                send(ControlAddress.of(address.parent(), ContainerProtocol.ADD_CHILD),
-                        List.of(PString.of(id), type),
-                        new GetInfoCallback(address, callback));
-            }
-        } catch (Exception ex) {
-            callback.onError(List.of(PError.of(ex)));
-        }
-
+    CompletionStage<List<Value>> safeEval(URI workingDir, String script) {
+        return execScript(ROOT_SCRIPT.formatted(workingDir, script));
     }
 
-    void removeComponent(ComponentAddress address, Callback callback) {
-        try {
-            if (address.depth() == 1) {
-                String id = address.rootID();
-                send(RootManagerService.class, RootManagerService.REMOVE_ROOT,
-                        List.of(PString.of(id)),
-                        callback);
-            } else {
-                String id = address.componentID();
-                send(ControlAddress.of(address.parent(), ContainerProtocol.REMOVE_CHILD),
-                        List.of(PString.of(id)),
-                        callback);
-            }
-        } catch (Exception ex) {
-            callback.onError(List.of(PError.of(ex)));
-        }
+    CompletionStage<List<Value>> safeContextEval(URI workingDir, ComponentAddress address, String script) {
+        return execScript(SUB_SCRIPT.formatted(workingDir, address, script));
     }
 
-    void connect(ComponentAddress container,
+    CompletionStage<ComponentInfo> createComponentAndGetInfo(ComponentAddress address, ComponentType type) {
+        return execScript("@ " + address + " " + type + " { .info }")
+                .thenApply(result -> {
+                    assert EventQueue.isDispatchThread();
+                    return ComponentInfo.from(result.get(0)).orElseThrow();
+                });
+    }
+
+    CompletionStage<ComponentAddress> createComponent(ComponentAddress address, ComponentType type) {
+        return execScript("@ " + address + " " + type)
+                .thenApply(result -> address);
+    }
+
+    CompletionStage<PMap> componentData(ComponentAddress address) {
+        String script;
+        if (address.depth() == 1) {
+            script = address + ".serialize";
+        } else {
+            script = "/" + address.rootID() + ".serialize [map subtree " + address + "]";
+        }
+        return execScript(script)
+                .thenApply(r -> PMap.from(r.get(0)).orElseThrow());
+    }
+
+    CompletionStage<ComponentInfo> componentInfo(ComponentAddress address) {
+        return send(ControlAddress.of(address, "info"), List.of())
+                .thenApply(res -> ComponentInfo.from(res.get(0)).orElseThrow());
+    }
+
+    CompletionStage<?> removeComponent(ComponentAddress address) {
+        return execScript("!@ " + address);
+    }
+
+    CompletionStage<Connection> connect(ComponentAddress container,
+            Connection connection) {
+        return connectionImpl(container, connection, true);
+    }
+
+    CompletionStage<Connection> disconnect(ComponentAddress container,
+            Connection connection) {
+        return connectionImpl(container, connection, false);
+    }
+
+    private CompletionStage<Connection> connectionImpl(ComponentAddress container,
             Connection connection,
-             Callback callback) {
-        connectionImpl(container, connection, true, callback);
-    }
-
-    void disconnect(ComponentAddress container,
-            Connection connection,
-             Callback callback) {
-        connectionImpl(container, connection, false, callback);
-    }
-
-    private void connectionImpl(ComponentAddress container,
-            Connection connection,
-            boolean connect, Callback callback) {
-        try {
-            PString c1ID = PString.of(connection.getChild1());
-            PString p1ID = PString.of(connection.getPort1());
-            PString c2ID = PString.of(connection.getChild2());
-            PString p2ID = PString.of(connection.getPort2());
-
-            send(ControlAddress.of(container,
-                    connect ? ContainerProtocol.CONNECT : ContainerProtocol.DISCONNECT),
-                    List.of(c1ID, p1ID, c2ID, p2ID),
-                    callback);
-        } catch (Exception ex) {
-            callback.onError(List.of(PError.of(ex)));
+            boolean connect) {
+        PortAddress source = PortAddress.of(
+                ComponentAddress.of(container, connection.sourceComponent()),
+                connection.sourcePort());
+        PortAddress target = PortAddress.of(
+                ComponentAddress.of(container, connection.targetComponent()),
+                connection.targetPort());
+        String script;
+        if (connect) {
+            script = "~ " + source + " " + target;
+        } else {
+            script = "!~ " + source + " " + target;
         }
-    }
-
-    private class GetInfoCallback implements Callback {
-
-        private final ComponentAddress address;
-        private final Callback infoCallback;
-
-        private GetInfoCallback(ComponentAddress address, Callback infoCallback) {
-            this.address = address;
-            this.infoCallback = infoCallback;
-        }
-
-        @Override
-        public void onReturn(List<Value> args) {
-            ControlAddress to = ControlAddress.of(address, ComponentProtocol.INFO);
-            try {
-                send(to, List.of(), infoCallback);
-            } catch (Exception ex) {
-                Exceptions.printStackTrace(ex);
-                onError(List.of(PError.of(ex)));
-            }
-        }
-
-        @Override
-        public void onError(List<Value> args) {
-            infoCallback.onError(args);
-        }
+        return execScript(script).thenApply(v -> {
+            assert EventQueue.isDispatchThread();
+            return connection;
+        });
     }
 
     @ServiceProvider(service = ExtensionProvider.class)

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2020 Neil C Smith.
+ * Copyright 2024 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -46,7 +46,7 @@ class DefaultLineHandler implements LineHandler {
     @Override
     public void process(Callback callback) throws Exception {
         var script = "set _PWD " + project.getProjectDirectory().toURI() + "\n" + line;
-        project.getLookup().lookup(ProjectHelper.class).executeScript(script, callback);
+        project.getLookup().lookup(ProjectHelper.class).execScript(script, callback);
     }
 
 }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2020 Neil C Smith.
+ * Copyright 2024 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -52,9 +52,9 @@ import org.openide.util.RequestProcessor;
 import org.openide.windows.CloneableTopComponent;
 import org.praxislive.core.ComponentAddress;
 import org.praxislive.ide.components.api.Icons;
-import org.praxislive.ide.core.api.Callback;
 import org.praxislive.ide.project.api.ExecutionLevel;
 import org.praxislive.ide.project.api.ProjectProperties;
+import org.praxislive.project.GraphModel;
 
 public class PXRDataObject extends MultiDataObject {
 
@@ -159,8 +159,7 @@ public class PXRDataObject extends MultiDataObject {
                     }
                 }
                 if (proxy != null) {
-                    proxy.getHelper().removeComponent(
-                            ComponentAddress.of("/" + id), Callback.create(r -> {}));
+                    proxy.getHelper().removeComponent(ComponentAddress.of("/" + id));
                     proxy.dispose();
                 }
             });
@@ -169,25 +168,12 @@ public class PXRDataObject extends MultiDataObject {
         super.handleDelete();
     }
 
-//    private Image findIcon(ComponentType type) {
-//        try {
-//            for (ComponentIconProvider provider : Lookup.getDefault().lookupAll(ComponentIconProvider.class)) {
-//                Image img = provider.getIcon(type);
-//                if (img != null) {
-//                    return img;
-//                }
-//            }
-//        } catch (Exception ex) {
-//            //fall through
-//        }
-//        return null;
-//    }
     private void initType(final FileObject file) {
         Object attr = file.getAttribute(KEY_ATTR_ROOT_TYPE);
         if (attr instanceof String) {
             try {
-                ComponentType type = ComponentType.of(attr.toString());
-                setType(type);
+                ComponentType attrType = ComponentType.of(attr.toString());
+                setType(attrType);
                 return;
             } catch (Exception ex) {
                 // fall through
@@ -195,28 +181,21 @@ public class PXRDataObject extends MultiDataObject {
         }
 
         // no type attribute found
-        RP.execute(new Runnable() {
-
-            @Override
-            public void run() {
-                try {
-                    String script = file.asText();
-                    final PXRParser.RootElement root = PXRParser.parse(script);
-                    SwingUtilities.invokeLater(new Runnable() {
-
-                        @Override
-                        public void run() {
-                            setType(root.type);
-                            try {
-                                file.setAttribute(KEY_ATTR_ROOT_TYPE, root.type.toString());
-                            } catch (IOException ex) {
-                                // do nothing
-                            }
-                        }
-                    });
-                } catch (Exception ex) {
-                    Exceptions.printStackTrace(ex);
-                }
+        RP.execute(() -> {
+            try {
+                String script = file.asText();
+                GraphModel model = GraphModel.parse(file.getParent().toURI(), script);
+                ComponentType modelType = model.root().type();
+                SwingUtilities.invokeLater(() -> {
+                    setType(modelType);
+                    try {
+                        file.setAttribute(KEY_ATTR_ROOT_TYPE, modelType.toString());
+                    }catch (IOException ex) {
+                        // do nothing
+                    }
+                });
+            }catch (Exception ex) {
+                Exceptions.printStackTrace(ex);
             }
         });
 

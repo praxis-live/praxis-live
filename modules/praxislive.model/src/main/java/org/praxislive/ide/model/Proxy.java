@@ -40,14 +40,14 @@ public interface Proxy extends Lookup.Provider {
     /**
      * Add a property change listener.
      *
-     * @param listener propety change listener
+     * @param listener property change listener
      */
     public void addPropertyChangeListener(PropertyChangeListener listener);
 
     /**
      * Remove a property change listener.
      *
-     * @param listener propety change listener
+     * @param listener property change listener
      */
     public void removePropertyChangeListener(PropertyChangeListener listener);
 

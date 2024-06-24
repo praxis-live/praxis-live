@@ -22,9 +22,10 @@
 package org.praxislive.ide.model;
 
 import java.util.List;
+import java.util.concurrent.CompletionStage;
 import java.util.stream.Stream;
-import org.praxislive.ide.core.api.Callback;
 import org.praxislive.core.ComponentType;
+import org.praxislive.core.Connection;
 import org.praxislive.core.protocols.ContainerProtocol;
 
 /**
@@ -52,17 +53,17 @@ public interface ContainerProxy extends ComponentProxy {
      *
      * @param id child ID
      * @param type component type
-     * @param callback result callback
+     * @return completion stage of added child
      */
-    public void addChild(String id, ComponentType type, Callback callback);
+    public CompletionStage<? extends ComponentProxy> addChild(String id, ComponentType type);
 
     /**
      * Remove a child from the underlying container.
      *
      * @param id child ID
-     * @param callback result callback
+     * @return completion stage
      */
-    public void removeChild(String id, Callback callback);
+    public CompletionStage<?> removeChild(String id);
 
     /**
      * Get the proxy for the given child.
@@ -83,17 +84,17 @@ public interface ContainerProxy extends ComponentProxy {
      * Create a connection between two child component ports.
      *
      * @param connection connection description
-     * @param callback result callback
+     * @return completion stage of added connection
      */
-    public void connect(Connection connection, Callback callback);
+    public CompletionStage<Connection> connect(Connection connection);
 
     /**
      * Break a connection between two child component ports.
      *
      * @param connection connection description
-     * @param callback result callback
+     * @return completion stage
      */
-    public void disconnect(Connection connection, Callback callback);
+    public CompletionStage<?> disconnect(Connection connection);
 
     /**
      * Stream of connections.
@@ -103,12 +104,10 @@ public interface ContainerProxy extends ComponentProxy {
     public Stream<Connection> connections();
 
     /**
-     * List of supported child types (if available).
+     * List of supported child types.
      *
-     * @return support child types
+     * @return supported child types
      */
-    public default List<ComponentType> supportedTypes() {
-        return List.of();
-    }
+    public List<ComponentType> supportedTypes();
 
 }

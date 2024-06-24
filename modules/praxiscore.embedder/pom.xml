@@ -41,6 +41,11 @@
     </dependency>
     <dependency>
       <groupId>org.praxislive</groupId>
+      <artifactId>praxiscore-project</artifactId>
+      <version>${praxiscore.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.praxislive</groupId>
       <artifactId>praxiscore-script</artifactId>
       <version>${praxiscore.version}</version>
     </dependency>
@@ -76,6 +81,7 @@
             <publicPackage>org.praxislive.base</publicPackage>
             <publicPackage>org.praxislive.hub</publicPackage>
             <publicPackage>org.praxislive.hub.net</publicPackage>
+            <publicPackage>org.praxislive.project</publicPackage>
             <publicPackage>org.praxislive.script</publicPackage>
           </publicPackages>
         </configuration>

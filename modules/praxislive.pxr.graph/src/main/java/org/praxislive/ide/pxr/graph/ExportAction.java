@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2020 Neil C Smith.
+ * Copyright 2024 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -45,19 +45,14 @@ import org.openide.nodes.Node;
 class ExportAction extends AbstractAction {
     
     private final static Logger LOG = Logger.getLogger(ExportAction.class.getName());
-    private GraphEditor editor;
-    private ExplorerManager em;
+    private final GraphEditor editor;
+    private final ExplorerManager em;
     
     ExportAction(GraphEditor editor, ExplorerManager em) {
         super("Export ...");
         this.editor = editor;
         this.em = em;
-        em.addPropertyChangeListener(new PropertyChangeListener() {
-            @Override
-            public void propertyChange(PropertyChangeEvent evt) {
-                refresh();
-            }
-        });
+        em.addPropertyChangeListener(e -> refresh());
         refresh();
     }
     
@@ -78,9 +73,7 @@ class ExportAction extends AbstractAction {
                 .collect(Collectors.toSet());
         Task exportTask = editor.getActionSupport().createExportTask(
                 container,
-                childIDs,
-                () -> Utils.offsetComponents(cmps, offset, false),
-                () -> Utils.offsetComponents(cmps, offset, true)
+                childIDs
         );
         exportTask.execute();
     }

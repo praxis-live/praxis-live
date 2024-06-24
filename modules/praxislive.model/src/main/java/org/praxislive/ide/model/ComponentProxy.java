@@ -22,11 +22,11 @@
 package org.praxislive.ide.model;
 
 import java.util.List;
+import java.util.concurrent.CompletionStage;
 import org.praxislive.core.ComponentAddress;
 import org.praxislive.core.ComponentType;
 import org.praxislive.core.ComponentInfo;
 import org.praxislive.core.Value;
-import org.praxislive.ide.core.api.Callback;
 import org.praxislive.ide.properties.PraxisProperty;
 
 /**
@@ -80,8 +80,8 @@ public interface ComponentProxy extends Proxy {
      *
      * @param control control ID
      * @param args call arguments
-     * @param callback response callback
+     * @return completion stage for result
      */
-    public void send(String control, List<Value> args, Callback callback);
+    public CompletionStage<List<Value>> send(String control, List<Value> args);
 
 }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2020 Neil C Smith.
+ * Copyright 2024 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -31,6 +31,7 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.explorer.ExplorerManager;
 import org.praxislive.core.Value;
+import org.praxislive.ide.core.api.Task;
 
 /**
  *
@@ -38,31 +39,20 @@ import org.praxislive.core.Value;
 class PasteActionPerformer extends AbstractAction implements Callback {
 
     private final static Logger LOG = Logger.getLogger(PasteActionPerformer.class.getName());
-    private GraphEditor editor;
-    private ExplorerManager em;
+    private final GraphEditor editor;
+    private final ExplorerManager em;
 
     PasteActionPerformer(GraphEditor editor, ExplorerManager em) {
         super("Paste");
         this.editor = editor;
         this.em = em;
-//        em.addPropertyChangeListener(new PropertyChangeListener() {
-//            @Override
-//            public void propertyChange(PropertyChangeEvent evt) {
-//                refresh();
-//            }
-//        });
-//        refresh();
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
         assert EventQueue.isDispatchThread();
-        EventQueue.invokeLater(() -> {
-            if (editor.getActionSupport().pasteFromClipboard(editor.getContainer(), this)) {
-                editor.syncGraph(false);
-            }
-        });
-
+        Task task = editor.getActionSupport().createPasteTask(editor.getContainer());
+        task.execute();
     }
 
     @Override

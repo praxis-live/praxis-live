@@ -57,7 +57,8 @@ class ChildLauncherImpl implements ChildLauncher {
         var launcher = CORE.launcherFile();
         var socketFuture = new CompletableFuture<SocketAddress>();
         var desc = new ExecutionDescriptor()
-                .controllable(true)
+                .frontWindow(true)
+                .inputVisible(true)
                 .outProcessorFactory(new ExecutionDescriptor.InputProcessorFactory2() {
                     @Override
                     public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
@@ -68,7 +69,8 @@ class ChildLauncherImpl implements ChildLauncher {
                 });
         var pb = ProcessBuilder.getLocal();
         pb.setExecutable(launcher.getCanonicalPath());
-        pb.setArguments(List.of("--child", "--no-signal-handlers"));
+//        pb.setArguments(List.of("--child", "--no-signal-handlers"));
+        pb.setArguments(List.of("--port", "auto", "--interactive"));
         var env = pb.getEnvironment();
         env.setVariable("JAVA_HOME", System.getProperty("java.home"));
         env.setVariable("JAVA_OPTS", javaOptions.stream()

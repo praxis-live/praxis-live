@@ -59,7 +59,7 @@ class InputPropertyWrapper extends Node.Property<String> {
 
     @Override
     public void setValue(String val) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-        cmp.send(id, List.of(PString.of(val)), Callback.create(c -> {}));
+        cmp.send(id, List.of(PString.of(val)));
     }
 
 }

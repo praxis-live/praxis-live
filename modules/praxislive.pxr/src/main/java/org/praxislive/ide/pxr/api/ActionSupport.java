@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2020 Neil C Smith.
+ * Copyright 2024 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -22,13 +22,13 @@
 package org.praxislive.ide.pxr.api;
 
 import org.praxislive.ide.pxr.spi.RootEditor;
-import java.util.List;
 import java.util.Set;
-import org.praxislive.ide.core.api.Callback;
 import org.praxislive.ide.core.api.Task;
 import org.praxislive.ide.model.ContainerProxy;
 import org.praxislive.ide.pxr.ActionBridge;
 import org.openide.filesystems.FileObject;
+import org.praxislive.ide.pxr.spi.ModelTransform;
+
 
 /**
  *
@@ -38,7 +38,7 @@ import org.openide.filesystems.FileObject;
 public class ActionSupport {
 
     private final RootEditor editor;
-    
+
     public ActionSupport(RootEditor editor) {
         if (editor == null) {
             throw new NullPointerException();
@@ -46,42 +46,31 @@ public class ActionSupport {
         this.editor = editor;
     }
 
-    @Deprecated
-    public void copyToClipboard(ContainerProxy container, Set<String> children) {
-        ActionBridge.getDefault().copyToClipboard(container, children);
-    }
-    
     public Task createCopyTask(ContainerProxy container, Set<String> children) {
-        return createCopyTask(container, children, null, null);
+        return ActionBridge.getDefault().createCopyTask(container,
+                children,
+                editor.getLookup().lookup(ModelTransform.Copy.class));
     }
-    
-    public Task createCopyTask(ContainerProxy container,
-            Set<String> children,
-            Runnable preWriteTask, Runnable postWriteTask) {
-        return ActionBridge.getDefault().createCopyTask(container, children, preWriteTask, postWriteTask);
-    }
-    
+
+    @SuppressWarnings("deprecation")
     public Task createExportTask(ContainerProxy container, Set<String> children) {
-        return createExportTask(container, children, null, null);
+        return ActionBridge.getDefault().createExportTask(
+                container,
+                children,
+                editor.getLookup().lookup(ModelTransform.Export.class));
     }
-    
-    public Task createExportTask(ContainerProxy container,
-            Set<String> children,
-            Runnable preWriteTask, Runnable postWriteTask) {
-        return ActionBridge.getDefault().createExportTask(container, children, preWriteTask, postWriteTask);
+
+
+    public Task createImportTask(ContainerProxy container, FileObject file) {
+        return ActionBridge.getDefault().createImportTask(container,
+                file,
+                editor.getLookup().lookup(ModelTransform.Import.class));
     }
-    
-    
-    public boolean pasteFromClipboard(ContainerProxy container, Callback callback) {
-        return ActionBridge.getDefault().pasteFromClipboard(container, callback);
+
+    public Task createPasteTask(ContainerProxy container) {
+        return ActionBridge.getDefault().createPasteTask(container,
+                editor.getLookup().lookup(ModelTransform.Paste.class));
     }
-    
-    public boolean importSubgraph(ContainerProxy container, FileObject file, Callback callback) {
-        return ActionBridge.getDefault().importSubgraph(container, file, null, callback);
-    }
-    
-    public boolean importSubgraph(ContainerProxy container, FileObject file, List<String> warnings, Callback callback) {
-        return ActionBridge.getDefault().importSubgraph(container, file, warnings, callback);
-    }
+
 
 }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2020 Neil C Smith.
+ * Copyright 2024 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -21,9 +21,12 @@
  */
 package org.praxislive.ide.pxr;
 
+import java.awt.EventQueue;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletionException;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.actions.Openable;
 import org.praxislive.ide.core.api.Callback;
@@ -36,9 +39,13 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.ServiceProvider;
+import org.praxislive.core.ComponentAddress;
 import org.praxislive.core.Value;
 import org.praxislive.core.types.PError;
+import org.praxislive.ide.core.api.CallExecutionException;
 import org.praxislive.ide.project.api.ExecutionElement;
+import org.praxislive.project.GraphBuilder;
+import org.praxislive.project.GraphModel;
 
 /**
  *
@@ -46,10 +53,12 @@ import org.praxislive.ide.project.api.ExecutionElement;
 public class PXRFileHandler implements FileHandler {
 
     private static final RequestProcessor RP = new RequestProcessor();
-    private PraxisProject project;
-    private PXRDataObject source;
+
+    private final PraxisProject project;
+    private final PXRDataObject source;
+    private final List<String> warnings;
+
     private Callback callback;
-    private List<String> warnings;
 
     public PXRFileHandler(PraxisProject project, PXRDataObject source) {
         if (project == null || source == null) {
@@ -67,37 +76,27 @@ public class PXRFileHandler implements FileHandler {
         }
         this.callback = callback;
         this.warnings.clear();
-        
+
         RootProxy root = PXRRootRegistry.findRootForFile(source.getPrimaryFile());
         if (root != null) {
+            // already built
             callback.onReturn(List.of());
             return;
         }
-             
-        RP.execute(new Runnable() {
 
-            @Override
-            public void run() {
-                try {
-                    String script = source.getPrimaryFile().asText();
-                    final PXRParser.RootElement root = PXRParser.parse(script);
-                    SwingUtilities.invokeLater(new Runnable() {
-
-                        @Override
-                        public void run() {
-                            build(root);
-                        }
-                    });
-                } catch (Exception ex) {
-                    Exceptions.printStackTrace(ex);
-                    SwingUtilities.invokeLater(new Runnable() {
-
-                        @Override
-                        public void run() {
-                            callback.onError(List.of(PError.of(ex)));
-                        }
-                    });
-                }
+        RP.execute(() -> {
+            try {
+                String script = source.getPrimaryFile().asText();
+                URI context = project.getProjectDirectory().toURI();
+                GraphModel model = GraphModel.parse(context, script);
+                SwingUtilities.invokeLater(() -> {
+                    build(context, model);
+                });
+            } catch (Exception ex) {
+                Exceptions.printStackTrace(ex);
+                SwingUtilities.invokeLater(() -> {
+                    callback.onError(List.of(PError.of(ex)));
+                });
             }
         });
     }
@@ -106,27 +105,60 @@ public class PXRFileHandler implements FileHandler {
     public List<String> warnings() {
         return warnings;
     }
-    
 
-    private void build(PXRParser.RootElement root) {
-        PXRBuilder builder = new PXRBuilder(project, source, root, warnings);
+    private void build(URI context, GraphModel fileModel) {
+        PXRHelper helper = project.getLookup().lookup(PXRHelper.class);
+        if (helper == null) {
+            throw new IllegalStateException("No PXRHelper found");
+        }
+        GraphModel model = AttrUtils.rewriteAttr(fileModel);
+        GraphModel root = model.withTransform(r -> {
+            r.clearChildren();
+            r.clearConnections();
+        });
+        String rootID = model.root().id();
+        ComponentAddress rootAddress = ComponentAddress.of("/" + rootID);
+        GraphBuilder.Root subBuilder = GraphBuilder.syntheticRoot();
+        model.root().children().forEach(subBuilder::child);
+        model.root().connections().forEach(subBuilder::connection);
+        GraphModel sub = GraphModel.of(subBuilder.build(), context);
+
         Openable open = source.getLookup().lookup(Openable.class);
         if (open != null) {
             open.open();
         }
-        builder.process(new Callback() {
 
-            @Override
-            public void onReturn(List<Value> args) {
-                callback.onReturn(args);
-            }
+        helper.safeEval(context, root.writeToString())
+                .exceptionally(this::handleException)
+                .thenCompose(r -> helper.componentInfo(rootAddress))
+                .thenAccept(info -> {
+                    assert EventQueue.isDispatchThread();
+                    project.getLookup().lookup(PXRRootRegistry.class)
+                            .register(new PXRRootProxy(project, helper, source, rootID,
+                                    model.root().type(), info));
+                })
+                .thenCompose(r -> helper.safeContextEval(context, rootAddress, sub.writeToString()))
+                .exceptionally(this::handleException)
+                .thenRun(() -> {
+                    if (warnings.isEmpty()) {
+                        callback.onReturn(List.of());
+                    } else {
+                        callback.onError(List.of());
+                    }
+                });
 
-            @Override
-            public void onError(List<Value> args) {
-                callback.onError(args);
-            
-            }
-        });
+    }
+
+    private List<Value> handleException(Throwable ex) {
+        if (ex instanceof CompletionException ce) {
+            return handleException(ce.getCause());
+        }
+        if (ex instanceof CallExecutionException err) {
+            warnings.addAll(err.error().message().lines().toList());
+            return List.of(err.error());
+        } else {
+            return List.of();
+        }
     }
 
     @ServiceProvider(service = FileHandler.Provider.class)
