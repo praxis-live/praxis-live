@@ -19,7 +19,7 @@
  * Please visit https://www.praxislive.org if you need additional information or
  * have any questions.
  */
-package org.praxislive.ide.graph;
+package org.praxislive.ide.pxr.graph.scene;
 
 /**
  * Types of positional alignment, for use with widget elements such as

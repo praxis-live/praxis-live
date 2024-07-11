@@ -40,7 +40,6 @@
     <module>modules/praxislive.core.ui</module>
     <module>modules/praxislive.editor</module>
     <module>modules/praxislive.editor.saveflash</module>
-    <module>modules/praxislive.graph</module>
     <module>modules/praxislive.model</module>
     <module>modules/praxislive.opengl</module>
     <module>modules/praxislive.project</module>

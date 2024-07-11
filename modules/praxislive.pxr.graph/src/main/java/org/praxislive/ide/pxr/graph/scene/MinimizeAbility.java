@@ -40,7 +40,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.praxislive.ide.graph;
+package org.praxislive.ide.pxr.graph.scene;
 
 /**
  * This interface represents an ability to collapse and expand a widget. It is

@@ -43,13 +43,13 @@ import javax.swing.JPanel;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import org.praxislive.core.PortInfo;
-import org.praxislive.ide.graph.PinID;
 import org.praxislive.ide.model.ProxyException;
 import org.openide.awt.CloseButtonFactory;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.praxislive.core.Connection;
+import org.praxislive.ide.pxr.graph.scene.PinID;
 
 /**
  *

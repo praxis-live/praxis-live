@@ -22,7 +22,7 @@
 package org.praxislive.ide.pxr.graph;
 
 import java.awt.Color;
-import org.praxislive.ide.graph.LAFScheme;
+import org.praxislive.ide.pxr.graph.scene.LAFScheme;
 
 /**
  *
