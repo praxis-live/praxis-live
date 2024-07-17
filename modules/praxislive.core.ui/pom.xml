@@ -28,6 +28,11 @@
     
     <dependency>
       <groupId>org.netbeans.api</groupId>
+      <artifactId>org-netbeans-api-dashboard</artifactId>
+      <version>${netbeans.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.netbeans.api</groupId>
       <artifactId>org-netbeans-libs-flatlaf</artifactId>
       <version>${netbeans.version}</version>
     </dependency>

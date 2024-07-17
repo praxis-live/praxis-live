@@ -37,13 +37,13 @@ import org.openide.NotifyDescriptor;
 class Utils {
     
     final static URI WEBSITE_LINK = 
-            URI.create("https://www.praxislive.org");
+            URI.create(Bundle.LINK_Website());
     final static URI DOWNLOAD_LINK = 
-            WEBSITE_LINK.resolve("/download/");
+            WEBSITE_LINK.resolve(Bundle.LINK_Download());
     final static URI DOCUMENTATION_LINK = 
-            WEBSITE_LINK.resolve("/documentation/");
+            WEBSITE_LINK.resolve(Bundle.LINK_Documentation());
     final static URI ISSUES_LINK = 
-            WEBSITE_LINK.resolve("/issues/");
+            WEBSITE_LINK.resolve(Bundle.LINK_Issues());
     
     private final static Preferences CORE_PREFS =
             Core.getInstance().getInternalPreferences();
@@ -72,14 +72,6 @@ class Utils {
         DialogDisplayer.getDefault().notify(
                 new NotifyDescriptor.Message("Unable to open link " + link,
                 NotifyDescriptor.ERROR_MESSAGE));
-    }
-    
-    static boolean isShowStart() {
-        return CORE_PREFS.getBoolean("show-start", true);
-    }
-    
-    static void setShowStart(boolean show) {
-        CORE_PREFS.putBoolean("show-start", show);
     }
     
     static boolean isCheckForUpdates() {

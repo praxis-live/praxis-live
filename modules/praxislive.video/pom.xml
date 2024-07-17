@@ -41,6 +41,12 @@
     
     <dependency>
       <groupId>org.netbeans.api</groupId>
+      <artifactId>org-netbeans-api-dashboard</artifactId>
+      <version>${netbeans.version}</version>
+      <type>jar</type>
+    </dependency>
+    <dependency>
+      <groupId>org.netbeans.api</groupId>
       <artifactId>org-netbeans-modules-options-api</artifactId>
       <version>${netbeans.version}</version>
       <type>jar</type>

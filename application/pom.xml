@@ -233,6 +233,12 @@
     </dependency>
     <dependency>
       <groupId>org.netbeans.api</groupId>
+      <artifactId>org-netbeans-api-dashboard</artifactId>
+      <version>${netbeans.version}</version>
+      <type>nbm-file</type>
+    </dependency>
+    <dependency>
+      <groupId>org.netbeans.api</groupId>
       <artifactId>org-netbeans-api-io</artifactId>
       <version>${netbeans.version}</version>
       <type>nbm-file</type>
