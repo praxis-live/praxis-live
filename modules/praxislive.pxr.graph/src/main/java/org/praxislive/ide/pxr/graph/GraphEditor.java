@@ -58,7 +58,6 @@ import org.praxislive.core.ControlInfo;
 import org.praxislive.core.PortInfo;
 import org.praxislive.core.protocols.ComponentProtocol;
 import org.praxislive.core.protocols.ContainerProtocol;
-import org.praxislive.ide.core.api.Callback;
 import org.praxislive.ide.core.api.Syncable;
 import org.praxislive.ide.core.ui.api.Actions;
 import org.praxislive.ide.pxr.graph.scene.Alignment;
@@ -104,7 +103,6 @@ import org.openide.util.actions.Presenter;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 import org.praxislive.core.Connection;
-import org.praxislive.core.Value;
 import org.praxislive.ide.code.api.SharedCodeInfo;
 import org.praxislive.ide.core.api.Task;
 import org.praxislive.ide.project.api.PraxisProject;
@@ -113,7 +111,7 @@ import org.praxislive.ide.pxr.api.ComponentPalette;
 /**
  *
  */
-public class GraphEditor extends RootEditor {
+public class GraphEditor implements RootEditor {
 
     private final static Logger LOG = Logger.getLogger(GraphEditor.class.getName());
     final static String ATTR_GRAPH_X = "graph.x";
@@ -376,7 +374,6 @@ public class GraphEditor extends RootEditor {
 
     @Override
     public void dispose() {
-        super.dispose();
         palette.dispose();
     }
 
@@ -471,8 +468,8 @@ public class GraphEditor extends RootEditor {
     }
 
     @Override
-    public Action[] getActions() {
-        return new Action[]{goUpAction, location};
+    public List<Action> getActions() {
+        return List.of(goUpAction, location);
     }
 
     @Override
