@@ -48,6 +48,20 @@
       <version>${netbeans.version}</version>
       <type>jar</type>
     </dependency>
+    
+    <!-- Tests -->
+    <dependency>
+      <groupId>org.netbeans.api</groupId>
+      <artifactId>org-netbeans-modules-nbjunit</artifactId>
+      <version>${netbeans.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.netbeans.modules</groupId>
+      <artifactId>org-netbeans-modules-junitlib</artifactId>
+      <version>${netbeans.version}</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <build>
