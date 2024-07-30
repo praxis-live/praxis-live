@@ -48,7 +48,7 @@ public class TasksTest {
         });
         assertEquals(Task.State.COMPLETED, futureState.get(1, TimeUnit.SECONDS));
     }
-    
+
     @Test
     public void testAsyncCompleteCancelledTask() throws Exception {
         CompletableFuture<Task.State> futureState = new CompletableFuture<>();
@@ -67,7 +67,7 @@ public class TasksTest {
         });
         assertEquals(Task.State.CANCELLED, futureState.get(1, TimeUnit.SECONDS));
     }
-    
+
     @Test
     public void testSerialTasks() throws Exception {
         CompletableFuture<Task.State> futureState = new CompletableFuture<>();
@@ -90,6 +90,58 @@ public class TasksTest {
             });
         });
         assertEquals(Task.State.COMPLETED, futureState.get(1, TimeUnit.SECONDS));
+    }
+
+    @Test
+    public void testResultTask() throws Exception {
+        CompletableFuture<String> futureResult = new CompletableFuture<>();
+        runInEDT(() -> {
+            AsyncResultTask task = new AsyncResultTask();
+            assertEquals(Task.State.NEW, task.getState());
+            Task.State state = task.execute();
+            assertEquals(Task.State.RUNNING, state);
+            task.addPropertyChangeListener(ev -> {
+                assertEquals(Task.PROP_STATE, ev.getPropertyName());
+                assertEquals(Task.State.RUNNING, ev.getOldValue());
+                assertEquals(Task.State.COMPLETED, ev.getNewValue());
+                futureResult.complete(task.result());
+            });
+        });
+        assertEquals("FOO", futureResult.get(1, TimeUnit.SECONDS));
+    }
+
+    @Test
+    public void testTaskCompletionStage() throws Exception {
+        CompletableFuture<Boolean> futureResult = new CompletableFuture<>();
+        runInEDT(() -> {
+            Task.run(new AsyncCompleteTask())
+                    .thenApply(v -> {
+                        assertTrue(EventQueue.isDispatchThread());
+                        return true;
+                    })
+                    .thenAccept(b -> futureResult.complete(b));
+        });
+        assertTrue(futureResult.get(1, TimeUnit.SECONDS));
+
+        CompletableFuture<Boolean> futureResult2 = new CompletableFuture<>();
+        runInEDT(() -> {
+            Task.run(new AsyncCompleteTask(true))
+                    .whenComplete((r, ex) -> {
+                        futureResult2.complete(ex != null);
+                    });
+        });
+        assertTrue(futureResult2.get(1, TimeUnit.SECONDS));
+
+    }
+
+    @Test
+    public void testTaskResultCompletionStage() throws Exception {
+        CompletableFuture<String> futureResult = new CompletableFuture<>();
+        runInEDT(() -> {
+            Task.WithResult.compute(new AsyncResultTask())
+                    .thenAccept(s -> futureResult.complete(s));
+        });
+        assertEquals("FOO", futureResult.get(1, TimeUnit.SECONDS));
     }
 
     private void runInEDT(Runnable test) {
@@ -119,11 +171,21 @@ public class TasksTest {
 
     private static class AsyncCompleteTask extends AbstractTask {
 
+        private final boolean fail;
+
+        private AsyncCompleteTask() {
+            this(false);
+        }
+
+        private AsyncCompleteTask(boolean error) {
+            this.fail = error;
+        }
+
         @Override
         protected void handleExecute() throws Exception {
             EventQueue.invokeLater(() -> {
                 if (State.RUNNING == getState()) {
-                    updateState(State.COMPLETED);
+                    updateState(fail ? State.ERROR : State.COMPLETED);
                 }
             });
         }
@@ -131,6 +193,15 @@ public class TasksTest {
         @Override
         protected boolean handleCancel() {
             return true;
+        }
+
+    }
+
+    private static class AsyncResultTask extends AbstractTask.WithResult<String> {
+
+        @Override
+        protected void handleExecute() throws Exception {
+            EventQueue.invokeLater(() -> complete("FOO"));
         }
 
     }

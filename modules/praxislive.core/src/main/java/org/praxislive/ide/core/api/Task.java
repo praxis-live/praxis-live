@@ -21,9 +21,13 @@
  */
 package org.praxislive.ide.core.api;
 
+import java.awt.EventQueue;
 import java.beans.PropertyChangeListener;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 import org.openide.util.Cancellable;
 
 /**
@@ -125,6 +129,74 @@ public interface Task extends Cancellable {
      */
     public default List<String> log() {
         return List.of();
+    }
+
+    /**
+     * Execute the task wrapped in a completion stage.
+     *
+     * @param task task to execute
+     * @return task completion stage
+     */
+    public static CompletionStage<Void> run(Task task) {
+        if (!EventQueue.isDispatchThread()) {
+            throw new IllegalStateException("run() must be called on event dispatch thread");
+        }
+        try {
+            State state = task.execute();
+            return switch (state) {
+                case CANCELLED ->
+                    throw new CancellationException();
+                case COMPLETED ->
+                    CompletableFuture.completedStage(null);
+                case RUNNING -> {
+                    CompletableFuture<Void> future = new CompletableFuture<>();
+                    task.addPropertyChangeListener(ev -> {
+                        switch (task.getState()) {
+                            case COMPLETED ->
+                                future.complete(null);
+                            case CANCELLED ->
+                                future.completeExceptionally(new CancellationException());
+                            case ERROR ->
+                                future.completeExceptionally(new Exception());
+                        }
+                    });
+                    yield future.minimalCompletionStage();
+                }
+                default ->
+                    throw new Exception();
+            };
+        } catch (Exception ex) {
+            return CompletableFuture.failedStage(ex);
+        }
+    }
+
+    /**
+     * An extension of Task that produces a result when it completes
+     * successfully.
+     *
+     * @param <T> result type
+     */
+    public static interface WithResult<T> extends Task {
+
+        /**
+         * Access the result. This method should only be called when the task is
+         * in a completed state. The result in other states is undefined.
+         *
+         * @return completed task result
+         */
+        public T result();
+
+        /**
+         * Execute the task wrapped in a completion stage of the result.
+         *
+         * @param <T> task result type
+         * @param task task with result
+         * @return task completion stage
+         */
+        public static <T> CompletionStage<T> compute(WithResult<T> task) {
+            return Task.run(task).thenApply(v -> task.result());
+        }
+
     }
 
 }

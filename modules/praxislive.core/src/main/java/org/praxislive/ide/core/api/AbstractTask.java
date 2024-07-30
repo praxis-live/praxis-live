@@ -142,4 +142,46 @@ public abstract class AbstractTask implements Task {
         return false;
     }
 
+    /**
+     * A base implementation of a task with a result. Extensions of this class
+     * should make sure to call {@link #complete(java.lang.Object)} to set the
+     * result and complete the task if successful.
+     *
+     * @param <T> result type
+     */
+    public static abstract class WithResult<T> extends AbstractTask implements Task.WithResult<T> {
+
+        private T result;
+
+        @Override
+        public final T result() {
+            if (!EventQueue.isDispatchThread()) {
+                throw new IllegalStateException("Not on event dispatch thread");
+            }
+            if (getState() != State.COMPLETED) {
+                throw new IllegalStateException("Task is not successfully completed");
+            }
+            return result;
+        }
+
+        /**
+         * Complete the task with the given result. The task must be in
+         * {@link State#RUNNING}. The result will be set and the task put into
+         * {@link State#COMPLETED} with all listeners called.
+         *
+         * @param result result to complete task
+         */
+        protected final void complete(T result) {
+            if (!EventQueue.isDispatchThread()) {
+                throw new IllegalStateException("Not on event dispatch thread");
+            }
+            if (getState() != State.RUNNING) {
+                throw new IllegalStateException("Task state is not running");
+            }
+            this.result = result;
+            updateState(State.COMPLETED);
+        }
+
+    }
+
 }
