@@ -21,6 +21,8 @@
  */
 package org.praxislive.ide.core.api;
 
+import org.openide.util.Exceptions;
+
 /**
  * An object that may be disposed.
  * <p>
@@ -38,5 +40,21 @@ public interface Disposable extends AutoCloseable {
      * Dispose of this object.
      */
     public void dispose();
+
+    /**
+     * Utility to dispose an object if it is an instance of Disposable. If the
+     * object is not disposable, this method does nothing.
+     *
+     * @param obj object, possibly disposable
+     */
+    public static void dispose(Object obj) {
+        try {
+            if (obj instanceof Disposable d) {
+                d.dispose();
+            }
+        } catch (Throwable t) {
+            Exceptions.printStackTrace(t);
+        }
+    }
 
 }

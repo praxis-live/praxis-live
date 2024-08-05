@@ -47,6 +47,19 @@ public interface ComponentProxy extends Proxy {
     public ComponentAddress getAddress();
 
     /**
+     * The ID of the component.
+     * <p>
+     * The default implementation calls {@link #getAddress()}, returning the ID
+     * component of the address, or {@code null} if the address is {@code null}.
+     *
+     * @return component ID
+     */
+    public default String getID() {
+        ComponentAddress ad = getAddress();
+        return ad == null ? null : ad.componentID();
+    }
+
+    /**
      * Type of component.
      *
      * @return component type

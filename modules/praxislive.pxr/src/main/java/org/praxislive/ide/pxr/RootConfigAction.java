@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Neil C Smith.
+ * Copyright 2024 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -22,73 +22,32 @@
 package org.praxislive.ide.pxr;
 
 import java.awt.event.ActionEvent;
-import java.util.Collection;
-import javax.swing.AbstractAction;
+import java.awt.event.ActionListener;
 import javax.swing.Action;
-import org.openide.util.ContextAwareAction;
-import org.openide.util.ImageUtilities;
-import org.openide.util.Lookup;
-import org.openide.util.LookupEvent;
-import org.openide.util.LookupListener;
-import org.openide.util.Utilities;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionRegistration;
+import org.openide.util.NbBundle.Messages;
 
 /**
  *
  */
-class RootConfigAction extends AbstractAction
-        implements ContextAwareAction, LookupListener {
-    
-    private final static String RESOURCE_DIR = "org/praxislive/ide/pxr/resources/";
-    
-    private Lookup.Result<PXRRootContext> result;
-    private PXRRootProxy root;
-   
-    RootConfigAction() {
-        this(Utilities.actionsGlobalContext());
-    }
-    
-    RootConfigAction(Lookup context) {
-        super("", ImageUtilities.loadImageIcon(RESOURCE_DIR + "properties.png", true));
-        this.result = context.lookupResult(PXRRootContext.class);
-        this.result.addLookupListener(this);
-        setEnabled(false);
-        resultChanged(null);
+@ActionID(category = "PXR", id = "org.praxislive.ide.pxr.RootConfigAction")
+@ActionRegistration(
+        displayName = "#CTL_RootConfigAction",
+        iconBase = "org/praxislive/ide/pxr/resources/properties.png"
+)
+@Messages("CTL_RootConfigAction=Configure root")
+public class RootConfigAction implements ActionListener {
+
+    private final ActionEditorContext context;
+
+    public RootConfigAction(ActionEditorContext context) {
+        this.context = context;
     }
 
     @Override
     public void actionPerformed(ActionEvent ae) {
-        if (root != null) {
-            Action action = root.getNodeDelegate().getPreferredAction();
-            action.actionPerformed(ae);
-        }
+        Action action = context.root().getNodeDelegate().getPreferredAction();
+        action.actionPerformed(ae);
     }
-
-    @Override
-    public Action createContextAwareInstance(Lookup actionContext) {
-        return new RootConfigAction(actionContext);
-    }
-
-    @Override
-    public final void resultChanged(LookupEvent ev) {
-        if (root != null) {
-            reset();
-        }
-        Collection<? extends PXRRootContext> roots = result.allInstances();
-        if (roots.isEmpty()) {
-            return;
-        }
-        setup(roots.iterator().next().getRoot());
-    }
-    
-    private void reset() {
-        root = null;
-        setEnabled(false);
-    }
-    
-    private void setup(PXRRootProxy root) {
-        this.root = root;
-        setEnabled(true);
-    }
-    
-    
 }

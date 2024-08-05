@@ -59,7 +59,7 @@ public class PXRContainerProxy extends PXRComponentProxy implements ContainerPro
     private final static Logger LOG = Logger.getLogger(PXRContainerProxy.class.getName());
 
     private final Map<String, PXRComponentProxy> children;
-    private final Set<String> pendingChildren;
+    private final Map<String, CompletionStage<PXRComponentProxy>> pendingChildren;
     private final Set<Connection> connections;
     private final ChildrenProperty childProp;
     private final ConnectionsProperty conProp;
@@ -74,7 +74,7 @@ public class PXRContainerProxy extends PXRComponentProxy implements ContainerPro
         super(parent, type, info);
         children = new LinkedHashMap<>();
         connections = new LinkedHashSet<>();
-        pendingChildren = new LinkedHashSet<>();
+        pendingChildren = new LinkedHashMap<>();
         childProp = new ChildrenProperty();
         conProp = new ConnectionsProperty();
         supportedTypesProp = new SupportedTypesProperty();
@@ -112,30 +112,31 @@ public class PXRContainerProxy extends PXRComponentProxy implements ContainerPro
     }
 
     CompletionStage<? extends PXRComponentProxy> addChild(String id, ComponentType type, PMap attrs) {
-        pendingChildren.add(id);
         ComponentAddress childAddress = ComponentAddress.of(getAddress(), id);
         PXRHelper helper = getRoot().getHelper();
-        return helper.createComponent(childAddress, type)
-                .thenCompose(ad -> {
-                    assert EventQueue.isDispatchThread();
-                    return helper.componentData(ad);
-                })
-                .thenApply(data -> {
-                    assert EventQueue.isDispatchThread();
-                    return addChildProxy(id, data, attrs);
-                })
-                .whenComplete((c, ex) -> {
-                    assert EventQueue.isDispatchThread();
-                    pendingChildren.remove(id);
-                });
+        CompletionStage<PXRComponentProxy> stage
+                = helper.createComponent(childAddress, type)
+                        .thenCompose(ad -> {
+                            assert EventQueue.isDispatchThread();
+                            return helper.componentData(ad);
+                        })
+                        .thenApply(data -> {
+                            assert EventQueue.isDispatchThread();
+                            return addChildProxy(id, data, attrs);
+                        })
+                        .whenComplete((c, ex) -> {
+                            assert EventQueue.isDispatchThread();
+                            pendingChildren.remove(id);
+                        });
+        pendingChildren.put(id, stage);
+        return stage;
     }
 
     // called from listener for pre-existing children
     private void addChildProxy(String id) {
-        pendingChildren.add(id);
         ComponentAddress childAddress = ComponentAddress.of(getAddress(), id);
         PXRHelper helper = getRoot().getHelper();
-        helper.componentData(childAddress)
+        CompletionStage<PXRComponentProxy> stage = helper.componentData(childAddress)
                 .thenApply(data -> {
                     assert EventQueue.isDispatchThread();
                     return addChildProxy(id, data, PMap.EMPTY);
@@ -144,6 +145,7 @@ public class PXRContainerProxy extends PXRComponentProxy implements ContainerPro
                     assert EventQueue.isDispatchThread();
                     pendingChildren.remove(id);
                 });
+        pendingChildren.put(id, stage);
     }
 
     private PXRComponentProxy addChildProxy(String id, PMap data, PMap attrs) {
@@ -408,7 +410,7 @@ public class PXRContainerProxy extends PXRComponentProxy implements ContainerPro
                 Set<String> childIDs = eventToChildIDs(evt);
                 Set<String> scratch = new LinkedHashSet<>(childIDs);
                 scratch.removeAll(children.keySet());
-                scratch.removeAll(pendingChildren);
+                scratch.removeAll(pendingChildren.keySet());
                 if (!scratch.isEmpty()) {
                     scratch.forEach(id -> addChildProxy(id));
                 }

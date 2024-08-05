@@ -21,16 +21,20 @@
  */
 package org.praxislive.ide.pxr.spi;
 
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import javax.swing.Action;
 import javax.swing.JComponent;
 import org.praxislive.ide.model.RootProxy;
 import org.openide.awt.UndoRedo;
+import org.openide.explorer.ExplorerManager;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.windows.TopComponent;
+import org.praxislive.ide.code.api.SharedCodeInfo;
 import org.praxislive.ide.project.api.PraxisProject;
 
 /**
@@ -65,7 +69,7 @@ public interface RootEditor {
      * The default implementation does nothing.
      */
     public default void componentActivated() {
-        // no op hook
+        requestFocus();
     }
 
     /**
@@ -124,7 +128,8 @@ public interface RootEditor {
      * Get the editor lookup. This lookup will be merged into the top component
      * lookup.
      * <p>
-     * This lookup should normally reflect the selected component node(s).
+     * The top component lookup will already reflect the main context explorer
+     * manager from {@link Context#explorerManager()}.
      * <p>
      * The default implementation returns an empty lookup.
      *
@@ -143,6 +148,65 @@ public interface RootEditor {
      */
     public default UndoRedo getUndoRedo() {
         return UndoRedo.NONE;
+    }
+
+    /**
+     * Request focus of the editor component. This method is called by the
+     * default implementation of {@link #componentActivated()}. This method will
+     * also be called while the component is activated to return focus to the
+     * RootEditor component (eg. from tool actions). The default implementation
+     * calls {@link JComponent#requestFocusInWindow()} on the editor component.
+     *
+     * @return {@code false} if the request is guaranteed to fail, {@code true}
+     * if it is likely to succeed.
+     */
+    public default boolean requestFocus() {
+        return getEditorComponent().requestFocusInWindow();
+    }
+
+    /**
+     * Return the set of tool actions this editor wishes to support. The default
+     * implementation returns {@code EnumSet.noneOf(ToolAction.class)}. To
+     * install all default tool actions, return
+     * {@code EnumSet.allOf(ToolActions.class)} or otherwise filter the returned
+     * set.
+     *
+     * @return support tool actions
+     */
+    public default Set<ToolAction> supportedToolActions() {
+        return EnumSet.noneOf(ToolAction.class);
+    }
+
+    /**
+     * Types of tool action. Tool actions are keyboard controlled actions
+     * installed in the root editor holder. To support tool actions, the editor
+     * must sync to the explorer manager from {@link Context#explorerManager()}
+     * and not install keyboard actions that conflict with the desired tools.
+     * The keyboard triggers are based on the Pcl script commands.
+     */
+    public static enum ToolAction {
+
+        /**
+         * Add component tool, triggered by typing {@code @}.
+         */
+        ADD,
+        /**
+         * Select component tool, triggered by typing {@code /}.
+         */
+        SELECT,
+        /**
+         * Call control tool, triggered by typing {@code .}.
+         */
+        CALL,
+        /**
+         * Connect ports tool, triggered by typing {@code ~}.
+         */
+        CONNECT,
+        /**
+         * Disconnect ports tool, triggered by typing {@code !}.
+         */
+        DISCONNECT;
+
     }
 
     /**
@@ -179,6 +243,14 @@ public interface RootEditor {
         public TopComponent container();
 
         /**
+         * The context explorer manager. The editor should usually update and
+         * respond to updates in the main explorer manager.
+         *
+         * @return context explorer manager
+         */
+        public ExplorerManager explorerManager();
+
+        /**
          * Access the file that backs the root, if available.
          *
          * @return file or empty optional
@@ -191,6 +263,17 @@ public interface RootEditor {
          * @return project or empty optional
          */
         public Optional<PraxisProject> project();
+
+        /**
+         * Access the optional shared code viewer action.
+         * <p>
+         * This action will be provided if the root proxy has
+         * {@link SharedCodeInfo} in its lookup and the context provides a way
+         * to view.
+         *
+         * @return action or empty optional
+         */
+        public Optional<Action> sharedCodeAction();
 
     }
 

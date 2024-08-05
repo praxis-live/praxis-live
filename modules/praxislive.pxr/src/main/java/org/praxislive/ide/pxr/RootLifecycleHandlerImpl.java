@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2020 Neil C Smith.
+ * Copyright 2024 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -35,9 +35,7 @@ import org.praxislive.ide.project.spi.RootLifecycleHandler;
 import org.praxislive.ide.core.api.Task;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
-import org.praxislive.ide.core.api.Callback;
 import org.praxislive.ide.project.api.PraxisProject;
 
 /**

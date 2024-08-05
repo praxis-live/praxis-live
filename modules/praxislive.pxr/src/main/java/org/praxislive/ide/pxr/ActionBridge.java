@@ -28,6 +28,9 @@ import java.awt.datatransfer.ClipboardOwner;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
+import java.awt.event.ActionEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -36,10 +39,14 @@ import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
 import org.praxislive.core.ComponentAddress;
 import org.praxislive.ide.core.api.Task;
 import org.praxislive.ide.model.ContainerProxy;
@@ -47,13 +54,25 @@ import org.praxislive.ide.core.api.AbstractTask;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
+import org.openide.awt.Actions;
+import org.openide.explorer.ExplorerManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
+import org.openide.util.WeakListeners;
+import org.praxislive.core.ComponentType;
+import org.praxislive.core.Connection;
 import org.praxislive.ide.core.api.CallExecutionException;
+import org.praxislive.ide.core.api.Disposable;
+import org.praxislive.ide.model.ComponentProxy;
+import org.praxislive.ide.pxr.api.ActionSupport;
+import org.praxislive.ide.pxr.api.EditorUtils;
 import org.praxislive.ide.pxr.spi.ModelTransform;
+import org.praxislive.ide.pxr.spi.RootEditor;
 import org.praxislive.ide.pxr.wizard.PXGExportWizard;
 import org.praxislive.project.GraphElement;
 import org.praxislive.project.GraphModel;
@@ -62,60 +81,83 @@ import org.praxislive.project.ParseException;
 /**
  *
  */
+@Messages({
+    "# {0} - component type",
+    "TTL_AddChild=Enter an ID for {0}",
+    "LBL_AddChild=ID:",
+    "LBL_CopyAction=Copy",
+    "LBL_PasteAction=Paste",
+    "LBL_DeleteAction=Delete",
+    "LBL_DuplicateAction=Duplicate",
+    "LBL_ExportAction=Export...",
+    "TTL_DeleteTask=Confirm deletion",
+    "# {0} - component ID",
+    "LBL_DeleteTaskSingle=Delete {0}?",
+    "# {0} - component count",
+    "LBL_DeleteTaskMultiple=Delete {0} components?"
+})
 public class ActionBridge {
 
     private final static ActionBridge INSTANCE = new ActionBridge();
 
     private final static RequestProcessor RP = new RequestProcessor(ActionBridge.class);
 
+    private final static Action ADD_CHILD_ACTION
+            = Actions.forID("PXR", AddChildAction.class.getName());
+
     private ActionBridge() {
-        // non instantiable
     }
 
-    @SuppressWarnings("deprecation")
+    public Task.WithResult<String> createAddChildTask(ContainerProxy container,
+            ComponentType type) {
+        return new AddChildTask(Objects.requireNonNull(container), Objects.requireNonNull(type));
+    }
+
+    public Action createCopyAction(RootEditor editor, ExplorerManager explorer) {
+        return new CopyActionPerformer(Objects.requireNonNull(editor), Objects.requireNonNull(explorer));
+    }
+
     public Task createCopyTask(ContainerProxy container,
-            Set<String> children,
+            List<String> children,
             ModelTransform.Copy copyTransform) {
-        return createCopyTask(container, children, null, copyTransform, null);
-    }
-
-    @Deprecated
-    public Task createCopyTask(ContainerProxy container,
-            Set<String> children,
-            Runnable preWriteTask,
-            ModelTransform.Copy copyTransform,
-            Runnable postWriteTask) {
         SubGraphTransferable empty = new SubGraphTransferable("");
         getClipboard().setContents(empty, empty);
         return new CopyTask(Objects.requireNonNull(container),
-                Objects.requireNonNull(children),
-                preWriteTask,
-                copyTransform,
-                postWriteTask);
+                List.copyOf(children),
+                copyTransform);
     }
 
-    public Task createPasteTask(ContainerProxy container, ModelTransform.Paste pasteTransform) {
+    public Action createDeleteAction(RootEditor editor, ExplorerManager explorer) {
+        return new DeleteActionPerformer(Objects.requireNonNull(editor), Objects.requireNonNull(explorer));
+    }
+
+    public Task createDeleteTask(ContainerProxy container, List<String> children, List<Connection> connections) {
+        return new DeleteTask(Objects.requireNonNull(container),
+                List.copyOf(children), List.copyOf(connections));
+    }
+
+    public Action createDuplicateAction(RootEditor editor, ExplorerManager explorer) {
+        return new DuplicateActionPerformer(Objects.requireNonNull(editor), Objects.requireNonNull(explorer));
+    }
+
+    public Action createExportAction(RootEditor editor, ExplorerManager explorer) {
+        return new ExportActionPerformer(Objects.requireNonNull(editor), Objects.requireNonNull(explorer));
+    }
+
+    public Action createPasteAction(RootEditor editor, ExplorerManager explorer) {
+        return new PasteActionPerformer(Objects.requireNonNull(editor), Objects.requireNonNull(explorer));
+    }
+
+    public Task.WithResult<List<String>> createPasteTask(ContainerProxy container, ModelTransform.Paste pasteTransform) {
         return new PasteTask(Objects.requireNonNull(container), pasteTransform);
     }
 
-    @SuppressWarnings("deprecation")
     public Task createExportTask(ContainerProxy container,
-            Set<String> children,
+            List<String> children,
             ModelTransform.Export exportTransform) {
-        return createExportTask(container, children, null, exportTransform, null);
-    }
-
-    @Deprecated
-    public Task createExportTask(ContainerProxy container,
-            Set<String> children,
-            Runnable preWriteTask,
-            ModelTransform.Export exportTransform,
-            Runnable postWriteTask) {
         return new ExportTask(Objects.requireNonNull(container),
-                Objects.requireNonNull(children),
-                preWriteTask,
-                exportTransform,
-                postWriteTask);
+                List.copyOf(children),
+                exportTransform);
     }
 
     public Task createImportTask(ContainerProxy container,
@@ -126,31 +168,62 @@ public class ActionBridge {
                 importTransform);
     }
 
-    private static class CopyTask extends AbstractTask {
+    private static class AddChildTask extends AbstractTask.WithResult<String> {
 
         private final ContainerProxy container;
-        private final Set<String> children;
-        private final Runnable preWriteTask;
-        private final ModelTransform.Copy copyTransform;
-        private final Runnable postWriteTask;
+        private final ComponentType type;
 
-        CopyTask(ContainerProxy container,
-                Set<String> children,
-                Runnable preWriteTask,
-                ModelTransform.Copy copyTransform,
-                Runnable postWriteTask) {
+        private AddChildTask(ContainerProxy container, ComponentType type) {
             this.container = container;
-            this.children = children;
-            this.preWriteTask = preWriteTask;
-            this.copyTransform = copyTransform == null ? m -> m : copyTransform;
-            this.postWriteTask = postWriteTask;
+            this.type = type;
         }
 
         @Override
         protected void handleExecute() throws Exception {
-            if (preWriteTask != null) {
-                preWriteTask.run();
+            NotifyDescriptor.InputLine dlg = new NotifyDescriptor.InputLine(
+                    Bundle.LBL_AddChild(),
+                    Bundle.TTL_AddChild(type)
+            );
+            dlg.setInputText(
+                    EditorUtils.findFreeID(
+                            container.children().collect(Collectors.toSet()),
+                            EditorUtils.extractBaseID(type), true));
+            Object retval = DialogDisplayer.getDefault().notify(dlg);
+            if (retval == NotifyDescriptor.OK_OPTION) {
+                String id = dlg.getInputText().strip();
+                container.addChild(id, type)
+                        .whenComplete((r, ex) -> {
+                            if (ex != null) {
+                                Exceptions.printStackTrace(ex);
+                                updateState(State.ERROR);
+                            } else {
+                                complete(id);
+                            }
+                        });
+
+            } else {
+                updateState(State.CANCELLED);
             }
+        }
+
+    }
+
+    private static class CopyTask extends AbstractTask {
+
+        private final ContainerProxy container;
+        private final List<String> children;
+        private final ModelTransform.Copy copyTransform;
+
+        CopyTask(ContainerProxy container,
+                List<String> children,
+                ModelTransform.Copy copyTransform) {
+            this.container = container;
+            this.children = children;
+            this.copyTransform = copyTransform == null ? m -> m : copyTransform;
+        }
+
+        @Override
+        protected void handleExecute() throws Exception {
             PXRHelper helper = findRootProxy(container).getHelper();
             CompletionStage<GraphModel> modelStage;
             if (children.size() == 1) {
@@ -174,15 +247,61 @@ public class ActionBridge {
                         } else {
                             updateState(State.COMPLETED);
                         }
-                        if (postWriteTask != null) {
-                            postWriteTask.run();
-                        }
                     });
         }
 
     }
 
-    private static class PasteTask extends AbstractTask {
+    private static class DeleteTask extends AbstractTask {
+
+        private final ContainerProxy container;
+        private final List<String> children;
+        private final List<Connection> connections;
+
+        DeleteTask(ContainerProxy container,
+                List<String> children,
+                List<Connection> connections) {
+            this.container = container;
+            this.children = children;
+            this.connections = connections;
+        }
+
+        @Override
+        protected void handleExecute() throws Exception {
+            if (!checkDeletion()) {
+                updateState(State.CANCELLED);
+                return;
+            }
+            Stream.concat(connections.stream().map(container::disconnect),
+                    children.stream().map(container::removeChild))
+                    .reduce(CompletableFuture.completedStage(null),
+                            (s1, s2) -> s1.thenCombine(s2, (r1, r2) -> null))
+                    .whenComplete((r, ex) -> {
+                        if (ex != null) {
+                            Exceptions.printStackTrace(ex);
+                            updateState(State.ERROR);
+                        } else {
+                            updateState(State.COMPLETED);
+                        }
+                    });
+        }
+
+        private boolean checkDeletion() {
+            if (children.isEmpty()) {
+                return true;
+            }
+            int count = children.size();
+            String msg = count > 1
+                    ? Bundle.LBL_DeleteTaskMultiple(count)
+                    : Bundle.LBL_DeleteTaskSingle(children.get(0));
+            NotifyDescriptor nd = new NotifyDescriptor.Confirmation(
+                    msg, Bundle.TTL_DeleteTask(), NotifyDescriptor.YES_NO_OPTION);
+            return NotifyDescriptor.YES_OPTION.equals(DialogDisplayer.getDefault().notify(nd));
+        }
+
+    }
+
+    private static class PasteTask extends AbstractTask.WithResult<List<String>> {
 
         private final ContainerProxy container;
         private final ModelTransform.Paste pasteTransform;
@@ -213,6 +332,7 @@ public class ActionBridge {
                     return;
                 }
                 model = pasteTransform.apply(model);
+                List<String> children = model.root().children().keySet().stream().toList();
                 helper.safeContextEval(projectDir, container.getAddress(),
                         model.writeToString())
                         .whenComplete((r, ex) -> {
@@ -220,7 +340,7 @@ public class ActionBridge {
                                 log = handleException(ex);
                                 updateState(State.ERROR);
                             } else {
-                                updateState(State.COMPLETED);
+                                complete(children);
                             }
                         });
             } else {
@@ -239,28 +359,19 @@ public class ActionBridge {
     private static class ExportTask extends AbstractTask {
 
         private final ContainerProxy container;
-        private final Set<String> children;
-        private final Runnable preWriteTask;
+        private final List<String> children;
         private final ModelTransform.Export exportTransform;
-        private final Runnable postWriteTask;
 
         ExportTask(ContainerProxy container,
-                Set<String> children,
-                Runnable preWriteTask,
-                ModelTransform.Export exportTransform,
-                Runnable postWriteTask) {
+                List<String> children,
+                ModelTransform.Export exportTransform) {
             this.container = container;
             this.children = children;
-            this.preWriteTask = preWriteTask;
             this.exportTransform = exportTransform == null ? m -> m : exportTransform;
-            this.postWriteTask = postWriteTask;
         }
 
         @Override
         protected void handleExecute() throws Exception {
-            if (preWriteTask != null) {
-                preWriteTask.run();
-            }
             PXRHelper helper = findRootProxy(container).getHelper();
             CompletionStage<GraphModel> modelStage;
             if (children.size() == 1) {
@@ -303,9 +414,6 @@ public class ActionBridge {
                     EventQueue.invokeLater(() -> {
                         DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message("File already exists.", NotifyDescriptor.ERROR_MESSAGE));
                         updateState(State.ERROR);
-                        if (postWriteTask != null) {
-                            postWriteTask.run();
-                        }
                     });
                 } else {
                     try {
@@ -315,9 +423,6 @@ public class ActionBridge {
                         Exceptions.printStackTrace(ex);
                         EventQueue.invokeLater(() -> {
                             updateState(State.ERROR);
-                            if (postWriteTask != null) {
-                                postWriteTask.run();
-                            }
                         });
                         return;
                     }
@@ -332,18 +437,12 @@ public class ActionBridge {
                         Exceptions.printStackTrace(ex);
                         EventQueue.invokeLater(() -> {
                             updateState(State.ERROR);
-                            if (postWriteTask != null) {
-                                postWriteTask.run();
-                            }
                         });
                         return;
                     }
 
                     EventQueue.invokeLater(() -> {
                         updateState(State.COMPLETED);
-                        if (postWriteTask != null) {
-                            postWriteTask.run();
-                        }
                     });
 
                 }
@@ -474,7 +573,7 @@ public class ActionBridge {
 
     private static class SubGraphTransferable implements Transferable, ClipboardOwner {
 
-        private String data;
+        private final String data;
 
         private SubGraphTransferable(String data) {
             this.data = data;
@@ -509,6 +608,244 @@ public class ActionBridge {
         public void lostOwnership(Clipboard clipboard, Transferable contents) {
             // no op
         }
+    }
+
+    private static abstract class EMSensitiveAction extends AbstractAction implements Disposable {
+
+        private final RootEditor editor;
+        private final ExplorerManager explorer;
+        private final PropertyChangeListener baseListener;
+        private final PropertyChangeListener emListener;
+
+        private ContainerProxy container;
+        private List<ComponentProxy> selection;
+
+        EMSensitiveAction(String name, RootEditor editor, ExplorerManager explorer) {
+            super(name);
+            this.editor = Objects.requireNonNull(editor);
+            this.explorer = Objects.requireNonNull(explorer);
+            this.baseListener = this::propertyChange;
+            this.emListener = WeakListeners.propertyChange(baseListener, explorer);
+            this.explorer.addPropertyChangeListener(emListener);
+            propertyChange(null);
+        }
+
+        final ContainerProxy context() {
+            return container;
+        }
+
+        final List<ComponentProxy> selection() {
+            return selection;
+        }
+
+        final ContainerProxy findSharedContainer() {
+            if (selection.isEmpty()) {
+                return null;
+            }
+            ContainerProxy container = selection.get(0).getParent();
+            if (container == null) {
+                return null;
+            }
+            for (int i = 1; i < selection.size(); i++) {
+                ContainerProxy parent = selection.get(i).getParent();
+                if (parent == null || parent != container) {
+                    return null;
+                }
+            }
+            return container;
+        }
+
+        final RootEditor editor() {
+            return editor;
+        }
+
+        final ExplorerManager explorer() {
+            return explorer;
+        }
+
+        final Void handleException(Throwable t) {
+            if (t instanceof CancellationException
+                    || (t instanceof CompletionException ex
+                    && ex.getCause() instanceof CancellationException)) {
+                // do nothing
+            } else {
+                Exceptions.printStackTrace(t);
+            }
+            return null;
+        }
+
+        void refresh() {
+
+        }
+
+        @Override
+        public void dispose() {
+            this.explorer.removePropertyChangeListener(emListener);
+            container = null;
+            selection = List.of();
+        }
+
+        private void propertyChange(PropertyChangeEvent ev) {
+            Node contextNode = explorer.getExploredContext();
+            Node[] selectedNodes = explorer.getSelectedNodes();
+            container = contextNode.getLookup().lookup(ContainerProxy.class);
+            selection = Stream.of(selectedNodes)
+                    .map(n -> n.getLookup().lookup(ComponentProxy.class))
+                    .filter(c -> c != null)
+                    .toList();
+            refresh();
+        }
+
+    }
+
+    private static final class CopyActionPerformer extends EMSensitiveAction {
+
+        CopyActionPerformer(RootEditor editor, ExplorerManager explorer) {
+            super(Bundle.LBL_CopyAction(), editor, explorer);
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            ContainerProxy container = findSharedContainer();
+            List<String> children = selection().stream()
+                    .map(ComponentProxy::getID)
+                    .toList();
+            if (container == null || children.isEmpty()) {
+                // @TODO should not happen - throw / log?
+                return;
+            }
+            Task.run(ActionSupport.createCopyTask(editor(), container, children))
+                    .exceptionally(this::handleException);
+        }
+
+        @Override
+        void refresh() {
+            setEnabled(!selection().isEmpty() && findSharedContainer() != null);
+        }
+
+    }
+
+    private static final class DeleteActionPerformer extends EMSensitiveAction {
+
+        DeleteActionPerformer(RootEditor editor, ExplorerManager explorer) {
+            super(Bundle.LBL_DeleteAction(), editor, explorer);
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            // Global delete action not on EDT!
+            if (!EventQueue.isDispatchThread()) {
+                EventQueue.invokeLater(() -> actionPerformed(e));
+                return;
+            }
+            ContainerProxy container = findSharedContainer();
+            List<String> children = selection().stream()
+                    .map(ComponentProxy::getID)
+                    .toList();
+            if (container == null || children.isEmpty()) {
+                // @TODO should not happen - throw / log?
+                return;
+            }
+            Task.run(ActionSupport.createDeleteTask(editor(), container, children, List.of()))
+                    .exceptionally(this::handleException);
+        }
+
+        @Override
+        void refresh() {
+            setEnabled(!selection().isEmpty() && findSharedContainer() != null);
+        }
+
+    }
+
+    private static final class DuplicateActionPerformer extends EMSensitiveAction {
+
+        DuplicateActionPerformer(RootEditor editor, ExplorerManager explorer) {
+            super(Bundle.LBL_DuplicateAction(), editor, explorer);
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            RootEditor ed = editor();
+            ContainerProxy container = findSharedContainer();
+            List<String> children = selection().stream()
+                    .map(ComponentProxy::getID)
+                    .toList();
+            if (container == null || children.isEmpty()) {
+                // @TODO should not happen - throw / log?
+                return;
+            }
+            Task.run(ActionSupport.createCopyTask(ed, container, children))
+                    .thenCompose(v -> Task.run(ActionSupport.createPasteTask(ed, container)))
+                    .exceptionally(this::handleException);
+        }
+
+        @Override
+        void refresh() {
+            setEnabled(!selection().isEmpty() && findSharedContainer() != null);
+        }
+
+    }
+
+    private static final class ExportActionPerformer extends EMSensitiveAction {
+
+        ExportActionPerformer(RootEditor editor, ExplorerManager explorer) {
+            super(Bundle.LBL_ExportAction(), editor, explorer);
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            ContainerProxy container = findSharedContainer();
+            List<String> children = selection().stream()
+                    .map(ComponentProxy::getID)
+                    .toList();
+            if (container == null || children.isEmpty()) {
+                // @TODO should not happen - throw / log?
+                return;
+            }
+            Task.run(ActionSupport.createExportTask(editor(), container, children))
+                    .exceptionally(this::handleException);
+        }
+
+        @Override
+        void refresh() {
+            setEnabled(!selection().isEmpty() && findSharedContainer() != null);
+        }
+
+    }
+
+    private static final class PasteActionPerformer extends EMSensitiveAction {
+
+        PasteActionPerformer(RootEditor editor, ExplorerManager explorer) {
+            super(Bundle.LBL_PasteAction(), editor, explorer);
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            ContainerProxy container = context();
+            Task.WithResult.compute(ActionSupport.createPasteTask(editor(), container))
+                    .thenAccept(ids -> selectChildren(container, ids))
+                    .exceptionally(this::handleException);
+        }
+
+        @Override
+        void refresh() {
+            setEnabled(context() != null /* && selection().isEmpty() */);
+        }
+
+        private void selectChildren(ContainerProxy container, List<String> children) {
+            // @TODO - need task to sync on adding proxies, or action to select on tree changes
+//            Node context = container.getNodeDelegate();
+//            Node[] nodes = children.stream()
+//                    .map(container::getChild)
+//                    .map(ComponentProxy::getNodeDelegate)
+//                    .toArray(Node[]::new);
+//            try {
+//                explorer().setExploredContextAndSelection(context, nodes);
+//            } catch (PropertyVetoException ex) {
+//                Exceptions.printStackTrace(ex);
+//            }
+        }
+
     }
 
 }

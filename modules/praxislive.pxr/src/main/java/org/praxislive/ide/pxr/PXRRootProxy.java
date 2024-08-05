@@ -32,12 +32,15 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
+import org.praxislive.base.Binding;
 import org.praxislive.core.ControlAddress;
 import org.praxislive.core.ControlInfo;
+import org.praxislive.core.protocols.StartableProtocol;
 import org.praxislive.core.types.PMap;
 import org.praxislive.ide.code.api.DynamicPaths;
 import org.praxislive.ide.core.api.Disposable;
 import org.praxislive.ide.code.api.SharedCodeInfo;
+import org.praxislive.ide.core.api.ValuePropertyAdaptor;
 
 /**
  *
@@ -48,6 +51,7 @@ public class PXRRootProxy extends PXRContainerProxy implements RootProxy, Dispos
     private final PXRDataObject source;
     private final PraxisProject project;
     private final PXRHelper helper;
+    private final ValuePropertyAdaptor.ReadOnly runningAdaptor;
 
     PXRRootProxy(PraxisProject project, PXRHelper helper, PXRDataObject source, String id,
             ComponentType type, ComponentInfo info) {
@@ -56,6 +60,13 @@ public class PXRRootProxy extends PXRContainerProxy implements RootProxy, Dispos
         this.source = source;
         this.project = project;
         this.helper = helper;
+        if (info.hasProtocol(StartableProtocol.class)) {
+            runningAdaptor = new ValuePropertyAdaptor.ReadOnly(
+                    this, StartableProtocol.IS_RUNNING, true, Binding.SyncRate.Low);
+            helper.bind(ControlAddress.of(address, StartableProtocol.IS_RUNNING), runningAdaptor);
+        } else {
+            runningAdaptor = null;
+        }
     }
 
     @Override
@@ -70,6 +81,10 @@ public class PXRRootProxy extends PXRContainerProxy implements RootProxy, Dispos
     @Override
     public void dispose() {
         super.dispose();
+        if (runningAdaptor != null) {
+            helper.unbind(ControlAddress.of(address, StartableProtocol.IS_RUNNING),
+                    runningAdaptor);
+        }
         var reg = project.getLookup().lookup(PXRRootRegistry.class);
         assert reg != null;
         if (reg != null) {

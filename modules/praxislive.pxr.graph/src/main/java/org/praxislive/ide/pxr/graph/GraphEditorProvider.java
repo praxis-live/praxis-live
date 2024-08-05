@@ -40,8 +40,7 @@ public class GraphEditorProvider implements RootEditor.Provider {
         Optional<FileObject> file = context.file();
         Optional<PraxisProject> project = context.project();
         if (type.startsWith("root:") && file.isPresent() && project.isPresent()) {
-            return Optional.of(new GraphEditor(project.orElseThrow(),
-                    file.orElseThrow(), root, type.substring(5)));
+            return Optional.of(new GraphEditor(root, context));
         }
         return Optional.empty();
     }

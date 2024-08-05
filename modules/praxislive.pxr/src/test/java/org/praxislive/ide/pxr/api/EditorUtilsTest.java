@@ -1,7 +1,6 @@
 
 package org.praxislive.ide.pxr.api;
 
-import org.praxislive.ide.pxr.api.EditorUtils;
 import java.util.HashSet;
 import java.util.Set;
 import org.praxislive.core.ComponentType;
