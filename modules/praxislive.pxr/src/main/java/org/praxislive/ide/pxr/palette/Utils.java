@@ -49,16 +49,15 @@ class Utils {
     static final String PXR_DOWNLOAD_FOLDER = "PXR/Downloads";
     static final String PXG_FILE_PATH = PXR_DOWNLOAD_FOLDER + "/" + PXG_FILE_NAME;
     static final String PALETTE_PATH = PaletteFiles.FOLDER;
-    
-    private final static Map<String, String> knownFolders = new HashMap<>(6);
-    static {
-        knownFolders.put("audio", "audio_custom");
-        knownFolders.put("core", "core_custom");
-        knownFolders.put("data", "data_custom");
-        knownFolders.put("tinkerforge", "tinkerforge_custom");
-        knownFolders.put("video", "video_custom");
-        knownFolders.put("videogl", "video_gl_custom");
-    }
+
+    private final static Map<String, String> knownFolders = Map.of(
+            "audio", "audio_custom",
+            "core", "core_custom",
+            "data", "data_custom",
+            "tinkerforge", "tinkerforge_custom",
+            "video", "video_custom",
+            "videogl", "video_gl_custom"
+    );
 
     private static XMLFileSystem layer;
 
@@ -66,7 +65,7 @@ class Utils {
 
     private Utils() {
     }
-    
+
     static boolean isInstalled() {
         return ((!info.get(KEY_PXG_LINK_INSTALLED, "").isEmpty())
                 && FileUtil.getConfigFile(PXG_FILE_PATH) != null);
@@ -81,12 +80,16 @@ class Utils {
         return !info.get(KEY_PXG_LINK, "").isEmpty();
     }
 
+    static Map<String, String> knownFolders() {
+        return knownFolders;
+    }
+
     static void install() throws IOException {
 
         if (!isInstalled() || !isLatest()) {
             downloadZip();
         }
-        
+
         try {
             installToPalette();
         } catch (IOException ex) {
@@ -108,8 +111,7 @@ class Utils {
         FileObject folder = FileUtil.createFolder(FileUtil.getConfigRoot(), PXR_DOWNLOAD_FOLDER);
         zip = FileUtil.createData(folder, PXG_FILE_NAME);
 
-        try (InputStream in = new URL(info.get(KEY_PXG_LINK, "")).openStream();
-                OutputStream out = zip.getOutputStream()) {
+        try (InputStream in = new URL(info.get(KEY_PXG_LINK, "")).openStream(); OutputStream out = zip.getOutputStream()) {
             FileUtil.copy(in, out);
         } catch (IOException ex) {
             info.remove(KEY_PXG_LINK_INSTALLED);
@@ -122,7 +124,7 @@ class Utils {
     }
 
     static void installToPalette() throws Exception {
-        
+
         FileObject zip = FileUtil.getConfigFile(PXG_FILE_PATH);
         FileObject root = FileUtil.getArchiveRoot(zip);
         FileObject[] children = root.getChildren();
@@ -147,7 +149,7 @@ class Utils {
                 }
                 FileUtil.copyFile(file, dest, file.getName());
             }
-            
+
         }
 
     }

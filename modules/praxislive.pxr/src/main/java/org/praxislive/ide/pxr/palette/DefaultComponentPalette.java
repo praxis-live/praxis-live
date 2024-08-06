@@ -32,6 +32,7 @@ import org.openide.util.Lookup;
 import org.praxislive.core.ComponentType;
 import org.praxislive.core.protocols.ContainerProtocol;
 import org.praxislive.ide.model.ContainerProxy;
+import org.praxislive.ide.pxr.SubgraphDataObject;
 
 /**
  *
@@ -135,9 +136,17 @@ public final class DefaultComponentPalette {
             ComponentType type = lkp.lookup(ComponentType.class);
             if (type != null) {
                 return types.contains(type);
-            } else {
-                return true;
             }
+            SubgraphDataObject.RequiredTypes reqTypes = lkp.lookup(
+                    SubgraphDataObject.RequiredTypes.class);
+            if (reqTypes != null) {
+                if (reqTypes.requiredTypes().isEmpty()) {
+                    return false;
+                } else {
+                    return types.containsAll(reqTypes.requiredTypes());
+                }
+            }
+            return true;
         }
 
         private void types(List<ComponentType> types) {
