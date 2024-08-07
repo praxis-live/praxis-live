@@ -130,7 +130,7 @@ class TemplateFiles {
         sb.append("<file name=\"").append(filename).append("\">\n");
         sb.append("<attr name=\"displayName\" stringvalue=\"")
                 .append(displayName(type)).append("\"/>\n");
-        sb.append("<attr name=\"instantiatingIterator\" newvalue=\"org.praxislive.ide.pxr.wizard.PXRWizardIterator\"/>\n");
+        sb.append("<attr name=\"instantiatingIterator\" newvalue=\"org.praxislive.ide.pxr.PXRWizardIterator\"/>\n");
         sb.append("<attr name=\"template\" boolvalue=\"true\"/>\n");
         sb.append("<attr name=\"templateWizardURL\" urlvalue=\"nbresloc:/org/praxislive/ide/pxr/resources/PXRinfo.html\"/>\n");
         sb.append("<attr name=\"rootType\" stringvalue=\"").append(type).append("\"/>\n");

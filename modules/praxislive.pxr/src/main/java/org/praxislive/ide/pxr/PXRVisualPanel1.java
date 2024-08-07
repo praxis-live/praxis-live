@@ -19,7 +19,7 @@
  * Please visit https://www.praxislive.org if you need additional information or
  * have any questions.
  */
-package org.praxislive.ide.pxr.wizard;
+package org.praxislive.ide.pxr;
 
 import java.io.File;
 import javax.swing.JPanel;
@@ -121,15 +121,15 @@ final class PXRVisualPanel1 extends JPanel implements DocumentListener {
         typeField = new javax.swing.JComboBox();
         typeLabel = new javax.swing.JLabel();
 
-        idField.setText(org.openide.util.NbBundle.getMessage(PXRVisualPanel1.class, "PXRVisualPanel1.idField.text")); // NOI18N
+        idField.setText(org.openide.util.NbBundle.getMessage(PXRVisualPanel1.class, "PXRVisualPanel1.idField.text_1")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(idLabel, org.openide.util.NbBundle.getMessage(PXRVisualPanel1.class, "PXRVisualPanel1.idLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(idLabel, org.openide.util.NbBundle.getMessage(PXRVisualPanel1.class, "PXRVisualPanel1.idLabel.text_1")); // NOI18N
 
         locationField.setEditable(false);
 
-        org.openide.awt.Mnemonics.setLocalizedText(locationLabel, org.openide.util.NbBundle.getMessage(PXRVisualPanel1.class, "PXRVisualPanel1.locationLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(locationLabel, org.openide.util.NbBundle.getMessage(PXRVisualPanel1.class, "PXRVisualPanel1.locationLabel.text_1")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(browseButton, org.openide.util.NbBundle.getMessage(PXRVisualPanel1.class, "PXRVisualPanel1.browseButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(browseButton, org.openide.util.NbBundle.getMessage(PXRVisualPanel1.class, "PXRVisualPanel1.browseButton.text_1")); // NOI18N
         browseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 browseButtonActionPerformed(evt);
@@ -138,9 +138,9 @@ final class PXRVisualPanel1 extends JPanel implements DocumentListener {
 
         fileField.setEditable(false);
 
-        org.openide.awt.Mnemonics.setLocalizedText(fileLabel, org.openide.util.NbBundle.getMessage(PXRVisualPanel1.class, "PXRVisualPanel1.fileLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(fileLabel, org.openide.util.NbBundle.getMessage(PXRVisualPanel1.class, "PXRVisualPanel1.fileLabel.text_1")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(typeLabel, org.openide.util.NbBundle.getMessage(PXRVisualPanel1.class, "PXRVisualPanel1.typeLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(typeLabel, org.openide.util.NbBundle.getMessage(PXRVisualPanel1.class, "PXRVisualPanel1.typeLabel.text_1")); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);

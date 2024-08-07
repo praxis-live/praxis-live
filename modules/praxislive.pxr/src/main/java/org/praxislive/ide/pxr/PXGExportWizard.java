@@ -19,7 +19,7 @@
  * Please visit https://www.praxislive.org if you need additional information or
  * have any questions.
  */
-package org.praxislive.ide.pxr.wizard;
+package org.praxislive.ide.pxr;
 
 import java.awt.Component;
 import java.io.File;

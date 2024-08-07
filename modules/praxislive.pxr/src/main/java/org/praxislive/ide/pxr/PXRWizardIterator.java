@@ -19,7 +19,7 @@
  * Please visit https://www.praxislive.org if you need additional information or
  * have any questions.
  */
-package org.praxislive.ide.pxr.wizard;
+package org.praxislive.ide.pxr;
 
 import java.awt.EventQueue;
 import java.io.File;
@@ -36,8 +36,6 @@ import org.praxislive.core.ComponentType;
 import org.praxislive.ide.core.api.Callback;
 import org.praxislive.ide.project.api.ExecutionLevel;
 import org.praxislive.ide.project.api.PraxisProject;
-import org.praxislive.ide.pxr.PXRDataObject;
-import org.praxislive.ide.pxr.PXRFileHandler;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.spi.project.ActionProvider;
@@ -52,7 +50,6 @@ import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.praxislive.ide.project.api.ProjectProperties;
-import org.praxislive.ide.pxr.PXRHelper;
 
 @NbBundle.Messages({
     "TITLE_buildProject=Build project?",
