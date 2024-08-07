@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2018 Neil C Smith.
+ * Copyright 2024 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -19,22 +19,33 @@
  * Please visit https://www.praxislive.org if you need additional information or
  * have any questions.
  */
-package org.praxislive.ide.core.ui.spi;
+package org.praxislive.ide.video;
 
-import javax.swing.JPanel;
+import java.util.List;
+import org.netbeans.spi.dashboard.DashboardDisplayer;
+import org.netbeans.spi.dashboard.DashboardWidget;
+import org.netbeans.spi.dashboard.WidgetElement;
+import org.openide.util.NbBundle.Messages;
 
 /**
  *
  */
-@Deprecated
-public interface StartPagePanelProvider {
+@Messages({
+    "TITLE_GStreamer=GStreamer Library",
+    "TXT_GStreamer=The GStreamer library is required for video playback and capture."
+})
+public class GStreamerWidget implements DashboardWidget {
 
-    public String getTitle();
+    @Override
+    public String title(DashboardDisplayer.Panel pnl) {
+        return Bundle.TITLE_GStreamer();
+    }
 
-    public JPanel getPanel();
-
-    public default boolean refresh() {
-        return false;
+    @Override
+    public List<WidgetElement> elements(DashboardDisplayer.Panel pnl) {
+        return List.of(
+                WidgetElement.text(Bundle.TXT_GStreamer())
+        );
     }
 
 }

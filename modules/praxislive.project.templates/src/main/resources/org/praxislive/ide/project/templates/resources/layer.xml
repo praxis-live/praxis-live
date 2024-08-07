@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
+<filesystem>
+  
+  <folder name="Dashboard">
+    <folder name="Main">
+      <file name="TemplatesWidget.shadow">
+        <attr name="originalFile" stringvalue="Dashboard/Widgets/TemplatesWidget.instance"/>
+        <attr name="position" intvalue="400"/>
+      </file>
+    </folder>
+    <folder name="Widgets">
+      <file name="TemplatesWidget.instance">
+        <attr name="instanceClass" stringvalue="org.praxislive.ide.project.templates.TemplatesWidget"/>
+      </file>
+    </folder>
+  </folder>
+  
+</filesystem>

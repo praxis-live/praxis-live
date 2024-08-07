@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2020 Neil C Smith.
+ * Copyright 2024 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -27,10 +27,12 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.CompletionStage;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.swing.Action;
+import javax.swing.Timer;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -62,7 +64,6 @@ class HubProxyImpl implements HubProxy {
 
     private final DefaultPraxisProject project;
     private final ValuePropertyAdaptor.ReadOnly rootsAdaptor;
-    private final ValuePropertyAdaptor.ReadOnly libsAdaptor;
     private final RootsChildren rootsChildren;
     private final Node hubNode;
     private final PropertyChangeSupport pcs;
@@ -71,6 +72,8 @@ class HubProxyImpl implements HubProxy {
     private final PropertyChangeListener regListener;
 
     private boolean ignoreChanges;
+    private PArray libs;
+    private Timer libsTimer;
 
     HubProxyImpl(DefaultPraxisProject project) {
         this.project = project;
@@ -82,10 +85,7 @@ class HubProxyImpl implements HubProxy {
         pcs = new PropertyChangeSupport(this);
         roots = new LinkedHashMap<>();
         rootRegistries = new ArrayList<>();
-
-        libsAdaptor = new ValuePropertyAdaptor.ReadOnly(this, "libpath", true, Binding.SyncRate.Low);
-        libsAdaptor.addPropertyChangeListener(e
-                -> this.project.updateLibs(PArray.from(libsAdaptor.getValue()).orElse(PArray.EMPTY)));
+        libs = PArray.EMPTY;
     }
 
     @Override
@@ -128,14 +128,20 @@ class HubProxyImpl implements HubProxy {
         } catch (Exception ex) {
             Exceptions.printStackTrace(ex);
         }
-//        try {
-//            var address = ControlAddress.of(
-//                    helper.findService(CodeCompilerService.class),
-//                    "libraries-path");
-//            helper.bind(address, libsAdaptor);
-//        } catch (Exception ex) {
-//            Exceptions.printStackTrace(ex);
-//        }
+        libsTimer = new Timer(10, e -> {
+            helper.execScript("libraries-path")
+                    .thenAccept(args -> {
+                        if (!args.isEmpty()) {
+                            PArray newLibs = PArray.from(args.get(0)).orElse(PArray.EMPTY);
+                            if (!Objects.equals(libs, newLibs)) {
+                                libs = newLibs;
+                                project.updateLibs(libs);
+                            }
+                        }
+                    });
+        });
+        libsTimer.setDelay(1000);
+        libsTimer.start();
         project.getLookup().lookupAll(RootRegistry.class).forEach(r -> {
             if (rootRegistries.add(r)) {
                 r.addPropertyChangeListener(regListener);
@@ -155,15 +161,10 @@ class HubProxyImpl implements HubProxy {
         } catch (Exception ex) {
             Exceptions.printStackTrace(ex);
         }
-//        try {
-//            var address = ControlAddress.of(
-//                    helper.findService(CodeCompilerService.class),
-//                    "libraries-path");
-//            helper.unbind(address, libsAdaptor);
-//            project.updateLibs(PArray.EMPTY);
-//        } catch (Exception ex) {
-//            Exceptions.printStackTrace(ex);
-//        }
+        if (libsTimer != null) {
+            libsTimer.stop();
+            libsTimer = null;
+        }
         rootsAdaptor.removePropertyChangeListener(regListener);
         rootRegistries.forEach(r -> r.removePropertyChangeListener(regListener));
         rootRegistries.clear();
