@@ -1,0 +1,5 @@
+@ /audio root:audio {
+  @ ./output audio:output {
+    .meta [map graph.x 600 graph.y 200]
+  }
+}
