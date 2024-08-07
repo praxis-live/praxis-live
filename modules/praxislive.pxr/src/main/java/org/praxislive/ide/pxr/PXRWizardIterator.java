@@ -57,22 +57,22 @@ import org.praxislive.project.GraphModel;
 import org.praxislive.project.ParseException;
 
 @TemplateRegistrations({
-    @TemplateRegistration(folder = "PXR",
+    @TemplateRegistration(folder = "Roots",
             position = 100,
             content = "resources/audio.pxr",
             displayName = "#TPL_Audio",
             category = "PXR"),
-    @TemplateRegistration(folder = "PXR",
+    @TemplateRegistration(folder = "Roots",
             position = 200,
             content = "resources/video.pxr",
             displayName = "#TPL_Video",
             category = "PXR"),
-    @TemplateRegistration(folder = "PXR",
+    @TemplateRegistration(folder = "Roots",
             position = 300,
             content = "resources/gui.pxr",
             displayName = "#TPL_GUI",
             category = "PXR"),
-    @TemplateRegistration(folder = "PXR",
+    @TemplateRegistration(folder = "Roots",
             position = 400,
             content = "resources/root.pxr",
             displayName = "#TPL_Generic",
@@ -252,10 +252,10 @@ public final class PXRWizardIterator implements WizardDescriptor.InstantiatingIt
         @Override
         public String[] getPrivilegedTemplates() {
             return new String[]{
-                "Templates/PXR/audio.pxr",
-                "Templates/PXR/video.pxr",
-                "Templates/PXR/gui.pxr",
-                "Templates/PXR/root.pxr"
+                "Templates/Roots/audio.pxr",
+                "Templates/Roots/video.pxr",
+                "Templates/Roots/gui.pxr",
+                "Templates/Roots/root.pxr"
             };
         }
 

@@ -98,11 +98,11 @@
         </folder>
     </folder>
     <folder name="Templates">
-        <folder name="Praxis">
+        <folder name="Scripts">
             <file name="PXSTemplate.pxs" url="PXSTemplate.pxs">
                 <attr name="displayName" bundlevalue="org.praxislive.ide.pxs.resources.Bundle#Templates/Other/PXSTemplate.pxs"/>
                 <attr name="template" boolvalue="true"/>
-                <attr name="templateCategory" stringvalue="praxis"/>
+                <attr name="templateCategory" stringvalue="PXS"/>
             </file>
         </folder>
     </folder>
