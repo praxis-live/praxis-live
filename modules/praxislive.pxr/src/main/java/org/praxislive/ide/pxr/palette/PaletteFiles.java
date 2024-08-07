@@ -52,6 +52,10 @@ class PaletteFiles {
         this.typeFileSystem = FileUtil.createMemoryFileSystem();
         try {
             FileUtil.createFolder(typeFileSystem.getRoot(), FOLDER);
+            for (String folder : Utils.knownFolders().values()) {
+                FileUtil.createFolder(typeFileSystem.getRoot(), FOLDER + folder);
+            }
+            refreshCategoryOrder();
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }

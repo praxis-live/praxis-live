@@ -24,8 +24,10 @@ package org.praxislive.ide.pxr.gui;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyVetoException;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Stream;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ActionMap;
@@ -62,7 +64,7 @@ import org.praxislive.ide.pxr.api.ComponentPalette;
 /**
  *
  */
-public class GuiEditor extends RootEditor {
+public class GuiEditor implements RootEditor {
 
     private final PraxisProject project;
     private final FileObject file;
@@ -153,8 +155,8 @@ public class GuiEditor extends RootEditor {
     }
 
     @Override
-    public Action[] getActions() {
-        return actions.clone();
+    public List<Action> getActions() {
+        return Stream.of(actions).toList();
     }
 
     RootProxy getRoot() {
@@ -202,7 +204,6 @@ public class GuiEditor extends RootEditor {
 
     @Override
     public void componentActivated() {
-        super.componentActivated();
         DockableGuiRoot r = DockableGuiRoot.find(project, root.getAddress().rootID());
         if (r != null) {
             r.requestConnect(this);
@@ -211,7 +212,6 @@ public class GuiEditor extends RootEditor {
 
     @Override
     public void dispose() {
-        super.dispose();
         palette.dispose();
         SwingUtilities.invokeLater(new Runnable() {
 

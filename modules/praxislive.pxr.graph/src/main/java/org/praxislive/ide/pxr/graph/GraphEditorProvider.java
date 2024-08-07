@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2020 Neil C Smith.
+ * Copyright 2024 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -35,10 +35,12 @@ import org.praxislive.ide.project.api.PraxisProject;
 public class GraphEditorProvider implements RootEditor.Provider {
 
     @Override
-    public Optional<RootEditor> createEditor(PraxisProject project, FileObject file, RootProxy root) {
+    public Optional<RootEditor> createEditor(RootProxy root, RootEditor.Context context) {
         String type = root.getType().toString();
-        if (type.startsWith("root:")) {
-            return Optional.of(new GraphEditor(project, file, root, type.substring(5)));
+        Optional<FileObject> file = context.file();
+        Optional<PraxisProject> project = context.project();
+        if (type.startsWith("root:") && file.isPresent() && project.isPresent()) {
+            return Optional.of(new GraphEditor(root, context));
         }
         return Optional.empty();
     }

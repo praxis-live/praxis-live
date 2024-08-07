@@ -58,7 +58,6 @@ import org.praxislive.core.ControlInfo;
 import org.praxislive.core.PortInfo;
 import org.praxislive.core.protocols.ComponentProtocol;
 import org.praxislive.core.protocols.ContainerProtocol;
-import org.praxislive.ide.core.api.Callback;
 import org.praxislive.ide.core.api.Syncable;
 import org.praxislive.ide.core.ui.api.Actions;
 import org.praxislive.ide.pxr.graph.scene.Alignment;
@@ -76,8 +75,13 @@ import org.praxislive.ide.pxr.api.ActionSupport;
 import org.praxislive.ide.pxr.api.EditorUtils;
 import org.praxislive.ide.pxr.spi.RootEditor;
 import java.awt.AWTEvent;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
+import java.util.Arrays;
+import java.util.EnumSet;
+import java.util.stream.Stream;
 import org.netbeans.api.visual.action.AcceptProvider;
 import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.action.ConnectProvider;
@@ -92,28 +96,31 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.explorer.ExplorerManager;
-import org.openide.explorer.ExplorerUtils;
-import org.openide.explorer.view.MenuView;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeTransfer;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle.Messages;
+import org.openide.util.Utilities;
 import org.openide.util.actions.Presenter;
 import org.openide.util.lookup.Lookups;
-import org.openide.util.lookup.ProxyLookup;
 import org.praxislive.core.Connection;
-import org.praxislive.core.Value;
-import org.praxislive.ide.code.api.SharedCodeInfo;
+import org.praxislive.ide.core.api.Disposable;
 import org.praxislive.ide.core.api.Task;
 import org.praxislive.ide.project.api.PraxisProject;
-import org.praxislive.ide.pxr.api.ComponentPalette;
 
 /**
  *
  */
-public class GraphEditor extends RootEditor {
+@Messages({
+    "LBL_PropertyModeAction=Properties",
+    "LBL_PropertyModeDefault=Default",
+    "LBL_PropertyModeShowAll=Show all",
+    "LBL_PropertyModeHideAll=Hide all"
+})
+public final class GraphEditor implements RootEditor {
 
     private final static Logger LOG = Logger.getLogger(GraphEditor.class.getName());
     final static String ATTR_GRAPH_X = "graph.x";
@@ -133,9 +140,9 @@ public class GraphEditor extends RootEditor {
     private final PraxisGraphScene<String> scene;
     private final ExplorerManager manager;
     private final Lookup lookup;
-    private final ComponentPalette palette;
 
     private final LocationAction location;
+    private final Action addAction;
     private final Action goUpAction;
     private final Action deleteAction;
     private final Action sceneCommentAction;
@@ -143,83 +150,62 @@ public class GraphEditor extends RootEditor {
     private final Action copyAction;
     private final Action pasteAction;
     private final Action duplicateAction;
-    private final JMenuItem addMenu;
+    private final Action sharedCodeAction;
 
     private JComponent panel;
-    private JComponent sharedCodePanel;
-    private Action sharedCodeAction;
-    private JComponent actionPanel;
     private ContainerProxy container;
 
-    private ActionSupport actionSupport;
     private final Point activePoint = new Point();
     private PropertyMode propertyMode = PropertyMode.Default;
     private boolean sync;
     private boolean ignoreAttributeChanges;
 
-    public GraphEditor(PraxisProject project, FileObject file, RootProxy root, String category) {
-        this.project = project;
-        this.file = file;
-        this.root = root;
+    public GraphEditor(RootProxy proxy, RootEditor.Context context) {
+        this.project = context.project().orElseThrow();
+        this.file = context.file().orElseThrow();
+        this.root = proxy;
         knownChildren = new LinkedHashMap<>();
         knownConnections = new LinkedHashSet<>();
 
         scene = new PraxisGraphScene<>(new ConnectProviderImpl(), new MenuProviderImpl());
         scene.setOrthogonalRouting(false);
-        manager = new ExplorerManager();
+        manager = context.explorerManager();
         if (root instanceof ContainerProxy) {
             container = (ContainerProxy) root;
         }
 
         deleteAction = new DeleteAction();
-        copyAction = new CopyActionPerformer(this, manager);
-        pasteAction = new PasteActionPerformer(this, manager);
-        duplicateAction = new DuplicateActionPerformer(this, manager);
-
-        palette = ComponentPalette.create(container);
+        copyAction = ActionSupport.createCopyAction(this, manager);
+        pasteAction = ActionSupport.createPasteAction(this, manager);
+        duplicateAction = ActionSupport.createDuplicateAction(this, manager);
+        exportAction = ActionSupport.createExportAction(this, manager);
+        sharedCodeAction = context.sharedCodeAction().orElse(null);
 
         var rootNode = root.getNodeDelegate();
         manager.setRootContext(rootNode);
         manager.setExploredContext(rootNode, new Node[]{rootNode});
 
-        lookup = new ProxyLookup(ExplorerUtils.createLookup(manager, buildActionMap()),
-                Lookups.fixed(palette.controller(),
-                        new PositionTransform.CopyExport(this),
-                        new PositionTransform.ImportPaste(this)));
+        lookup = Lookups.fixed(new PositionTransform.CopyExport(this),
+                new PositionTransform.ImportPaste(this));
 
-        addMenu = new MenuView.Menu(
-                palette.root(), (Node[] nodes) -> {
-            if (nodes.length == 1) {
-                ComponentType type = nodes[0].getLookup().lookup(ComponentType.class);
-                if (type != null) {
-                    EventQueue.invokeLater(() -> acceptComponentType(type));
-                    return true;
-                }
-                FileObject fo = nodes[0].getLookup().lookup(FileObject.class);
-                if (fo != null) {
-                    EventQueue.invokeLater(() -> acceptImport(fo));
-                    return true;
-                }
-            }
-            return false;
-        });
-        addMenu.setIcon(null);
-        addMenu.setText("Add");
+        addAction = org.openide.awt.Actions.forID("PXR", "org.praxislive.ide.pxr.AddChildAction");
 
-        scene.addObjectSceneListener(new SelectionListener(),
+        SelectionListener selectionListener = new SelectionListener();
+        scene.addObjectSceneListener(selectionListener,
                 ObjectSceneEventType.OBJECT_SELECTION_CHANGED);
+        manager.addPropertyChangeListener(selectionListener);
         goUpAction = new GoUpAction();
         location = new LocationAction();
         containerListener = new ContainerListener();
         infoListener = new ComponentListener();
 
         sceneCommentAction = new CommentAction(scene);
-        exportAction = new ExportAction(this, manager);
         setupSceneActions();
     }
 
-    private ActionMap buildActionMap() {
+    private ActionMap buildActionMap(ActionMap parent) {
         ActionMap am = new ActionMap();
+        am.setParent(parent);
         deleteAction.setEnabled(false);
         am.put("delete", deleteAction);
         am.put(DefaultEditorKit.copyAction, copyAction);
@@ -230,109 +216,71 @@ public class GraphEditor extends RootEditor {
 
     private void setupSceneActions() {
         scene.getActions().addAction(ActionFactory.createAcceptAction(new AcceptProviderImpl()));
-        scene.getCommentWidget().getActions().addAction(ActionFactory.createEditAction(new EditProvider() {
-
-            @Override
-            public void edit(Widget widget) {
-                sceneCommentAction.actionPerformed(new ActionEvent(scene, ActionEvent.ACTION_PERFORMED, "edit"));
-            }
+        scene.getCommentWidget().getActions().addAction(ActionFactory.createEditAction((Widget widget) -> {
+            sceneCommentAction.actionPerformed(new ActionEvent(scene, ActionEvent.ACTION_PERFORMED, "edit"));
         }));
     }
 
     private JPopupMenu getComponentPopup(NodeWidget widget) {
-        JPopupMenu menu = new JPopupMenu();
+        List<Action> actions = new ArrayList<>();
         Object obj = scene.findObject(widget);
-        if (obj instanceof String) {
-            ComponentProxy cmp = container.getChild(obj.toString());
-            if (cmp instanceof ContainerProxy) {
-                menu.add(new ContainerOpenAction((ContainerProxy) cmp));
-                menu.add(new JSeparator());
+        if (obj instanceof String id) {
+            ComponentProxy cmp = container.getChild(id);
+            if (cmp instanceof ContainerProxy container) {
+                actions.add(new ContainerOpenAction(container));
+                actions.add(null);
             }
             if (cmp != null) {
-                boolean addSep = false;
-                for (Action a : cmp.getNodeDelegate().getActions(false)) {
-                    if (a == null) {
-                        menu.add(new JSeparator());
-                        addSep = false;
-                    } else {
-                        menu.add(a);
-                        addSep = true;
-                    }
-                }
-                if (addSep) {
-                    menu.add(new JSeparator());
-                }
+                actions.addAll(Arrays.asList(cmp.getNodeDelegate().getActions(false)));
             }
         }
-        menu.add(copyAction);
-        menu.add(duplicateAction);
-        menu.add(deleteAction);
-        menu.addSeparator();
-        menu.add(exportAction);
-        menu.addSeparator();
-        menu.add(new CommentAction(widget));
-        return menu;
+        actions.add(null);
+        actions.add(copyAction);
+        actions.add(duplicateAction);
+        actions.add(deleteAction);
+        actions.add(null);
+        actions.add(exportAction);
+        actions.add(null);
+        actions.add(new CommentAction(widget));
+        return Utilities.actionsToPopup(actions.toArray(Action[]::new), getEditorComponent());
     }
 
     private JPopupMenu getConnectionPopup() {
-        JPopupMenu menu = new JPopupMenu();
-        menu.add(deleteAction);
-        return menu;
+        return Utilities.actionsToPopup(new Action[]{deleteAction}, getEditorComponent());
     }
 
     private JPopupMenu getPinPopup(PinWidget widget) {
-        JPopupMenu menu = new JPopupMenu();
         PinID<String> pin = (PinID<String>) scene.findObject(widget);
         boolean enabled = (container.getInfo().controls().contains("ports"));
         Action action = new AddPortToParentAction(this, pin);
         action.setEnabled(enabled);
-        menu.add(action);
-        return menu;
+        return Utilities.actionsToPopup(new Action[]{action}, getEditorComponent());
     }
 
     private JPopupMenu getScenePopup() {
-        JPopupMenu menu = new JPopupMenu();
-        menu.add(addMenu);
-        menu.add(pasteAction);
-        menu.addSeparator();
-        boolean addSep = false;
-        for (Action a : container.getNodeDelegate().getActions(false)) {
-            if (a == null) {
-                menu.add(new JSeparator());
-                addSep = false;
-            } else {
-                menu.add(a);
-                addSep = true;
-            }
-        }
-        if (addSep) {
-            menu.add(new JSeparator());
+        List<Action> actions = new ArrayList<>();
+        actions.add(addAction);
+        actions.add(pasteAction);
+        actions.add(null);
+        Action[] containerActions = container.getNodeDelegate().getActions(true);
+        if (containerActions.length != 0) {
+            actions.addAll(Arrays.asList(containerActions));
+            actions.add(null);
         }
 
         if (sharedCodeAction != null) {
-            menu.add(new JCheckBoxMenuItem(sharedCodeAction));
-            menu.addSeparator();
+            actions.add(sharedCodeAction);
+            actions.add(null);
         }
 
-        JMenu propertyModeMenu = new JMenu("Properties");
-        propertyModeMenu.add(new JRadioButtonMenuItem(new PropertyModeAction("Default", PropertyMode.Default)));
-        propertyModeMenu.add(new JRadioButtonMenuItem(new PropertyModeAction("Show all", PropertyMode.Show)));
-        propertyModeMenu.add(new JRadioButtonMenuItem(new PropertyModeAction("Hide all", PropertyMode.Hide)));
-        menu.add(propertyModeMenu);
+        actions.add(new PropertyModeAction());
+        actions.add(new CommentAction(scene));
+        return Utilities.actionsToPopup(actions.toArray(Action[]::new), getEditorComponent());
 
-        menu.add(new CommentAction(scene));
-        return menu;
     }
 
     PraxisGraphScene<String> getScene() {
         return scene;
-    }
-
-    ActionSupport getActionSupport() {
-        if (actionSupport == null) {
-            actionSupport = new ActionSupport(this);
-        }
-        return actionSupport;
     }
 
     ContainerProxy getContainer() {
@@ -349,35 +297,22 @@ public class GraphEditor extends RootEditor {
         activePoint.y = 100;
     }
 
-    void installToActionPanel(JComponent actionComponent) {
-        actionPanel.add(actionComponent);
-        actionPanel.revalidate();
-    }
-
-    void clearActionPanel() {
-        for (Component c : actionPanel.getComponents()) {
-            actionPanel.remove(c);
-        }
-        actionPanel.revalidate();
-        scene.getView().requestFocusInWindow();
-    }
-
     ExplorerManager getExplorerManager() {
         return manager;
     }
 
     @Override
     public void componentActivated() {
-        if (panel == null) {
-            return;
-        }
-        scene.getView().requestFocusInWindow();
+        requestFocus();
     }
 
     @Override
     public void dispose() {
-        super.dispose();
-        palette.dispose();
+        Disposable.dispose(addAction);
+        Disposable.dispose(copyAction);
+        Disposable.dispose(duplicateAction);
+        Disposable.dispose(exportAction);
+        Disposable.dispose(pasteAction);
     }
 
     @Override
@@ -413,17 +348,16 @@ public class GraphEditor extends RootEditor {
             layered.add(overlayPanel, JLayeredPane.PALETTE_LAYER);
 
             panel = new JPanel(new BorderLayout());
+            panel.addFocusListener(new FocusAdapter() {
+                @Override
+                public void focusGained(FocusEvent e) {
+                    scene.getView().requestFocusInWindow();
+                }
+
+            });
             panel.add(layered, BorderLayout.CENTER);
 
-            actionPanel = new JPanel(new BorderLayout());
-            panel.add(actionPanel, BorderLayout.SOUTH);
-
-            SharedCodeInfo sharedCtxt = root.getLookup().lookup(SharedCodeInfo.class);
-            if (sharedCtxt != null) {
-                sharedCodePanel = new SharedCodeComponent(this, sharedCtxt.getFolder());
-                sharedCodePanel.setVisible(false);
-                panel.add(sharedCodePanel, BorderLayout.WEST);
-                sharedCodeAction = new SharedCodeToggleAction();
+            if (sharedCodeAction != null) {
                 JToggleButton sharedCodeButton = new JToggleButton(sharedCodeAction);
                 gbc = new GridBagConstraints();
                 gbc.gridx = 0;
@@ -436,17 +370,7 @@ public class GraphEditor extends RootEditor {
             }
 
             InputMap im = panel.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
-            ActionMap am = panel.getActionMap();
-            im.put(KeyStroke.getKeyStroke("typed /"), "select");
-            im.put(KeyStroke.getKeyStroke("typed ."), "call");
-            im.put(KeyStroke.getKeyStroke("typed ~"), "connect");
-            im.put(KeyStroke.getKeyStroke("typed !"), "disconnect");
-            im.put(KeyStroke.getKeyStroke("typed @"), "add-component");
-            am.put("select", new SelectAction(this));
-            am.put("call", new CallAction(this));
-            am.put("connect", new ConnectAction(this, false));
-            am.put("disconnect", new ConnectAction(this, true));
-            am.put("add-component", new AddAction(this));
+            ActionMap am = buildActionMap(panel.getActionMap());
 
             im.put(KeyStroke.getKeyStroke("alt shift F"), "format");
             am.put("format", new AbstractAction("format") {
@@ -457,6 +381,8 @@ public class GraphEditor extends RootEditor {
             });
             im.put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0, true), "escape");
             am.put("escape", goUpAction);
+
+            panel.setActionMap(am);
 
             if (container != null) {
                 buildScene();
@@ -471,8 +397,21 @@ public class GraphEditor extends RootEditor {
     }
 
     @Override
-    public Action[] getActions() {
-        return new Action[]{goUpAction, location};
+    public List<Action> getActions() {
+        return List.of(goUpAction, location);
+    }
+
+    @Override
+    public boolean requestFocus() {
+        if (panel == null) {
+            return false;
+        }
+        return scene.getView().requestFocusInWindow();
+    }
+
+    @Override
+    public Set<ToolAction> supportedToolActions() {
+        return EnumSet.allOf(ToolAction.class);
     }
 
     @Override
@@ -497,8 +436,8 @@ public class GraphEditor extends RootEditor {
     }
 
     private void buildScene() {
-
         container.addPropertyChangeListener(containerListener);
+        manager.setExploredContext(container.getNodeDelegate());
         Syncable syncable = container.getLookup().lookup(Syncable.class);
         if (syncable != null) {
             syncable.addKey(this);
@@ -869,7 +808,7 @@ public class GraphEditor extends RootEditor {
     }
 
     void acceptImport(FileObject file) {
-        Task task = getActionSupport().createImportTask(container, file);
+        Task task = ActionSupport.createImportTask(this, container, file);
         task.addPropertyChangeListener(e -> {
             if (task.getState() == Task.State.ERROR) {
                 List<String> log = task.log();
@@ -1024,7 +963,9 @@ public class GraphEditor extends RootEditor {
         }
     }
 
-    private class SelectionListener extends ObjectSceneAdaptor {
+    private class SelectionListener extends ObjectSceneAdaptor implements PropertyChangeListener {
+
+        private boolean ignoreChanges;
 
         @Override
         public void selectionChanged(ObjectSceneEvent event, Set<Object> previousSelection, Set<Object> newSelection) {
@@ -1032,18 +973,21 @@ public class GraphEditor extends RootEditor {
                 if (newSelection.contains(obj)) {
                     continue;
                 }
-                if (obj instanceof String) {
-                    ComponentProxy cmp = container.getChild((String) obj);
+                if (obj instanceof String id) {
+                    ComponentProxy cmp = container.getChild(id);
                     if (cmp != null) {
                         syncAttributes(cmp);
                     }
                 }
             }
 
+            if (ignoreChanges) {
+                return;
+            }
+
             try {
-                //inSelection = true; // not needed now not listening to EM?
+                ignoreChanges = true;
                 if (newSelection.isEmpty()) {
-                    LOG.log(Level.FINEST, "newSelection is empty");
                     if (container != null) {
                         manager.setSelectedNodes(new Node[]{container.getNodeDelegate()});
                     } else {
@@ -1051,21 +995,16 @@ public class GraphEditor extends RootEditor {
                     }
                     deleteAction.setEnabled(false);
                 } else {
-                    ArrayList<Node> sel = new ArrayList<Node>();
+                    ArrayList<Node> sel = new ArrayList<>();
                     for (Object obj : newSelection) {
-//                        if (obj instanceof Node) {
-//                            sel.add((Node) obj);
-//                        }
-                        if (obj instanceof String) {
-                            ComponentProxy cmp = container.getChild((String) obj);
+                        if (obj instanceof String id) {
+                            ComponentProxy cmp = container.getChild(id);
                             if (cmp != null) {
                                 sel.add(cmp.getNodeDelegate());
                                 syncAttributes(cmp);
                             }
                         }
-
                     }
-                    LOG.log(Level.FINEST, "newSelection size is " + newSelection.size() + " and node selection size is " + sel.size());
                     if (sel.isEmpty()) {
                         manager.setSelectedNodes(new Node[]{manager.getRootContext()});
                     } else {
@@ -1076,9 +1015,45 @@ public class GraphEditor extends RootEditor {
             } catch (PropertyVetoException ex) {
                 LOG.log(Level.FINEST, "Received PropertyVetoException trying to set selected nodes", ex);
             } finally {
-                //inSelection = false;
+                ignoreChanges = false;
             }
 
+        }
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (ignoreChanges) {
+                return;
+            }
+            try {
+                ignoreChanges = true;
+                Node context = manager.getExploredContext();
+                Node[] selection = manager.getSelectedNodes();
+                ContainerProxy container = context.getLookup().lookup(ContainerProxy.class);
+                if (GraphEditor.this.container != container) {
+                    clearScene();
+                    GraphEditor.this.container = container;
+                    if (container == null) {
+                        return;
+                    }
+                    buildScene();
+                }
+                Set<String> selectedChildren = Stream.of(selection)
+                        .map(n -> n.getLookup().lookup(ComponentProxy.class))
+                        .filter(c -> c != null && c != container)
+                        .map(c -> c.getID())
+                        .filter(id -> id != null)
+                        .collect(Collectors.toCollection(LinkedHashSet::new));
+                scene.userSelectionSuggested(selectedChildren, false);
+                if (!selectedChildren.isEmpty()) {
+                    scene.setFocusedObject(selectedChildren.iterator().next());
+                } else {
+                    scene.setFocusedObject(null);
+                }
+                deleteAction.setEnabled(!selectedChildren.isEmpty());
+            } finally {
+                ignoreChanges = false;
+            }
         }
 
     }
@@ -1106,48 +1081,33 @@ public class GraphEditor extends RootEditor {
             if (sel.isEmpty()) {
                 return;
             }
-            if (!checkDeletion(sel)) {
-                return;
-            }
-            for (Object obj : sel) {
-                if (obj instanceof String) {
-                    container.removeChild((String) obj);
-                } else if (obj instanceof EdgeID) {
-                    EdgeID edge = (EdgeID) obj;
-                    PinID p1 = edge.getPin1();
-                    PinID p2 = edge.getPin2();
-                    Connection con = Connection.of(p1.getParent().toString(), p1.getName(),
-                            p2.getParent().toString(), p2.getName());
-                    container.disconnect(con);
-                }
-            }
-        }
-
-        private boolean checkDeletion(Set<?> selected) {
-            List<String> components = new ArrayList<String>();
-            for (Object o : selected) {
-                if (o instanceof String) {
-                    components.add((String) o);
-                }
-            }
-            if (components.isEmpty()) {
-                return true;
-            }
-            int count = components.size();
-            String msg = count > 1
-                    ? "Delete " + count + " components?"
-                    : "Delete " + components.get(0) + "?";
-            String title = "Confirm deletion";
-            NotifyDescriptor desc = new NotifyDescriptor.Confirmation(msg, title, NotifyDescriptor.YES_NO_OPTION);
-
-            return NotifyDescriptor.YES_OPTION.equals(DialogDisplayer.getDefault().notify(desc));
+            List<String> children = sel.stream()
+                    .filter(String.class::isInstance)
+                    .map(String.class::cast)
+                    .toList();
+            List<Connection> connections = sel.stream()
+                    .filter(EdgeID.class::isInstance)
+                    .map(o -> {
+                        EdgeID<?> edge = (EdgeID) o;
+                        PinID<?> p1 = edge.getPin1();
+                        PinID<?> p2 = edge.getPin2();
+                        return Connection.of(
+                                p1.getParent().toString(), p1.getName(),
+                                p2.getParent().toString(), p2.getName());
+                    })
+                    .toList();
+            Task.run(ActionSupport.createDeleteTask(GraphEditor.this, container, children, connections));
         }
 
     }
 
-    private class PropertyModeAction extends AbstractAction {
+    private class PropertyModeAction extends AbstractAction implements Presenter.Popup {
 
         private final PropertyMode mode;
+
+        private PropertyModeAction() {
+            this(Bundle.LBL_PropertyModeAction(), null);
+        }
 
         private PropertyModeAction(String text, PropertyMode mode) {
             super(text);
@@ -1156,7 +1116,7 @@ public class GraphEditor extends RootEditor {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            if (container == null || propertyMode == mode) {
+            if (container == null || mode == null || propertyMode == mode) {
                 return;
             }
             clearScene();
@@ -1173,18 +1133,22 @@ public class GraphEditor extends RootEditor {
             }
         }
 
-    }
-
-    private class SharedCodeToggleAction extends AbstractAction {
-
-        private SharedCodeToggleAction() {
-            super("Shared Code");
-            putValue(Action.SELECTED_KEY, sharedCodePanel.isVisible());
-        }
-
         @Override
-        public void actionPerformed(ActionEvent e) {
-            sharedCodePanel.setVisible(Boolean.TRUE.equals(getValue(Action.SELECTED_KEY)));
+        public JMenuItem getPopupPresenter() {
+            JMenu submenu = new JMenu(Bundle.LBL_PropertyModeAction());
+            submenu.add(new JRadioButtonMenuItem(
+                    new PropertyModeAction(
+                            Bundle.LBL_PropertyModeDefault(),
+                            PropertyMode.Default)));
+            submenu.add(new JRadioButtonMenuItem(
+                    new PropertyModeAction(
+                            Bundle.LBL_PropertyModeShowAll(),
+                            PropertyMode.Show)));
+            submenu.add(new JRadioButtonMenuItem(
+                    new PropertyModeAction(
+                            Bundle.LBL_PropertyModeHideAll(),
+                            PropertyMode.Hide)));
+            return submenu;
         }
 
     }

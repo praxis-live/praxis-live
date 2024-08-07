@@ -110,7 +110,6 @@ class ImportRenameSupport {
 
     private static NotifyDescriptor constructDialog(String title, JTable table) {
         JPanel panel = new JPanel(new BorderLayout());
-        table.requestFocusInWindow();
         panel.add(new JScrollPane(table));
         panel.setPreferredSize(new Dimension(350, table.getRowHeight() * (table.getRowCount() + 2)));
         NotifyDescriptor dlg = new NotifyDescriptor.Confirmation(

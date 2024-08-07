@@ -32,6 +32,7 @@ import org.openide.util.Lookup;
 import org.praxislive.core.ComponentType;
 import org.praxislive.core.protocols.ContainerProtocol;
 import org.praxislive.ide.model.ContainerProxy;
+import org.praxislive.ide.pxr.SubgraphDataObject;
 
 /**
  *
@@ -45,17 +46,17 @@ public final class DefaultComponentPalette {
     private ContainerProxy context;
     private List<ComponentType> types;
 
-    private DefaultComponentPalette(PaletteController controller, Filter filter,
-            ContainerProxy container) {
-        this.controller = controller;
-        this.filter = filter;
+    private DefaultComponentPalette(DataFolder paletteFolder) {
+        this.filter = new Filter();
+        controller = PaletteFactory.createPalette(
+                new PaletteFilterNode(this, paletteFolder.getNodeDelegate()),
+                new DefaultPaletteActions(), filter, null);
         this.listener = e -> {
             if (ContainerProtocol.SUPPORTED_TYPES.equals(e.getPropertyName())) {
                 revalidate();
             }
         };
         this.types = List.of();
-        context(container);
     }
 
     public void context(ContainerProxy context) {
@@ -103,12 +104,12 @@ public final class DefaultComponentPalette {
     }
 
     public static DefaultComponentPalette create(ContainerProxy container) {
-        Filter filter = new Filter();
         DataFolder paletteFolder = PaletteFiles.getDefault().paletteFolder();
-        Node rootNode = new PaletteFilterNode(paletteFolder.getNodeDelegate());
-        PaletteController controller = PaletteFactory.createPalette(rootNode,
-                new DefaultPaletteActions(), filter, null);
-        return new DefaultComponentPalette(controller, filter, container);
+        DefaultComponentPalette palette = new DefaultComponentPalette(paletteFolder);
+        if (container != null) {
+            palette.context(container);
+        }
+        return palette;
     }
 
     private static class Filter extends PaletteFilter {
@@ -135,9 +136,17 @@ public final class DefaultComponentPalette {
             ComponentType type = lkp.lookup(ComponentType.class);
             if (type != null) {
                 return types.contains(type);
-            } else {
-                return true;
             }
+            SubgraphDataObject.RequiredTypes reqTypes = lkp.lookup(
+                    SubgraphDataObject.RequiredTypes.class);
+            if (reqTypes != null) {
+                if (reqTypes.requiredTypes().isEmpty()) {
+                    return false;
+                } else {
+                    return types.containsAll(reqTypes.requiredTypes());
+                }
+            }
+            return true;
         }
 
         private void types(List<ComponentType> types) {

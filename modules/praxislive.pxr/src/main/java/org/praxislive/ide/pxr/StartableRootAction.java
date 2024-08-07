@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2020 Neil C Smith.
+ * Copyright 2024 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -27,47 +27,56 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JToggleButton;
-import org.praxislive.core.Value;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionRegistration;
 import org.praxislive.core.ControlAddress;
 import org.praxislive.core.protocols.StartableProtocol;
 import org.praxislive.core.types.PBoolean;
 import org.praxislive.ide.core.api.HubUnavailableException;
-import org.praxislive.ide.core.api.ValuePropertyAdaptor;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
-import org.openide.util.LookupListener;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.Utilities;
+import org.openide.util.WeakListeners;
 import org.openide.util.actions.Presenter;
-import org.praxislive.base.Binding;
 
 /**
  *
  */
-class StartableRootAction extends AbstractAction
-        implements ContextAwareAction, Presenter.Toolbar, LookupListener {
+@ActionID(category = "PXR", id = "org.praxislive.ide.pxr.StartableRootAction")
+@ActionRegistration(
+        displayName = "#CTL_StartableRootAction",
+        lazy = false
+)
+@Messages("CTL_StartableRootAction=Start")
+public class StartableRootAction extends AbstractAction
+        implements ContextAwareAction, Presenter.Toolbar {
 
     private final static String RESOURCE_DIR = "org/praxislive/ide/pxr/resources/";
 
-    private Lookup.Result<PXRRootContext> result;
+    private final PropertyChangeListener baseListener;
+    private final Lookup.Result<ActionEditorContext> result;
+    
     private PXRRootProxy root;
+    private PropertyChangeListener rootListener;
     private JToggleButton button;
-    private boolean running;
-    private ValuePropertyAdaptor.ReadOnly runningAdaptor;
 
-    StartableRootAction() {
+    public StartableRootAction() {
         this(Utilities.actionsGlobalContext());
     }
 
-    StartableRootAction(Lookup context) {
+    private StartableRootAction(Lookup context) {
         super("", ImageUtilities.loadImageIcon(RESOURCE_DIR + "play.png", true));
-        this.result = context.lookupResult(PXRRootContext.class);
-        this.result.addLookupListener(this);
+        this.result = context.lookupResult(ActionEditorContext.class);
+        this.result.addLookupListener(this::resultChanged);
+        this.baseListener = this::propertyChange;
         putValue(SELECTED_KEY, Boolean.FALSE);
         setEnabled(false);
         resultChanged(null);
@@ -97,33 +106,47 @@ class StartableRootAction extends AbstractAction
     public Component getToolbarPresenter() {
         if (button == null) {
             button = new JToggleButton(this);
-//            button.setIcon(ImageUtilities.loadImageIcon(
-//                    RESOURCE_DIR + "pxr-toggle-idle.png", true));
-//            button.setSelectedIcon(ImageUtilities.loadImageIcon(
-//                    RESOURCE_DIR + "pxr-toggle-active.png", true));
         }
         return button;
     }
 
-    @Override
-    public final void resultChanged(LookupEvent ev) {
+    private void resultChanged(LookupEvent ev) {
         if (root != null) {
             reset();
         }
-        Collection<? extends PXRRootContext> roots = result.allInstances();
+        Collection<? extends ActionEditorContext> roots = result.allInstances();
         if (roots.isEmpty()) {
             return;
         }
-        setup(roots.iterator().next().getRoot());
+        setup(roots.iterator().next().root());
+    }
+
+    private void propertyChange(PropertyChangeEvent pce) {
+        String prop = pce.getPropertyName();
+        if (prop == null || StartableProtocol.IS_RUNNING.equals(prop)) {
+            update();
+        }
+    }
+
+    private void update() {
+        PBoolean active = Optional.ofNullable(root)
+                .map(r -> r.getProperty(StartableProtocol.IS_RUNNING))
+                .map(BoundArgumentProperty::getValue)
+                .flatMap(PBoolean::from)
+                .orElse(PBoolean.FALSE);
+        putValue(SELECTED_KEY, active.value());
     }
 
     private void reset() {
         putValue(SELECTED_KEY, Boolean.FALSE);
         setEnabled(false);
-        root.getHelper().unbind(ControlAddress.of(root.getAddress(),
-                StartableProtocol.IS_RUNNING), runningAdaptor);
-        root = null;
-        runningAdaptor = null;
+        if (root != null) {
+            if (rootListener != null) {
+                root.removePropertyChangeListener(rootListener);
+            }
+            root = null;
+            rootListener = null;
+        }
     }
 
     private void setup(PXRRootProxy root) {
@@ -132,19 +155,9 @@ class StartableRootAction extends AbstractAction
             return;
         }
         setEnabled(true);
-        runningAdaptor = new ValuePropertyAdaptor.ReadOnly(this,
-                StartableProtocol.IS_RUNNING, false, Binding.SyncRate.Low);
-        runningAdaptor.addPropertyChangeListener(new PropertyChangeListener() {
-
-            @Override
-            public void propertyChange(PropertyChangeEvent pce) {
-                PBoolean selected = PBoolean.from((Value) pce.getNewValue())
-                        .orElse(PBoolean.FALSE);
-                putValue(SELECTED_KEY, selected.value());
-            }
-        });
-        root.getHelper().bind(ControlAddress.of(root.getAddress(),
-                StartableProtocol.IS_RUNNING), runningAdaptor);
+        update();
+        rootListener = WeakListeners.propertyChange(baseListener, root);
+        root.addPropertyChangeListener(rootListener);
     }
 
     private boolean isStartable(PXRRootProxy root) {

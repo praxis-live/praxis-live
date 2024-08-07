@@ -38,71 +38,10 @@ class AttrUtils {
     private AttrUtils() {
     }
 
-    static String unescape(String text) {
-        if (!text.contains("\\")) {
-            return text;
-        }
-        int len = text.length();
-        StringBuilder sb = new StringBuilder(len);
-        for (int i = 0; i < len; i++) {
-            char c = text.charAt(i);
-            if (c == '\\') {
-                i++;
-                c = text.charAt(i);
-                switch (c) {
-                    case 'n':
-                        sb.append('\n');
-                        continue;
-                    case 't':
-                        sb.append('\t');
-                        continue;
-                    case 'r':
-                        continue;
-                }
-            }
-            sb.append(c);
-        }
-        return sb.toString();
-    }
-
-    static String escape(String text) {
-        int len = text.length();
-        StringBuilder sb = new StringBuilder(len * 2);
-        for (int i = 0; i < len; i++) {
-            char c = text.charAt(i);
-            switch (c) {
-                case '{':
-                case '}':
-                case '[':
-                case ']':
-                case '\"':
-                case '\\':
-                    sb.append('\\').append(c);
-                    break;
-                case '\n':
-                    sb.append("\\n");
-                    break;
-                case '\t':
-                    sb.append("\\t");
-                    break;
-                case '\r':
-                    break;
-                default:
-                    sb.append(c);
-            }
-        }
-
-        // just in case, make sure newline isn't escaped
-        if (sb.length() > 0 && sb.charAt(sb.length() - 1) == '\\') {
-            sb.append(' ');
-        }
-        return sb.toString();
-    }
-
     static GraphModel rewriteAttr(GraphModel model) {
         return model.withTransform(r -> rewriteAttrImpl(r));
     }
-    
+
     private static void rewriteAttrImpl(GraphBuilder.Base<?> cmp) {
         PMap.Builder mb = PMap.builder();
         for (GraphElement.Comment comment : cmp.comments()) {
@@ -146,6 +85,33 @@ class AttrUtils {
                 }).toList()
         );
 
+    }
+
+    private static String unescape(String text) {
+        if (!text.contains("\\")) {
+            return text;
+        }
+        int len = text.length();
+        StringBuilder sb = new StringBuilder(len);
+        for (int i = 0; i < len; i++) {
+            char c = text.charAt(i);
+            if (c == '\\') {
+                i++;
+                c = text.charAt(i);
+                switch (c) {
+                    case 'n':
+                        sb.append('\n');
+                        continue;
+                    case 't':
+                        sb.append('\t');
+                        continue;
+                    case 'r':
+                        continue;
+                }
+            }
+            sb.append(c);
+        }
+        return sb.toString();
     }
 
 }

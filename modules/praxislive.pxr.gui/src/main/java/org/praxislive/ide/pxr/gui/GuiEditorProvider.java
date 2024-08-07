@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2020 Neil C Smith.
+ * Copyright 2024 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -37,10 +37,12 @@ import org.praxislive.ide.project.api.PraxisProject;
 public class GuiEditorProvider implements RootEditor.Provider {
 
     @Override
-    public Optional<RootEditor> createEditor(PraxisProject project, FileObject file, RootProxy model) {
-        ComponentType type = model.getType();
-        if (type.toString().equals("root:gui")) {
-            return Optional.of(new GuiEditor(project, file, model));
+    public Optional<RootEditor> createEditor(RootProxy root, RootEditor.Context context) {
+        ComponentType type = root.getType();
+        Optional<FileObject> file = context.file();
+        Optional<PraxisProject> project = context.project();
+        if (type.toString().equals("root:gui") && file.isPresent() && project.isPresent()) {
+            return Optional.of(new GuiEditor(project.orElseThrow(), file.orElseThrow(), root));
         }
         return Optional.empty();
     }
