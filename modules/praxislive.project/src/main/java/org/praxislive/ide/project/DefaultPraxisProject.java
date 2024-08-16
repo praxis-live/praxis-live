@@ -97,7 +97,7 @@ public class DefaultPraxisProject implements PraxisProject {
     public final static String LIBS_PATH = "config/libs/";
     final static String LIBS_COMMAND = "libraries {\n  " + LIBS_PATH + "*.jar\n}";
 
-    public static final int MIN_JAVA_VERSION = 11;
+    public static final int MIN_JAVA_VERSION = 21;
     public static final int MAX_JAVA_VERSION;
 
     static {
