@@ -73,7 +73,6 @@ import org.praxislive.ide.pxr.api.ActionSupport;
 import org.praxislive.ide.pxr.api.EditorUtils;
 import org.praxislive.ide.pxr.spi.ModelTransform;
 import org.praxislive.ide.pxr.spi.RootEditor;
-import org.praxislive.ide.pxr.wizard.PXGExportWizard;
 import org.praxislive.project.GraphElement;
 import org.praxislive.project.GraphModel;
 import org.praxislive.project.ParseException;

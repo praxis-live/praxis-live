@@ -1,0 +1,11 @@
+@ /video root:video {
+  .renderer OpenGL
+  .width 800
+  .height 600
+  .fps 60.0
+  @ ./screen video:output {
+    .meta [map graph.x 600 graph.y 200]
+    .always-on-top true
+    .show-cursor true
+  }
+}

@@ -19,7 +19,7 @@
  * Please visit https://www.praxislive.org if you need additional information or
  * have any questions.
  */
-package org.praxislive.ide.pxr.wizard;
+package org.praxislive.ide.pxr;
 
 import java.io.File;
 import javax.swing.JPanel;
@@ -85,18 +85,18 @@ final class PXGExportVisualPanel1 extends JPanel implements DocumentListener {
         paletteCategoryField = new javax.swing.JTextField();
         paletteCheckbox = new javax.swing.JCheckBox();
 
-        org.openide.awt.Mnemonics.setLocalizedText(nameLabel, org.openide.util.NbBundle.getMessage(PXGExportVisualPanel1.class, "PXGExportVisualPanel1.nameLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(nameLabel, org.openide.util.NbBundle.getMessage(PXGExportVisualPanel1.class, "PXGExportVisualPanel1.nameLabel.text_1")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(locationLabel, org.openide.util.NbBundle.getMessage(PXGExportVisualPanel1.class, "PXGExportVisualPanel1.locationLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(locationLabel, org.openide.util.NbBundle.getMessage(PXGExportVisualPanel1.class, "PXGExportVisualPanel1.locationLabel.text_1")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(fileLabel, org.openide.util.NbBundle.getMessage(PXGExportVisualPanel1.class, "PXGExportVisualPanel1.fileLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(fileLabel, org.openide.util.NbBundle.getMessage(PXGExportVisualPanel1.class, "PXGExportVisualPanel1.fileLabel.text_1")); // NOI18N
 
-        nameField.setText(org.openide.util.NbBundle.getMessage(PXGExportVisualPanel1.class, "PXGExportVisualPanel1.nameField.text")); // NOI18N
+        nameField.setText(org.openide.util.NbBundle.getMessage(PXGExportVisualPanel1.class, "PXGExportVisualPanel1.nameField.text_1")); // NOI18N
 
         locationField.setEditable(false);
-        locationField.setText(org.openide.util.NbBundle.getMessage(PXGExportVisualPanel1.class, "PXGExportVisualPanel1.locationField.text")); // NOI18N
+        locationField.setText(org.openide.util.NbBundle.getMessage(PXGExportVisualPanel1.class, "PXGExportVisualPanel1.locationField.text_1")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(browseButton, org.openide.util.NbBundle.getMessage(PXGExportVisualPanel1.class, "PXGExportVisualPanel1.browseButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(browseButton, org.openide.util.NbBundle.getMessage(PXGExportVisualPanel1.class, "PXGExportVisualPanel1.browseButton.text_1")); // NOI18N
         browseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 browseButtonActionPerformed(evt);
@@ -104,14 +104,14 @@ final class PXGExportVisualPanel1 extends JPanel implements DocumentListener {
         });
 
         fileField.setEditable(false);
-        fileField.setText(org.openide.util.NbBundle.getMessage(PXGExportVisualPanel1.class, "PXGExportVisualPanel1.fileField.text")); // NOI18N
+        fileField.setText(org.openide.util.NbBundle.getMessage(PXGExportVisualPanel1.class, "PXGExportVisualPanel1.fileField.text_1")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(paletteCategoryLabel, org.openide.util.NbBundle.getMessage(PXGExportVisualPanel1.class, "PXGExportVisualPanel1.paletteCategoryLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(paletteCategoryLabel, org.openide.util.NbBundle.getMessage(PXGExportVisualPanel1.class, "PXGExportVisualPanel1.paletteCategoryLabel.text_1")); // NOI18N
 
-        paletteCategoryField.setText(org.openide.util.NbBundle.getMessage(PXGExportVisualPanel1.class, "PXGExportVisualPanel1.paletteCategoryField.text")); // NOI18N
+        paletteCategoryField.setText(org.openide.util.NbBundle.getMessage(PXGExportVisualPanel1.class, "PXGExportVisualPanel1.paletteCategoryField.text_1")); // NOI18N
 
         paletteCheckbox.setSelected(true);
-        org.openide.awt.Mnemonics.setLocalizedText(paletteCheckbox, org.openide.util.NbBundle.getMessage(PXGExportVisualPanel1.class, "PXGExportVisualPanel1.paletteCheckbox.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(paletteCheckbox, org.openide.util.NbBundle.getMessage(PXGExportVisualPanel1.class, "PXGExportVisualPanel1.paletteCheckbox.text_1")); // NOI18N
         paletteCheckbox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 paletteCheckboxActionPerformed(evt);
