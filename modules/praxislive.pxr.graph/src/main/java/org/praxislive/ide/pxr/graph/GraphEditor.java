@@ -136,6 +136,7 @@ public final class GraphEditor implements RootEditor {
     private final Set<Connection> knownConnections;
     private final ContainerListener containerListener;
     private final ComponentListener infoListener;
+    private final SelectionListener selectionListener;
 
     private final PraxisGraphScene<String> scene;
     private final ExplorerManager manager;
@@ -190,7 +191,7 @@ public final class GraphEditor implements RootEditor {
 
         addAction = org.openide.awt.Actions.forID("PXR", "org.praxislive.ide.pxr.AddChildAction");
 
-        SelectionListener selectionListener = new SelectionListener();
+        selectionListener = new SelectionListener();
         scene.addObjectSceneListener(selectionListener,
                 ObjectSceneEventType.OBJECT_SELECTION_CHANGED);
         manager.addPropertyChangeListener(selectionListener);
@@ -308,6 +309,7 @@ public final class GraphEditor implements RootEditor {
 
     @Override
     public void dispose() {
+        manager.removePropertyChangeListener(selectionListener);
         Disposable.dispose(addAction);
         Disposable.dispose(copyAction);
         Disposable.dispose(duplicateAction);
@@ -1031,7 +1033,9 @@ public final class GraphEditor implements RootEditor {
                 Node[] selection = manager.getSelectedNodes();
                 ContainerProxy container = context.getLookup().lookup(ContainerProxy.class);
                 if (GraphEditor.this.container != container) {
-                    clearScene();
+                    if (GraphEditor.this.container != null) {
+                        clearScene();
+                    }
                     GraphEditor.this.container = container;
                     if (container == null) {
                         return;

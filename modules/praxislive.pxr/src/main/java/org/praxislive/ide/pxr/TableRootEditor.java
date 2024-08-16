@@ -100,7 +100,7 @@ class TableRootEditor implements RootEditor {
         TableNode tableRoot = new TableNode(rootNode);
         this.tableNodeCache.put(rootNode, tableRoot);
         this.tableEM.setRootContext(tableRoot);
-        this.baseEM.addPropertyChangeListener(WeakListeners.propertyChange(explorerSync, baseEM));
+        this.baseEM.addPropertyChangeListener(explorerSync);
         this.tableEM.addPropertyChangeListener(explorerSync);
 
     }
@@ -124,6 +124,7 @@ class TableRootEditor implements RootEditor {
     public void dispose() {
         syncables.forEach(s -> s.removeKey(this));
         syncables.clear();
+        baseEM.removePropertyChangeListener(explorerSync);
         tableEM.setRootContext(Node.EMPTY);
         tableNodeCache.clear();
     }
