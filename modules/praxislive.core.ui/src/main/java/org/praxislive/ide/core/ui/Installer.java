@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2021 Neil C Smith.
+ * Copyright 2024 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -21,7 +21,7 @@
  */
 package org.praxislive.ide.core.ui;
 
-import javax.swing.UIManager;
+import com.formdev.flatlaf.FlatLaf;
 import org.openide.modules.ModuleInstall;
 import org.openide.util.ImageUtilities;
 import org.openide.windows.TopComponent;
@@ -36,6 +36,8 @@ public class Installer extends ModuleInstall {
     public void validate() throws IllegalStateException {
         System.setProperty("netbeans.ps.hideSingleExpansion", "true");
         System.setProperty("ps.quickSearch.disabled.global", "true");
+        FlatLaf.registerCustomDefaultsSource("org.praxislive.ide.core.ui.resources",
+                getClass().getClassLoader());
     }
 
     @Override
@@ -44,13 +46,6 @@ public class Installer extends ModuleInstall {
     }
 
     private void configureUI() {
-        var defs = UIManager.getDefaults();
-        var font = defs.getFont("Label.font");
-        if (font != null) {
-            int size = font.getSize();
-            defs.put("netbeans.ps.rowheight", size * 2);
-        }
-
         WindowManager wm = WindowManager.getDefault();
         TopComponent tc = wm.findTopComponent("projectTabLogical_tc");
         tc.setIcon(ImageUtilities.loadImage("org/netbeans/modules/project/ui/resources/projectTab.png", true));
