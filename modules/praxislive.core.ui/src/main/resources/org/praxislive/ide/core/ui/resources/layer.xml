@@ -84,6 +84,24 @@
       </folder>
     </folder>
   </folder>
+
+  <folder name="Loaders">
+    <folder name="folder">
+      <folder name="any">
+        <folder name="Actions">
+          <file name="org-netbeans-core-ui-sysopen-SystemOpenAction.shadow">
+            <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-core-ui-sysopen-SystemOpenAction.instance"/>
+            <attr name="position" intvalue="260"/>
+          </file>
+          <file name="SystemOpenSeparator.instance">
+            <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+            <attr name="position" intvalue="275"/>
+          </file>
+        </folder>
+      </folder>
+    </folder>
+  </folder>
+
   <folder name="Menu">
     <folder name="BuildProject">
       <file name="org-netbeans-modules-project-ui-BuildMainProject.shadow_hidden"/>
@@ -258,7 +276,10 @@
       <file name="CascadeStyleSheet.css_hidden"/>
       <file name="CustomTask.java_hidden"/>
       <file name="EmptyYAML.yml_hidden"/>
+      <file name="File.java_hidden"/>
       <file name="GLSLTemplate.glsl_hidden"/>
+      <file name="HintSample.hint_hidden"/>
+      <file name="HintSample.test_hidden"/>
       <file name="JnlpTemplate.jnlp_hidden"/>
       <file name="Project.xml_hidden"/>
       <file name="SQLTemplate.sql_hidden"/>
@@ -360,10 +381,14 @@
     <file name="O-F6.shadow_hidden"/>
     <file name="S-F11.shadow_hidden"/>
   </folder>
-    
+
+  <folder name="UI">
+    <folder name="ToolActions_hidden"/>
+  </folder>
+
   <folder name="Windows2">
     <folder name="Background">
-      <attr name="backgroundImage" stringvalue="org/praxislive/ide/core/ui/resources/logo128.png" />
+      <attr name="backgroundImage" stringvalue="org/praxislive/ide/core/ui/resources/logo128.png"/>
       <folder name="Actions">
         <file name="org-netbeans-modules-project-ui-NewProject.shadow">
           <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-NewProject.instance"/>

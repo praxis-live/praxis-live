@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2021 Neil C Smith.
+ * Copyright 2024 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -30,6 +30,7 @@ import org.praxislive.ide.project.api.PraxisProject;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
+import org.openide.awt.Actions;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
@@ -46,7 +47,9 @@ import org.praxislive.ide.project.wizard.EmbedRuntime;
 })
 class PraxisProjectNode extends FilterNode {
 
-    private final static String ICON_PATH = "org/praxislive/ide/project/resources/pxp16.png";
+    private static final Action SYSTEM_OPEN_ACTION = Actions.forID("Edit",
+            "org.netbeans.core.ui.sysopen.SystemOpenAction");
+    private static final String ICON_PATH = "org/praxislive/ide/project/resources/pxp16.png";
     
     public PraxisProjectNode(PraxisProject project, Node original) {
         super(original, new PraxisFolderChildren(project, original),
@@ -86,6 +89,7 @@ class PraxisProjectNode extends FilterNode {
             null,
             new EmbedRuntimeAction(),
             CommonProjectActions.setAsMainProjectAction(),
+            SYSTEM_OPEN_ACTION,
             CommonProjectActions.closeProjectAction(),
             null,
             CommonProjectActions.customizeProjectAction()
