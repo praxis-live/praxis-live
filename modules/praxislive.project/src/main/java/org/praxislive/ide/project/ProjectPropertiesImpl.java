@@ -51,6 +51,7 @@ import org.praxislive.core.Value;
 import org.praxislive.core.syntax.Token;
 import org.praxislive.core.types.PArray;
 import org.praxislive.core.types.PMap;
+import org.praxislive.core.types.PResource;
 import org.praxislive.hub.net.HubConfiguration;
 import org.praxislive.ide.core.api.Callback;
 import org.praxislive.ide.project.api.ExecutionLevel;
@@ -321,6 +322,19 @@ public class ProjectPropertiesImpl implements ProjectProperties {
                 Exceptions.printStackTrace(ex);
             }
         }
+        pcs.firePropertyChange(PROP_LIBRARIES, null, null);
+    }
+
+    void updateLibraries(PArray libs) {
+        List<URI> newLibs = libs.stream()
+                .flatMap(v -> PResource.from(v).stream())
+                .map(PResource::value)
+                .toList();
+        if (libraries.equals(newLibs)) {
+            return;
+        }
+        libraries.clear();
+        libraries.addAll(newLibs);
         pcs.firePropertyChange(PROP_LIBRARIES, null, null);
     }
 

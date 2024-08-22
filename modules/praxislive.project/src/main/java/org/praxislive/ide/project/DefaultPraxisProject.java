@@ -292,9 +292,10 @@ public class DefaultPraxisProject implements PraxisProject {
 
     }
 
-    void updateLibs(PArray libs) {
+    void updateLibs(PArray newLibs, PArray newLibsPath) {
         clearLibs();
-        libPath = List.copyOf(buildLibList(libs));
+        properties.updateLibraries(newLibs);
+        libPath = List.copyOf(buildLibList(newLibsPath));
         libsCP = buildLibsClasspath(libPath);
         if (libsCP != null) {
             compileCP = ClassPathSupport.createProxyClassPath(libsCP,

@@ -28,6 +28,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -129,15 +130,20 @@ class HubProxyImpl implements HubProxy {
             Exceptions.printStackTrace(ex);
         }
         libsTimer = new Timer(10, e -> {
-            helper.execScript("libraries-path")
-                    .thenAccept(args -> {
-                        if (!args.isEmpty()) {
-                            PArray newLibs = PArray.from(args.get(0)).orElse(PArray.EMPTY);
-                            if (!Objects.equals(libs, newLibs)) {
-                                libs = newLibs;
-                                project.updateLibs(libs);
-                            }
+            helper.execScript("libraries")
+                    .thenCompose(libArgs -> {
+                        PArray newLibs = PArray.from(libArgs.get(0))
+                                .orElse(PArray.EMPTY);
+                        if (!Objects.equals(libs, newLibs)) {
+                            libs = newLibs;
+                            return helper.execScript("libraries-path")
+                                    .thenAccept(pathArgs -> {
+                                        PArray newPath = PArray.from(pathArgs.get(0)).orElse(PArray.EMPTY);
+                                        project.updateLibs(newLibs, newPath);
+                                    });
+
                         }
+                        return CompletableFuture.completedStage(null);
                     });
         });
         libsTimer.setDelay(1000);
