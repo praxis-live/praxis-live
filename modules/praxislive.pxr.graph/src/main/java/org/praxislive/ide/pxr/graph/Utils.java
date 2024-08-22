@@ -165,15 +165,15 @@ class Utils {
             }
         });
     }
-    
+
     static String nodesToGlob(Node[] nodes) {
         return Stream.of(nodes).map(Node::getName).collect(Collectors.joining("|"));
     }
-    
+
     static Colors colorsForPortType(String type) {
         return colorsForString(type);
     }
-    
+
     static Colors colorsForComponent(ComponentProxy cmp) {
         if (cmp instanceof ContainerProxy) {
             return Colors.Orange;
@@ -181,7 +181,7 @@ class Utils {
             return colorsForString(cmp.getType().toString());
         }
     }
-    
+
     private static Colors colorsForString(String string) {
         String test = string.toLowerCase();
         if (test.startsWith("audio")) {
@@ -190,8 +190,8 @@ class Utils {
         if (test.startsWith("video")) {
             return Colors.Purple;
         }
-        if (test.startsWith("tinkerforge") || test.startsWith("data")) {
-            return Colors.Yellow;
+        if (test.startsWith("data")) {
+            return Colors.Red;
         }
         return Colors.Blue;
     }
@@ -202,10 +202,10 @@ class Utils {
             for (Node.Property<?> p : ps.getProperties()) {
                 if (p.getName().equals(id)) {
                     return p;
-                } 
+                }
             }
         }
         return null;
     }
-    
+
 }

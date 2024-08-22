@@ -45,7 +45,7 @@ import org.praxislive.core.types.PMap;
  */
 public class PXRHelper extends AbstractHelperComponent {
 
-    private static final String ALLOWED_COMMANDS = "[array @ ~ file array map cd]";
+    private static final String ALLOWED_COMMANDS = "[array @ ~ file array map cd libraries]";
     private static final String EVAL_COMMAND = "eval --trap-errors --allowed-commands "
             + ALLOWED_COMMANDS + " ";
     private static final String ROOT_SCRIPT = EVAL_COMMAND + """

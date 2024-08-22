@@ -74,8 +74,13 @@ import org.praxislive.project.ParseException;
             category = "PXR"),
     @TemplateRegistration(folder = "Roots",
             position = 400,
-            content = "resources/root.pxr",
+            content = "resources/data.pxr",
             displayName = "#TPL_Generic",
+            category = "PXR"),
+    @TemplateRegistration(folder = "Roots",
+            position = 500,
+            content = "resources/root.pxr",
+            displayName = "#TPL_Custom",
             category = "PXR")
 })
 @NbBundle.Messages({
@@ -84,8 +89,9 @@ import org.praxislive.project.ParseException;
     "MSG_buildProject=Build project {0}?",
     "TPL_Audio=Audio patch",
     "TPL_Video=Video patch",
-    "TPL_GUI=Control Panel (GUI)",
-    "TPL_Generic=Generic data patch"
+    "TPL_GUI=Control panel (GUI)",
+    "TPL_Generic=Generic data patch",
+    "TPL_Custom=Custom root"
 })
 public final class PXRWizardIterator implements WizardDescriptor.InstantiatingIterator<WizardDescriptor> {
 
@@ -255,6 +261,7 @@ public final class PXRWizardIterator implements WizardDescriptor.InstantiatingIt
                 "Templates/Roots/audio.pxr",
                 "Templates/Roots/video.pxr",
                 "Templates/Roots/gui.pxr",
+                "Templates/Roots/data.pxr",
                 "Templates/Roots/root.pxr"
             };
         }
