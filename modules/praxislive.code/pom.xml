@@ -10,7 +10,7 @@
 
   <artifactId>praxislive-code</artifactId>
   <packaging>nbm</packaging>
-  
+
   <name>PraxisLIVE-Code</name>
 
   <properties>
@@ -23,7 +23,7 @@
       <artifactId>praxislive-project</artifactId>
       <version>${project.version}</version>
     </dependency>
-    
+
     <dependency>
       <groupId>org.netbeans.api</groupId>
       <artifactId>org-netbeans-api-java</artifactId>
@@ -38,7 +38,25 @@
     </dependency>
     <dependency>
       <groupId>org.netbeans.api</groupId>
+      <artifactId>org-netbeans-libs-javacapi</artifactId>
+      <version>${netbeans.version}</version>
+      <type>jar</type>
+    </dependency>
+    <dependency>
+      <groupId>org.netbeans.api</groupId>
+      <artifactId>org-netbeans-modules-java-source-base</artifactId>
+      <version>${netbeans.version}</version>
+      <type>jar</type>
+    </dependency>
+    <dependency>
+      <groupId>org.netbeans.api</groupId>
       <artifactId>org-netbeans-modules-projectapi</artifactId>
+      <version>${netbeans.version}</version>
+      <type>jar</type>
+    </dependency>
+    <dependency>
+      <groupId>org.netbeans.api</groupId>
+      <artifactId>org-netbeans-spi-java-hints</artifactId>
       <version>${netbeans.version}</version>
       <type>jar</type>
     </dependency>
