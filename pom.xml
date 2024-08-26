@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
-    
+
   <groupId>org.praxislive.ide</groupId>
   <artifactId>praxislive-parent</artifactId>
   <version>6.0.0-SNAPSHOT</version>
   <packaging>pom</packaging>
-    
+
   <name>PraxisLIVE-PARENT</name>
   <description>Live IDE for PraxisCORE</description>
   <url>https://www.praxislive.org</url>
-  
+
   <licenses>
     <license>
       <name>GPL-3.0-only</name>
@@ -18,7 +18,7 @@
       <distribution>repo</distribution>
     </license>
   </licenses>
-    
+
   <developers>
     <developer>
       <name>Neil C Smith</name>
@@ -28,7 +28,7 @@
       <email>neil@codelerity.com</email>
     </developer>
   </developers>  
-    
+
   <modules>
     <module>application</module>
     <module>branding</module>
@@ -53,7 +53,7 @@
     <module>modules/praxislive.tableeditor</module>
     <module>modules/praxislive.video</module>
   </modules>
-    
+
   <scm>
     <url>https://github.com/praxis-live/praxis-live/tree/master</url>
     <connection>scm:git:https://github.com/praxis-live/praxis-live.git</connection>
@@ -70,21 +70,21 @@
       <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
     </repository>
   </distributionManagement>
-  
+
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <brandingToken>praxislive</brandingToken>
     <netbeans.version>RELEASE220</netbeans.version>
     <praxiscore.version>${project.version}</praxiscore.version>
   </properties>
-  
+
   <build>
     <pluginManagement>
       <plugins>
         <plugin>
           <groupId>org.apache.netbeans.utilities</groupId>
           <artifactId>nbm-maven-plugin</artifactId>
-          <version>14.0</version>
+          <version>14.2</version>
           <extensions>true</extensions>
           <configuration>
             <brandingToken>${brandingToken}</brandingToken>
@@ -98,9 +98,33 @@
           </executions>
         </plugin>
         <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>flatten-maven-plugin</artifactId>
+          <version>1.6.0</version>
+          <configuration>
+            <flattenMode>ossrh</flattenMode>
+          </configuration>
+          <executions>
+            <execution>
+              <id>flatten</id>
+              <phase>process-resources</phase>
+              <goals>
+                <goal>flatten</goal>
+              </goals>
+            </execution>
+            <execution>
+              <id>flatten.clean</id>
+              <phase>clean</phase>
+              <goals>
+                <goal>clean</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
+        <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-compiler-plugin</artifactId>
-          <version>3.12.1</version>
+          <version>3.13.0</version>
           <configuration>
             <release>21</release>
           </configuration>
@@ -108,12 +132,12 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-jar-plugin</artifactId>
-          <version>3.3.0</version>
+          <version>3.4.2</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-dependency-plugin</artifactId>
-          <version>3.6.1</version>
+          <version>3.7.1</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
@@ -127,28 +151,40 @@
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-javadoc-plugin</artifactId>
+          <version>3.8.0</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-install-plugin</artifactId>
-          <version>3.1.1</version>
+          <version>3.1.2</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-deploy-plugin</artifactId>
-          <version>3.1.1</version>
+          <version>3.1.2</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-surefire-plugin</artifactId>
-          <version>3.2.5</version>
+          <version>3.3.1</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-assembly-plugin</artifactId>
-          <version>3.6.0</version>
+          <version>3.7.1</version>
         </plugin>
       </plugins>
     </pluginManagement>
+
+    <plugins>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>flatten-maven-plugin</artifactId>
+      </plugin>
+    </plugins>
   </build>
-  
+
   <profiles>
     <profile>
       <id>release</id>
@@ -157,7 +193,7 @@
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-source-plugin</artifactId>
-            <version>3.3.0</version>
+            <version>3.3.1</version>
             <executions>
               <execution>
                 <id>attach-sources</id>
@@ -170,7 +206,7 @@
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-gpg-plugin</artifactId>
-            <version>3.1.0</version>
+            <version>3.2.5</version>
             <executions>
               <execution>
                 <id>sign-artifacts</id>
@@ -189,7 +225,7 @@
       </build>
     </profile>
   </profiles>
-  
+
 
 
 </project>

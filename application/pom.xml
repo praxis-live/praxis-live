@@ -23,7 +23,7 @@
   </properties>
 
   <dependencies>
-    
+
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>praxislive-branding</artifactId>
@@ -129,8 +129,8 @@
       <artifactId>praxislive-video</artifactId>
       <version>${project.version}</version>
     </dependency>
-    
-    
+
+
     <!-- Tests -->
     <dependency>
       <groupId>org.netbeans.api</groupId>
@@ -144,8 +144,8 @@
       <version>${netbeans.version}</version>
       <scope>test</scope>
     </dependency>
-    
-    
+
+
     <!-- Platform cluster -->
     <dependency>
       <groupId>org.ow2.asm</groupId>
@@ -603,9 +603,8 @@
       <version>${netbeans.version}</version>
       <type>nbm-file</type>
     </dependency>
-    
-    
-    
+
+
     <!-- IDE cluster -->
     <dependency>
       <groupId>org.netbeans.api</groupId>
@@ -1171,8 +1170,8 @@
       <version>${netbeans.version}</version>
       <type>nbm-file</type>
     </dependency>
-    
-    
+
+
     <!-- extide cluster -->
     <dependency>
       <groupId>org.netbeans.api</groupId>
@@ -1186,8 +1185,8 @@
       <version>${netbeans.version}</version>
       <type>nbm-file</type>
     </dependency>
-    
-    
+
+
     <!-- Java cluster -->
     <dependency>
       <groupId>org.netbeans.api</groupId>
@@ -1393,9 +1392,9 @@
       <version>${netbeans.version}</version>
       <type>nbm-file</type>
     </dependency>
-                
+
   </dependencies>
-    
+
   <build>
     <plugins>
       <plugin>
@@ -1424,7 +1423,7 @@
           </execution>                                   
         </executions>
       </plugin>
-          
+
       <plugin>
         <groupId>org.apache.netbeans.utilities</groupId>
         <artifactId>nbm-maven-plugin</artifactId>
@@ -1439,7 +1438,7 @@
           </execution>
         </executions>
       </plugin>
-      
+
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-dependency-plugin</artifactId>
@@ -1491,7 +1490,7 @@
           </execution>
         </executions>
       </plugin>
-      
+
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-assembly-plugin</artifactId>
@@ -1512,7 +1511,7 @@
           </execution>
         </executions>
       </plugin>
-      
+
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-install-plugin</artifactId>
@@ -1520,7 +1519,15 @@
           <skip>true</skip>
         </configuration>
       </plugin>
-      
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-deploy-plugin</artifactId>
+        <configuration>
+          <skip>true</skip>
+        </configuration>
+      </plugin>
+
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
@@ -1536,7 +1543,7 @@
     
     </plugins>
   </build>
-  
+
   <profiles>
     <profile>
       <id>release</id>
@@ -1545,5 +1552,5 @@
       </properties>
     </profile>
   </profiles>
-    
+
 </project>
