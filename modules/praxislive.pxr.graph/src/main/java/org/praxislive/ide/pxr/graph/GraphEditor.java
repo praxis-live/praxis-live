@@ -842,6 +842,12 @@ public final class GraphEditor implements RootEditor {
                     syncChildren(false);
                 } else if (ContainerProtocol.CONNECTIONS.equals(evt.getPropertyName())) {
                     syncConnections();
+                } else if (ComponentProtocol.META.equals(evt.getPropertyName())) {
+                    String comment = Utils.getAttr(container, ATTR_GRAPH_COMMENT);
+                        comment = comment == null ? "" : comment;
+                        if (!comment.equals(scene.getComment())) {
+                            scene.setComment(comment);
+                        }
                 }
             }
 

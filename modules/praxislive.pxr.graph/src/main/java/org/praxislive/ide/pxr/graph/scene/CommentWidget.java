@@ -41,11 +41,14 @@ class CommentWidget extends Widget {
         
         setLayout(LayoutFactory.createVerticalFlowLayout());
         setMinimumSize(new Dimension(100, 10));
-        setText("");
+        text = "";
         
     }
 
     public final void setText(String text) {
+        if (this.text.equals(text)) {
+            return;
+        }
         this.text = Objects.requireNonNull(text);
         String[] lines = text.split("\n");
         removeChildren();
@@ -55,6 +58,7 @@ class CommentWidget extends Widget {
             lw.setForeground(Color.BLACK); // how to set this?
             addChild(lw);
         }
+        scene.revalidate();
     }
 
     public final String getText() {
