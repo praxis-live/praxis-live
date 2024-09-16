@@ -127,6 +127,7 @@
           <version>3.13.0</version>
           <configuration>
             <release>21</release>
+            <proc>full</proc>
           </configuration>
         </plugin>
         <plugin>
