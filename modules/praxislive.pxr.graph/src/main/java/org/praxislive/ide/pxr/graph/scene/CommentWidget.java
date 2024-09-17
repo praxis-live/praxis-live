@@ -58,7 +58,6 @@ class CommentWidget extends Widget {
             lw.setForeground(Color.BLACK); // how to set this?
             addChild(lw);
         }
-        scene.revalidate();
     }
 
     public final String getText() {

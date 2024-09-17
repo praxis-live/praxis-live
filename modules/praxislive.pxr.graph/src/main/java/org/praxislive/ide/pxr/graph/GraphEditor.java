@@ -847,6 +847,7 @@ public final class GraphEditor implements RootEditor {
                         comment = comment == null ? "" : comment;
                         if (!comment.equals(scene.getComment())) {
                             scene.setComment(comment);
+                            scene.validate();
                         }
                 }
             }
