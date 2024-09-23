@@ -74,7 +74,7 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <brandingToken>praxislive</brandingToken>
-    <netbeans.version>RELEASE220</netbeans.version>
+    <netbeans.version>RELEASE230</netbeans.version>
     <praxiscore.version>${project.version}</praxiscore.version>
   </properties>
 
