@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2020 Neil C Smith.
+ * Copyright 2024 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -118,7 +118,7 @@ class PXRComponentEditor {
         PropertySheet propertyPanel = new PropertySheet();
         propertyPanel.setNodes(new Node[]{component.getNodeDelegate()});
         propertyPanel.setDescriptionAreaVisible(false);
-        propertyPanel.setPreferredSize(new Dimension(250, calculateHeight()));
+        propertyPanel.setPreferredSize(new Dimension(350, calculateHeight()));
 
         editor = new JPanel(new BorderLayout());
         editor.add(new JScrollPane(propertyPanel), BorderLayout.CENTER);
@@ -131,8 +131,15 @@ class PXRComponentEditor {
         }
         rowHeight += 1; // padding
         int count = 0;
-        count += component.getPropertyIDs().length;
-        count += component.getTriggerActions().size();
+        Node node = component.getNodeDelegate();
+        for (Node.PropertySet propSet : node.getPropertySets()) {
+            count++;
+            for (Node.Property<?> prop : propSet.getProperties()) {
+                if (!prop.isHidden()) {
+                    count++;
+                }
+            }
+        }
         count = Math.max(count, 4); // height of at least 4 rows?
         return Math.min(count * rowHeight, 500); // max 500px high?
 

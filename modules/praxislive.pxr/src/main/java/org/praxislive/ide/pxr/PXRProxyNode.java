@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2020 Neil C Smith.
+ * Copyright 2024 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -176,8 +176,8 @@ class PXRProxyNode extends AbstractNode {
             props.put(proxyProp);
         }
 
-        for (String input : inputControls()) {
-            props.put(new InputPropertyWrapper(component, input));
+        for (FunctionPropertyWrapper input : inputControls()) {
+            props.put(input);
         }
 
         for (Action action : component.getTriggerActions()) {
@@ -195,25 +195,48 @@ class PXRProxyNode extends AbstractNode {
             }
             props.put(prop);
         }
+
+        for (FunctionPropertyWrapper function : functionControls()) {
+            props.put(function);
+        }
+
         return sheet;
     }
 
-    private List<String> inputControls() {
+    private List<FunctionPropertyWrapper> inputControls() {
         ComponentInfo info = component.getInfo();
-        List<String> inputs = new ArrayList<>();
+        List<FunctionPropertyWrapper> inputs = new ArrayList<>();
         for (String id : info.controls()) {
             ControlInfo ci = info.controlInfo(id);
             if (ci.controlType() == ControlInfo.Type.Function
                     && ci.properties().getString("input-port", "").equals(id)) {
-                inputs.add(id);
+                inputs.add(new FunctionPropertyWrapper(this, id, ci));
             }
         }
         return inputs;
     }
 
+    private List<FunctionPropertyWrapper> functionControls() {
+        ComponentInfo info = component.getInfo();
+        List<FunctionPropertyWrapper> functions = new ArrayList<>();
+        for (String id : info.controls()) {
+            ControlInfo ci = info.controlInfo(id);
+            if (ci.controlType() == ControlInfo.Type.Function
+                    && ci.properties().get("input-port") == null
+                    && !component.isHiddenFunction(id)) {
+                functions.add(new FunctionPropertyWrapper(this, id, ci));
+            }
+        }
+        return functions;
+    }
+
     @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx(component.getType().toString());
+    }
+
+    PXRComponentProxy component() {
+        return component;
     }
 
     void propertyChange(String property, Object oldValue, Object newValue) {
