@@ -35,6 +35,7 @@ import org.openide.util.lookup.ProxyLookup;
 import org.praxislive.base.Binding;
 import org.praxislive.core.ControlAddress;
 import org.praxislive.core.ControlInfo;
+import org.praxislive.core.protocols.SerializableProtocol;
 import org.praxislive.core.protocols.StartableProtocol;
 import org.praxislive.core.types.PMap;
 import org.praxislive.ide.code.api.DynamicPaths;
@@ -127,6 +128,16 @@ public class PXRRootProxy extends PXRContainerProxy implements RootProxy, Dispos
         } else {
             return super.createLookup();
         }
+    }
+
+    @Override
+    boolean isHiddenFunction(String id) {
+        return switch (id) {
+            case SerializableProtocol.SERIALIZE ->
+                true;
+            default ->
+                super.isHiddenFunction(id);
+        };
     }
 
     @Override

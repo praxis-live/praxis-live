@@ -117,6 +117,10 @@ public class PXRComponentProxy implements ComponentProxy {
         return List.of(infoProp, metaProp);
     }
 
+    boolean isHiddenFunction(String id) {
+        return ComponentProtocol.META_MERGE.equals(id);
+    }
+
     private void initProperties() {
         assert EventQueue.isDispatchThread();
         if (propertyListener == null) {

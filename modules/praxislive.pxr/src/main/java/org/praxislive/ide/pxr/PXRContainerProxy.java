@@ -83,12 +83,22 @@ public class PXRContainerProxy extends PXRComponentProxy implements ContainerPro
 
     @Override
     List<? extends PraxisProperty<?>> getProxyProperties() {
-        List<PraxisProperty<?>> proxies = new ArrayList<>(3);
+        List<PraxisProperty<?>> proxies = new ArrayList<>();
         proxies.addAll(super.getProxyProperties());
         proxies.add(childProp);
         proxies.add(conProp);
         proxies.add(supportedTypesProp);
         return proxies;
+    }
+
+    @Override
+    boolean isHiddenFunction(String id) {
+        return switch (id) {
+            case ContainerProtocol.ADD_CHILD, ContainerProtocol.REMOVE_CHILD, ContainerProtocol.CONNECT, ContainerProtocol.DISCONNECT ->
+                true;
+            default ->
+                super.isHiddenFunction(id);
+        };
     }
 
     @Override

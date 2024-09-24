@@ -35,6 +35,7 @@ public class Installer extends ModuleInstall {
     @Override
     public void validate() throws IllegalStateException {
         System.setProperty("netbeans.ps.hideSingleExpansion", "true");
+        System.setProperty("netbeans.ps.NoCommitOnFocusLoss", "true");
         System.setProperty("ps.quickSearch.disabled.global", "true");
         FlatLaf.registerCustomDefaultsSource("org.praxislive.ide.core.ui.resources",
                 getClass().getClassLoader());
