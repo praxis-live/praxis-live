@@ -270,7 +270,7 @@ public class DefaultPraxisProject implements PraxisProject {
 
     }
 
-    private void clean() {
+    void clean() {
         if (activeExec != null) {
             activeExec.cancel();
         }

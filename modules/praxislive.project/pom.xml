@@ -153,6 +153,12 @@
     </dependency>
     <dependency>
       <groupId>org.netbeans.api</groupId>
+      <artifactId>org-openide-io</artifactId>
+      <version>${netbeans.version}</version>
+      <type>jar</type>
+    </dependency>
+    <dependency>
+      <groupId>org.netbeans.api</groupId>
       <artifactId>org-openide-loaders</artifactId>
       <version>${netbeans.version}</version>
       <type>jar</type>
