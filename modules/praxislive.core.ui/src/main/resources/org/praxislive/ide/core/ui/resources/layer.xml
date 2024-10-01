@@ -34,8 +34,8 @@
         <attr name="originalFile" stringvalue="Dashboard/Widgets/IDEInfoWidget.instance"/>
         <attr name="position" intvalue="100"/>
       </file>
-      <file name="ProjectWidget.shadow">
-        <attr name="originalFile" stringvalue="Dashboard/Widgets/ProjectWidget.instance"/>
+      <file name="RecentProjectsWidget.shadow">
+        <attr name="originalFile" stringvalue="Dashboard/Widgets/RecentProjectsWidget.instance"/>
         <attr name="position" intvalue="200"/>
       </file>
       <file name="HelpWidget.shadow">
@@ -46,9 +46,6 @@
     <folder name="Widgets">
       <file name="IDEInfoWidget.instance">
         <attr name="instanceClass" stringvalue="org.praxislive.ide.core.ui.IDEInfoWidget"/>
-      </file>
-      <file name="ProjectWidget.instance">
-        <attr name="instanceClass" stringvalue="org.praxislive.ide.core.ui.ProjectWidget"/>
       </file>
       <file name="HelpWidget.instance">
         <attr name="instanceClass" stringvalue="org.praxislive.ide.core.ui.HelpWidget"/>
