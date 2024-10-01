@@ -70,7 +70,7 @@ class ChildLauncherImpl implements ChildLauncher {
     public Info launch(List<String> javaOptions, List<String> arguments)
             throws Exception {
         String name = project.getProjectDirectory().getName();
-        File launcher = CORE.launcherFile();
+        File launcher = CORE.launcherFile().toFile();
         CompletableFuture<SocketAddress> socketFuture = new CompletableFuture<>();
         StopAction stopAction = new StopAction(project);
         IO_CACHE.entrySet().removeIf(e -> e.getValue().isClosed());
