@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2020 Neil C Smith.
+ * Copyright 2024 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -23,103 +23,144 @@ package org.praxislive.ide.core.embedder;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.System.Logger.Level;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import org.openide.modules.InstalledFileLocator;
-import org.openide.modules.OnStart;
 import org.openide.util.BaseUtilities;
-import org.openide.util.Exceptions;
-
+import org.openide.util.Lookup;
 
 /**
+ * Utility class for locating bundled PraxisCORE runtime. A {@link Locator} may
+ * be registered in the global lookup to override the default locator.
  *
+ * The default locator expects the runtime to be packaged inside a
+ * {@code praxiscore} directory adjacent to the cluster containing this module.
+ * The default locator expects the CORE modules to be inside a {@code mods}
+ * directory inside the install directory. The default locator expects the
+ * launcher to be within a {@code bin} directory inside the install directory,
+ * and named {@code praxis} (Linux/macOS) or {@code praxis.cmd} (Windows).
  */
 public final class CORE {
 
-    private static final System.Logger LOG = 
-            System.getLogger(CORE.class.getName());
-    
     private CORE() {
         // static utility class
     }
 
-    public static File launcherFile() throws IOException {
-        File installDir = installDir();
-        File binDir = new File(installDir, "bin");
-        File launcher;
-        if (BaseUtilities.isWindows()) {
-            launcher = new File(binDir, "praxis.cmd");
-        } else {
-            launcher = new File(binDir, "praxis");
-        }
-        if (launcher.exists()) {
-            return launcher;
-        } else {
-            throw new IOException("No CORE launcher found");
-        }
+    /**
+     * Locate the launcher file.
+     *
+     * @return path to launcher
+     * @throws IOException if launcher not found
+     */
+    public static Path launcherFile() throws IOException {
+        return locator().findLauncher();
     }
-    
-    public static File modulesDir() throws IOException {
-        File installDir = installDir();
-        File modulesDir = new File(installDir, "mods");
-        if (modulesDir.isDirectory()) {
-            return modulesDir;
-        } else {
-            throw new IOException("No CORE modules directory found");
-        }
+
+    /**
+     * Locate the modules directory.
+     *
+     * @return path to modules directory
+     * @throws IOException if modules not found
+     */
+    public static Path modulesDir() throws IOException {
+        return locator().findModulesDir();
     }
-    
-    public static File installDir() throws IOException {
-        File modDir = InstalledFileLocator.getDefault().
-                locate("modules", "org.praxislive.ide.core.embedder", false);
-        if (modDir == null) {
-            throw new IOException("Invalid embedder module location");
-        }
-        File installDir = modDir.getParentFile().getParentFile();
-        File coreDir = new File(installDir, "praxiscore");
-        if (!coreDir.isDirectory()) {
-            throw new IOException("No embedded praxiscore directory found");
-        }
-        return coreDir;
+
+    /**
+     * Locate the CORE install directory.
+     *
+     * @return path to install directory
+     * @throws IOException if CORE installation not found
+     */
+    public static Path installDir() throws IOException {
+        return locator().findInstallDir();
     }
-    
-    @OnStart
-    public static class ClasspathEnvTask implements Runnable {
+
+    private static Locator locator() {
+        Locator locator = Lookup.getDefault().lookup(Locator.class);
+        return locator == null ? DefaultLocator.INSTANCE : locator;
+    }
+
+    /**
+     * Service provider interface for locating the CORE installation, modules
+     * and launcher file.
+     */
+    public static interface Locator {
+
+        /**
+         * Locate the launcher file.
+         *
+         * @return path to launcher
+         * @throws IOException if launcher not found
+         */
+        public Path findLauncher() throws IOException;
+
+        /**
+         * Locate the modules directory.
+         *
+         * @return path to modules directory
+         * @throws IOException if modules not found
+         */
+        public Path findModulesDir() throws IOException;
+
+        /**
+         * Locate the CORE install directory.
+         *
+         * @return path to install directory
+         * @throws IOException if CORE installation not found
+         */
+        public Path findInstallDir() throws IOException;
+
+    }
+
+    private static final class DefaultLocator implements Locator {
+
+        private static final DefaultLocator INSTANCE = new DefaultLocator();
 
         @Override
-        public void run() {
-            try {
-                File installDir = installDir();
-                File modsDir = new File(installDir, "mods");
-                List<String> files = new ArrayList<>();
-                for (File module : modsDir.listFiles()) {
-                    if (module.getName().endsWith(".jar")) {
-                        LOG.log(Level.DEBUG, () -> 
-                                "Adding " + module + " to compile classpath."
-                        );
-                        files.add(module.getAbsolutePath());
-                    }
-                }
-                if (files.isEmpty()) {
-                    return;
-                }
-                
-                String modulepath = files.stream()
-                        .collect(Collectors.joining(File.pathSeparator));
-                
-                LOG.log(Level.DEBUG, () -> 
-                        "Setting compile classpath to :\n" + modulepath);
-                
-                System.setProperty("jdk.module.path", modulepath);
-                
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
+        public Path findLauncher() throws IOException {
+            Path installDir = findInstallDir();
+            Path binDir = installDir.resolve("bin");
+            Path launcher;
+            if (BaseUtilities.isWindows()) {
+                launcher = binDir.resolve("praxis.cmd");
+            } else {
+                launcher = binDir.resolve("praxis");
             }
-            
+            if (Files.exists(launcher)) {
+                return launcher;
+            } else {
+                throw new IOException("No CORE launcher found");
+            }
         }
-        
+
+        @Override
+        public Path findModulesDir() throws IOException {
+            Path installDir = findInstallDir();
+            Path modulesDir = installDir.resolve("mods");
+            if (Files.isDirectory(modulesDir)) {
+                return modulesDir;
+            } else {
+                throw new IOException("No CORE modules directory found");
+            }
+        }
+
+        @Override
+        public Path findInstallDir() throws IOException {
+            try {
+                File modDir = InstalledFileLocator.getDefault().
+                        locate("modules", "org.praxislive.ide.core.embedder", false);
+                Path installDir = modDir.toPath().getParent().getParent();
+                Path coreDir = installDir.resolve("praxiscore");
+                if (Files.isDirectory(coreDir)) {
+                    return coreDir;
+                }
+            } catch (Exception ex) {
+                throw new IOException("No embedded praxiscore directory found", ex);
+            }
+            throw new IOException("No embedded praxiscore directory found");
+        }
+
     }
-    
+
 }
