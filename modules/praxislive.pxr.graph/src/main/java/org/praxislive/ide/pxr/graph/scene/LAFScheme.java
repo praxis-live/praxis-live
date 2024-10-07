@@ -51,27 +51,71 @@ import org.netbeans.api.visual.model.ObjectState;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.api.visual.anchor.AnchorShape;
 import org.netbeans.api.visual.anchor.PointShape;
-import org.netbeans.api.visual.anchor.PointShapeFactory;
 import org.openide.util.ImageUtilities;
 
 import java.util.Objects;
+import javax.swing.UIManager;
 
 public class LAFScheme {
 
-//    public static final String RESOURCES_KEY = "LAFScheme.Resources";
+    private static final boolean IS_DARK = UIManager.getBoolean("nb.dark.theme");
 
-    static Color OFF_WHITE = new Color(241, 249, 253);
+    public static final Color FOREGROUND
+            = findColor("praxis.graph.foreground",
+                    IS_DARK ? new Color(0xf1f9fd) : new Color(0x191919));
 
-    private static final Color DARK_GREY = Color.decode("#191919");
+    public static final Color BACKGROUND
+            = findColor("praxis.graph.background",
+                    IS_DARK ? new Color(0x191919) : new Color(0xf1f9fd));
+
+    public static final Color NODE_BACKGROUND
+            = findColor("praxis.graph.node.background",
+                    IS_DARK ? new Color(0x121212) : new Color(0xf7fdff));
+
+    public static final Colors DEFAULT_COLORS
+            = new Colors(
+                    findColor("praxis.graph.default.selected", new Color(0x748cc0)),
+                    findColor("praxis.graph.default", new Color(0xbacdf0))
+            );
+
+    public static final Colors RED
+            = new Colors(
+                    findColor("praxis.graph.red.selected", new Color(0xff2a2a)),
+                    findColor("praxis.graph.red", new Color(0xff8080))
+            );
+
+    public static final Colors GREEN
+            = new Colors(
+                    findColor("praxis.graph.green.selected", new Color(0xaad400)),
+                    findColor("praxis.graph.green", new Color(0xc6d976))
+            );
+
+    public static final Colors BLUE
+            = new Colors(
+                    findColor("praxis.graph.blue.selected", new Color(0x748cc0)),
+                    findColor("praxis.graph.blue", new Color(0xbacdf0))
+            );
+
+    public static final Colors PURPLE
+            = new Colors(
+                    findColor("praxis.graph.green.selected", new Color(0xd42aff)),
+                    findColor("praxis.graph.green", new Color(0xe580ff))
+            );
+
+    public static final Colors ORANGE
+            = new Colors(
+                    findColor("praxis.graph.green.selected", new Color(0xff9126)),
+                    findColor("praxis.graph.green", new Color(0xffb46a))
+            );
+
+    public static final Colors YELLOW
+            = new Colors(
+                    findColor("praxis.graph.green.selected", new Color(0xf9f900)),
+                    findColor("praxis.graph.green", new Color(0xffff7a))
+            );
 
     private static final Border BORDER_MINIMIZE
             = BorderFactory.createOpaqueBorder(2, 2, 2, 2);
-    private static final PointShape POINT_SHAPE_IMAGE
-            = PointShapeFactory.createImagePointShape(
-                    ImageUtilities.loadImage("org/praxislive/ide/pxr/graph/scene/resources/vmd-pin.png")); // NOI18N
-
-    private static final Colors DEFAULT_RESOURCES
-            = new Colors(new Color(0x748CC0), new Color(0xBACDF0));
 
     public static class Colors {
 
@@ -82,15 +126,15 @@ public class LAFScheme {
         private final Border BORDER_NODE_FOCUSED;
         private final Border BORDER_NODE_SELECTED;
         private final Border BORDER_NODE_SELECTED_FOCUSED;
-        
+
         private final Border BORDER_HEADER;
         private final Border BORDER_HEADER_SELECTED;
-        
+
         private final Border BORDER_SMALL_NODE;
         private final Border BORDER_SMALL_NODE_FOCUSED;
         private final Border BORDER_SMALL_NODE_SELECTED;
         private final Border BORDER_SMALL_NODE_SELECTED_FOCUSED;
-        
+
         private final Border BORDER_PIN;
         private final Border BORDER_PIN_SELECTED;
 
@@ -99,33 +143,33 @@ public class LAFScheme {
             COLOR_NORMAL = Objects.requireNonNull(normal);
             BORDER_NODE = BorderFactory.createCompositeBorder(
                     BorderFactory.createEmptyBorder(2),
-                    BorderFactory.createRoundedBorder(8, 8, 0, 0, DARK_GREY, COLOR_NORMAL));
+                    BorderFactory.createRoundedBorder(8, 8, 0, 0, NODE_BACKGROUND, COLOR_NORMAL));
             BORDER_NODE_FOCUSED = BorderFactory.createCompositeBorder(
-                    BorderFactory.createResizeBorder(2, OFF_WHITE, true),
-                    BorderFactory.createRoundedBorder(8, 8, 0, 0, DARK_GREY, COLOR_NORMAL));
+                    BorderFactory.createResizeBorder(2, FOREGROUND, true),
+                    BorderFactory.createRoundedBorder(8, 8, 0, 0, NODE_BACKGROUND, COLOR_NORMAL));
             BORDER_NODE_SELECTED = BorderFactory.createCompositeBorder(
                     BorderFactory.createEmptyBorder(2),
-                    BorderFactory.createRoundedBorder(8, 8, 0, 0, DARK_GREY, COLOR_SELECTED));
+                    BorderFactory.createRoundedBorder(8, 8, 0, 0, NODE_BACKGROUND, COLOR_SELECTED));
             BORDER_NODE_SELECTED_FOCUSED = BorderFactory.createCompositeBorder(
-                    BorderFactory.createResizeBorder(2, OFF_WHITE, true),
-                    BorderFactory.createRoundedBorder(8, 8, 0, 0, DARK_GREY, COLOR_SELECTED));
-            
+                    BorderFactory.createResizeBorder(2, FOREGROUND, true),
+                    BorderFactory.createRoundedBorder(8, 8, 0, 0, NODE_BACKGROUND, COLOR_SELECTED));
+
             BORDER_HEADER = BorderFactory.createRoundedBorder(8, 8, 8, 4, COLOR_NORMAL, COLOR_NORMAL);
             BORDER_HEADER_SELECTED = BorderFactory.createRoundedBorder(8, 8, 8, 4, COLOR_SELECTED, COLOR_SELECTED);
-            
+
             BORDER_SMALL_NODE = BorderFactory.createCompositeBorder(
                     BorderFactory.createEmptyBorder(3),
                     BorderFactory.createRoundedBorder(8, 8, 0, 0, COLOR_NORMAL, null));
             BORDER_SMALL_NODE_FOCUSED = BorderFactory.createCompositeBorder(
-                    BorderFactory.createResizeBorder(3, OFF_WHITE, true),
+                    BorderFactory.createResizeBorder(3, FOREGROUND, true),
                     BorderFactory.createRoundedBorder(8, 8, 0, 0, COLOR_NORMAL, null));
             BORDER_SMALL_NODE_SELECTED = BorderFactory.createCompositeBorder(
                     BorderFactory.createEmptyBorder(3),
                     BorderFactory.createRoundedBorder(8, 8, 0, 0, COLOR_SELECTED, null));
             BORDER_SMALL_NODE_SELECTED_FOCUSED = BorderFactory.createCompositeBorder(
-                    BorderFactory.createResizeBorder(3, OFF_WHITE, true),
+                    BorderFactory.createResizeBorder(3, FOREGROUND, true),
                     BorderFactory.createRoundedBorder(8, 8, 0, 0, COLOR_SELECTED, null));
-            
+
             BORDER_PIN = BorderFactory.createRoundedBorder(8, 8, 8, 4, null, null);
             BORDER_PIN_SELECTED = BorderFactory.createRoundedBorder(8, 8, 8, 4, null, COLOR_NORMAL);
         }
@@ -143,7 +187,7 @@ public class LAFScheme {
         ObjectState state = widget.getState();
         Colors colors = widget.getSchemeColors();
         if (colors == null) {
-            colors = DEFAULT_RESOURCES;
+            colors = DEFAULT_COLORS;
         }
         if (widget.isBelowLODThreshold()) {
             if (state.isSelected()) {
@@ -197,7 +241,7 @@ public class LAFScheme {
         widget.setSourceAnchorShape(AnchorShape.NONE);
         widget.setTargetAnchorShape(AnchorShape.NONE);
         widget.setPaintControlPoints(true);
-        widget.setForeground(OFF_WHITE);
+        widget.setForeground(FOREGROUND);
         updateUI(widget);
     }
 
@@ -205,7 +249,7 @@ public class LAFScheme {
         ObjectState state = widget.getState();
         LAFScheme.Colors colors = widget.getSchemeColors();
         if (colors == null) {
-            colors = DEFAULT_RESOURCES;
+            colors = DEFAULT_COLORS;
         }
         if (state.isHovered() || state.isSelected()) {
             widget.setEndPointShape(PointShape.SQUARE_FILLED_BIG);
@@ -238,14 +282,14 @@ public class LAFScheme {
 //                ? BORDER_PIN_HOVERED : BORDER_PIN);
         LAFScheme.Colors colors = widget.getSchemeColors();
         if (colors == null) {
-            colors = DEFAULT_RESOURCES;
+            colors = DEFAULT_COLORS;
         }
+        widget.getPinNameWidget().setForeground(IS_DARK
+                ? colors.COLOR_NORMAL : colors.COLOR_SELECTED);
         if (state.isHovered()) {
             widget.setBorder(colors.BORDER_PIN_SELECTED);
-            widget.getPinNameWidget().setForeground(colors.COLOR_NORMAL);
         } else {
             widget.setBorder(colors.BORDER_PIN);
-            widget.getPinNameWidget().setForeground(colors.COLOR_NORMAL);
         }
 
     }
@@ -255,6 +299,12 @@ public class LAFScheme {
     }
 
     protected Color getBackgroundColor() {
-        return DARK_GREY;
+        return BACKGROUND;
     }
+
+    private static Color findColor(String uiKey, Color fallback) {
+        Color color = UIManager.getColor(uiKey);
+        return color == null ? fallback : color;
+    }
+
 }
