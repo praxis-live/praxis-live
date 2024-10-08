@@ -5,7 +5,7 @@
   <parent>
     <groupId>org.praxislive.ide</groupId>
     <artifactId>praxislive-parent</artifactId>
-    <version>6.0.0-beta2</version>
+    <version>6.0.0-beta3-SNAPSHOT</version>
   </parent>
 
   <artifactId>praxislive-ide</artifactId>
