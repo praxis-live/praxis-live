@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.praxislive.ide.components.ui;
 
 import java.beans.PropertyChangeListener;
@@ -11,11 +7,11 @@ import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 
-@OptionsPanelController.SubRegistration(location = "Core",
-displayName = "#AdvancedOption_DisplayName_Components",
-keywords = "#AdvancedOption_Keywords_Components",
-keywordsCategory = "Core/Components",
-position=500)
+//@OptionsPanelController.SubRegistration(location = "Core",
+//displayName = "#AdvancedOption_DisplayName_Components",
+//keywords = "#AdvancedOption_Keywords_Components",
+//keywordsCategory = "Core/Components",
+//position=500)
 public final class ComponentsOptionsPanelController extends OptionsPanelController {
 
     private ComponentsPanel panel;

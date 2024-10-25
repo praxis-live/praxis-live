@@ -39,10 +39,7 @@ final class GeneralPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        startPageCheckbox = new javax.swing.JCheckBox();
         updatesCheckbox = new javax.swing.JCheckBox();
-
-        org.openide.awt.Mnemonics.setLocalizedText(startPageCheckbox, org.openide.util.NbBundle.getMessage(GeneralPanel.class, "GeneralPanel.startPageCheckbox.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(updatesCheckbox, org.openide.util.NbBundle.getMessage(GeneralPanel.class, "GeneralPanel.updatesCheckbox.text")); // NOI18N
 
@@ -52,19 +49,15 @@ final class GeneralPanel extends javax.swing.JPanel {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(startPageCheckbox)
-                    .addComponent(updatesCheckbox))
-                .addContainerGap(335, Short.MAX_VALUE))
+                .addComponent(updatesCheckbox)
+                .addContainerGap(361, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(14, 14, 14)
-                .addComponent(startPageCheckbox)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addContainerGap()
                 .addComponent(updatesCheckbox)
-                .addContainerGap(284, Short.MAX_VALUE))
+                .addContainerGap(320, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -81,7 +74,6 @@ final class GeneralPanel extends javax.swing.JPanel {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JCheckBox startPageCheckbox;
     private javax.swing.JCheckBox updatesCheckbox;
     // End of variables declaration//GEN-END:variables
 }
