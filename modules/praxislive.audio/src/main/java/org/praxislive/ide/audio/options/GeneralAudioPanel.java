@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 2014 Neil C Smith.
+ * Copyright 2024 Neil C Smith.
  * 
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -21,69 +21,42 @@
  */
 package org.praxislive.ide.audio.options;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
-//import java.util.Objects;
-//import org.praxislive.audio.AudioSettings;
-//
-//import org.jaudiolibs.audioservers.AudioServerProvider;
-//import org.jaudiolibs.audioservers.ext.Device;
-import org.openide.util.Lookup;
+import java.util.stream.Stream;
+import javax.sound.sampled.AudioFormat;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.DataLine;
+import javax.sound.sampled.Line;
+import javax.sound.sampled.Mixer;
+import org.praxislive.core.Settings;
 
 final class GeneralAudioPanel extends javax.swing.JPanel {
 
-    private final static String JAVASOUND = "JavaSound";
-    private final static String JACK = "JACK";
-//    private final static DeviceInfo DEFAULT_DEVICE_INFO = new DeviceInfo(null);
+    private static final String KEY_LIBRARY = "audio.library";
+    private static final String KEY_DEVICE = "audio.device";
+    private static final String KEY_BUFFERSIZE = "audio.buffersize";
+    private static final String KEY_INPUT_DEVICE = "audio.input-device";
 
-//    private final static String[] libraries = new String[]{
-//        "JavaSound", "JACK"
-//    };
-//    private final static String[] libraryDisplay = new String[]{
-//        "JavaSound", "Jack Audio Connection Kit"
-//    };
-    private final static int[] buffersizes = new int[]{
-        32, 64, 128, 256, 512, 1024, 2048, 4096
-    };
-//    private final static String[] buffersizeDisplay = new String[]{
-//        "32", "64", "128", "256", "512", "1024", "2048", "4096"
-//    };
+    private static final String JAVASOUND = "JavaSound";
+    private static final String JACK = "JACK";
+    private static final DeviceInfo DEFAULT_DEVICE_INFO = new DeviceInfo(null, 32, 32);
+
+    private static final List<Library> LIBRARIES = List.of(
+            new Library(JAVASOUND, "JavaSound"),
+            new Library(JACK, "Jack Audio Connection Kit")
+    );
+
+    private static final List<Integer> BUFFERSIZES = List.of(
+            32, 64, 128, 256, 512, 1024, 2048, 4096
+    );
+
     private final GeneralAudioOptionsPanelController controller;
-
-//    private final List<Library> libraries;
 
     GeneralAudioPanel(GeneralAudioOptionsPanelController controller) {
         this.controller = controller;
-//        this.libraries = initLibraries();
         initComponents();
-//        initChoosers();
+        initChoosers();
     }
-
-//    private List<Library> initLibraries() {
-//        List<Library> libs = new ArrayList<>();
-//        for (AudioServerProvider prov
-//                : Lookup.getDefault().lookupAll(AudioServerProvider.class)) {
-//            libs.add(new Library(prov));
-//        }
-//        Collections.sort(libs, new Comparator<Library>() {
-//
-//            @Override
-//            public int compare(Library lib1, Library lib2) {
-//                String n1 = lib1.provider.getLibraryName();
-//                String n2 = lib2.provider.getLibraryName();
-//                if (JAVASOUND.equals(n1)) {
-//                    return -1;
-//                } else if (JAVASOUND.equals(n2)) {
-//                    return 1;
-//                } else {
-//                    return n1.compareTo(n2);
-//                }
-//            }
-//        });
-//        return libs;
-//    }
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -202,118 +175,132 @@ final class GeneralAudioPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void libraryChooserActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_libraryChooserActionPerformed
-//        Object o = libraryChooser.getSelectedItem();
-//        if (o instanceof Library) {
-//            initLibrary((Library) o);
-//        }
+        Object o = libraryChooser.getSelectedItem();
+        if (o instanceof Library) {
+            initLibrary((Library) o);
+        }
     }//GEN-LAST:event_libraryChooserActionPerformed
 
     private void deviceChooserActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deviceChooserActionPerformed
-//        Object o = deviceChooser.getSelectedItem();
-//        if (o instanceof DeviceInfo) {
-//            DeviceInfo info = (DeviceInfo) o;
-//            if (info.device != null && info.device.getMaxInputChannels() > 0) {
-//                inputDeviceChooser.setSelectedItem(DEFAULT_DEVICE_INFO);
-//                inputDeviceChooser.setEnabled(false);
-//            } else {
-//                inputDeviceChooser.setEnabled(inputDeviceChooser.getItemCount() > 1);
-//            }
-//        }
+        Object o = deviceChooser.getSelectedItem();
+        if (o instanceof DeviceInfo info) {
+            if (info.name() != null && info.inputs() > 0) {
+                inputDeviceChooser.setSelectedItem(DEFAULT_DEVICE_INFO);
+                inputDeviceChooser.setEnabled(false);
+            } else {
+                inputDeviceChooser.setEnabled(inputDeviceChooser.getItemCount() > 1);
+            }
+        }
     }//GEN-LAST:event_deviceChooserActionPerformed
 
-//    private void initChoosers() {
-//        for (Library lib : libraries) {
-//            libraryChooser.addItem(lib);
-//        }
-//        for (int bsize : buffersizes) {
-//            buffersizeChooser.addItem(bsize);
-//        }
-//    }
+    private void initChoosers() {
+        LIBRARIES.forEach(libraryChooser::addItem);
+        BUFFERSIZES.forEach(buffersizeChooser::addItem);
+    }
 
     void load() {
-//        String libName = AudioSettings.getLibrary();
-//        Library active = libraries.get(0);
-//        for (Library lib : libraries) {
-//            if (lib.provider.getLibraryName().equals(libName)) {
-//                active = lib;
-//                break;
-//            }
-//        }
-//        libraryChooser.setSelectedItem(active);
+        String libName = Settings.get(KEY_LIBRARY, JAVASOUND);
+        Library active = LIBRARIES.stream()
+                .filter(l -> l.name().equals(libName))
+                .findFirst().orElse(LIBRARIES.getFirst());
+        libraryChooser.setSelectedItem(active);
     }
 
     void store() {
-//        Object o = libraryChooser.getSelectedItem();
-//        if (o instanceof Library) {
-//            AudioSettings.setLibrary(((Library)o).provider.getLibraryName());
-//        }
-//        
-//        o = deviceChooser.getSelectedItem();
-//        if (o instanceof DeviceInfo) {
-//            DeviceInfo info = (DeviceInfo) o;
-//            if (info.device != null) {
-//                AudioSettings.setDeviceName(info.device.getName());
-//            } else {
-//                AudioSettings.setDeviceName(null);
-//            }
-//        }
-//        
-//        o = inputDeviceChooser.getSelectedItem();
-//        if (o instanceof DeviceInfo) {
-//            DeviceInfo info = (DeviceInfo) o;
-//            if (info.device != null) {
-//                AudioSettings.setInputDeviceName(info.device.getName());
-//            } else {
-//                AudioSettings.setInputDeviceName(null);
-//            }
-//        }
-//        
-//        if (buffersizeChooser.isEnabled()) {
-//            o = buffersizeChooser.getSelectedItem();
-//            if (o instanceof Integer) {
-//                AudioSettings.setBuffersize((int)o);
-//            }
-//        }
-        
+        Object o = libraryChooser.getSelectedItem();
+        if (o instanceof Library library) {
+            Settings.put(KEY_LIBRARY, library.name());
+        }
+
+        o = deviceChooser.getSelectedItem();
+        if (o instanceof DeviceInfo info) {
+            Settings.put(KEY_DEVICE, info.name());
+        }
+
+        o = inputDeviceChooser.getSelectedItem();
+        if (o instanceof DeviceInfo info) {
+            Settings.put(KEY_INPUT_DEVICE, info.name());
+        }
+
+        if (buffersizeChooser.isEnabled()) {
+            o = buffersizeChooser.getSelectedItem();
+            if (o instanceof Integer buffersize) {
+                Settings.putInt(KEY_BUFFERSIZE, buffersize);
+            }
+        }
+
     }
 
-//    private void initLibrary(Library lib) {
-//        deviceChooser.removeAllItems();
-//        inputDeviceChooser.removeAllItems();
-//        String devName = AudioSettings.getDeviceName();
-//        String inDevName = AudioSettings.getInputDeviceName();
-//        DeviceInfo dev = DEFAULT_DEVICE_INFO;
-//        DeviceInfo inDev = DEFAULT_DEVICE_INFO;
-//        
-//        for (DeviceInfo devInfo : lib.devices) {
-//            deviceChooser.addItem(devInfo);
-//            if (devInfo.device != null && devInfo.device.getName().equals(devName)) {
-//                dev = devInfo;
-//            }
-//        }
-//        
-//        for (DeviceInfo devInfo : lib.inputDevices) {
-//            inputDeviceChooser.addItem(devInfo);
-//            if (devInfo.device != null && devInfo.device.getName().equals(inDevName)) {
-//                inDev = devInfo;
-//            }
-//        }
-//        
-//        inputDeviceChooser.setSelectedItem(inDev);
-//        deviceChooser.setSelectedItem(dev);
-//        
-//        int bsize = AudioSettings.getBuffersize();
-//        buffersizeChooser.setSelectedItem(bsize);
-//        
-//        inputDeviceChooser.setEnabled(inputDeviceChooser.getItemCount() > 1);
-//        deviceChooser.setEnabled(deviceChooser.getItemCount() > 1);
-//        buffersizeChooser.setEnabled(!JACK.equals(lib.provider.getLibraryName()));
-//    }
+    private void initLibrary(Library lib) {
+        deviceChooser.removeAllItems();
+        inputDeviceChooser.removeAllItems();
+        deviceChooser.addItem(DEFAULT_DEVICE_INFO);
+        deviceChooser.setSelectedItem(DEFAULT_DEVICE_INFO);
+        inputDeviceChooser.addItem(DEFAULT_DEVICE_INFO);
+        inputDeviceChooser.setSelectedItem(DEFAULT_DEVICE_INFO);
 
+        if (JAVASOUND.equals(lib.name())) {
+            String devName = Settings.get(KEY_DEVICE, "");
+            String inDevName = Settings.get(KEY_INPUT_DEVICE, "");
 
+            for (DeviceInfo info : findJavaSoundDevices()) {
+                if (info.outputs > 0) {
+                    deviceChooser.addItem(info);
+                    if (devName.equals(info.name())) {
+                        deviceChooser.setSelectedItem(info);
+                    }
+                } else if (info.inputs > 0) {
+                    inputDeviceChooser.addItem(info);
+                    if (inDevName.equals(info.name())) {
+                        inputDeviceChooser.setSelectedItem(info);
+                    }
+                }
+            }
 
+            deviceChooser.setEnabled(true);
+            inputDeviceChooser.setEnabled(inputDeviceChooser.getItemCount() > 1);
 
- 
+            int bsize = Settings.getInt(KEY_BUFFERSIZE, 2048);
+            buffersizeChooser.setSelectedItem(bsize);
+            buffersizeChooser.setEnabled(true);
+
+        } else {
+            deviceChooser.setEnabled(false);
+            inputDeviceChooser.setEnabled(false);
+            buffersizeChooser.setSelectedItem(2048);
+            buffersizeChooser.setEnabled(false);
+        }
+
+    }
+
+    private List<DeviceInfo> findJavaSoundDevices() {
+        return Stream.of(AudioSystem.getMixerInfo())
+                .map(AudioSystem::getMixer)
+                .map(mixer -> {
+                    return new DeviceInfo(mixer.getMixerInfo().getName(),
+                            maxChannels(mixer, true),
+                            maxChannels(mixer, false));
+                }).toList();
+    }
+
+    private int maxChannels(Mixer mixer, boolean input) {
+        int max = 0;
+        Line.Info[] lines = input ? mixer.getTargetLineInfo() : mixer.getSourceLineInfo();
+        for (Line.Info line : lines) {
+            if (line instanceof DataLine.Info info) {
+                AudioFormat[] formats = info.getFormats();
+                for (AudioFormat format : formats) {
+                    int channels = format.getChannels();
+                    if (channels == AudioSystem.NOT_SPECIFIED) {
+                        max = 32;
+                    } else if (channels > max) {
+                        max = channels;
+                    }
+                }
+            }
+        }
+        return max;
+    }
 
     boolean valid() {
         // check whether form is consistent and complete
@@ -332,100 +319,22 @@ final class GeneralAudioPanel extends javax.swing.JPanel {
     private javax.swing.JLabel libraryLbl;
     // End of variables declaration//GEN-END:variables
 
-//    private static class Library {
-//
-//        private final AudioServerProvider provider;
-//        private final String desc;
-//        private final DeviceInfo[] devices;
-//        private final DeviceInfo[] inputDevices;
-//
-//        private Library(AudioServerProvider provider) {
-//            this.provider = provider;
-//            String str = provider.getLibraryDescription();
-//            if (!str.isEmpty()) {
-//                desc = provider.getLibraryName() + " : " + str;
-//            } else {
-//                desc = provider.getLibraryName();
-//            }
-//            List<DeviceInfo> outs = new ArrayList<>();
-//            List<DeviceInfo> ins = new ArrayList<>();
-//            outs.add(DEFAULT_DEVICE_INFO);
-//            ins.add(DEFAULT_DEVICE_INFO);
-//            for (Device device : provider.findAll(Device.class)) {
-//                if (device.getMaxOutputChannels() > 0) {
-//                    outs.add(new DeviceInfo(device));
-//                } else if (device.getMaxInputChannels() > 0) {
-//                    ins.add(new DeviceInfo(device));
-//                }
-//            }
-//            devices = outs.toArray(new DeviceInfo[outs.size()]);
-//            inputDevices = ins.toArray(new DeviceInfo[ins.size()]);
-//        }
-//
-//        @Override
-//        public String toString() {
-//            return desc;
-//        }
-//
-//        @Override
-//        public int hashCode() {
-//            int hash = 7;
-//            hash = 97 * hash + Objects.hashCode(this.provider);
-//            return hash;
-//        }
-//
-//        @Override
-//        public boolean equals(Object obj) {
-//            if (obj == null) {
-//                return false;
-//            }
-//            if (getClass() != obj.getClass()) {
-//                return false;
-//            }
-//            final Library other = (Library) obj;
-//            if (!Objects.equals(this.provider, other.provider)) {
-//                return false;
-//            }
-//            return true;
-//        }
-//
-//    }
-//
-//    private static class DeviceInfo {
-//
-//        private final Device device;
-//
-//        private DeviceInfo(Device device) {
-//            this.device = device;
-//        }
-//
-//        @Override
-//        public String toString() {
-//            return device == null ? "Default Device" : device.getName();
-//        }
-//
-//        @Override
-//        public int hashCode() {
-//            int hash = 7;
-//            hash = 79 * hash + Objects.hashCode(this.device);
-//            return hash;
-//        }
-//
-//        @Override
-//        public boolean equals(Object obj) {
-//            if (obj == null) {
-//                return false;
-//            }
-//            if (getClass() != obj.getClass()) {
-//                return false;
-//            }
-//            final DeviceInfo other = (DeviceInfo) obj;
-//            if (!Objects.equals(this.device, other.device)) {
-//                return false;
-//            }
-//            return true;
-//        }
-//
-//    }
+    private static record Library(String name, String displayName) {
+
+        @Override
+        public String toString() {
+            return displayName();
+        }
+
+    }
+
+    private static record DeviceInfo(String name, int inputs, int outputs) {
+
+        @Override
+        public String toString() {
+            return name() == null ? "Default Device" : name();
+        }
+
+    }
 
 }
