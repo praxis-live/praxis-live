@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 2015 Neil C Smith.
+ * Copyright 2024 Neil C Smith.
  * 
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -28,12 +28,12 @@ import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 
-@OptionsPanelController.SubRegistration(location = "Video",
-id = "General",
-displayName = "#AdvancedOption_DisplayName_GeneralVideo",
-keywords = "#AdvancedOption_Keywords_GeneralVideo",
-keywordsCategory = "Video/GeneralVideo",
-position = 0)
+//@OptionsPanelController.SubRegistration(location = "Video",
+//id = "General",
+//displayName = "#AdvancedOption_DisplayName_GeneralVideo",
+//keywords = "#AdvancedOption_Keywords_GeneralVideo",
+//keywordsCategory = "Video/GeneralVideo",
+//position = 0)
 public final class GeneralVideoOptionsPanelController extends OptionsPanelController {
 
     private GeneralVideoPanel panel;
