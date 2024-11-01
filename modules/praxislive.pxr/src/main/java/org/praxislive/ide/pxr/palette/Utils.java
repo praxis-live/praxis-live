@@ -24,8 +24,9 @@ package org.praxislive.ide.pxr.palette;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.URL;
-import java.util.HashMap;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.prefs.Preferences;
@@ -49,6 +50,7 @@ class Utils {
     static final String PXR_DOWNLOAD_FOLDER = "PXR/Downloads";
     static final String PXG_FILE_PATH = PXR_DOWNLOAD_FOLDER + "/" + PXG_FILE_NAME;
     static final String PALETTE_PATH = PaletteFiles.FOLDER;
+    static final String CUSTOM_ROOTS_PATH = "Templates/Roots";
 
     private final static Map<String, String> knownFolders = Map.of(
             "audio", "audio_custom",
@@ -91,7 +93,7 @@ class Utils {
         }
 
         try {
-            installToPalette();
+            installZip();
         } catch (IOException ex) {
             throw ex;
         } catch (Exception ex) {
@@ -102,7 +104,7 @@ class Utils {
 
     }
 
-    static FileObject downloadZip() throws IOException {
+    private static FileObject downloadZip() throws IOException {
         FileObject zip = FileUtil.getConfigFile(PXG_FILE_PATH);
         if (zip != null) {
             zip.delete();
@@ -111,19 +113,20 @@ class Utils {
         FileObject folder = FileUtil.createFolder(FileUtil.getConfigRoot(), PXR_DOWNLOAD_FOLDER);
         zip = FileUtil.createData(folder, PXG_FILE_NAME);
 
-        try (InputStream in = new URL(info.get(KEY_PXG_LINK, "")).openStream(); OutputStream out = zip.getOutputStream()) {
+        try (InputStream in = new URI(info.get(KEY_PXG_LINK, "")).toURL().openStream();
+                OutputStream out = zip.getOutputStream()) {
             FileUtil.copy(in, out);
-        } catch (IOException ex) {
+        } catch (IOException | URISyntaxException ex) {
             info.remove(KEY_PXG_LINK_INSTALLED);
             zip.delete();
-            throw ex;
+            throw ex instanceof IOException ioex ? ioex : new IOException(ex);
         }
 
         return zip;
 
     }
 
-    static void installToPalette() throws Exception {
+    private static void installZip() throws Exception {
 
         FileObject zip = FileUtil.getConfigFile(PXG_FILE_PATH);
         FileObject root = FileUtil.getArchiveRoot(zip);
@@ -136,22 +139,67 @@ class Utils {
             if (!folder.isFolder()) {
                 continue;
             }
-            String targetFolder = knownFolders.get(folder.getNameExt().toLowerCase());
-            if (targetFolder == null) {
-                continue;
+            String sourceName = folder.getNameExt().toLowerCase(Locale.ROOT);
+            switch (sourceName) {
+                case "roots" ->
+                    installRoots(folder);
+                case "components" ->
+                    installComponents(folder);
+                default -> {
+                    String targetFolder = knownFolders.get(sourceName);
+                    if (targetFolder != null) {
+                        installLegacyComponents(folder, targetFolder);
+                    }
+                }
             }
-            FileObject dest = FileUtil.createFolder(
-                    FileUtil.getConfigRoot(), PALETTE_PATH + "/" + targetFolder);
-            for (FileObject file : folder.getChildren()) {
+        }
+
+    }
+
+    private static void installRoots(FileObject source) throws Exception {
+        FileObject dest = FileUtil.createFolder(FileUtil.getConfigRoot(),
+                CUSTOM_ROOTS_PATH);
+        for (FileObject file : source.getChildren()) {
+            if (file.hasExt("pxr")) {
+                FileObject existing = dest.getFileObject(file.getNameExt());
+                if (existing != null) {
+                    existing.delete();
+                }
+                FileObject template = FileUtil.copyFile(file, dest, file.getName());
+                template.setAttribute("template", true);
+                template.setAttribute("displayName", file.getName());
+            }
+        }
+    }
+
+    private static void installComponents(FileObject source) throws Exception {
+        FileObject palette = FileUtil.createFolder(FileUtil.getConfigRoot(), PALETTE_PATH);
+        for (FileObject category : source.getChildren()) {
+            FileObject dest = FileUtil.createFolder(palette, category.getNameExt());
+            for (FileObject file : category.getChildren()) {
+                if (file.hasExt("pxg")) {
+                    FileObject existing = dest.getFileObject(file.getNameExt());
+                    if (existing != null) {
+                        existing.delete();
+                    }
+                    FileUtil.copyFile(file, dest, file.getName());
+                }
+            }
+        }
+    }
+
+    private static void installLegacyComponents(FileObject source, String target) throws Exception {
+        FileObject dest = FileUtil.createFolder(
+                FileUtil.getConfigRoot(), PALETTE_PATH + "/" + target);
+        for (FileObject file : source.getChildren()) {
+            if (file.hasExt("pxg")) {
                 FileObject existing = dest.getFileObject(file.getNameExt());
                 if (existing != null) {
                     existing.delete();
                 }
                 FileUtil.copyFile(file, dest, file.getName());
             }
-
         }
-
     }
 
 }

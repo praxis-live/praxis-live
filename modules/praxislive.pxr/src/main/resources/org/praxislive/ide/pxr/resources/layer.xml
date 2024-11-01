@@ -91,13 +91,13 @@
 
 
   <folder name="Projects">
-        <folder name="org-praxislive-ide-project">
-            <folder name="Lookup">
-                <file name="org-praxislive-ide-pxr-templates-TemplateLookupProvider.instance_hidden"/>
-            </folder>
-        </folder>
+    <folder name="org-praxislive-ide-project">
+      <folder name="Lookup">
+        <file name="org-praxislive-ide-pxr-templates-TemplateLookupProvider.instance_hidden"/>
+      </folder>
     </folder>
-    <folder name="Services">
+  </folder>
+  <folder name="Services">
     <folder name="MIMEResolver">
       <file name="PXRResolver.xml" url="PXRResolver.xml">
         <attr name="displayName" bundlevalue="org.praxislive.ide.pxr.resources.Bundle#Services/MIMEResolver/PXRResolver.xml"/>
@@ -106,14 +106,9 @@
   </folder>
 
   <folder name="Templates">
-    <folder name="Praxis">
-      <!--            <file name="PXRTemplate.pxr">
-          <attr name="displayName" bundlevalue="org.praxislive.ide.pxr.resources.Bundle#Templates/Praxis/PXRTemplate.pxr"/>
-          <attr name="instantiatingIterator" newvalue="org.praxislive.ide.pxr.wizard.PXRWizardIterator"/>
-          <attr name="template" boolvalue="true"/>
-          <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/praxislive/ide/pxr/resources/pxr16.png"/>
-          <attr name="templateWizardURL" urlvalue="nbresloc:/org/praxislive/ide/pxr/resources/PXRinfo.html"/>
-      </file>-->
+    <folder name="Roots">
+      <attr name="position" intvalue="100"/>
+      <attr name="displayName" bundlevalue="org.praxislive.ide.pxr.resources.Bundle#rootsFolder"/>
     </folder>
   </folder>
 
