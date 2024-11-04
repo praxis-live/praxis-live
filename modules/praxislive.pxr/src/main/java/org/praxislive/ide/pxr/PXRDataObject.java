@@ -26,19 +26,21 @@ import java.awt.Image;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
-import java.util.Collections;
 import java.util.Enumeration;
-import javax.swing.SwingUtilities;
-import org.praxislive.core.ComponentType;
-import org.praxislive.ide.components.api.Components;
+import java.util.Set;
 import org.praxislive.ide.core.api.Task.State;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionReferences;
 import org.openide.cookies.CloseCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.MIMEResolver;
 import org.openide.loaders.DataNode;
+import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.MultiFileLoader;
@@ -48,6 +50,7 @@ import org.openide.nodes.Node;
 import org.openide.nodes.Children;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.CloneableTopComponent;
 import org.praxislive.core.ComponentAddress;
@@ -56,26 +59,86 @@ import org.praxislive.ide.project.api.ExecutionLevel;
 import org.praxislive.ide.project.api.ProjectProperties;
 import org.praxislive.project.GraphModel;
 
+@NbBundle.Messages({
+    "LBL_Root_Loader=Root Files"
+})
+@MIMEResolver.ExtensionRegistration(
+        displayName = "#LBL_Root_Loader",
+        mimeType = "text/x-praxis-root",
+        extension = {"pxr"})
+@DataObject.Registration(
+        mimeType = "text/x-praxis-root",
+        iconBase = "org/praxislive/ide/pxr/resources/pxr16.png",
+        displayName = "#LBL_Root_Loader",
+        position = 300)
+@ActionReferences({
+    @ActionReference(
+            path = "Loaders/text/x-praxis-root/Actions",
+            id = @ActionID(category = "System", id = "org.openide.actions.OpenAction"),
+            position = 100,
+            separatorAfter = 200),
+    @ActionReference(
+            path = "Loaders/text/x-praxis-root/Actions",
+            id = @ActionID(category = "Edit", id = "org.openide.actions.DeleteAction"),
+            position = 600),
+    @ActionReference(
+            path = "Loaders/text/x-praxis-root/Actions",
+            id = @ActionID(category = "System", id = "org.openide.actions.FileSystemAction"),
+            position = 1100,
+            separatorAfter = 1200),
+    @ActionReference(
+            path = "Loaders/text/x-praxis-root/Actions",
+            id
+            = @ActionID(category = "System", id = "org.openide.actions.ToolsAction"),
+            position = 1300),
+    @ActionReference(
+            path = "Loaders/text/x-praxis-root/Actions",
+            id = @ActionID(category = "PXR", id = "org.praxislive.ide.pxr.SaveAsTemplateAction"),
+            position = 1350),
+    @ActionReference(
+            path = "Loaders/text/x-praxis-root/Actions",
+            id
+            = @ActionID(category = "System", id = "org.openide.actions.PropertiesAction"),
+            position = 1400)
+})
 public class PXRDataObject extends MultiDataObject {
 
     public final static String KEY_ATTR_ROOT_TYPE = "rootType";
     private final static RequestProcessor RP = new RequestProcessor();
-    
+
     private final EditorSupport editorSupport;
     private final SaveSupport saveSupport;
-    
+
+    private String rootID;
     private Image icon;
     private DataNodeImpl node;
-    private ComponentType type;
 
-    public PXRDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException, IOException {
-        super(pf, loader);
+    public PXRDataObject(FileObject file, MultiFileLoader loader) throws DataObjectExistsException, IOException {
+        super(file, loader);
         editorSupport = new EditorSupport();
         saveSupport = new SaveSupport();
         CookieSet cookies = getCookieSet();
         cookies.add(editorSupport);
         cookies.add(saveSupport);
-        initType(pf);
+        cookies.add(new PXRWizardIterator());
+        String fileID = file.getName();
+        this.rootID = ComponentAddress.isValidID(fileID) ? fileID : "root";
+        this.icon = Icons.defaultIcon();
+        RP.execute(() -> {
+            try {
+                String script = file.asText();
+                GraphModel model = GraphModel.parse(file.getParent().toURI(), script);
+                EventQueue.invokeLater(() -> {
+                    icon = Icons.getIcon(model.root().type());
+                    rootID = model.root().id();
+                    if (node != null) {
+                        node.updateIcon();
+                    }
+                });
+            } catch (Exception ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        });
     }
 
     @Override
@@ -89,37 +152,10 @@ public class PXRDataObject extends MultiDataObject {
         return getCookieSet().getLookup();
     }
 
-    void setType(ComponentType type) {
-        if (this.type == type) {
-            return;
-        }
-        this.type = type;
-        icon = null;
-        if (type != null) {
-            var project = FileOwnerQuery.getOwner(getPrimaryFile());
-            if (project != null) {
-                var components = project.getLookup().lookup(Components.class);
-                if (components != null) {
-                    icon = components.getIcon(type);
-                }
-            }
-            if (icon == null) {
-                icon = Icons.getIcon(type);
-            }
-        }
-        if (node != null) {
-            node.updateType();
-        }
-    }
-
-    ComponentType getType() {
-        return type;
-    }
-
     void preSave() {
         editorSupport.syncEditors();
     }
-    
+
     @Override
     public boolean isCopyAllowed() {
         return false;
@@ -139,16 +175,8 @@ public class PXRDataObject extends MultiDataObject {
     protected void handleDelete() throws IOException {
         Project owner = FileOwnerQuery.getOwner(getPrimaryFile());
         if (owner != null) {
-            FileObject file = owner.getProjectDirectory();
-            file = file.getFileObject("config");
-            if (file != null) {
-                file = file.getFileObject(getName() + "_autostart");
-                if (file != null) {
-                    file.delete();
-                }
-            }
-            var proxy = PXRRootRegistry.findRootForFile(getPrimaryFile());
-            var id = getName();
+            PXRRootProxy proxy = PXRRootRegistry.findRootForFile(getPrimaryFile());
+            String id = proxy == null ? rootID : proxy.getID();
             EventQueue.invokeLater(() -> {
                 var props = owner.getLookup().lookup(ProjectProperties.class);
                 if (props != null) {
@@ -168,38 +196,12 @@ public class PXRDataObject extends MultiDataObject {
         super.handleDelete();
     }
 
-    private void initType(final FileObject file) {
-        Object attr = file.getAttribute(KEY_ATTR_ROOT_TYPE);
-        if (attr instanceof String) {
-            try {
-                ComponentType attrType = ComponentType.of(attr.toString());
-                setType(attrType);
-                return;
-            } catch (Exception ex) {
-                // fall through
-            }
+    static String findRootID(DataObject dob) {
+        if (dob instanceof PXRDataObject pxrDob) {
+            return pxrDob.rootID;
+        } else {
+            return "root";
         }
-
-        // no type attribute found
-        RP.execute(() -> {
-            try {
-                String script = file.asText();
-                GraphModel model = GraphModel.parse(file.getParent().toURI(), script);
-                ComponentType modelType = model.root().type();
-                SwingUtilities.invokeLater(() -> {
-                    setType(modelType);
-                    try {
-                        file.setAttribute(KEY_ATTR_ROOT_TYPE, modelType.toString());
-                    }catch (IOException ex) {
-                        // do nothing
-                    }
-                });
-            }catch (Exception ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        });
-
-
     }
 
     private class EditorSupport extends OpenSupport implements OpenCookie, CloseCookie {
@@ -212,7 +214,7 @@ public class PXRDataObject extends MultiDataObject {
         protected CloneableTopComponent createCloneableTopComponent() {
             return new RootEditorTopComponent(PXRDataObject.this);
         }
-        
+
         private void syncEditors() {
             if (allEditors.isEmpty()) {
                 return;
@@ -223,7 +225,7 @@ public class PXRDataObject extends MultiDataObject {
                 rootEditor.syncEditor();
             }
         }
-        
+
     }
 
     private class SaveSupport implements SaveCookie, PropertyChangeListener {
@@ -235,7 +237,7 @@ public class PXRDataObject extends MultiDataObject {
             if (task != null) {
                 return;
             }
-            task = SaveTask.createSaveTask(Collections.singleton(PXRDataObject.this));
+            task = SaveTask.createSaveTask(Set.of(PXRDataObject.this));
             task.addPropertyChangeListener(this);
             task.execute();
         }
@@ -264,19 +266,13 @@ public class PXRDataObject extends MultiDataObject {
             // add property change listener to dob
         }
 
-        private void updateType() {
+        private void updateIcon() {
             fireIconChange();
         }
 
         @Override
         public Image getIcon(int type) {
-            Image ret = dob.icon;
-            if (ret == null) {
-                return super.getIcon(type);
-            } else {
-                return ret;
-            }
-
+            return dob.icon;
         }
     }
 }

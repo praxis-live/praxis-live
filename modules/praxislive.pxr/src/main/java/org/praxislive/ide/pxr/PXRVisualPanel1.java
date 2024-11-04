@@ -24,7 +24,8 @@ package org.praxislive.ide.pxr;
 import javax.swing.JPanel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import org.openide.filesystems.FileChooserBuilder;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle.Messages;
 
 @Messages({
@@ -33,7 +34,6 @@ import org.openide.util.NbBundle.Messages;
 final class PXRVisualPanel1 extends JPanel implements DocumentListener {
 
     private final PXRWizardPanel1 wizardPanel;
-    private FileChooserBuilder fileChooser;
 
     PXRVisualPanel1(PXRWizardPanel1 wizardPanel) {
         this.wizardPanel = wizardPanel;
@@ -44,7 +44,13 @@ final class PXRVisualPanel1 extends JPanel implements DocumentListener {
     @Override
     public void addNotify() {
         super.addNotify();
-        idField.setText(wizardPanel.getTemplateFile().getName());
+        FileObject file = wizardPanel.getTemplateFile();
+        try {
+            DataObject dob = DataObject.find(file);
+            idField.setText(PXRDataObject.findRootID(dob));
+        } catch (Exception ex) {
+            idField.setText(file.getName());
+        }
     }
 
     @Override

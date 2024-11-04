@@ -37,7 +37,7 @@ import org.openide.util.NbBundle.Messages;
     "ERR_InvalidRootID=Root ID is invalid",
     "ERR_RootFileExists=A root file with this name already exists"
 })
-class PXRWizardPanel1 implements WizardDescriptor.Panel<WizardDescriptor> {
+final class PXRWizardPanel1 implements WizardDescriptor.Panel<WizardDescriptor> {
 
     private final ChangeSupport cs;
     private final FileObject projectDir;

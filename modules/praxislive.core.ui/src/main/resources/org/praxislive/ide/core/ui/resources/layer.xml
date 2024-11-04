@@ -179,7 +179,6 @@
       <!--            <file name="org-netbeans-modules-autoupdate-ui-actions-PluginManagerAction.shadow_hidden"/>-->
       <file name="org-netbeans-modules-autoupdate-ui-actions-PluginManagerAction.shadow_hidden"/>
       <file name="org-netbeans-modules-favorites-templates-TemplatesAction.shadow_hidden"/>
-      <file name="org-netbeans-modules-templates-actions-TemplatesAction.shadow_hidden"/>
       <file name="org-netbeans-modules-xml-catalog-CatalogAction.shadow_hidden"/>
       <file name="org-openide-actions-ToolsAction.shadow_hidden"/>
     </folder>
@@ -299,6 +298,7 @@
     <file name="SaaSServices_hidden"/>
     <file name="Services_hidden"/>
     <file name="SpringFramework_hidden"/>
+    <file name="UnitTests_hidden"/>
     <file name="XML_hidden"/>
   </folder>
   <folder name="Toolbars">

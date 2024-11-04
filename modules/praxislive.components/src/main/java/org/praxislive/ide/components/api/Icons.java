@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2020 Neil C Smith.
+ * Copyright 2024 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -31,17 +31,21 @@ import org.praxislive.core.ComponentType;
  */
 public final class Icons {
 
-     private static final Image DEFAULT_ICON = ImageUtilities.loadImage(
+    private static final Image DEFAULT_ICON = ImageUtilities.loadImage(
             "org/praxislive/ide/components/resources/default-icon.png", true);
-     
-     private Icons() {}
-     
-     public static Image getIcon(ComponentType type) {
+
+    private Icons() {
+    }
+
+    public static Image getIcon(ComponentType type) {
         return Lookup.getDefault().lookupAll(ComponentIconProvider.class).stream()
                 .flatMap(p -> p.getIcon(type).stream())
                 .findFirst()
                 .orElse(DEFAULT_ICON);
     }
-     
     
+    public static Image defaultIcon() {
+        return DEFAULT_ICON;
+    }
+
 }

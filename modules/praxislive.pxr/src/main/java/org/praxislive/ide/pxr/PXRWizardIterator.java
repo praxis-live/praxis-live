@@ -37,8 +37,6 @@ import org.praxislive.ide.project.api.ExecutionLevel;
 import org.praxislive.ide.project.api.PraxisProject;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.templates.TemplateRegistration;
-import org.netbeans.api.templates.TemplateRegistrations;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.ui.PrivilegedTemplates;
@@ -49,6 +47,7 @@ import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.TemplateWizard;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -56,44 +55,13 @@ import org.praxislive.ide.project.api.ProjectProperties;
 import org.praxislive.project.GraphModel;
 import org.praxislive.project.ParseException;
 
-@TemplateRegistrations({
-    @TemplateRegistration(folder = "Roots",
-            position = 100,
-            content = "resources/audio.pxr",
-            displayName = "#TPL_Audio",
-            category = "PXR"),
-    @TemplateRegistration(folder = "Roots",
-            position = 200,
-            content = "resources/video.pxr",
-            displayName = "#TPL_Video",
-            category = "PXR"),
-    @TemplateRegistration(folder = "Roots",
-            position = 300,
-            content = "resources/gui.pxr",
-            displayName = "#TPL_GUI",
-            category = "PXR"),
-    @TemplateRegistration(folder = "Roots",
-            position = 400,
-            content = "resources/data.pxr",
-            displayName = "#TPL_Generic",
-            category = "PXR"),
-    @TemplateRegistration(folder = "Roots",
-            position = 500,
-            content = "resources/root.pxr",
-            displayName = "#TPL_Custom",
-            category = "PXR")
-})
+
 @NbBundle.Messages({
     "TITLE_buildProject=Build project?",
     "# {0} - project name",
-    "MSG_buildProject=Build project {0}?",
-    "TPL_Audio=Audio patch",
-    "TPL_Video=Video patch",
-    "TPL_GUI=Control panel (GUI)",
-    "TPL_Generic=Generic data patch",
-    "TPL_Custom=Custom root"
+    "MSG_buildProject=Build project {0}?"
 })
-public final class PXRWizardIterator implements WizardDescriptor.InstantiatingIterator<WizardDescriptor> {
+final class PXRWizardIterator implements TemplateWizard.Iterator {
 
     final static Logger LOG = Logger.getLogger(PXRWizardIterator.class.getName());
 
@@ -101,12 +69,10 @@ public final class PXRWizardIterator implements WizardDescriptor.InstantiatingIt
     public final static String PROP_PXR_FILE = "PXR.file";
     public final static String PROP_PXR_TYPE = "PXR.type";
     private int index;
-    private WizardDescriptor wizard;
     private WizardDescriptor.Panel[] panels;
 
     @Override
-    public void initialize(WizardDescriptor wizard) {
-        this.wizard = wizard;
+    public void initialize(TemplateWizard wizard) {
         FileObject projectDir = Templates.getProject(wizard).getProjectDirectory();
         FileObject templateFile = Templates.getTemplate(wizard);
         panels = new WizardDescriptor.Panel[]{
@@ -115,7 +81,7 @@ public final class PXRWizardIterator implements WizardDescriptor.InstantiatingIt
     }
 
     @Override
-    public Set instantiate() throws IOException {
+    public Set<DataObject> instantiate(TemplateWizard wizard) throws IOException {
         try {
             String id = wizard.getProperty(PROP_PXR_ID).toString();
             Project project = Templates.getProject(wizard);
@@ -157,15 +123,14 @@ public final class PXRWizardIterator implements WizardDescriptor.InstantiatingIt
                     Exceptions.printStackTrace(ex);
                 }
             }
-
-            return Collections.singleton(file);
+            return Collections.singleton(DataObject.find(file));
         } catch (ParseException ex) {
             throw new IOException(ex);
         }
     }
 
     @Override
-    public void uninitialize(WizardDescriptor wizard) {
+    public void uninitialize(TemplateWizard wizard) {
         panels = null;
     }
 
