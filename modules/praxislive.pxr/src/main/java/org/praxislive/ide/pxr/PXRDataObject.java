@@ -26,15 +26,19 @@ import java.awt.Image;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
-import java.util.Collections;
 import java.util.Enumeration;
+import java.util.Set;
 import org.praxislive.ide.core.api.Task.State;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionReferences;
 import org.openide.cookies.CloseCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.MIMEResolver;
 import org.openide.loaders.DataNode;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectExistsException;
@@ -46,6 +50,7 @@ import org.openide.nodes.Node;
 import org.openide.nodes.Children;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.CloneableTopComponent;
 import org.praxislive.core.ComponentAddress;
@@ -54,6 +59,48 @@ import org.praxislive.ide.project.api.ExecutionLevel;
 import org.praxislive.ide.project.api.ProjectProperties;
 import org.praxislive.project.GraphModel;
 
+@NbBundle.Messages({
+    "LBL_Root_Loader=Root Files"
+})
+@MIMEResolver.ExtensionRegistration(
+        displayName = "#LBL_Root_Loader",
+        mimeType = "text/x-praxis-root",
+        extension = {"pxr"})
+@DataObject.Registration(
+        mimeType = "text/x-praxis-root",
+        iconBase = "org/praxislive/ide/pxr/resources/pxr16.png",
+        displayName = "#LBL_Root_Loader",
+        position = 300)
+@ActionReferences({
+    @ActionReference(
+            path = "Loaders/text/x-praxis-root/Actions",
+            id = @ActionID(category = "System", id = "org.openide.actions.OpenAction"),
+            position = 100,
+            separatorAfter = 200),
+    @ActionReference(
+            path = "Loaders/text/x-praxis-root/Actions",
+            id = @ActionID(category = "Edit", id = "org.openide.actions.DeleteAction"),
+            position = 600),
+    @ActionReference(
+            path = "Loaders/text/x-praxis-root/Actions",
+            id = @ActionID(category = "System", id = "org.openide.actions.FileSystemAction"),
+            position = 1100,
+            separatorAfter = 1200),
+    @ActionReference(
+            path = "Loaders/text/x-praxis-root/Actions",
+            id
+            = @ActionID(category = "System", id = "org.openide.actions.ToolsAction"),
+            position = 1300),
+    @ActionReference(
+            path = "Loaders/text/x-praxis-root/Actions",
+            id = @ActionID(category = "PXR", id = "org.praxislive.ide.pxr.SaveAsTemplateAction"),
+            position = 1350),
+    @ActionReference(
+            path = "Loaders/text/x-praxis-root/Actions",
+            id
+            = @ActionID(category = "System", id = "org.openide.actions.PropertiesAction"),
+            position = 1400)
+})
 public class PXRDataObject extends MultiDataObject {
 
     public final static String KEY_ATTR_ROOT_TYPE = "rootType";
@@ -190,7 +237,7 @@ public class PXRDataObject extends MultiDataObject {
             if (task != null) {
                 return;
             }
-            task = SaveTask.createSaveTask(Collections.singleton(PXRDataObject.this));
+            task = SaveTask.createSaveTask(Set.of(PXRDataObject.this));
             task.addPropertyChangeListener(this);
             task.execute();
         }
