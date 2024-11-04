@@ -298,6 +298,7 @@
     <file name="SaaSServices_hidden"/>
     <file name="Services_hidden"/>
     <file name="SpringFramework_hidden"/>
+    <file name="UnitTests_hidden"/>
     <file name="XML_hidden"/>
   </folder>
   <folder name="Toolbars">
