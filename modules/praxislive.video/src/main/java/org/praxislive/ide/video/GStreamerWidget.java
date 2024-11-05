@@ -21,7 +21,10 @@
  */
 package org.praxislive.ide.video;
 
+import java.awt.event.ActionEvent;
 import java.util.List;
+import javax.swing.AbstractAction;
+import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.spi.dashboard.DashboardDisplayer;
 import org.netbeans.spi.dashboard.DashboardWidget;
 import org.netbeans.spi.dashboard.WidgetElement;
@@ -32,7 +35,9 @@ import org.openide.util.NbBundle.Messages;
  */
 @Messages({
     "TITLE_GStreamer=GStreamer Library",
-    "TXT_GStreamer=The GStreamer library is required for video playback and capture."
+    "TXT_GStreamer=The GStreamer library is required for video playback and capture.",
+    "LBL_ConfigureGStreamer=Configure",
+    "STATUS_ConfigureGStreamer=Configure the GStreamer library"
 })
 public class GStreamerWidget implements DashboardWidget {
 
@@ -44,8 +49,23 @@ public class GStreamerWidget implements DashboardWidget {
     @Override
     public List<WidgetElement> elements(DashboardDisplayer.Panel pnl) {
         return List.of(
-                WidgetElement.text(Bundle.TXT_GStreamer())
+                WidgetElement.text(Bundle.TXT_GStreamer()),
+                WidgetElement.action(new ConfigureAction())
         );
+    }
+
+    private static class ConfigureAction extends AbstractAction {
+
+        private ConfigureAction() {
+            super(Bundle.LBL_ConfigureGStreamer());
+            putValue(SHORT_DESCRIPTION, Bundle.STATUS_ConfigureGStreamer());
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            OptionsDisplayer.getDefault().open("Video/Capture");
+        }
+
     }
 
 }

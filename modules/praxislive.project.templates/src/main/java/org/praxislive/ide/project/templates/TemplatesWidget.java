@@ -40,8 +40,10 @@ import org.openide.util.NbBundle.Messages;
 @Messages({
     "TITLE_TemplatesWidget=Examples",
     "TXT_TemplatesWidget=Examples can be downloaded and installed to be available as templates when creating a New Project.",
-    "LBL_Install=Install",
-    "LBL_Reinstall=Reinstall",
+    "LBL_Install=Install examples",
+    "STATUS_Install=Download and install examples",
+    "LBL_Reinstall=Reinstall examples",
+    "STATUS_Reinstall=Reinstall examples",
     "TXT_UpdateAvailable=New examples available for download",
     "TXT_Installing=Installing...",
     "TXT_Installed=Installed",
@@ -91,12 +93,13 @@ public class TemplatesWidget implements DashboardWidget {
         switch (state) {
             case START -> {
                 if (!TemplateUtils.isInstalled()) {
-                    elements.add(WidgetElement.action(new InstallAction(Bundle.LBL_Install())));
+                    elements.add(WidgetElement.action(
+                            new InstallAction()));
                 } else if (!TemplateUtils.isLatest()) {
                     elements.add(WidgetElement.aside(Bundle.TXT_UpdateAvailable()));
-                    elements.add(WidgetElement.action(new InstallAction(Bundle.LBL_Install())));
+                    elements.add(WidgetElement.action(new InstallAction()));
                 } else {
-                    elements.add(WidgetElement.action(new InstallAction(Bundle.LBL_Reinstall())));
+                    elements.add(WidgetElement.action(new InstallAction(true)));
                 }
             }
             case INSTALLING -> {
@@ -107,7 +110,7 @@ public class TemplatesWidget implements DashboardWidget {
             }
             case ERROR -> {
                 elements.add(WidgetElement.unavailable(Bundle.TXT_Error()));
-                elements.add(WidgetElement.action(new InstallAction(Bundle.LBL_Install())));
+                elements.add(WidgetElement.action(new InstallAction()));
             }
         }
         active.forEach(DashboardDisplayer.Panel::refresh);
@@ -115,8 +118,14 @@ public class TemplatesWidget implements DashboardWidget {
 
     private class InstallAction extends AbstractAction {
 
-        private InstallAction(String text) {
-            super(text);
+        private InstallAction() {
+            this(false);
+        }
+
+        private InstallAction(boolean reinstall) {
+            super(reinstall ? Bundle.LBL_Reinstall() : Bundle.LBL_Install());
+            putValue(SHORT_DESCRIPTION, reinstall
+                    ? Bundle.STATUS_Reinstall() : Bundle.STATUS_Install());
         }
 
         @Override

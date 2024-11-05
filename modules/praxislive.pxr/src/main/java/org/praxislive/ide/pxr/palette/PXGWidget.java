@@ -40,8 +40,10 @@ import org.openide.util.NbBundle.Messages;
 @Messages({
     "TITLE_PXGWidget=Additional components",
     "TXT_PXGWidget=Custom components can be downloaded and added to the palette to provide a wider range of functionality.",
-    "LBL_Install=Install",
-    "LBL_Reinstall=Reinstall",
+    "LBL_Install=Install components",
+    "STATUS_Install=Download and install additional components",
+    "LBL_Reinstall=Reinstall components",
+    "STATUS_Reinstall=Reinstall additional components",
     "TXT_UpdateAvailable=New components available for download",
     "TXT_Installing=Installing...",
     "TXT_Installed=Installed",
@@ -91,12 +93,12 @@ public class PXGWidget implements DashboardWidget {
         switch (state) {
             case START -> {
                 if (!Utils.isInstalled()) {
-                    elements.add(WidgetElement.action(new InstallAction(Bundle.LBL_Install())));
+                    elements.add(WidgetElement.action(new InstallAction()));
                 } else if (!Utils.isLatest()) {
                     elements.add(WidgetElement.aside(Bundle.TXT_UpdateAvailable()));
-                    elements.add(WidgetElement.action(new InstallAction(Bundle.LBL_Install())));
+                    elements.add(WidgetElement.action(new InstallAction()));
                 } else {
-                    elements.add(WidgetElement.action(new InstallAction(Bundle.LBL_Reinstall())));
+                    elements.add(WidgetElement.action(new InstallAction(true)));
                 }
             }
             case INSTALLING -> {
@@ -107,7 +109,7 @@ public class PXGWidget implements DashboardWidget {
             }
             case ERROR -> {
                 elements.add(WidgetElement.unavailable(Bundle.TXT_Error()));
-                elements.add(WidgetElement.action(new InstallAction(Bundle.LBL_Install())));
+                elements.add(WidgetElement.action(new InstallAction()));
             }
         }
         active.forEach(DashboardDisplayer.Panel::refresh);
@@ -115,8 +117,14 @@ public class PXGWidget implements DashboardWidget {
 
     private class InstallAction extends AbstractAction {
 
-        private InstallAction(String text) {
-            super(text);
+        private InstallAction() {
+            this(false);
+        }
+
+        private InstallAction(boolean reinstall) {
+            super(reinstall ? Bundle.LBL_Reinstall() : Bundle.LBL_Install());
+            putValue(SHORT_DESCRIPTION, reinstall
+                    ? Bundle.STATUS_Reinstall() : Bundle.STATUS_Install());
         }
 
         @Override
