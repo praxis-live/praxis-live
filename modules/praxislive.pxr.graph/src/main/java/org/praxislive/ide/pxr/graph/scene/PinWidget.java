@@ -75,7 +75,7 @@ public class PinWidget extends Widget {
      * @param scene the scene
      * @param name pin ID
      */
-    public PinWidget(PraxisGraphScene scene, NodeWidget node, String name) {
+    PinWidget(PraxisGraphScene scene, NodeWidget node, String name) {
         super(scene);
         this.scene = scene;
         this.sceneListener = new SceneListenerImpl();
@@ -174,6 +174,34 @@ public class PinWidget extends Widget {
             return false;
         } else {
             return super.isHitAt(localLocation);
+        }
+    }
+
+    protected void notifyEdgeAttached() {
+        if (scene.isMinimizeConnectedPins()) {
+            return;
+        }
+        if (node.isMinimized() && isPreferredBoundsSet()) {
+            if (isValidated()) {
+                scene.getSceneAnimator().animatePreferredBounds(this, null);
+            } else {
+                setPreferredBounds(null);
+                revalidate();
+            }
+        }
+    }
+
+    protected void notifyEdgeDetached() {
+        if (scene.isMinimizeConnectedPins()) {
+            return;
+        }
+        if (!scene.hasConnections(this) && node.isMinimized() && !isPreferredBoundsSet()) {
+            if (isValidated()) {
+                scene.getSceneAnimator().animatePreferredBounds(this, new Rectangle());
+            } else {
+                setPreferredBounds(new Rectangle());
+                revalidate();
+            }
         }
     }
 

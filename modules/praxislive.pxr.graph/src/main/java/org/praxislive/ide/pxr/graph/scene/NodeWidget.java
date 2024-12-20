@@ -85,7 +85,7 @@ public class NodeWidget extends Widget implements StateModel.Listener, MinimizeA
      *
      * @param scene the scene
      */
-    public NodeWidget(PraxisGraphScene<?> scene) {
+    NodeWidget(PraxisGraphScene<?> scene) {
         super(scene);
         this.scene = scene;
         this.sceneListener = new SceneListenerImpl();
@@ -138,19 +138,16 @@ public class NodeWidget extends Widget implements StateModel.Listener, MinimizeA
         scene.removeSceneListener(sceneListener);
     }
 
-    /**
-     * Called to check whether a particular widget is minimizable. By default it
-     * returns true. The result have to be the same for whole life-time of the
-     * widget. If not, then the revalidation has to be invoked manually. An
-     * anchor (created by <code>NodeWidget.createPinAnchor</code> is not
-     * affected by this method.
-     *
-     * @param widget the widget
-     * @return true, if the widget is minimizable; false, if the widget is not
-     * minimizable
-     */
-    protected boolean isMinimizableWidget(Widget widget) {
-        return true;
+    private boolean isMinimizableWidget(Widget widget) {
+        if (scene.isMinimizeConnectedPins()) {
+            return true;
+        } else {
+            if (widget instanceof PinWidget pin) {
+                return !scene.hasConnections(pin);
+            } else {
+                return true;
+            }
+        }
     }
 
     /**

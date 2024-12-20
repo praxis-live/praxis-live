@@ -48,7 +48,6 @@ import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
-import javax.swing.UIManager;
 import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.action.ConnectProvider;
 import org.netbeans.api.visual.action.EditProvider;
@@ -74,9 +73,9 @@ import org.netbeans.api.visual.widget.Widget;
  *
  * @param <N> node type
  */
-public class PraxisGraphScene<N> extends GraphPinScene<N, EdgeID<N>, PinID<N>> {
+public final class PraxisGraphScene<N> extends GraphPinScene<N, EdgeID<N>, PinID<N>> {
 
-    private final static double LOD_ZOOM = 0.7;
+    private final static double LOD_ZOOM = 0.75;
 
     private final LayerWidget backgroundLayer = new LayerWidget(this);
     private final LayerWidget mainLayer = new LayerWidget(this);
@@ -86,6 +85,7 @@ public class PraxisGraphScene<N> extends GraphPinScene<N, EdgeID<N>, PinID<N>> {
     private final CommentWidget commentWidget;
 
     private boolean orthogonal;
+    private boolean minimizeConnectedPins;
     private Router router;
     private final WidgetAction moveAction;
     private final PraxisKeyboardMoveAction keyboardMoveAction;
@@ -311,7 +311,7 @@ public class PraxisGraphScene<N> extends GraphPinScene<N, EdgeID<N>, PinID<N>> {
         return orthogonal;
     }
 
-    void setRouter(Router router) {
+    private void setRouter(Router router) {
         this.router = router;
         for (EdgeID<N> e : getEdges()) {
             ((ConnectionWidget) findWidget(e)).setRouter(router);
@@ -319,8 +319,12 @@ public class PraxisGraphScene<N> extends GraphPinScene<N, EdgeID<N>, PinID<N>> {
         revalidate();
     }
 
-    Router getRouter() {
-        return router;
+    public void setMinimizeConnectedPins(boolean minimizeConnected) {
+        this.minimizeConnectedPins = minimizeConnected;
+    }
+
+    public boolean isMinimizeConnectedPins() {
+        return minimizeConnectedPins;
     }
 
     @Override
@@ -386,6 +390,16 @@ public class PraxisGraphScene<N> extends GraphPinScene<N, EdgeID<N>, PinID<N>> {
         return widget;
     }
 
+    @SuppressWarnings("unchecked")
+    boolean hasConnections(PinWidget pinWidget) {
+        Object obj = findObject(pinWidget);
+        if (obj instanceof PinID<?> pin) {
+            return !findPinEdges((PinID<N>) pin, true, true).isEmpty();
+        } else {
+            return false;
+        }
+    }
+
     /**
      * Implements attaching a widget to an edge.
      *
@@ -404,6 +418,8 @@ public class PraxisGraphScene<N> extends GraphPinScene<N, EdgeID<N>, PinID<N>> {
         if (menuAction != null) {
             edgeWidget.getActions().addAction(menuAction);
         }
+        src.notifyEdgeAttached();
+        dst.notifyEdgeAttached();
         return edgeWidget;
     }
 
@@ -442,6 +458,15 @@ public class PraxisGraphScene<N> extends GraphPinScene<N, EdgeID<N>, PinID<N>> {
         ((NodeWidget) widget).getCommentWidget().removeFromParent();
         ((NodeWidget) widget).getToolContainerWidget().removeFromParent();
         super.detachNodeWidget(node, widget);
+    }
+
+    @Override
+    protected void detachEdgeWidget(EdgeID<N> edge, Widget widget) {
+        PinWidget src = (PinWidget) findWidget(edge.getPin1());
+        PinWidget dst = (PinWidget) findWidget(edge.getPin2());
+        src.notifyEdgeDetached();
+        dst.notifyEdgeDetached();
+        super.detachEdgeWidget(edge, widget);
     }
 
     private Anchor getPinAnchor(PinID<N> pin) {
@@ -505,7 +530,7 @@ public class PraxisGraphScene<N> extends GraphPinScene<N, EdgeID<N>, PinID<N>> {
     private class ZoomCorrector implements SceneListener {
 
         private final double minZoom = 0.2;
-        private final double maxZoom = 2;
+        private final double maxZoom = 2.5;
 
         @Override
         public void sceneRepaint() {
@@ -515,11 +540,16 @@ public class PraxisGraphScene<N> extends GraphPinScene<N, EdgeID<N>, PinID<N>> {
         @Override
         public void sceneValidating() {
             double zoom = getZoomFactor();
-            if (zoom < minZoom) {
-                setZoomFactor(minZoom);
+            if (zoom > 0.9 && zoom < 1.1) {
+                zoom = 1;
+            } else if (zoom < minZoom) {
+                zoom = minZoom;
             } else if (zoom > maxZoom) {
-                setZoomFactor(maxZoom);
+                zoom = maxZoom;
+            } else {
+                zoom = Math.round(zoom * 10) * 0.1;
             }
+            setZoomFactor(zoom);
         }
 
         @Override

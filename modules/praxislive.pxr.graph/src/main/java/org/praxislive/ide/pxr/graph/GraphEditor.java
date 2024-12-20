@@ -100,7 +100,6 @@ import org.openide.explorer.ExplorerManager;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeTransfer;
-import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
@@ -173,6 +172,7 @@ public final class GraphEditor implements RootEditor {
 
         scene = new PraxisGraphScene<>(new ConnectProviderImpl(), new MenuProviderImpl());
         scene.setOrthogonalRouting(false);
+        scene.setMinimizeConnectedPins(false);
         manager = context.explorerManager();
         if (root instanceof ContainerProxy c) {
             container = c;

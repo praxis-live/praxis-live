@@ -76,7 +76,7 @@ public class EdgeWidget extends ConnectionWidget {
      * @param srcPin source pin
      * @param dstPin destination pin
      */
-    public EdgeWidget(PraxisGraphScene scene, PinWidget srcPin, PinWidget dstPin) {
+    EdgeWidget(PraxisGraphScene scene, PinWidget srcPin, PinWidget dstPin) {
         super(scene);
         this.scene = scene;
         this.sceneListener = new SceneListenerImpl();
