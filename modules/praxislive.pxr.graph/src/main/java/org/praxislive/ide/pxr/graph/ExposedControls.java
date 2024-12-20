@@ -92,8 +92,6 @@ class ExposedControls extends Widget {
         setForeground(null);
         setBorder(BorderFactory.createRoundedBorder(4, 4, 2, 2, LAFScheme.BACKGROUND, null));
         setLayout(new TableLayout());
-        Font f = scene.getDefaultFont();
-        setFont(f.deriveFont(f.getSize2D() * 0.9f));
         ComponentInfo info = cmp.getInfo();
         getActions().addAction(new MouseCapture());
         for (String control : controls) {

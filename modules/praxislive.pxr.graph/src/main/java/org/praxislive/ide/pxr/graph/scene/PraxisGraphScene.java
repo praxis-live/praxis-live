@@ -95,21 +95,11 @@ public class PraxisGraphScene<N> extends GraphPinScene<N, EdgeID<N>, PinID<N>> {
     private WidgetAction connectAction;
     private LAFScheme.Colors schemeColors;
 
-//    private int edgeCount = 10;
     /**
      * Create a Praxis graph scene.
      */
     public PraxisGraphScene() {
-        this(null, null, null);
-    }
-
-    /**
-     * Create a Praxis graph scene with a specific look and feel scheme.
-     *
-     * @param scheme the look and feel scheme
-     */
-    public PraxisGraphScene(LAFScheme scheme) {
-        this(scheme, null, null);
+        this(null, null);
     }
 
     /**
@@ -120,24 +110,8 @@ public class PraxisGraphScene<N> extends GraphPinScene<N, EdgeID<N>, PinID<N>> {
      * @param popupProvider popup menu provider
      */
     public PraxisGraphScene(ConnectProvider connectProvider, PopupMenuProvider popupProvider) {
-        this(null, connectProvider, popupProvider);
-    }
-
-    /**
-     * Create a Praxis graph scene with a specific look and feel scheme, and the
-     * provided connect and popup menu providers.
-     *
-     * @param scheme the look and feel scheme
-     * @param connectProvider connect provider
-     * @param popupProvider popup menu provider
-     */
-    public PraxisGraphScene(LAFScheme scheme, ConnectProvider connectProvider, PopupMenuProvider popupProvider) {
-        if (scheme == null) {
-            scheme = new LAFScheme();
-        }
-        this.scheme = scheme;
-
-        setFont(UIManager.getFont("controlFont"));
+        this.scheme = new LAFScheme();
+        setFont(scheme.getDefaultFont());
 
         setKeyEventProcessingType(EventProcessingType.FOCUSED_WIDGET_AND_ITS_PARENTS);
 
@@ -152,6 +126,7 @@ public class PraxisGraphScene<N> extends GraphPinScene<N, EdgeID<N>, PinID<N>> {
 
         commentWidget = new CommentWidget(this);
         commentWidget.setPreferredLocation(new Point(32, 32));
+        commentWidget.setFont(scheme.getCommentFont());
         commentWidget.setBorder(BorderFactory.createRoundedBorder(8, 8, 8, 8, LAFScheme.NODE_BACKGROUND, null));
         commentWidget.setVisible(false);
         mainLayer.addChild(commentWidget);
