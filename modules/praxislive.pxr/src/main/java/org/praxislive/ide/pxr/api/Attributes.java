@@ -21,7 +21,9 @@
  */
 package org.praxislive.ide.pxr.api;
 
+import org.praxislive.core.Value;
 import org.praxislive.core.protocols.ComponentProtocol;
+import org.praxislive.core.types.PString;
 
 /**
  * Implementations of Attributes can be requested from component proxy lookup to
@@ -49,5 +51,41 @@ public interface Attributes {
      * @return attribute value or null
      */
     public String getAttribute(String key);
+
+    /**
+     * Set an attribute as a {@link Value}, or clear the attribute if the value
+     * is {@code null} or empty (see {@link Value#isEmpty()}).
+     *
+     * @param key attribute key
+     * @param value attribute value
+     */
+    public default void setAttributeValue(String key, Value value) {
+        if (value == null || value.isEmpty()) {
+            setAttribute(key, null);
+        } else {
+            setAttribute(key, value.toString());
+        }
+    }
+
+    /**
+     * Get an attribute as the specified Value type. If the attribute is not set
+     * or cannot be converted to the given type this method will return
+     * {@code null}.
+     *
+     * @param <T> value type
+     * @param type value type as class
+     * @param key attribute key
+     * @return attribute as value type or null
+     */
+    public default <T extends Value> T getAttributeValue(Class<T> type, String key) {
+        String attr = getAttribute(key);
+        if (attr == null) {
+            return null;
+        } else if (type == PString.class || type == Value.class) {
+            return type.cast(PString.of(attr));
+        } else {
+            return Value.Type.of(type).converter().apply(PString.of(attr)).orElse(null);
+        }
+    }
 
 }

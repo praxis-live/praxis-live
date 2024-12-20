@@ -562,6 +562,16 @@ public class PXRComponentProxy implements ComponentProxy {
 
         @Override
         public void setAttribute(String key, String value) {
+            setAttributeValue(key, value == null ? null : PString.of(value));
+        }
+
+        @Override
+        public String getAttribute(String key) {
+            return meta.getString(key, null);
+        }
+
+        @Override
+        public void setAttributeValue(String key, Value value) {
             PMap oldMeta = meta;
             PMap metaMerge = PMap.of(key, value == null ? PString.EMPTY : value);
             meta = PMap.merge(oldMeta, metaMerge, PMap.REPLACE);
@@ -570,8 +580,15 @@ public class PXRComponentProxy implements ComponentProxy {
         }
 
         @Override
-        public String getAttribute(String key) {
-            return meta.getString(key, null);
+        public <T extends Value> T getAttributeValue(Class<T> type, String key) {
+            Value value = meta.get(key);
+            if (value == null) {
+                return null;
+            } else if (type.isInstance(value)) {
+                return type.cast(value);
+            } else {
+                return Value.Type.of(type).converter().apply(value).orElse(null);
+            }
         }
 
     }
