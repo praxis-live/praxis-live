@@ -214,16 +214,4 @@ class Utils {
         return Colors.Blue;
     }
 
-    static Node.Property<?> findMatchingProperty(ComponentProxy cmp, String id) {
-        Node node = cmp.getNodeDelegate();
-        for (Node.PropertySet ps : node.getPropertySets()) {
-            for (Node.Property<?> p : ps.getProperties()) {
-                if (p.getName().equals(id)) {
-                    return p;
-                }
-            }
-        }
-        return null;
-    }
-
 }

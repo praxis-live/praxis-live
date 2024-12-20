@@ -167,7 +167,11 @@ class ExposedControls extends Widget {
         for (Node.PropertySet propSet : node.getPropertySets()) {
             for (Node.Property<?> prop : propSet.getProperties()) {
                 if (id.equals(prop.getName())) {
-                    return prop;
+                    if (prop.isHidden()) {
+                        return null;
+                    } else {
+                        return prop;
+                    }
                 }
             }
         }

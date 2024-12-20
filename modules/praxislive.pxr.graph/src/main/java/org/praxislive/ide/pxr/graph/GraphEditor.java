@@ -54,7 +54,6 @@ import javax.swing.border.LineBorder;
 import javax.swing.text.DefaultEditorKit;
 import org.praxislive.core.ComponentType;
 import org.praxislive.core.ComponentInfo;
-import org.praxislive.core.ControlInfo;
 import org.praxislive.core.PortInfo;
 import org.praxislive.core.protocols.ComponentProtocol;
 import org.praxislive.core.protocols.ContainerProtocol;
@@ -131,7 +130,6 @@ public final class GraphEditor implements RootEditor {
     final static String ATTR_GRAPH_Y = "graph.y";
     final static String ATTR_GRAPH_MINIMIZED = "graph.minimized";
     final static String ATTR_GRAPH_COMMENT = "graph.comment";
-    final static String ATTR_GRAPH_PROPERTIES = "graph.properties";
 
     private final PraxisProject project;
     private final FileObject file;
@@ -162,7 +160,6 @@ public final class GraphEditor implements RootEditor {
     private ContainerProxy container;
 
     private final Point activePoint = new Point();
-    private PropertyMode propertyMode = PropertyMode.Default;
     private boolean sync;
     private boolean ignoreAttributeChanges;
 
@@ -279,7 +276,6 @@ public final class GraphEditor implements RootEditor {
             actions.add(null);
         }
 
-        actions.add(new PropertyModeAction());
         actions.add(new CommentAction(scene));
         return Utilities.actionsToPopup(actions.toArray(Action[]::new), getEditorComponent());
 
@@ -451,15 +447,6 @@ public final class GraphEditor implements RootEditor {
             syncable.addKey(this);
         }
 
-        try {
-            propertyMode = PropertyMode.valueOf(
-                    Utils.getAttr(root, ATTR_GRAPH_PROPERTIES, "Default"));
-        } catch (Exception ex) {
-            Exceptions.printStackTrace(ex);
-            propertyMode = PropertyMode.Default;
-            Utils.setAttr(root, ATTR_GRAPH_PROPERTIES, null);
-        }
-
         container.getNodeDelegate().getChildren().getNodes();
 
         syncGraph(true);
@@ -622,22 +609,6 @@ public final class GraphEditor implements RootEditor {
             pin.setToolTipText(pinID + " : " + info.portType());
         } else {
             pin.setToolTipText(pinID + " : " + info.portType() + " : " + category);
-        }
-
-        if (propertyMode == PropertyMode.Hide) {
-            return;
-        }
-
-        ControlInfo control = cmp.getInfo().controls().contains(pinID)
-                ? cmp.getInfo().controlInfo(pinID) : null;
-        if (control != null && (control.controlType() == ControlInfo.Type.Property
-                || control.controlType() == ControlInfo.Type.ReadOnlyProperty)
-                && (propertyMode == PropertyMode.Show
-                || control.properties().getBoolean("preferred", false))) {
-            Node.Property<?> matchingProp = Utils.findMatchingProperty(cmp, pinID);
-            if (matchingProp != null) {
-                pin.addChild(new PropertyWidget(scene, control, cmp.getNodeDelegate(), matchingProp));
-            }
         }
 
     }
@@ -1143,58 +1114,6 @@ public final class GraphEditor implements RootEditor {
                     })
                     .toList();
             Task.run(ActionSupport.createDeleteTask(GraphEditor.this, container, children, connections));
-        }
-
-    }
-
-    private class PropertyModeAction extends AbstractAction implements Presenter.Popup {
-
-        private final PropertyMode mode;
-
-        private PropertyModeAction() {
-            this(Bundle.LBL_PropertyModeAction(), null);
-        }
-
-        private PropertyModeAction(String text, PropertyMode mode) {
-            super(text);
-            this.mode = mode;
-        }
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            if (container == null || mode == null || propertyMode == mode) {
-                return;
-            }
-            clearScene();
-            Utils.setAttr(root, ATTR_GRAPH_PROPERTIES, mode.toString());
-            buildScene();
-        }
-
-        @Override
-        public Object getValue(String key) {
-            if (Action.SELECTED_KEY.equals(key)) {
-                return propertyMode == mode;
-            } else {
-                return super.getValue(key);
-            }
-        }
-
-        @Override
-        public JMenuItem getPopupPresenter() {
-            JMenu submenu = new JMenu(Bundle.LBL_PropertyModeAction());
-            submenu.add(new JRadioButtonMenuItem(
-                    new PropertyModeAction(
-                            Bundle.LBL_PropertyModeDefault(),
-                            PropertyMode.Default)));
-            submenu.add(new JRadioButtonMenuItem(
-                    new PropertyModeAction(
-                            Bundle.LBL_PropertyModeShowAll(),
-                            PropertyMode.Show)));
-            submenu.add(new JRadioButtonMenuItem(
-                    new PropertyModeAction(
-                            Bundle.LBL_PropertyModeHideAll(),
-                            PropertyMode.Hide)));
-            return submenu;
         }
 
     }
