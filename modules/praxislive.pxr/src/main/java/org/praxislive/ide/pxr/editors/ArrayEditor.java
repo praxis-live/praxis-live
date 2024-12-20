@@ -99,7 +99,7 @@ public class ArrayEditor extends EditorSupport
 
     @Override
     public boolean supportsCustomEditor() {
-        return env != null;
+        return true;
     }
 
     @Override
