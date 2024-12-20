@@ -45,12 +45,12 @@ package org.praxislive.ide.pxr.graph.scene;
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;
-import java.awt.Font;
 import java.awt.Image;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
 import java.util.List;
+import org.netbeans.api.visual.action.EditProvider;
 import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.model.ObjectState;
@@ -76,6 +76,7 @@ public class NodeWidget extends Widget implements StateModel.Listener, MinimizeA
     private final PraxisGraphScene scene;
     private final SceneListenerImpl sceneListener;
     private final CommentWidget commentWidget;
+    private final ToolContainerWidget toolsWidget;
 
     private LAFScheme.Colors schemeColors;
 
@@ -109,7 +110,6 @@ public class NodeWidget extends Widget implements StateModel.Listener, MinimizeA
         header.addChild(imageWidget);
 
         nameWidget = new LabelWidget(scene);
-        nameWidget.setFont(scene.getFont().deriveFont(Font.BOLD));
         nameWidget.setForeground(Color.BLACK);
         header.addChild(nameWidget);
 
@@ -117,13 +117,12 @@ public class NodeWidget extends Widget implements StateModel.Listener, MinimizeA
         glyphSetWidget.setMinimumSize(new Dimension(16, 16));
         header.addChild(glyphSetWidget);
 
-        Widget topLayer = new Widget(scene);
-        addChild(topLayer);
-
         stateModel.addListener(this);
 
         commentWidget = new CommentWidget(scene);
-//        commentWidget.setVisible(false);
+        commentWidget.setVisible(false);
+        toolsWidget = new ToolContainerWidget(scene);
+        toolsWidget.setVisible(false);
 
         scheme.installUI(this);
 
@@ -210,6 +209,7 @@ public class NodeWidget extends Widget implements StateModel.Listener, MinimizeA
                 || (!previousState.isHovered() && state.isHovered())) {
             bringToFront();
             commentWidget.bringToFront();
+            toolsWidget.bringToFront();
         }
         scheme.updateUI(this);
     }
@@ -317,12 +317,8 @@ public class NodeWidget extends Widget implements StateModel.Listener, MinimizeA
             // remove comment
             commentWidget.setText("");
             commentWidget.setVisible(false);
-            commentWidget.removeFromParent();
         } else {
             // add comment
-            if (commentWidget.getParentWidget() == null) {
-                getParentWidget().addChild(commentWidget);
-            }
             commentWidget.setText(comment);
             commentWidget.setVisible(true);
         }
@@ -338,6 +334,45 @@ public class NodeWidget extends Widget implements StateModel.Listener, MinimizeA
         return commentWidget.getText();
     }
 
+    /**
+     * Set an edit provider for the node comment.
+     *
+     * @param provider comment edit provider
+     */
+    public void setCommentEditProvider(EditProvider provider) {
+        commentWidget.setEditProvider(provider);
+    }
+
+    /**
+     * Add a widget to the the node tools container.
+     *
+     * @param tool tool widget
+     */
+    public void addToolWidget(Widget tool) {
+        toolsWidget.addChild(tool);
+        toolsWidget.setVisible(true);
+    }
+
+    /**
+     * Remove a widget from the tools container.
+     *
+     * @param tool tool widget
+     */
+    public void removeToolWidget(Widget tool) {
+        toolsWidget.removeChild(tool);
+        if (toolsWidget.getChildren().isEmpty()) {
+            toolsWidget.setVisible(false);
+        }
+    }
+
+    /**
+     * Clear all widgets from the tools container.
+     */
+    public void clearToolWidgets() {
+        toolsWidget.removeChildren();
+        toolsWidget.setVisible(false);
+    }
+
     private void positionComment() {
         if (!commentWidget.isVisible()) {
             return;
@@ -349,8 +384,21 @@ public class NodeWidget extends Widget implements StateModel.Listener, MinimizeA
             return;
         }
         int offset = commentWidget.getBorder().getInsets().left;
-        commentWidget.setPreferredLocation(new Point(loc.x + offset, loc.y - commentBounds.height - 4));
+        commentWidget.setPreferredLocation(new Point(loc.x + offset, loc.y - commentBounds.height - 2));
         commentWidget.setMinimumSize(new Dimension(bounds.width, 15));
+    }
+
+    private void positionTools() {
+        if (!toolsWidget.isVisible()) {
+            return;
+        }
+        Point loc = getLocation();
+        Rectangle bounds = getBounds();
+        if (loc == null || bounds == null) {
+            return;
+        }
+        toolsWidget.setPreferredLocation(new Point(loc.x, loc.y + bounds.height + 2));
+        toolsWidget.setMinimumSize(new Dimension(bounds.width, 15));
     }
 
     @Override
@@ -365,8 +413,12 @@ public class NodeWidget extends Widget implements StateModel.Listener, MinimizeA
         return scene.isBelowLODThreshold();
     }
 
-    public Widget getCommentWidget() {
+    CommentWidget getCommentWidget() {
         return commentWidget;
+    }
+
+    ToolContainerWidget getToolContainerWidget() {
+        return toolsWidget;
     }
 
     public void setSchemeColors(LAFScheme.Colors colors) {
@@ -393,6 +445,7 @@ public class NodeWidget extends Widget implements StateModel.Listener, MinimizeA
         @Override
         public void sceneValidated() {
             positionComment();
+            positionTools();
         }
 
     }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2019 Neil C Smith.
+ * Copyright 2024 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -28,7 +28,6 @@ import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -37,10 +36,8 @@ import javax.swing.KeyStroke;
 import org.praxislive.ide.model.ComponentProxy;
 import org.praxislive.ide.pxr.api.Attributes;
 import org.openide.nodes.Node;
-import org.praxislive.core.ComponentType;
-import org.praxislive.core.Port;
+import org.praxislive.core.Value;
 import org.praxislive.ide.model.ContainerProxy;
-import org.praxislive.ide.properties.PraxisProperty;
 
 /**
  *
@@ -105,6 +102,14 @@ class Utils {
         attrs.setAttribute(key, value);
     }
 
+    static void setAttrValue(ComponentProxy cmp, String key, Value value) {
+        Attributes attrs = cmp.getLookup().lookup(Attributes.class);
+        if (attrs == null) {
+            return;
+        }
+        attrs.setAttributeValue(key, value);
+    }
+
     static String getAttr(ComponentProxy cmp, String key) {
         Attributes attrs = cmp.getLookup().lookup(Attributes.class);
         if (attrs == null) {
@@ -113,8 +118,21 @@ class Utils {
         return attrs.getAttribute(key);
     }
 
+    static <T extends Value> T getAttrValue(ComponentProxy cmp, Class<T> type, String key) {
+        Attributes attrs = cmp.getLookup().lookup(Attributes.class);
+        if (attrs == null) {
+            return null;
+        }
+        return attrs.getAttributeValue(type, key);
+    }
+
     static String getAttr(ComponentProxy cmp, String key, String def) {
         String ret = getAttr(cmp, key);
+        return ret == null ? def : ret;
+    }
+
+    static <T extends Value> T getAttrValue(ComponentProxy cmp, Class<T> type, String key, T def) {
+        T ret = getAttrValue(cmp, type, key);
         return ret == null ? def : ret;
     }
 

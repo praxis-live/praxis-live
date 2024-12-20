@@ -42,7 +42,6 @@
  */
 package org.praxislive.ide.pxr.graph.scene;
 
-import java.awt.Color;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.Collections;
@@ -52,6 +51,7 @@ import java.util.Set;
 import javax.swing.UIManager;
 import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.action.ConnectProvider;
+import org.netbeans.api.visual.action.EditProvider;
 import org.netbeans.api.visual.action.PopupMenuProvider;
 import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.anchor.Anchor;
@@ -152,7 +152,7 @@ public class PraxisGraphScene<N> extends GraphPinScene<N, EdgeID<N>, PinID<N>> {
 
         commentWidget = new CommentWidget(this);
         commentWidget.setPreferredLocation(new Point(32, 32));
-        commentWidget.setBorder(BorderFactory.createRoundedBorder(8, 8, 8, 8, Color.LIGHT_GRAY, null));
+        commentWidget.setBorder(BorderFactory.createRoundedBorder(8, 8, 8, 8, LAFScheme.NODE_BACKGROUND, null));
         commentWidget.setVisible(false);
         mainLayer.addChild(commentWidget);
 
@@ -190,15 +190,9 @@ public class PraxisGraphScene<N> extends GraphPinScene<N, EdgeID<N>, PinID<N>> {
      * @return node widget representation
      */
     public NodeWidget addNode(N node, String name) {
-        NodeWidget n = (NodeWidget) super.addNode(node);
-        n.setNodeName(name);
-        return n;
-    }
-
-    @Override
-    protected void detachNodeWidget(N node, Widget widget) {
-        ((NodeWidget) widget).getCommentWidget().removeFromParent();
-        super.detachNodeWidget(node, widget);
+        NodeWidget nodeWidget = (NodeWidget) super.addNode(node);
+        nodeWidget.setNodeName(name);
+        return nodeWidget;
     }
 
     /**
@@ -383,7 +377,8 @@ public class PraxisGraphScene<N> extends GraphPinScene<N, EdgeID<N>, PinID<N>> {
     protected Widget attachNodeWidget(N node) {
         NodeWidget widget = new NodeWidget(this);
         mainLayer.addChild(widget);
-
+        mainLayer.addChild(widget.getCommentWidget());
+        mainLayer.addChild(widget.getToolContainerWidget());
         widget.getHeader().getActions().addAction(createObjectHoverAction());
         widget.getActions().addAction(createSelectAction());
         widget.getActions().addAction(moveAction);
@@ -467,6 +462,13 @@ public class PraxisGraphScene<N> extends GraphPinScene<N, EdgeID<N>, PinID<N>> {
         ((EdgeWidget) findWidget(edge)).setTargetAnchor(getPinAnchor(targetPin));
     }
 
+    @Override
+    protected void detachNodeWidget(N node, Widget widget) {
+        ((NodeWidget) widget).getCommentWidget().removeFromParent();
+        ((NodeWidget) widget).getToolContainerWidget().removeFromParent();
+        super.detachNodeWidget(node, widget);
+    }
+
     private Anchor getPinAnchor(PinID<N> pin) {
         if (pin == null) {
             return null;
@@ -513,12 +515,12 @@ public class PraxisGraphScene<N> extends GraphPinScene<N, EdgeID<N>, PinID<N>> {
     }
 
     /**
-     * Get the widget used to display any comment.
+     * Set an edit provider for the scene comment.
      *
-     * @return comment widget
+     * @param provider scene comment edit provider
      */
-    public Widget getCommentWidget() {
-        return commentWidget;
+    public void setCommentEditProvider(EditProvider provider) {
+        commentWidget.setEditProvider(provider);
     }
 
     public void layoutScene() {

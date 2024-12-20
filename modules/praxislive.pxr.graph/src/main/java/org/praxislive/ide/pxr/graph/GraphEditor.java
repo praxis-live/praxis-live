@@ -81,12 +81,14 @@ import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.util.Arrays;
 import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Stream;
 import org.netbeans.api.visual.action.AcceptProvider;
 import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.action.ConnectProvider;
 import org.netbeans.api.visual.action.ConnectorState;
-import org.netbeans.api.visual.action.EditProvider;
 import org.netbeans.api.visual.action.PopupMenuProvider;
 import org.netbeans.api.visual.model.ObjectSceneEvent;
 import org.netbeans.api.visual.model.ObjectSceneEventType;
@@ -107,6 +109,8 @@ import org.openide.util.Utilities;
 import org.openide.util.actions.Presenter;
 import org.openide.util.lookup.Lookups;
 import org.praxislive.core.Connection;
+import org.praxislive.core.Value;
+import org.praxislive.core.types.PArray;
 import org.praxislive.ide.core.api.Disposable;
 import org.praxislive.ide.core.api.Task;
 import org.praxislive.ide.project.api.PraxisProject;
@@ -135,8 +139,9 @@ public final class GraphEditor implements RootEditor {
     private final Map<String, ComponentProxy> knownChildren;
     private final Set<Connection> knownConnections;
     private final ContainerListener containerListener;
-    private final ComponentListener infoListener;
+    private final ComponentListener componentListener;
     private final SelectionListener selectionListener;
+    private final Map<String, PArray> exposedTools;
 
     private final PraxisGraphScene<String> scene;
     private final ExplorerManager manager;
@@ -167,12 +172,13 @@ public final class GraphEditor implements RootEditor {
         this.root = proxy;
         knownChildren = new LinkedHashMap<>();
         knownConnections = new LinkedHashSet<>();
+        exposedTools = new HashMap<>();
 
         scene = new PraxisGraphScene<>(new ConnectProviderImpl(), new MenuProviderImpl());
         scene.setOrthogonalRouting(false);
         manager = context.explorerManager();
-        if (root instanceof ContainerProxy) {
-            container = (ContainerProxy) root;
+        if (root instanceof ContainerProxy c) {
+            container = c;
         }
 
         deleteAction = new DeleteAction();
@@ -198,7 +204,7 @@ public final class GraphEditor implements RootEditor {
         goUpAction = new GoUpAction();
         location = new LocationAction();
         containerListener = new ContainerListener();
-        infoListener = new ComponentListener();
+        componentListener = new ComponentListener();
 
         sceneCommentAction = new CommentAction(scene);
         setupSceneActions();
@@ -217,9 +223,8 @@ public final class GraphEditor implements RootEditor {
 
     private void setupSceneActions() {
         scene.getActions().addAction(ActionFactory.createAcceptAction(new AcceptProviderImpl()));
-        scene.getCommentWidget().getActions().addAction(ActionFactory.createEditAction((Widget widget) -> {
-            sceneCommentAction.actionPerformed(new ActionEvent(scene, ActionEvent.ACTION_PERFORMED, "edit"));
-        }));
+        scene.setCommentEditProvider(widget
+                -> sceneCommentAction.actionPerformed(new ActionEvent(scene, ActionEvent.ACTION_PERFORMED, "edit")));
     }
 
     private JPopupMenu getComponentPopup(NodeWidget widget) {
@@ -433,6 +438,7 @@ public final class GraphEditor implements RootEditor {
         }
         activePoint.setLocation(0, 0);
         knownChildren.clear();
+        exposedTools.clear();
         knownConnections.clear();
         location.address.setText("");
     }
@@ -494,21 +500,18 @@ public final class GraphEditor implements RootEditor {
                 );
             }));
         }
-        final CommentAction commentAction = new CommentAction(widget);
-        widget.getCommentWidget().getActions().addAction(ActionFactory.createEditAction(new EditProvider() {
+        CommentAction commentAction = new CommentAction(widget);
+        widget.setCommentEditProvider(w
+                -> commentAction.actionPerformed(new ActionEvent(w, ActionEvent.ACTION_PERFORMED, "edit")));
 
-            @Override
-            public void edit(Widget widget) {
-                commentAction.actionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, "edit"));
-            }
-        }));
         ComponentInfo info = cmp.getInfo();
         for (String portID : info.ports()) {
             PortInfo pi = info.portInfo(portID);
             buildPin(id, cmp, portID, pi);
         }
-        cmp.addPropertyChangeListener(infoListener);
+        cmp.addPropertyChangeListener(componentListener);
         syncConnections();
+        configureExposedTools(widget, cmp);
     }
 
     private void rebuildChild(String id, ComponentProxy cmp) {
@@ -531,14 +534,45 @@ public final class GraphEditor implements RootEditor {
             buildPin(id, cmp, portID, pi);
         }
         syncConnections();
+        Widget w = scene.findWidget(cmp.getAddress().componentID());
+        if (w instanceof NodeWidget node) {
+            configureWidgetFromAttributes(node, cmp);
+            configureExposedTools(node, cmp);
+        }
     }
 
     private void removeChild(String id, ComponentProxy cmp) {
-        cmp.removePropertyChangeListener(infoListener);
+        cmp.removePropertyChangeListener(componentListener);
         scene.removeNodeWithEdges(id);
         // @TODO temporary fix for moving dynamic components?
         activePoint.x = 0;
         activePoint.y = 0;
+    }
+
+    private void configureExposedTools(NodeWidget widget, ComponentProxy cmp) {
+        String id = cmp.getID();
+        String key = "expose";
+        PArray expose = Utils.getAttrValue(cmp, PArray.class, key);
+        if (expose == null) {
+            expose = Optional.ofNullable(cmp.getInfo().properties().get(key))
+                    .flatMap(PArray::from)
+                    .orElse(PArray.EMPTY);
+        }
+        PArray known = exposedTools.getOrDefault(id, PArray.EMPTY);
+        if (Objects.equals(expose, known)) {
+            return;
+        }
+        exposedTools.put(key, expose);
+        widget.clearToolWidgets();
+        ComponentInfo info = cmp.getInfo();
+        List<String> controls = expose.stream()
+                .map(Value::toString)
+                .filter(c -> info.controls().contains(c))
+                .toList();
+        if (!controls.isEmpty()) {
+            widget.addToolWidget(new ExposedControls(scene, cmp, controls));
+        }
+
     }
 
     private void configureWidgetFromAttributes(NodeWidget widget, ComponentProxy cmp) {
@@ -844,11 +878,11 @@ public final class GraphEditor implements RootEditor {
                     syncConnections();
                 } else if (ComponentProtocol.META.equals(evt.getPropertyName())) {
                     String comment = Utils.getAttr(container, ATTR_GRAPH_COMMENT);
-                        comment = comment == null ? "" : comment;
-                        if (!comment.equals(scene.getComment())) {
-                            scene.setComment(comment);
-                            scene.validate();
-                        }
+                    comment = comment == null ? "" : comment;
+                    if (!comment.equals(scene.getComment())) {
+                        scene.setComment(comment);
+                        scene.validate();
+                    }
                 }
             }
 
@@ -875,6 +909,7 @@ public final class GraphEditor implements RootEditor {
                         Widget w = scene.findWidget(cmp.getAddress().componentID());
                         if (w instanceof NodeWidget node) {
                             configureWidgetFromAttributes(node, cmp);
+                            configureExposedTools(node, cmp);
                         }
                     }
                 }

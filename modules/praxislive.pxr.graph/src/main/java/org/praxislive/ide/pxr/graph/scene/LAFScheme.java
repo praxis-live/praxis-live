@@ -56,7 +56,7 @@ import org.openide.util.ImageUtilities;
 import java.util.Objects;
 import javax.swing.UIManager;
 
-public class LAFScheme {
+public final class LAFScheme {
 
     private static final boolean IS_DARK = UIManager.getBoolean("nb.dark.theme");
 
@@ -221,10 +221,9 @@ public class LAFScheme {
         Widget header = widget.getHeader();
         header.setBorder(state.isSelected() || state.isHovered()
                 ? colors.BORDER_HEADER_SELECTED : colors.BORDER_HEADER);
-        Widget comment = widget.getCommentWidget();
-        if (comment != null) {
-            comment.setBorder(colors.BORDER_HEADER);
-        }
+        Color auxFG = IS_DARK ? colors.COLOR_NORMAL : colors.COLOR_SELECTED;
+        widget.getCommentWidget().setForeground(auxFG);
+        widget.getToolContainerWidget().setForeground(auxFG);
     }
 
     protected boolean isNodeMinimizeButtonOnRight(NodeWidget widget) {
@@ -278,8 +277,6 @@ public class LAFScheme {
 
     protected void updateUI(PinWidget widget) {
         ObjectState state = widget.getState();
-//        widget.setBorder(state.isHovered()
-//                ? BORDER_PIN_HOVERED : BORDER_PIN);
         LAFScheme.Colors colors = widget.getSchemeColors();
         if (colors == null) {
             colors = DEFAULT_COLORS;
