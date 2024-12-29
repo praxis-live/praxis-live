@@ -48,6 +48,7 @@ import java.awt.Rectangle;
 import java.awt.Stroke;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.GeneralPath;
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import org.netbeans.api.visual.anchor.Anchor;
@@ -62,11 +63,12 @@ public class EdgeWidget extends ConnectionWidget {
 
     private final PraxisGraphScene scene;
     private final SceneListenerImpl sceneListener;
+    private final LAFScheme scheme;
 
     PinWidget srcPin;
     PinWidget dstPin;
 
-    private LAFScheme scheme;
+    private GeneralPath path;
     private LAFScheme.Colors schemeColors;
 
     /**
@@ -95,6 +97,14 @@ public class EdgeWidget extends ConnectionWidget {
     }
 
     @Override
+    public void setControlPoints(Collection<Point> controlPoints, boolean sceneLocations) {
+        if (!Objects.equals(getControlPoints(), controlPoints)) {
+            path = null;
+        }
+        super.setControlPoints(controlPoints, sceneLocations);
+    }
+
+    @Override
     protected void notifyAdded() {
         scene.addSceneListener(sceneListener);
     }
@@ -102,11 +112,6 @@ public class EdgeWidget extends ConnectionWidget {
     @Override
     protected void notifyRemoved() {
         scene.removeSceneListener(sceneListener);
-    }
-
-    void setSchemeColors(LAFScheme.Colors colors) {
-        this.schemeColors = colors;
-        revalidate();
     }
 
     LAFScheme.Colors getSchemeColors() {
@@ -142,15 +147,15 @@ public class EdgeWidget extends ConnectionWidget {
         if (scene.isOrthogonalRouting()) {
             return super.calculateClientArea();
         }
-        GeneralPath path = generatePath(getControlPoints());
         if (path == null) {
-            return new Rectangle();
-        } else {
-            Rectangle bounds = generatePath(getControlPoints()).getBounds();
-            bounds.grow(4, 4);
-            return bounds;
+            path = generatePath(getControlPoints());
+            if (path == null) {
+                return new Rectangle();
+            }
         }
-
+        Rectangle bounds = path.getBounds();
+        bounds.grow(4, 4);
+        return bounds;
     }
 
     @Override
@@ -161,7 +166,12 @@ public class EdgeWidget extends ConnectionWidget {
         if (!isVisible()) {
             return false;
         }
-        GeneralPath path = generatePath(getControlPoints());
+        if (path == null) {
+            path = generatePath(getControlPoints());
+            if (path == null) {
+                return false;
+            }
+        }
         Rectangle localArea = new Rectangle(localLocation.x - 3, localLocation.y - 3, 6, 6);
         return path.intersects(localArea);
     }
@@ -176,11 +186,10 @@ public class EdgeWidget extends ConnectionWidget {
         gr.setColor(getForeground());
 
         List<Point> points = getControlPoints();
-        GeneralPath path = generatePath(points);
+        if (path == null) {
+            path = generatePath(points);
+        }
 
-//        for (Point point : points) {
-//            path = addToPath(path, point.x, point.y);
-//        }
         if (path != null) {
             Stroke previousStroke = gr.getStroke();
             gr.setPaint(getForeground());
@@ -212,24 +221,21 @@ public class EdgeWidget extends ConnectionWidget {
         boolean sourceRight = getSourceAnchor()
                 .compute(getSourceAnchorEntry()).getDirections()
                 .contains(Anchor.Direction.RIGHT);
-//        boolean targetRight = getTargetAnchor()
-//                .compute(getTargetAnchorEntry()).getDirections()
-//                .contains(Anchor.Direction.RIGHT);
         boolean targetRight = !sourceRight;
-        GeneralPath path = new GeneralPath();
+        GeneralPath p = new GeneralPath();
         Point sourcePoint = points.get(0);
         Point targetPoint = points.get(points.size() - 1);
-        path.moveTo(sourcePoint.x, sourcePoint.y);
+        p.moveTo(sourcePoint.x, sourcePoint.y);
         double diffX = Math.abs(sourcePoint.x - targetPoint.x);
         diffX = Math.min(diffX, 200);
         diffX = Math.max(diffX, 20);
         double diffY = Math.abs(sourcePoint.y - targetPoint.y) * 0.1;
         diffY = Math.min(diffY, 10);
-        path.curveTo(sourcePoint.x + (sourceRight ? diffX : -diffX), sourcePoint.y - diffY,
+        p.curveTo(sourcePoint.x + (sourceRight ? diffX : -diffX), sourcePoint.y - diffY,
                 targetPoint.x + (targetRight ? diffX : -diffX), targetPoint.y + diffY,
                 targetPoint.x, targetPoint.y);
 
-        return path;
+        return p;
     }
 
     private class SceneListenerImpl implements Scene.SceneListener {

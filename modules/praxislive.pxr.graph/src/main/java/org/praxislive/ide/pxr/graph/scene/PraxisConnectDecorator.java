@@ -41,12 +41,12 @@ class PraxisConnectDecorator implements ConnectDecorator {
 
     @Override
     public Anchor createSourceAnchor(Widget sourceWidget) {
-        if (sourceWidget instanceof PinWidget) {
+        if (sourceWidget instanceof PinWidget pinWidget) {
             if (widget != null) {
-                widget.srcPin = (PinWidget) sourceWidget;
+                widget.srcPin = pinWidget;
                 widget.revalidate();
             }
-            return ((PinWidget) sourceWidget).createAnchor();
+            return pinWidget.createAnchor();
         } else {
             if (widget != null) {
                 widget.srcPin = null;
