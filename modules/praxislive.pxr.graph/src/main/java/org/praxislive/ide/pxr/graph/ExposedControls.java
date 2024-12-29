@@ -22,7 +22,6 @@
 package org.praxislive.ide.pxr.graph;
 
 import java.awt.Cursor;
-import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Insets;
 import java.awt.Point;

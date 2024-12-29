@@ -188,7 +188,8 @@ public class NodeWidget extends Widget implements StateModel.Listener, MinimizeA
         Rectangle rectangle = minimized ? new Rectangle() : null;
         for (Widget widget : getChildren()) {
             if (widget != header) {
-                getScene().getSceneAnimator().animatePreferredBounds(widget, minimized && isMinimizableWidget(widget) ? rectangle : null);
+                scene.animatePreferredBounds(widget,
+                        minimized && isMinimizableWidget(widget) ? rectangle : null);
             }
         }
         minimizeWidget.setImage(scheme.getMinimizeWidgetImage(this));

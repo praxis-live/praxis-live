@@ -84,6 +84,7 @@ public final class PraxisGraphScene<N> extends GraphPinScene<N, EdgeID<N>, PinID
 
     private final CommentWidget commentWidget;
 
+    private boolean animate;
     private boolean orthogonal;
     private boolean minimizeConnectedPins;
     private Router router;
@@ -525,6 +526,23 @@ public final class PraxisGraphScene<N> extends GraphPinScene<N, EdgeID<N>, PinID
 
     public void layoutScene() {
         sceneLayout.invokeLayout();
+    }
+
+    public void setAnimateChanges(boolean animate) {
+        this.animate = animate;
+    }
+
+    public boolean isAnimateChanges() {
+        return animate;
+    }
+
+    void animatePreferredBounds(Widget widget, Rectangle bounds) {
+        if (animate && widget.isValidated()) {
+            getSceneAnimator().animatePreferredBounds(widget, bounds);
+        } else {
+            widget.setPreferredBounds(bounds);
+            revalidate();
+        }
     }
 
     private class ZoomCorrector implements SceneListener {

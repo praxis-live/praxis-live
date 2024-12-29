@@ -46,7 +46,7 @@ final class CommentWidget extends Widget {
         setBackground(scene.getBackground());
         setLayout(LayoutFactory.createVerticalFlowLayout());
         setMinimumSize(new Dimension(100, 10));
-        setBorder(BorderFactory.createOpaqueBorder(4, 4, 4, 4));
+        setBorder(BorderFactory.createRoundedBorder(4, 4, 2, 2, LAFScheme.BACKGROUND, null));
         text = "";
         getActions().addAction(ActionFactory.createEditAction((widget) -> {
             if (editProvider != null) {

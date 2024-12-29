@@ -84,10 +84,8 @@ public class PinWidget extends Widget {
         this.schemeColors = node.getSchemeColors();
         this.alignment = Alignment.Center;
         this.category = DEFAULT_CATEGORY;
-//        setLayout(LayoutFactory.createOverlayLayout());
         setLayout(LayoutFactory.createVerticalFlowLayout());
         addChild(nameWidget = new LabelWidget(scene));
-//        nameWidget.setForeground(Color.BLACK);
         nameWidget.setLabel(name);
         nameWidget.setAlignment(LabelWidget.Alignment.CENTER);
         scheme.installUI(this);
@@ -182,12 +180,7 @@ public class PinWidget extends Widget {
             return;
         }
         if (node.isMinimized() && isPreferredBoundsSet()) {
-            if (isValidated()) {
-                scene.getSceneAnimator().animatePreferredBounds(this, null);
-            } else {
-                setPreferredBounds(null);
-                revalidate();
-            }
+            scene.animatePreferredBounds(this, null);
         }
     }
 
@@ -196,12 +189,7 @@ public class PinWidget extends Widget {
             return;
         }
         if (!scene.hasConnections(this) && node.isMinimized() && !isPreferredBoundsSet()) {
-            if (isValidated()) {
-                scene.getSceneAnimator().animatePreferredBounds(this, new Rectangle());
-            } else {
-                setPreferredBounds(new Rectangle());
-                revalidate();
-            }
+            scene.animatePreferredBounds(this, new Rectangle());
         }
     }
 

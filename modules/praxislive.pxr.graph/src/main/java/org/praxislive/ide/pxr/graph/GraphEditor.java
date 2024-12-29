@@ -726,8 +726,10 @@ public final class GraphEditor implements RootEditor {
     void syncGraph(boolean sync, boolean updateSelection) {
         if (sync) {
             this.sync = true;
+            scene.setAnimateChanges(false);
             syncChildren(updateSelection);
             syncConnections();
+            scene.setAnimateChanges(true);
         } else {
             this.sync = false;
         }
