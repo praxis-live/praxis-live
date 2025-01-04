@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2024 Neil C Smith.
+ * Copyright 2025 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -100,6 +100,7 @@ import org.openide.explorer.ExplorerManager;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeTransfer;
+import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
@@ -116,12 +117,8 @@ import org.praxislive.ide.project.api.PraxisProject;
 /**
  *
  */
-@Messages({
-    "LBL_PropertyModeAction=Properties",
-    "LBL_PropertyModeDefault=Default",
-    "LBL_PropertyModeShowAll=Show all",
-    "LBL_PropertyModeHideAll=Hide all"
-})
+//@Messages({
+//})
 public final class GraphEditor implements RootEditor {
 
     private final static Logger LOG = Logger.getLogger(GraphEditor.class.getName());
@@ -215,6 +212,11 @@ public final class GraphEditor implements RootEditor {
         am.put(DefaultEditorKit.copyAction, copyAction);
         am.put(DefaultEditorKit.pasteAction, pasteAction);
         am.put(Actions.DUPLICATE_KEY, duplicateAction);
+        am.put(Actions.SELECT_ALL_KEY, new SelectPerformer(true));
+        am.put(Actions.SELECT_NONE_KEY, new SelectPerformer(false));
+        am.put(Actions.ZOOM_IN_KEY, new ZoomPerformer(1));
+        am.put(Actions.ZOOM_OUT_KEY, new ZoomPerformer(-1));
+        am.put(Actions.ZOOM_RESET_KEY, new ZoomPerformer(0));
         return am;
     }
 
@@ -1237,6 +1239,53 @@ public final class GraphEditor implements RootEditor {
             GraphEditor.this.container = container;
             buildScene();
         }
+    }
+
+    private class SelectPerformer extends AbstractAction {
+
+        private final boolean select;
+
+        private SelectPerformer(boolean select) {
+            this.select = select;
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            try {
+                Node context = container.getNodeDelegate();
+                Node[] selection;
+                if (select) {
+                    selection = context.getChildren().getNodes();
+                } else {
+                    selection = new Node[0];
+                }
+                manager.setExploredContextAndSelection(context, selection);
+            } catch (PropertyVetoException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+
+    }
+
+    private class ZoomPerformer extends AbstractAction {
+
+        private final int direction;
+
+        private ZoomPerformer(int direction) {
+            this.direction = direction;
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            if (direction == 0) {
+                scene.setZoomFactor(1);
+            } else if (direction > 0) {
+                scene.setZoomFactor(1.2 * scene.getZoomFactor());
+            } else {
+                scene.setZoomFactor(scene.getZoomFactor() / 1.2);
+            }
+        }
+
     }
 
     private class AcceptProviderImpl implements AcceptProvider {
