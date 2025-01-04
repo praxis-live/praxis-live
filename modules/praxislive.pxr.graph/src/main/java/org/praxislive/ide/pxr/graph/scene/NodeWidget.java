@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2024 Neil C Smith.
+ * Copyright 2025 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -50,6 +50,7 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
 import java.util.List;
+import java.util.Set;
 import org.netbeans.api.visual.action.EditProvider;
 import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.layout.LayoutFactory;
@@ -453,10 +454,20 @@ public class NodeWidget extends Widget implements StateModel.Listener, MinimizeA
         @Override
         public State mousePressed(Widget widget, WidgetMouseEvent event) {
             if (event.getButton() == MouseEvent.BUTTON1 || event.getButton() == MouseEvent.BUTTON2) {
-                stateModel.toggleBooleanState();
-//                return State.CONSUMED; // temporary fix - minimized state saved on de-selection
+                List<NodeWidget> selected = scene.getSelectedObjects().stream()
+                        .map(obj -> scene.findWidget(obj))
+                        .filter(NodeWidget.class::isInstance)
+                        .map(NodeWidget.class::cast)
+                        .toList();
+                boolean inSelection = selected.contains(NodeWidget.this);
+                if (inSelection) {
+                    boolean state = stateModel.getBooleanState();
+                    selected.forEach(nw -> nw.stateModel.setBooleanState(!state));
+                } else {
+                    stateModel.toggleBooleanState();
+                }
             }
-            return State.REJECTED;
+            return State.REJECTED; // fall through to select
         }
     }
 
