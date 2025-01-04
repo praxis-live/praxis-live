@@ -37,8 +37,10 @@ import org.openide.nodes.Node;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.Utilities;
+import org.openide.util.WeakListeners;
 import org.openide.util.actions.Presenter;
 import org.praxislive.core.ComponentType;
 
@@ -55,6 +57,7 @@ public class AddChildAction extends AbstractAction
         implements ContextAwareAction, Presenter.Popup, Presenter.Menu {
 
     private final Lookup.Result<ActionEditorContext> result;
+    private final LookupListener listener;
     private final DynMenu menu;
 
     private ActionEditorContext editorContext;
@@ -68,7 +71,9 @@ public class AddChildAction extends AbstractAction
         super(Bundle.CTL_AddChildAction());
         this.menu = new DynMenu();
         this.result = context.lookupResult(ActionEditorContext.class);
-        this.result.addLookupListener(this::resultChanged);
+        listener = this::resultChanged;
+        this.result.addLookupListener(
+                WeakListeners.create(LookupListener.class, listener, result));
         setEnabled(false);
         resultChanged(null);
     }
