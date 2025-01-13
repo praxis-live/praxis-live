@@ -108,7 +108,9 @@ import org.openide.util.Utilities;
 import org.openide.util.actions.Presenter;
 import org.openide.util.lookup.Lookups;
 import org.praxislive.core.Connection;
+import org.praxislive.core.ControlInfo;
 import org.praxislive.core.Value;
+import org.praxislive.core.Watch;
 import org.praxislive.core.types.PArray;
 import org.praxislive.ide.core.api.Disposable;
 import org.praxislive.ide.core.api.Task;
@@ -554,12 +556,23 @@ public final class GraphEditor implements RootEditor {
         exposedTools.put(key, expose);
         widget.clearToolWidgets();
         ComponentInfo info = cmp.getInfo();
-        List<String> controls = expose.stream()
+        Map<Boolean, List<String>> partitioned = expose.stream()
                 .map(Value::toString)
                 .filter(c -> info.controls().contains(c))
-                .toList();
+                .collect(Collectors.partitioningBy(c
+                        -> info.controlInfo(c) instanceof ControlInfo ci && Watch.isWatch(ci)));
+        List<String> controls = partitioned.get(false);
         if (!controls.isEmpty()) {
             widget.addToolWidget(new ExposedControls(scene, cmp, controls));
+        }
+        List<String> watches = partitioned.get(true);
+        if (!watches.isEmpty()) {
+            for (String watch : watches) {
+                WatchDisplay watchDisplay = WatchDisplay.createWidget(scene, cmp, watch);
+                if (watchDisplay != null) {
+                    widget.addToolWidget(watchDisplay);
+                }
+            }
         }
 
     }
@@ -885,6 +898,7 @@ public final class GraphEditor implements RootEditor {
                         if (w instanceof NodeWidget node) {
                             configureWidgetFromAttributes(node, cmp);
                             configureExposedTools(node, cmp);
+                            scene.validate();
                         }
                     }
                 }
