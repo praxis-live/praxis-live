@@ -112,9 +112,12 @@ import org.praxislive.core.ControlInfo;
 import org.praxislive.core.Value;
 import org.praxislive.core.Watch;
 import org.praxislive.core.types.PArray;
+import org.praxislive.core.types.PBoolean;
+import org.praxislive.core.types.PNumber;
 import org.praxislive.ide.core.api.Disposable;
 import org.praxislive.ide.core.api.Task;
 import org.praxislive.ide.project.api.PraxisProject;
+import org.praxislive.ide.pxr.api.Attributes;
 
 /**
  *
@@ -458,7 +461,7 @@ public final class GraphEditor implements RootEditor {
         goUpAction.setEnabled(container.getParent() != null);
         location.address.setText(container.getAddress().toString());
 
-        scene.setComment(Utils.getAttr(container, ATTR_GRAPH_COMMENT));
+        scene.setComment(Attributes.get(container, ATTR_GRAPH_COMMENT, ""));
         scene.validate();
     }
 
@@ -543,7 +546,7 @@ public final class GraphEditor implements RootEditor {
     private void configureExposedTools(NodeWidget widget, ComponentProxy cmp) {
         String id = cmp.getID();
         String key = "expose";
-        PArray expose = Utils.getAttrValue(cmp, PArray.class, key);
+        PArray expose = Attributes.get(cmp, PArray.class, key, null);
         if (expose == null) {
             expose = Optional.ofNullable(cmp.getInfo().properties().get(key))
                     .flatMap(PArray::from)
@@ -579,30 +582,21 @@ public final class GraphEditor implements RootEditor {
 
     private void configureWidgetFromAttributes(NodeWidget widget, ComponentProxy cmp) {
         widget.setPreferredLocation(resolveLocation(cmp));
-        if ("true".equals(Utils.getAttr(cmp, ATTR_GRAPH_MINIMIZED))) {
+        if (Attributes.get(cmp, PBoolean.class, ATTR_GRAPH_MINIMIZED, PBoolean.FALSE).value()) {
             widget.setMinimized(true);
         }
         updateWidgetComment(widget,
-                Utils.getAttr(cmp, ATTR_GRAPH_COMMENT, ""),
+                Attributes.get(cmp, ATTR_GRAPH_COMMENT, ""),
                 cmp instanceof ContainerProxy);
         scene.validate();
     }
 
     private Point resolveLocation(ComponentProxy cmp) {
-        int x = activePoint.x;
-        int y = activePoint.y;
-        try {
-            String xStr = Utils.getAttr(cmp, ATTR_GRAPH_X);
-            String yStr = Utils.getAttr(cmp, ATTR_GRAPH_Y);
-            if (xStr != null) {
-                x = Integer.parseInt(xStr);
-            }
-            if (yStr != null) {
-                y = Integer.parseInt(yStr);
-            }
-        } catch (Exception ex) {
+        int x = Attributes.get(cmp, PNumber.class, ATTR_GRAPH_X,
+                PNumber.of(activePoint.x)).toIntValue();
+        int y = Attributes.get(cmp, PNumber.class, ATTR_GRAPH_Y,
+                PNumber.of(activePoint.y)).toIntValue();
 
-        }
         // @TODO what to do about importing components without positions?
         // if point not set, check for widget at point?
         return new Point(x, y);
@@ -795,18 +789,20 @@ public final class GraphEditor implements RootEditor {
     private void syncAttributes(ComponentProxy cmp) {
         ignoreAttributeChanges = true;
         Widget widget = scene.findWidget(cmp.getAddress().componentID());
-        if (widget instanceof NodeWidget) {
-            NodeWidget nodeWidget = (NodeWidget) widget;
-            String x = Integer.toString((int) nodeWidget.getLocation().getX());
-            String y = Integer.toString((int) nodeWidget.getLocation().getY());
+        if (widget instanceof NodeWidget nodeWidget) {
+            int x = (int) nodeWidget.getLocation().getX();
+            int y = (int) nodeWidget.getLocation().getY();
             if (LOG.isLoggable(Level.FINE)) {
                 LOG.log(Level.FINE, "Setting position attributes of {0} to x:{1} y:{2}",
                         new Object[]{cmp.getAddress(), x, y});
             }
-            Utils.setAttr(cmp, ATTR_GRAPH_X, x);
-            Utils.setAttr(cmp, ATTR_GRAPH_Y, y);
-            Utils.setAttr(cmp, ATTR_GRAPH_MINIMIZED,
-                    nodeWidget.isMinimized() ? "true" : null);
+            Attributes.set(cmp, ATTR_GRAPH_X, PNumber.of(x));
+            Attributes.set(cmp, ATTR_GRAPH_Y, PNumber.of(y));
+            if (nodeWidget.isMinimized()) {
+                Attributes.set(cmp, ATTR_GRAPH_MINIMIZED, PBoolean.TRUE);
+            } else {
+                Attributes.clear(cmp, ATTR_GRAPH_MINIMIZED);
+            }
         }
         ignoreAttributeChanges = false;
     }
@@ -865,8 +861,7 @@ public final class GraphEditor implements RootEditor {
                 } else if (ContainerProtocol.CONNECTIONS.equals(evt.getPropertyName())) {
                     syncConnections();
                 } else if (ComponentProtocol.META.equals(evt.getPropertyName())) {
-                    String comment = Utils.getAttr(container, ATTR_GRAPH_COMMENT);
-                    comment = comment == null ? "" : comment;
+                    String comment = Attributes.get(container, ATTR_GRAPH_COMMENT, "");
                     if (!comment.equals(scene.getComment())) {
                         scene.setComment(comment);
                         scene.validate();
@@ -1165,18 +1160,30 @@ public final class GraphEditor implements RootEditor {
                     comment = editor.getText();
                     if (widget == scene) {
                         scene.setComment(comment);
-                        Utils.setAttr(container, ATTR_GRAPH_COMMENT, comment.isEmpty() ? null : comment);
+                        if (comment.isEmpty()) {
+                            Attributes.clear(container, ATTR_GRAPH_COMMENT);
+                        } else {
+                            Attributes.set(container, ATTR_GRAPH_COMMENT, comment);
+                        }
                     } else if (widget instanceof NodeWidget) {
                         ComponentProxy cmp = findComponent(widget);
                         updateWidgetComment((NodeWidget) widget, comment, cmp instanceof ContainerProxy);
-                        Utils.setAttr(cmp, ATTR_GRAPH_COMMENT, comment.isEmpty() ? null : comment);
+                        if (comment.isEmpty()) {
+                            Attributes.clear(cmp, ATTR_GRAPH_COMMENT);
+                        } else {
+                            Attributes.set(cmp, ATTR_GRAPH_COMMENT, comment);
+                        }
                         for (Object obj : scene.getSelectedObjects()) {
                             ComponentProxy additional = findComponent(obj);
                             if (additional != null) {
                                 NodeWidget n = (NodeWidget) scene.findWidget(obj);
                                 if (n != widget) {
                                     updateWidgetComment(n, comment, cmp instanceof ContainerProxy);
-                                    Utils.setAttr(additional, ATTR_GRAPH_COMMENT, comment.isEmpty() ? null : comment);
+                                    if (comment.isEmpty()) {
+                                        Attributes.clear(additional, ATTR_GRAPH_COMMENT);
+                                    } else {
+                                        Attributes.set(additional, ATTR_GRAPH_COMMENT, comment);
+                                    }
                                 }
 
                             }
@@ -1191,8 +1198,7 @@ public final class GraphEditor implements RootEditor {
         private String findInitialText(Widget widget) {
             ComponentProxy cmp = findComponent(widget);
             if (cmp != null) {
-                String comment = Utils.getAttr(cmp, ATTR_GRAPH_COMMENT);
-                return comment == null ? "" : comment;
+                return Attributes.get(cmp, ATTR_GRAPH_COMMENT, "");
             } else {
                 return "";
             }
