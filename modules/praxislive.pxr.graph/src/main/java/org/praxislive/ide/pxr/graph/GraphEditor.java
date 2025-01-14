@@ -194,7 +194,8 @@ public final class GraphEditor implements RootEditor {
         lookup = Lookups.fixed(new PositionTransform.CopyExport(this),
                 new PositionTransform.ImportPaste(this));
 
-        addAction = org.openide.awt.Actions.forID("PXR", "org.praxislive.ide.pxr.AddChildAction");
+        addAction = org.openide.awt.Actions.forID(ActionSupport.CATEGORY,
+                ActionSupport.ADD_CHILD);
 
         selectionListener = new SelectionListener();
         scene.addObjectSceneListener(selectionListener,
