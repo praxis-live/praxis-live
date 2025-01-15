@@ -35,6 +35,7 @@ import org.praxislive.core.ComponentType;
 import org.praxislive.core.Connection;
 import org.praxislive.ide.core.api.Disposable;
 import org.praxislive.ide.pxr.AddChildAction;
+import org.praxislive.ide.pxr.ExposeControlsAction;
 import org.praxislive.ide.pxr.RootConfigAction;
 import org.praxislive.ide.pxr.StartableRootAction;
 import org.praxislive.ide.pxr.spi.ModelTransform;
@@ -57,6 +58,12 @@ public final class ActionSupport {
      * {@link Actions#forID(java.lang.String, java.lang.String)}, etc.
      */
     public static final String ADD_CHILD = AddChildAction.ID;
+
+    /**
+     * Action ID for the Expose Controls action. For use with {@link ActionID},
+     * {@link Actions#forID(java.lang.String, java.lang.String)}, etc.
+     */
+    public static final String EXPOSE_CONTROLS = ExposeControlsAction.ID;
 
     /**
      * Action ID for the Root configuration action. For use with {@link ActionID},

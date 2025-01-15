@@ -148,6 +148,7 @@ public final class GraphEditor implements RootEditor {
 
     private final LocationAction location;
     private final Action addAction;
+    private final Action exposeControlAction;
     private final Action goUpAction;
     private final Action deleteAction;
     private final Action sceneCommentAction;
@@ -196,6 +197,8 @@ public final class GraphEditor implements RootEditor {
 
         addAction = org.openide.awt.Actions.forID(ActionSupport.CATEGORY,
                 ActionSupport.ADD_CHILD);
+        exposeControlAction = org.openide.awt.Actions.forID(ActionSupport.CATEGORY,
+                ActionSupport.EXPOSE_CONTROLS);
 
         selectionListener = new SelectionListener();
         scene.addObjectSceneListener(selectionListener,
@@ -245,6 +248,8 @@ public final class GraphEditor implements RootEditor {
                 actions.addAll(Arrays.asList(cmp.getNodeDelegate().getActions(false)));
             }
         }
+        actions.add(null);
+        actions.add(exposeControlAction);
         actions.add(null);
         actions.add(copyAction);
         actions.add(duplicateAction);
@@ -553,8 +558,7 @@ public final class GraphEditor implements RootEditor {
                     .flatMap(PArray::from)
                     .orElse(PArray.EMPTY);
         }
-        PArray known = exposedTools.getOrDefault(id, PArray.EMPTY);
-        if (Objects.equals(expose, known)) {
+        if (Objects.equals(expose, exposedTools.get(id))) {
             return;
         }
         exposedTools.put(key, expose);
