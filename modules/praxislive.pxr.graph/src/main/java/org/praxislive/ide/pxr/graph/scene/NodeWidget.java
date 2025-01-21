@@ -50,7 +50,6 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
 import java.util.List;
-import java.util.Set;
 import org.netbeans.api.visual.action.EditProvider;
 import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.layout.LayoutFactory;
@@ -469,6 +468,12 @@ public class NodeWidget extends Widget implements StateModel.Listener, MinimizeA
             }
             return State.REJECTED; // fall through to select
         }
+
+        @Override
+        public State mouseClicked(Widget widget, WidgetMouseEvent event) {
+            return State.CONSUMED; // don't fall through to edit action
+        }
+
     }
 
 }
