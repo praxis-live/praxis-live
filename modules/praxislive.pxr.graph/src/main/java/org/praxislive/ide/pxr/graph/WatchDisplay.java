@@ -21,7 +21,9 @@
  */
 package org.praxislive.ide.pxr.graph;
 
+import java.awt.EventQueue;
 import java.awt.Graphics2D;
+import java.awt.Insets;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
@@ -29,8 +31,10 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.CompletionStage;
 import javax.imageio.ImageIO;
 import javax.swing.Timer;
+import org.netbeans.api.visual.border.Border;
 import org.netbeans.api.visual.border.BorderFactory;
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.widget.LabelWidget;
@@ -56,9 +60,14 @@ import org.praxislive.ide.pxr.graph.scene.PraxisGraphScene;
  */
 abstract class WatchDisplay extends Widget {
 
+    private static final long FORCE_REFRESH_TIME = 5_000_000_000L;
+
     private final ComponentProxy cmp;
     private final String control;
     private final Timer timer;
+
+    private CompletionStage<?> pending;
+    private long pendingSent;
 
     WatchDisplay(Scene scene, ComponentProxy cmp,
             String control, String relatedPort) {
@@ -68,7 +77,7 @@ abstract class WatchDisplay extends Widget {
         timer = new Timer(100, this::timerListener);
         setOpaque(true);
         setForeground(null);
-        setBorder(BorderFactory.createRoundedBorder(4, 4, 2, 2, LAFScheme.BACKGROUND, null));
+        setBorder(BorderFactory.createRoundedBorder(4, 4, 2, 2, LAFScheme.NODE_BACKGROUND, null));
         setLayout(LayoutFactory.createVerticalFlowLayout());
         addChild(createLabel(scene, relatedPort.isBlank() ? control : relatedPort + " (watch)"));
     }
@@ -76,12 +85,14 @@ abstract class WatchDisplay extends Widget {
     private Widget createLabel(Scene scene, String text) {
         LabelWidget label = new LabelWidget(scene, text);
         label.setForeground(null);
+        label.setBorder(new LabelBorderImpl());
         return label;
     }
 
     @Override
     protected void notifyAdded() {
         super.notifyAdded();
+        pendingSent = System.nanoTime() - FORCE_REFRESH_TIME;
         timer.start();
     }
 
@@ -98,11 +109,22 @@ abstract class WatchDisplay extends Widget {
         if (!isRunning()) {
             return;
         }
-        cmp.send(control, List.of()).thenAccept(ret -> {
-            if (!ret.isEmpty()) {
-                update(ret.get(0));
+        if (pending != null && System.nanoTime() - pendingSent < FORCE_REFRESH_TIME) {
+            return;
+        }
+        CompletionStage<List<Value>> staged = cmp.send(control, List.of());
+        staged.whenComplete((args, ex) -> {
+            assert EventQueue.isDispatchThread();
+            if (args != null && !args.isEmpty()) {
+                update(args.get(0));
+            }
+            if (pending == staged) {
+                pending = null;
             }
         });
+        pending = staged;
+        pendingSent = System.nanoTime();
+
     }
 
     private boolean isRunning() {
@@ -123,6 +145,29 @@ abstract class WatchDisplay extends Widget {
 
     abstract void update(Value value);
 
+    private class LabelBorderImpl implements Border {
+
+        private final Insets INSETS = new Insets(1, 1, 1, 1);
+
+        @Override
+        public Insets getInsets() {
+            return INSETS;
+        }
+
+        @Override
+        public void paint(Graphics2D g, Rectangle bounds) {
+            g.setColor(getParentWidget().getForeground());
+            int y = bounds.y + bounds.height - 1;
+            g.drawLine(bounds.x, y, bounds.x + bounds.width, y);
+        }
+
+        @Override
+        public boolean isOpaque() {
+            return false;
+        }
+
+    }
+
     static WatchDisplay createWidget(PraxisGraphScene<?> scene,
             ComponentProxy cmp, String control) {
         ControlInfo info = cmp.getInfo().controlInfo(control);
@@ -134,8 +179,66 @@ abstract class WatchDisplay extends Widget {
         String port = watchInfo.getString(Watch.RELATED_PORT_KEY, "");
         if ("image/png".equals(mime)) {
             return new ImageDisplay(scene, cmp, control, port);
+        } else {
+            return new TextDisplay(scene, cmp, control, port);
         }
-        return null;
+    }
+
+    private static class TextDisplay extends WatchDisplay {
+
+        private final List<LabelWidget> lines;
+
+        private String text;
+
+        TextDisplay(Scene scene, ComponentProxy cmp,
+                String control, String relatedPort) {
+            super(scene, cmp, control, relatedPort);
+            text = "";
+            lines = List.of(
+                    createLineWidget(),
+                    createLineWidget(),
+                    createLineWidget(),
+                    createLineWidget(),
+                    createLineWidget()
+            );
+            for (LabelWidget line : lines) {
+                line.setVisible(false);
+                addChild(line);
+            }
+        }
+
+        @Override
+        void update(Value value) {
+            String newText = value.toString();
+            if (!Objects.equals(text, newText)) {
+                this.text = newText;
+                List<String> ll = text.lines()
+                        .limit(lines.size())
+                        .map(this::truncate)
+                        .toList();
+                for (LabelWidget line : lines) {
+                    line.setVisible(false);
+                }
+                for (int i = 0; i < ll.size(); i++) {
+                    String txt = ll.get(i);
+                    LabelWidget widget = lines.get(i);
+                    widget.setLabel(txt);
+                    widget.setVisible(true);
+                }
+                getScene().validate();
+            }
+        }
+
+        private LabelWidget createLineWidget() {
+            LabelWidget lineWidget = new LabelWidget(getScene());
+            lineWidget.setForeground(null);
+            return lineWidget;
+        }
+
+        private String truncate(String line) {
+            return line.length() > 40 ? line.substring(0, 38) + "..." : line;
+        }
+
     }
 
     private static class ImageDisplay extends WatchDisplay {
