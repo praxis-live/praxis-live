@@ -63,7 +63,10 @@ import org.praxislive.ide.pxr.api.Attributes;
         displayName = "#CTL_ExposeAction",
         lazy = false
 )
-@NbBundle.Messages("CTL_ExposeAction=Expose")
+@NbBundle.Messages({
+    "CTL_ExposeAction=Expose",
+    "CTL_ResetExposeAction=Reset"
+})
 public class ExposeControlsAction extends AbstractAction
         implements ContextAwareAction, Presenter.Popup, Presenter.Menu {
 
@@ -147,6 +150,10 @@ public class ExposeControlsAction extends AbstractAction
                 });
                 menu.add(cbi);
             }
+            menu.addSeparator();
+            JMenuItem reset = new JMenuItem(Bundle.CTL_ResetExposeAction());
+            reset.addActionListener(e -> Attributes.clear(component, EXPOSE_KEY));
+            menu.add(reset);
             return new JComponent[]{menu};
         }
 
