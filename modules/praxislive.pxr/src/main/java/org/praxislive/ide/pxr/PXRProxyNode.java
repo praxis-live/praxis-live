@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2024 Neil C Smith.
+ * Copyright 2025 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -42,6 +42,7 @@ import org.praxislive.core.ComponentInfo;
 import org.praxislive.core.ControlInfo;
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
+import org.praxislive.core.Watch;
 import org.praxislive.ide.components.api.Components;
 import org.praxislive.ide.components.api.Icons;
 
@@ -222,6 +223,7 @@ class PXRProxyNode extends AbstractNode {
         for (String id : info.controls()) {
             ControlInfo ci = info.controlInfo(id);
             if (ci.controlType() == ControlInfo.Type.Function
+                    && !Watch.isWatch(ci)
                     && ci.properties().get("input-port") == null
                     && !component.isHiddenFunction(id)) {
                 functions.add(new FunctionPropertyWrapper(this, id, ci));

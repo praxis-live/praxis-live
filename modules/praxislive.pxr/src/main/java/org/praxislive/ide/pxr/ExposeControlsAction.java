@@ -189,7 +189,9 @@ public class ExposeControlsAction extends AbstractAction
         }
 
         private boolean isExposable(String control, ControlInfo controlInfo, Node node) {
-            if (controlInfo.controlType() == ControlInfo.Type.Action) {
+            if (Watch.isWatch(controlInfo)) {
+                return true;
+            } else if (controlInfo.controlType() == ControlInfo.Type.Action) {
                 for (Action a : node.getActions(false)) {
                     if (a != null && control.equals(a.getValue(Action.NAME))) {
                         return true;
