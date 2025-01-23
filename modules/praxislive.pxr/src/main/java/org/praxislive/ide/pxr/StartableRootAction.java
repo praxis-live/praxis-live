@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2024 Neil C Smith.
+ * Copyright 2025 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -50,7 +50,7 @@ import org.openide.util.actions.Presenter;
 /**
  *
  */
-@ActionID(category = "PXR", id = "org.praxislive.ide.pxr.StartableRootAction")
+@ActionID(category = ActionBridge.CATEGORY, id = StartableRootAction.ID)
 @ActionRegistration(
         displayName = "#CTL_StartableRootAction",
         lazy = false
@@ -59,11 +59,13 @@ import org.openide.util.actions.Presenter;
 public class StartableRootAction extends AbstractAction
         implements ContextAwareAction, Presenter.Toolbar {
 
+    public static final String ID = "org.praxislive.ide.pxr.StartableRootAction";
+
     private final static String RESOURCE_DIR = "org/praxislive/ide/pxr/resources/";
 
     private final PropertyChangeListener baseListener;
     private final Lookup.Result<ActionEditorContext> result;
-    
+
     private PXRRootProxy root;
     private PropertyChangeListener rootListener;
     private JToggleButton button;

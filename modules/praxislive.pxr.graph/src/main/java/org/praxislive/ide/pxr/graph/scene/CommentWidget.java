@@ -21,31 +21,41 @@
  */
 package org.praxislive.ide.pxr.graph.scene;
 
-import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Point;
 import java.util.Objects;
+import org.netbeans.api.visual.action.ActionFactory;
+import org.netbeans.api.visual.action.EditProvider;
+import org.netbeans.api.visual.border.BorderFactory;
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.widget.LabelWidget;
 import org.netbeans.api.visual.widget.Widget;
 
-class CommentWidget extends Widget {
+final class CommentWidget extends Widget {
 
     private final PraxisGraphScene<?> scene;
-    
-    private String text;
 
-    public CommentWidget(PraxisGraphScene<?> scene) {
+    private String text;
+    private EditProvider editProvider;
+
+    CommentWidget(PraxisGraphScene<?> scene) {
 
         super(scene);
         this.scene = scene;
-        
+        setOpaque(true);
+        setBackground(scene.getBackground());
         setLayout(LayoutFactory.createVerticalFlowLayout());
         setMinimumSize(new Dimension(100, 10));
+        setBorder(BorderFactory.createRoundedBorder(4, 4, 2, 2, LAFScheme.BACKGROUND, null));
         text = "";
-        
+        getActions().addAction(ActionFactory.createEditAction((widget) -> {
+            if (editProvider != null) {
+                editProvider.edit(widget);
+            }
+        }));
     }
 
-    public final void setText(String text) {
+    final void setText(String text) {
         if (this.text.equals(text)) {
             return;
         }
@@ -54,14 +64,17 @@ class CommentWidget extends Widget {
         removeChildren();
         for (String line : lines) {
             LabelWidget lw = new LabelWidget(getScene(), line);
-            lw.setOpaque(false);
-            lw.setForeground(Color.BLACK); // how to set this?
+            lw.setForeground(null);
             addChild(lw);
         }
     }
 
-    public final String getText() {
+    final String getText() {
         return text;
+    }
+
+    final void setEditProvider(EditProvider editProvider) {
+        this.editProvider = editProvider;
     }
 
     @Override
@@ -70,6 +83,15 @@ class CommentWidget extends Widget {
             return;
         }
         super.paintChildren();
+    }
+
+    @Override
+    public boolean isHitAt(Point localLocation) {
+        if (scene.isBelowLODThreshold()) {
+            return false;
+        } else {
+            return super.isHitAt(localLocation);
+        }
     }
 
 }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2024 Neil C Smith.
+ * Copyright 2025 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -24,6 +24,8 @@ package org.praxislive.ide.pxr.api;
 import java.util.List;
 import org.praxislive.ide.pxr.spi.RootEditor;
 import javax.swing.Action;
+import org.openide.awt.ActionID;
+import org.openide.awt.Actions;
 import org.openide.explorer.ExplorerManager;
 import org.praxislive.ide.core.api.Task;
 import org.praxislive.ide.model.ContainerProxy;
@@ -32,6 +34,10 @@ import org.openide.filesystems.FileObject;
 import org.praxislive.core.ComponentType;
 import org.praxislive.core.Connection;
 import org.praxislive.ide.core.api.Disposable;
+import org.praxislive.ide.pxr.AddChildAction;
+import org.praxislive.ide.pxr.ExposeControlsAction;
+import org.praxislive.ide.pxr.RootConfigAction;
+import org.praxislive.ide.pxr.StartableRootAction;
 import org.praxislive.ide.pxr.spi.ModelTransform;
 
 /**
@@ -40,6 +46,36 @@ import org.praxislive.ide.pxr.spi.ModelTransform;
  *
  */
 public final class ActionSupport {
+
+    /**
+     * Action category for all PXR action. For use with {@link ActionID},
+     * {@link Actions#forID(java.lang.String, java.lang.String)}, etc.
+     */
+    public static final String CATEGORY = ActionBridge.CATEGORY;
+
+    /**
+     * Action ID for the Add Child action. For use with {@link ActionID},
+     * {@link Actions#forID(java.lang.String, java.lang.String)}, etc.
+     */
+    public static final String ADD_CHILD = AddChildAction.ID;
+
+    /**
+     * Action ID for the Expose Controls action. For use with {@link ActionID},
+     * {@link Actions#forID(java.lang.String, java.lang.String)}, etc.
+     */
+    public static final String EXPOSE_CONTROLS = ExposeControlsAction.ID;
+
+    /**
+     * Action ID for the Root configuration action. For use with {@link ActionID},
+     * {@link Actions#forID(java.lang.String, java.lang.String)}, etc.
+     */
+    public static final String ROOT_CONFIG = RootConfigAction.ID;
+
+    /**
+     * Action ID for the Root start action. For use with {@link ActionID},
+     * {@link Actions#forID(java.lang.String, java.lang.String)}, etc.
+     */
+    public static final String ROOT_START = StartableRootAction.ID;
 
     private ActionSupport() {
     }

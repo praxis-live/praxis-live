@@ -54,7 +54,6 @@ import org.praxislive.ide.core.api.AbstractTask;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
-import org.openide.awt.Actions;
 import org.openide.explorer.ExplorerManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -97,12 +96,11 @@ import org.praxislive.project.ParseException;
 })
 public class ActionBridge {
 
+    public static final String CATEGORY = "PXR";
+
     private final static ActionBridge INSTANCE = new ActionBridge();
 
     private final static RequestProcessor RP = new RequestProcessor(ActionBridge.class);
-
-    private final static Action ADD_CHILD_ACTION
-            = Actions.forID("PXR", AddChildAction.class.getName());
 
     private ActionBridge() {
     }

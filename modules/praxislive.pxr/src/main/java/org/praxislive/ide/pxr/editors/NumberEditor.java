@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2020 Neil C Smith.
+ * Copyright 2024 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -140,12 +140,10 @@ public class NumberEditor extends EditorSupport implements
     @Override
     public boolean supportsCustomEditor() {
         return false;
-//        return !isInteger && minimum != null && maximum != null;
     }
 
     @Override
     public Component getCustomEditor() {
-//        return new NumberCustomEditor(this, minimum, maximum);
         return null;
     }
 

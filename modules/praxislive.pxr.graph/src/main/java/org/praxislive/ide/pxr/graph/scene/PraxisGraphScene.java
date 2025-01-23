@@ -42,16 +42,15 @@
  */
 package org.praxislive.ide.pxr.graph.scene;
 
-import java.awt.Color;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
-import javax.swing.UIManager;
 import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.action.ConnectProvider;
+import org.netbeans.api.visual.action.EditProvider;
 import org.netbeans.api.visual.action.PopupMenuProvider;
 import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.anchor.Anchor;
@@ -74,9 +73,9 @@ import org.netbeans.api.visual.widget.Widget;
  *
  * @param <N> node type
  */
-public class PraxisGraphScene<N> extends GraphPinScene<N, EdgeID<N>, PinID<N>> {
+public final class PraxisGraphScene<N> extends GraphPinScene<N, EdgeID<N>, PinID<N>> {
 
-    private final static double LOD_ZOOM = 0.7;
+    private final static double LOD_ZOOM = 0.75;
 
     private final LayerWidget backgroundLayer = new LayerWidget(this);
     private final LayerWidget mainLayer = new LayerWidget(this);
@@ -85,7 +84,9 @@ public class PraxisGraphScene<N> extends GraphPinScene<N, EdgeID<N>, PinID<N>> {
 
     private final CommentWidget commentWidget;
 
+    private boolean animate;
     private boolean orthogonal;
+    private boolean minimizeConnectedPins;
     private Router router;
     private final WidgetAction moveAction;
     private final PraxisKeyboardMoveAction keyboardMoveAction;
@@ -95,21 +96,11 @@ public class PraxisGraphScene<N> extends GraphPinScene<N, EdgeID<N>, PinID<N>> {
     private WidgetAction connectAction;
     private LAFScheme.Colors schemeColors;
 
-//    private int edgeCount = 10;
     /**
      * Create a Praxis graph scene.
      */
     public PraxisGraphScene() {
-        this(null, null, null);
-    }
-
-    /**
-     * Create a Praxis graph scene with a specific look and feel scheme.
-     *
-     * @param scheme the look and feel scheme
-     */
-    public PraxisGraphScene(LAFScheme scheme) {
-        this(scheme, null, null);
+        this(null, null);
     }
 
     /**
@@ -120,24 +111,8 @@ public class PraxisGraphScene<N> extends GraphPinScene<N, EdgeID<N>, PinID<N>> {
      * @param popupProvider popup menu provider
      */
     public PraxisGraphScene(ConnectProvider connectProvider, PopupMenuProvider popupProvider) {
-        this(null, connectProvider, popupProvider);
-    }
-
-    /**
-     * Create a Praxis graph scene with a specific look and feel scheme, and the
-     * provided connect and popup menu providers.
-     *
-     * @param scheme the look and feel scheme
-     * @param connectProvider connect provider
-     * @param popupProvider popup menu provider
-     */
-    public PraxisGraphScene(LAFScheme scheme, ConnectProvider connectProvider, PopupMenuProvider popupProvider) {
-        if (scheme == null) {
-            scheme = new LAFScheme();
-        }
-        this.scheme = scheme;
-
-        setFont(UIManager.getFont("controlFont"));
+        this.scheme = new LAFScheme();
+        setFont(scheme.getDefaultFont());
 
         setKeyEventProcessingType(EventProcessingType.FOCUSED_WIDGET_AND_ITS_PARENTS);
 
@@ -152,7 +127,8 @@ public class PraxisGraphScene<N> extends GraphPinScene<N, EdgeID<N>, PinID<N>> {
 
         commentWidget = new CommentWidget(this);
         commentWidget.setPreferredLocation(new Point(32, 32));
-        commentWidget.setBorder(BorderFactory.createRoundedBorder(8, 8, 8, 8, Color.LIGHT_GRAY, null));
+        commentWidget.setFont(scheme.getCommentFont());
+        commentWidget.setBorder(BorderFactory.createRoundedBorder(8, 8, 8, 8, LAFScheme.NODE_BACKGROUND, null));
         commentWidget.setVisible(false);
         mainLayer.addChild(commentWidget);
 
@@ -190,15 +166,9 @@ public class PraxisGraphScene<N> extends GraphPinScene<N, EdgeID<N>, PinID<N>> {
      * @return node widget representation
      */
     public NodeWidget addNode(N node, String name) {
-        NodeWidget n = (NodeWidget) super.addNode(node);
-        n.setNodeName(name);
-        return n;
-    }
-
-    @Override
-    protected void detachNodeWidget(N node, Widget widget) {
-        ((NodeWidget) widget).getCommentWidget().removeFromParent();
-        super.detachNodeWidget(node, widget);
+        NodeWidget nodeWidget = (NodeWidget) super.addNode(node);
+        nodeWidget.setNodeName(name);
+        return nodeWidget;
     }
 
     /**
@@ -342,7 +312,7 @@ public class PraxisGraphScene<N> extends GraphPinScene<N, EdgeID<N>, PinID<N>> {
         return orthogonal;
     }
 
-    void setRouter(Router router) {
+    private void setRouter(Router router) {
         this.router = router;
         for (EdgeID<N> e : getEdges()) {
             ((ConnectionWidget) findWidget(e)).setRouter(router);
@@ -350,8 +320,12 @@ public class PraxisGraphScene<N> extends GraphPinScene<N, EdgeID<N>, PinID<N>> {
         revalidate();
     }
 
-    Router getRouter() {
-        return router;
+    public void setMinimizeConnectedPins(boolean minimizeConnected) {
+        this.minimizeConnectedPins = minimizeConnected;
+    }
+
+    public boolean isMinimizeConnectedPins() {
+        return minimizeConnectedPins;
     }
 
     @Override
@@ -383,7 +357,8 @@ public class PraxisGraphScene<N> extends GraphPinScene<N, EdgeID<N>, PinID<N>> {
     protected Widget attachNodeWidget(N node) {
         NodeWidget widget = new NodeWidget(this);
         mainLayer.addChild(widget);
-
+        mainLayer.addChild(widget.getCommentWidget());
+        mainLayer.addChild(widget.getToolContainerWidget());
         widget.getHeader().getActions().addAction(createObjectHoverAction());
         widget.getActions().addAction(createSelectAction());
         widget.getActions().addAction(moveAction);
@@ -416,6 +391,16 @@ public class PraxisGraphScene<N> extends GraphPinScene<N, EdgeID<N>, PinID<N>> {
         return widget;
     }
 
+    @SuppressWarnings("unchecked")
+    boolean hasConnections(PinWidget pinWidget) {
+        Object obj = findObject(pinWidget);
+        if (obj instanceof PinID<?> pin) {
+            return !findPinEdges((PinID<N>) pin, true, true).isEmpty();
+        } else {
+            return false;
+        }
+    }
+
     /**
      * Implements attaching a widget to an edge.
      *
@@ -434,6 +419,8 @@ public class PraxisGraphScene<N> extends GraphPinScene<N, EdgeID<N>, PinID<N>> {
         if (menuAction != null) {
             edgeWidget.getActions().addAction(menuAction);
         }
+        src.notifyEdgeAttached();
+        dst.notifyEdgeAttached();
         return edgeWidget;
     }
 
@@ -465,6 +452,22 @@ public class PraxisGraphScene<N> extends GraphPinScene<N, EdgeID<N>, PinID<N>> {
     @Override
     protected void attachEdgeTargetAnchor(EdgeID<N> edge, PinID<N> oldTargetPin, PinID<N> targetPin) {
         ((EdgeWidget) findWidget(edge)).setTargetAnchor(getPinAnchor(targetPin));
+    }
+
+    @Override
+    protected void detachNodeWidget(N node, Widget widget) {
+        ((NodeWidget) widget).getCommentWidget().removeFromParent();
+        ((NodeWidget) widget).getToolContainerWidget().removeFromParent();
+        super.detachNodeWidget(node, widget);
+    }
+
+    @Override
+    protected void detachEdgeWidget(EdgeID<N> edge, Widget widget) {
+        PinWidget src = (PinWidget) findWidget(edge.getPin1());
+        PinWidget dst = (PinWidget) findWidget(edge.getPin2());
+        src.notifyEdgeDetached();
+        dst.notifyEdgeDetached();
+        super.detachEdgeWidget(edge, widget);
     }
 
     private Anchor getPinAnchor(PinID<N> pin) {
@@ -513,22 +516,39 @@ public class PraxisGraphScene<N> extends GraphPinScene<N, EdgeID<N>, PinID<N>> {
     }
 
     /**
-     * Get the widget used to display any comment.
+     * Set an edit provider for the scene comment.
      *
-     * @return comment widget
+     * @param provider scene comment edit provider
      */
-    public Widget getCommentWidget() {
-        return commentWidget;
+    public void setCommentEditProvider(EditProvider provider) {
+        commentWidget.setEditProvider(provider);
     }
 
     public void layoutScene() {
         sceneLayout.invokeLayout();
     }
 
+    public void setAnimateChanges(boolean animate) {
+        this.animate = animate;
+    }
+
+    public boolean isAnimateChanges() {
+        return animate;
+    }
+
+    void animatePreferredBounds(Widget widget, Rectangle bounds) {
+        if (animate && widget.isValidated()) {
+            getSceneAnimator().animatePreferredBounds(widget, bounds);
+        } else {
+            widget.setPreferredBounds(bounds);
+            revalidate();
+        }
+    }
+
     private class ZoomCorrector implements SceneListener {
 
         private final double minZoom = 0.2;
-        private final double maxZoom = 2;
+        private final double maxZoom = 2.5;
 
         @Override
         public void sceneRepaint() {
@@ -538,11 +558,16 @@ public class PraxisGraphScene<N> extends GraphPinScene<N, EdgeID<N>, PinID<N>> {
         @Override
         public void sceneValidating() {
             double zoom = getZoomFactor();
-            if (zoom < minZoom) {
-                setZoomFactor(minZoom);
+            if (zoom > 0.9 && zoom < 1.1) {
+                zoom = 1;
+            } else if (zoom < minZoom) {
+                zoom = minZoom;
             } else if (zoom > maxZoom) {
-                setZoomFactor(maxZoom);
+                zoom = maxZoom;
+            } else {
+                zoom = Math.round(zoom * 10) * 0.1;
             }
+            setZoomFactor(zoom);
         }
 
         @Override

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2024 Neil C Smith.
+ * Copyright 2025 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -45,12 +45,12 @@ package org.praxislive.ide.pxr.graph.scene;
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;
-import java.awt.Font;
 import java.awt.Image;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
 import java.util.List;
+import org.netbeans.api.visual.action.EditProvider;
 import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.model.ObjectState;
@@ -76,6 +76,7 @@ public class NodeWidget extends Widget implements StateModel.Listener, MinimizeA
     private final PraxisGraphScene scene;
     private final SceneListenerImpl sceneListener;
     private final CommentWidget commentWidget;
+    private final ToolContainerWidget toolsWidget;
 
     private LAFScheme.Colors schemeColors;
 
@@ -84,7 +85,7 @@ public class NodeWidget extends Widget implements StateModel.Listener, MinimizeA
      *
      * @param scene the scene
      */
-    public NodeWidget(PraxisGraphScene<?> scene) {
+    NodeWidget(PraxisGraphScene<?> scene) {
         super(scene);
         this.scene = scene;
         this.sceneListener = new SceneListenerImpl();
@@ -109,7 +110,6 @@ public class NodeWidget extends Widget implements StateModel.Listener, MinimizeA
         header.addChild(imageWidget);
 
         nameWidget = new LabelWidget(scene);
-        nameWidget.setFont(scene.getFont().deriveFont(Font.BOLD));
         nameWidget.setForeground(Color.BLACK);
         header.addChild(nameWidget);
 
@@ -117,13 +117,12 @@ public class NodeWidget extends Widget implements StateModel.Listener, MinimizeA
         glyphSetWidget.setMinimumSize(new Dimension(16, 16));
         header.addChild(glyphSetWidget);
 
-        Widget topLayer = new Widget(scene);
-        addChild(topLayer);
-
         stateModel.addListener(this);
 
         commentWidget = new CommentWidget(scene);
-//        commentWidget.setVisible(false);
+        commentWidget.setVisible(false);
+        toolsWidget = new ToolContainerWidget(scene);
+        toolsWidget.setVisible(false);
 
         scheme.installUI(this);
 
@@ -139,19 +138,16 @@ public class NodeWidget extends Widget implements StateModel.Listener, MinimizeA
         scene.removeSceneListener(sceneListener);
     }
 
-    /**
-     * Called to check whether a particular widget is minimizable. By default it
-     * returns true. The result have to be the same for whole life-time of the
-     * widget. If not, then the revalidation has to be invoked manually. An
-     * anchor (created by <code>NodeWidget.createPinAnchor</code> is not
-     * affected by this method.
-     *
-     * @param widget the widget
-     * @return true, if the widget is minimizable; false, if the widget is not
-     * minimizable
-     */
-    protected boolean isMinimizableWidget(Widget widget) {
-        return true;
+    private boolean isMinimizableWidget(Widget widget) {
+        if (scene.isMinimizeConnectedPins()) {
+            return true;
+        } else {
+            if (widget instanceof PinWidget pin) {
+                return !scene.hasConnections(pin);
+            } else {
+                return true;
+            }
+        }
     }
 
     /**
@@ -192,7 +188,8 @@ public class NodeWidget extends Widget implements StateModel.Listener, MinimizeA
         Rectangle rectangle = minimized ? new Rectangle() : null;
         for (Widget widget : getChildren()) {
             if (widget != header) {
-                getScene().getSceneAnimator().animatePreferredBounds(widget, minimized && isMinimizableWidget(widget) ? rectangle : null);
+                scene.animatePreferredBounds(widget,
+                        minimized && isMinimizableWidget(widget) ? rectangle : null);
             }
         }
         minimizeWidget.setImage(scheme.getMinimizeWidgetImage(this));
@@ -210,6 +207,7 @@ public class NodeWidget extends Widget implements StateModel.Listener, MinimizeA
                 || (!previousState.isHovered() && state.isHovered())) {
             bringToFront();
             commentWidget.bringToFront();
+            toolsWidget.bringToFront();
         }
         scheme.updateUI(this);
     }
@@ -317,12 +315,8 @@ public class NodeWidget extends Widget implements StateModel.Listener, MinimizeA
             // remove comment
             commentWidget.setText("");
             commentWidget.setVisible(false);
-            commentWidget.removeFromParent();
         } else {
             // add comment
-            if (commentWidget.getParentWidget() == null) {
-                getParentWidget().addChild(commentWidget);
-            }
             commentWidget.setText(comment);
             commentWidget.setVisible(true);
         }
@@ -338,6 +332,45 @@ public class NodeWidget extends Widget implements StateModel.Listener, MinimizeA
         return commentWidget.getText();
     }
 
+    /**
+     * Set an edit provider for the node comment.
+     *
+     * @param provider comment edit provider
+     */
+    public void setCommentEditProvider(EditProvider provider) {
+        commentWidget.setEditProvider(provider);
+    }
+
+    /**
+     * Add a widget to the the node tools container.
+     *
+     * @param tool tool widget
+     */
+    public void addToolWidget(Widget tool) {
+        toolsWidget.addChild(tool);
+        toolsWidget.setVisible(true);
+    }
+
+    /**
+     * Remove a widget from the tools container.
+     *
+     * @param tool tool widget
+     */
+    public void removeToolWidget(Widget tool) {
+        toolsWidget.removeChild(tool);
+        if (toolsWidget.getChildren().isEmpty()) {
+            toolsWidget.setVisible(false);
+        }
+    }
+
+    /**
+     * Clear all widgets from the tools container.
+     */
+    public void clearToolWidgets() {
+        toolsWidget.removeChildren();
+        toolsWidget.setVisible(false);
+    }
+
     private void positionComment() {
         if (!commentWidget.isVisible()) {
             return;
@@ -349,8 +382,21 @@ public class NodeWidget extends Widget implements StateModel.Listener, MinimizeA
             return;
         }
         int offset = commentWidget.getBorder().getInsets().left;
-        commentWidget.setPreferredLocation(new Point(loc.x + offset, loc.y - commentBounds.height - 4));
+        commentWidget.setPreferredLocation(new Point(loc.x + offset, loc.y - commentBounds.height - 2));
         commentWidget.setMinimumSize(new Dimension(bounds.width, 15));
+    }
+
+    private void positionTools() {
+        if (!toolsWidget.isVisible()) {
+            return;
+        }
+        Point loc = getLocation();
+        Rectangle bounds = getBounds();
+        if (loc == null || bounds == null) {
+            return;
+        }
+        toolsWidget.setPreferredLocation(new Point(loc.x, loc.y + bounds.height + 2));
+        toolsWidget.setMinimumSize(new Dimension(bounds.width, 15));
     }
 
     @Override
@@ -365,8 +411,12 @@ public class NodeWidget extends Widget implements StateModel.Listener, MinimizeA
         return scene.isBelowLODThreshold();
     }
 
-    public Widget getCommentWidget() {
+    CommentWidget getCommentWidget() {
         return commentWidget;
+    }
+
+    ToolContainerWidget getToolContainerWidget() {
+        return toolsWidget;
     }
 
     public void setSchemeColors(LAFScheme.Colors colors) {
@@ -393,6 +443,7 @@ public class NodeWidget extends Widget implements StateModel.Listener, MinimizeA
         @Override
         public void sceneValidated() {
             positionComment();
+            positionTools();
         }
 
     }
@@ -402,11 +453,27 @@ public class NodeWidget extends Widget implements StateModel.Listener, MinimizeA
         @Override
         public State mousePressed(Widget widget, WidgetMouseEvent event) {
             if (event.getButton() == MouseEvent.BUTTON1 || event.getButton() == MouseEvent.BUTTON2) {
-                stateModel.toggleBooleanState();
-//                return State.CONSUMED; // temporary fix - minimized state saved on de-selection
+                List<NodeWidget> selected = scene.getSelectedObjects().stream()
+                        .map(obj -> scene.findWidget(obj))
+                        .filter(NodeWidget.class::isInstance)
+                        .map(NodeWidget.class::cast)
+                        .toList();
+                boolean inSelection = selected.contains(NodeWidget.this);
+                if (inSelection) {
+                    boolean state = stateModel.getBooleanState();
+                    selected.forEach(nw -> nw.stateModel.setBooleanState(!state));
+                } else {
+                    stateModel.toggleBooleanState();
+                }
             }
-            return State.REJECTED;
+            return State.REJECTED; // fall through to select
         }
+
+        @Override
+        public State mouseClicked(Widget widget, WidgetMouseEvent event) {
+            return State.CONSUMED; // don't fall through to edit action
+        }
+
     }
 
 }

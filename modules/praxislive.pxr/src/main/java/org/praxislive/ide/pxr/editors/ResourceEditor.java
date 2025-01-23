@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2020 Neil C Smith.
+ * Copyright 2024 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -52,10 +52,9 @@ public class ResourceEditor extends EditorSupport
         implements SubCommandEditor, ExPropertyEditor {
 
     private final static Logger LOG = Logger.getLogger(ResourceEditor.class.getName());
+    private final boolean allowEmpty;
     private PropertyEnv env;
     private FileObject workingDir;
-    private boolean allowEmpty;
-    private List<String> suggested;
 
     public ResourceEditor(PraxisProperty property, ArgumentInfo info) {
         Object dir = property.getValue("workingDir");
@@ -64,20 +63,6 @@ public class ResourceEditor extends EditorSupport
         }
         PMap props = info.properties();
         allowEmpty = true;
-//        property.setValue("canEditAsText", Boolean.FALSE);
-//        Value arg = props.get(ArgumentInfo.KEY_SUGGESTED_VALUES);
-//        if (arg != null) {
-//            try {
-//                PArray arr = PArray.coerce(arg);
-//                suggested = new ArrayList<String>(arr.getSize());
-//                for (Value val : arr) {
-//                    suggested.add(val.toString());
-//                }
-//                 property.setValue("canEditAsText", Boolean.TRUE);
-//            } catch (ArgumentFormatException ex) {
-//                // no op
-//            }
-//        }
     }
 
 
@@ -180,7 +165,7 @@ public class ResourceEditor extends EditorSupport
 
     @Override
     public boolean supportsCustomEditor() {
-        return env != null;
+        return true;
     }
 
     @Override

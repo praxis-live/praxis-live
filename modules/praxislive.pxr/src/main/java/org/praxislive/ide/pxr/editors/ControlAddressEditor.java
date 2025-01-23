@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2020 Neil C Smith.
+ * Copyright 2024 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -52,7 +52,6 @@ public class ControlAddressEditor extends EditorSupport
             project = null;
         }
         allowEmpty = info.properties().getBoolean(ArgumentInfo.KEY_ALLOW_EMPTY, false);
-//        property.setValue("canEditAsText", Boolean.FALSE);
     }
 
     @Override
@@ -103,7 +102,7 @@ public class ControlAddressEditor extends EditorSupport
     
     @Override
     public boolean supportsCustomEditor() {
-        return env != null;
+        return true;
     }
 
     @Override

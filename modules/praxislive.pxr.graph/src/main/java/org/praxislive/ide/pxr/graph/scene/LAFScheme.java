@@ -44,6 +44,7 @@ package org.praxislive.ide.pxr.graph.scene;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.Image;
 import org.netbeans.api.visual.border.Border;
 import org.netbeans.api.visual.border.BorderFactory;
@@ -56,7 +57,7 @@ import org.openide.util.ImageUtilities;
 import java.util.Objects;
 import javax.swing.UIManager;
 
-public class LAFScheme {
+public final class LAFScheme {
 
     private static final boolean IS_DARK = UIManager.getBoolean("nb.dark.theme");
 
@@ -117,6 +118,170 @@ public class LAFScheme {
     private static final Border BORDER_MINIMIZE
             = BorderFactory.createOpaqueBorder(2, 2, 2, 2);
 
+    private final Font defaultFont;
+    private final Font commentFont;
+    private final Font toolsFont;
+    private final Font pinFont;
+
+    public LAFScheme() {
+        Font font = UIManager.getFont("controlFont");
+        if (font == null) {
+            font = Font.decode(null);
+        }
+        defaultFont = font;
+        pinFont = toolsFont = font.deriveFont(font.getSize2D() * 0.9f);
+        commentFont = toolsFont.deriveFont(Font.ITALIC);
+    }
+
+    protected Font getDefaultFont() {
+        return defaultFont;
+    }
+
+    protected Font getPinFont() {
+        return pinFont;
+    }
+
+    protected Font getCommentFont() {
+        return commentFont;
+    }
+
+    protected Font getToolsFont() {
+        return toolsFont;
+    }
+
+    protected void installUI(NodeWidget widget) {
+        widget.setOpaque(false);
+        widget.getHeader().setOpaque(false);
+        widget.getMinimizeButton().setBorder(BORDER_MINIMIZE);
+        updateUI(widget);
+    }
+
+    protected void updateUI(NodeWidget widget) {
+        ObjectState state = widget.getState();
+        Colors colors = widget.getSchemeColors();
+        if (colors == null) {
+            colors = DEFAULT_COLORS;
+        }
+        if (widget.isBelowLODThreshold()) {
+            if (state.isSelected()) {
+                if (state.isFocused()) {
+                    widget.setBorder(colors.BORDER_SMALL_NODE_SELECTED_FOCUSED);
+                } else {
+                    widget.setBorder(colors.BORDER_SMALL_NODE_SELECTED);
+                }
+            } else {
+                if (state.isFocused()) {
+                    widget.setBorder(colors.BORDER_SMALL_NODE_FOCUSED);
+                } else {
+                    widget.setBorder(colors.BORDER_SMALL_NODE);
+                }
+            }
+        } else {
+            if (state.isSelected()) {
+                if (state.isFocused()) {
+                    widget.setBorder(colors.BORDER_NODE_SELECTED_FOCUSED);
+                } else {
+                    widget.setBorder(colors.BORDER_NODE_SELECTED);
+                }
+            } else {
+                if (state.isFocused()) {
+                    widget.setBorder(colors.BORDER_NODE_FOCUSED);
+                } else {
+                    widget.setBorder(colors.BORDER_NODE);
+                }
+            }
+        }
+        Widget header = widget.getHeader();
+        header.setBorder(state.isSelected() || state.isHovered()
+                ? colors.BORDER_HEADER_SELECTED : colors.BORDER_HEADER);
+        Color auxFG = IS_DARK ? colors.COLOR_NORMAL : colors.COLOR_SELECTED;
+        Widget comment = widget.getCommentWidget();
+        comment.setForeground(auxFG);
+        comment.setFont(commentFont);
+        Widget tools = widget.getToolContainerWidget();
+        tools.setForeground(auxFG);
+        tools.setFont(toolsFont);
+    }
+
+    protected boolean isNodeMinimizeButtonOnRight(NodeWidget widget) {
+        return false;
+    }
+
+    protected Image getMinimizeWidgetImage(NodeWidget widget) {
+        return widget.isMinimized()
+                ? ImageUtilities.loadImage("org/praxislive/ide/pxr/graph/scene/resources/vmd-expand.png") // NOI18N
+                : ImageUtilities.loadImage("org/praxislive/ide/pxr/graph/scene/resources/vmd-collapse.png"); // NOI18N
+    }
+
+    protected void installUI(EdgeWidget widget) {
+        widget.setSourceAnchorShape(AnchorShape.NONE);
+        widget.setTargetAnchorShape(AnchorShape.NONE);
+        widget.setPaintControlPoints(true);
+        widget.setForeground(FOREGROUND);
+        updateUI(widget);
+    }
+
+    protected void updateUI(EdgeWidget widget) {
+        ObjectState state = widget.getState();
+        LAFScheme.Colors colors = widget.getSchemeColors();
+        if (colors == null) {
+            colors = DEFAULT_COLORS;
+        }
+        if (state.isHovered() || state.isSelected()) {
+            widget.setEndPointShape(PointShape.SQUARE_FILLED_BIG);
+        } else {
+            widget.setControlPointShape(PointShape.NONE);
+            widget.setEndPointShape(PointShape.SQUARE_FILLED_SMALL);
+        }
+
+        if (state.isHovered() || state.isSelected()) {
+            widget.bringToFront();
+            widget.setForeground(colors.COLOR_SELECTED);
+            widget.setStroke(new BasicStroke(4));
+        } else {
+            widget.setForeground(colors.COLOR_SELECTED);
+            widget.setStroke(new BasicStroke(2));
+        }
+
+        widget.setControlPointCutDistance(5);
+
+    }
+
+    protected void installUI(PinWidget widget) {
+        widget.setOpaque(false);
+        widget.setFont(pinFont);
+        updateUI(widget);
+    }
+
+    protected void updateUI(PinWidget widget) {
+        ObjectState state = widget.getState();
+        LAFScheme.Colors colors = widget.getSchemeColors();
+        if (colors == null) {
+            colors = DEFAULT_COLORS;
+        }
+        widget.getPinNameWidget().setForeground(IS_DARK
+                ? colors.COLOR_NORMAL : colors.COLOR_SELECTED);
+        if (state.isHovered()) {
+            widget.setBorder(colors.BORDER_PIN_SELECTED);
+        } else {
+            widget.setBorder(colors.BORDER_PIN);
+        }
+
+    }
+
+    protected int getAnchorGap() {
+        return 8;
+    }
+
+    protected Color getBackgroundColor() {
+        return BACKGROUND;
+    }
+
+    private static Color findColor(String uiKey, Color fallback) {
+        Color color = UIManager.getColor(uiKey);
+        return color == null ? fallback : color;
+    }
+
     public static class Colors {
 
         private final Color COLOR_SELECTED;
@@ -174,137 +339,6 @@ public class LAFScheme {
             BORDER_PIN_SELECTED = BorderFactory.createRoundedBorder(8, 8, 8, 4, null, COLOR_NORMAL);
         }
 
-    }
-
-    protected void installUI(NodeWidget widget) {
-        widget.setOpaque(false);
-        widget.getHeader().setOpaque(false);
-        widget.getMinimizeButton().setBorder(BORDER_MINIMIZE);
-        updateUI(widget);
-    }
-
-    protected void updateUI(NodeWidget widget) {
-        ObjectState state = widget.getState();
-        Colors colors = widget.getSchemeColors();
-        if (colors == null) {
-            colors = DEFAULT_COLORS;
-        }
-        if (widget.isBelowLODThreshold()) {
-            if (state.isSelected()) {
-                if (state.isFocused()) {
-                    widget.setBorder(colors.BORDER_SMALL_NODE_SELECTED_FOCUSED);
-                } else {
-                    widget.setBorder(colors.BORDER_SMALL_NODE_SELECTED);
-                }
-            } else {
-                if (state.isFocused()) {
-                    widget.setBorder(colors.BORDER_SMALL_NODE_FOCUSED);
-                } else {
-                    widget.setBorder(colors.BORDER_SMALL_NODE);
-                }
-            }
-        } else {
-            if (state.isSelected()) {
-                if (state.isFocused()) {
-                    widget.setBorder(colors.BORDER_NODE_SELECTED_FOCUSED);
-                } else {
-                    widget.setBorder(colors.BORDER_NODE_SELECTED);
-                }
-            } else {
-                if (state.isFocused()) {
-                    widget.setBorder(colors.BORDER_NODE_FOCUSED);
-                } else {
-                    widget.setBorder(colors.BORDER_NODE);
-                }
-            }
-        }
-        Widget header = widget.getHeader();
-        header.setBorder(state.isSelected() || state.isHovered()
-                ? colors.BORDER_HEADER_SELECTED : colors.BORDER_HEADER);
-        Widget comment = widget.getCommentWidget();
-        if (comment != null) {
-            comment.setBorder(colors.BORDER_HEADER);
-        }
-    }
-
-    protected boolean isNodeMinimizeButtonOnRight(NodeWidget widget) {
-        return false;
-    }
-
-    protected Image getMinimizeWidgetImage(NodeWidget widget) {
-        return widget.isMinimized()
-                ? ImageUtilities.loadImage("org/praxislive/ide/pxr/graph/scene/resources/vmd-expand.png") // NOI18N
-                : ImageUtilities.loadImage("org/praxislive/ide/pxr/graph/scene/resources/vmd-collapse.png"); // NOI18N
-    }
-
-    protected void installUI(EdgeWidget widget) {
-        widget.setSourceAnchorShape(AnchorShape.NONE);
-        widget.setTargetAnchorShape(AnchorShape.NONE);
-        widget.setPaintControlPoints(true);
-        widget.setForeground(FOREGROUND);
-        updateUI(widget);
-    }
-
-    protected void updateUI(EdgeWidget widget) {
-        ObjectState state = widget.getState();
-        LAFScheme.Colors colors = widget.getSchemeColors();
-        if (colors == null) {
-            colors = DEFAULT_COLORS;
-        }
-        if (state.isHovered() || state.isSelected()) {
-            widget.setEndPointShape(PointShape.SQUARE_FILLED_BIG);
-        } else {
-            widget.setControlPointShape(PointShape.NONE);
-            widget.setEndPointShape(PointShape.SQUARE_FILLED_SMALL);
-        }
-
-        if (state.isHovered() || state.isSelected()) {
-            widget.bringToFront();
-            widget.setForeground(colors.COLOR_SELECTED);
-            widget.setStroke(new BasicStroke(4));
-        } else {
-            widget.setForeground(colors.COLOR_SELECTED);
-            widget.setStroke(new BasicStroke(2));
-        }
-
-        widget.setControlPointCutDistance(5);
-
-    }
-
-    protected void installUI(PinWidget widget) {
-        widget.setOpaque(false);
-        updateUI(widget);
-    }
-
-    protected void updateUI(PinWidget widget) {
-        ObjectState state = widget.getState();
-//        widget.setBorder(state.isHovered()
-//                ? BORDER_PIN_HOVERED : BORDER_PIN);
-        LAFScheme.Colors colors = widget.getSchemeColors();
-        if (colors == null) {
-            colors = DEFAULT_COLORS;
-        }
-        widget.getPinNameWidget().setForeground(IS_DARK
-                ? colors.COLOR_NORMAL : colors.COLOR_SELECTED);
-        if (state.isHovered()) {
-            widget.setBorder(colors.BORDER_PIN_SELECTED);
-        } else {
-            widget.setBorder(colors.BORDER_PIN);
-        }
-
-    }
-
-    protected int getAnchorGap() {
-        return 8;
-    }
-
-    protected Color getBackgroundColor() {
-        return BACKGROUND;
-    }
-
-    private static Color findColor(String uiKey, Color fallback) {
-        Color color = UIManager.getColor(uiKey);
-        return color == null ? fallback : color;
     }
 
 }

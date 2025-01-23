@@ -82,6 +82,43 @@
     </folder>
   </folder>
 
+  <folder name="Keymaps">
+    <file name="Eclipse_hidden"/>
+    <file name="Emacs_hidden"/>
+    <file name="Idea_hidden"/>
+    <folder name="NetBeans">
+      <file name="AS-F11.shadow_hidden"/>
+      <file name="C-F5.shadow_hidden"/>
+      <file name="D-F6.shadow_hidden"/>
+      <file name="D-F7.shadow_hidden"/>
+      <file name="D-F8.shadow_hidden"/>
+      <file name="DS-COMMA.shadow_hidden"/>
+      <file name="DS-F5.shadow_hidden"/>
+      <file name="DS-F6.shadow_hidden"/>
+      <file name="DS-F7.shadow_hidden"/>
+      <file name="DS-F8.shadow_hidden"/>
+      <file name="DS-M.shadow_hidden"/>
+      <file name="DS-PERIOD.shadow_hidden"/>
+      <file name="F4.shadow_hidden"/>
+      <file name="F5.shadow_hidden"/>
+      <file name="F7.shadow_hidden"/>
+      <file name="F8.shadow_hidden"/>
+      <file name="F9.shadow_hidden"/>
+      <file name="O-F6.shadow_hidden"/>
+      <file name="O-PAGE_DOWN.shadow_hidden"/>
+      <file name="O-PAGE_UP.shadow_hidden"/>
+      <file name="S-F11.shadow_hidden"/>
+      <file name="S-F7.shadow_hidden"/>
+      <file name="SO-2.shadow_hidden"/>
+      <file name="SO-3.shadow_hidden"/>
+      <file name="SO-5.shadow_hidden"/>
+      <file name="SO-6.shadow_hidden"/>
+      <file name="SO-7.shadow_hidden"/>
+      <file name="SO-8.shadow_hidden"/>
+    </folder>
+    <file name="NetBeans55_hidden"/>
+  </folder>
+
   <folder name="Loaders">
     <folder name="folder">
       <folder name="any">
@@ -355,7 +392,8 @@
   </folder>
     
   <folder name="Shortcuts">
-    
+    <file name="DA-T.shadow_hidden"/>
+    <file name="DS-U.shadow_hidden"/>
     <file name="D-F11.shadow_hidden"/>
     <file name="D-F6.shadow_hidden"/>
     <file name="D-S.shadow">
@@ -373,7 +411,7 @@
     <file name="DELETE.shadow">
       <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-DeleteAction.instance"/>
     </file>
-    <!--<file name="F1.shadow_hidden"/>-->
+    <file name="F1.shadow_hidden"/>
     <file name="F9.shadow_hidden"/>
     <file name="O-F6.shadow_hidden"/>
     <file name="S-F11.shadow_hidden"/>

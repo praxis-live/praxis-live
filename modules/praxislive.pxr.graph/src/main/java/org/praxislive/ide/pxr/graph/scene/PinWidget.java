@@ -75,7 +75,7 @@ public class PinWidget extends Widget {
      * @param scene the scene
      * @param name pin ID
      */
-    public PinWidget(PraxisGraphScene scene, NodeWidget node, String name) {
+    PinWidget(PraxisGraphScene scene, NodeWidget node, String name) {
         super(scene);
         this.scene = scene;
         this.sceneListener = new SceneListenerImpl();
@@ -84,10 +84,8 @@ public class PinWidget extends Widget {
         this.schemeColors = node.getSchemeColors();
         this.alignment = Alignment.Center;
         this.category = DEFAULT_CATEGORY;
-//        setLayout(LayoutFactory.createOverlayLayout());
         setLayout(LayoutFactory.createVerticalFlowLayout());
         addChild(nameWidget = new LabelWidget(scene));
-//        nameWidget.setForeground(Color.BLACK);
         nameWidget.setLabel(name);
         nameWidget.setAlignment(LabelWidget.Alignment.CENTER);
         scheme.installUI(this);
@@ -174,6 +172,24 @@ public class PinWidget extends Widget {
             return false;
         } else {
             return super.isHitAt(localLocation);
+        }
+    }
+
+    protected void notifyEdgeAttached() {
+        if (scene.isMinimizeConnectedPins()) {
+            return;
+        }
+        if (node.isMinimized() && isPreferredBoundsSet()) {
+            scene.animatePreferredBounds(this, null);
+        }
+    }
+
+    protected void notifyEdgeDetached() {
+        if (scene.isMinimizeConnectedPins()) {
+            return;
+        }
+        if (!scene.hasConnections(this) && node.isMinimized() && !isPreferredBoundsSet()) {
+            scene.animatePreferredBounds(this, new Rectangle());
         }
     }
 

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2024 Neil C Smith.
+ * Copyright 2025 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -31,13 +31,15 @@ import org.openide.util.NbBundle.Messages;
 /**
  *
  */
-@ActionID(category = "PXR", id = "org.praxislive.ide.pxr.RootConfigAction")
+@ActionID(category = ActionBridge.CATEGORY, id = RootConfigAction.ID)
 @ActionRegistration(
         displayName = "#CTL_RootConfigAction",
         iconBase = "org/praxislive/ide/pxr/resources/properties.png"
 )
 @Messages("CTL_RootConfigAction=Configure root")
 public class RootConfigAction implements ActionListener {
+
+    public static final String ID = "org.praxislive.ide.pxr.RootConfigAction";
 
     private final ActionEditorContext context;
 
