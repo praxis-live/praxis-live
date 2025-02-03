@@ -25,6 +25,10 @@
       <file name="org-netbeans-modules-project-ui-actions-StopBuildingAction.instance_hidden"/>
     </folder>
     <file name="UnitTests_hidden"/>
+    <folder name="Window">
+      <file name="GroupsMenuAction.instance_hidden"/>
+      <file name="org-netbeans-core-windows-actions-DocumentsAction.instance_hidden"/>
+    </folder>
   </folder>
   
   <folder name="Dashboard">
@@ -233,9 +237,9 @@
           <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-favorites-View.instance"/>
           <attr name="position" intvalue="350"/>
       </file>-->
-      <file name="KenaiAction.shadow_hidden">
-        <attr name="position" intvalue="300"/>
-      </file>
+      <file name="DocumentsAction.shadow_hidden"/>
+      <file name="GroupsMenuAction.shadow_hidden"/>
+      <file name="KenaiAction.shadow_hidden"/>
       <file name="Navigator_hidden">
         <attr name="position" intvalue="400"/>
       </file>
