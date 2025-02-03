@@ -347,6 +347,12 @@
     </dependency>
     <dependency>
       <groupId>org.netbeans.api</groupId>
+      <artifactId>org-netbeans-libs-flexmark</artifactId>
+      <version>${netbeans.version}</version>
+      <type>nbm-file</type>
+    </dependency>
+    <dependency>
+      <groupId>org.netbeans.api</groupId>
       <artifactId>org-netbeans-libs-junit4</artifactId>
       <version>${netbeans.version}</version>
       <type>nbm-file</type>
@@ -873,12 +879,6 @@
     <dependency>
       <groupId>org.netbeans.api</groupId>
       <artifactId>org-netbeans-modules-extexecution-base</artifactId>
-      <version>${netbeans.version}</version>
-      <type>nbm-file</type>
-    </dependency>
-    <dependency>
-      <groupId>org.netbeans.modules</groupId>
-      <artifactId>org-netbeans-modules-extexecution-process-jdk9</artifactId>
       <version>${netbeans.version}</version>
       <type>nbm-file</type>
     </dependency>
