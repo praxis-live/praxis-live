@@ -21,6 +21,7 @@
  */
 package org.praxislive.ide.pxr;
 
+import java.awt.EventQueue;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
@@ -95,7 +96,8 @@ public final class EditorModes {
             return mode;
         }
         if (editorModes.size() == 1) {
-            tc.putClientProperty(SPLIT_ON_OPEN, Boolean.TRUE);
+            TopComponent active = mode.getSelectedTopComponent();
+            tc.putClientProperty(SPLIT_ON_OPEN, active);
             return mode;
         } else if (rootEditor) {
             return editorModes.stream()
@@ -138,7 +140,7 @@ public final class EditorModes {
     private void registryPropertyChange(PropertyChangeEvent evt) {
         if (TopComponent.Registry.PROP_ACTIVATED.equals(evt.getPropertyName())) {
             TopComponent activated = TopComponent.getRegistry().getActivated();
-            if (activated.getClientProperty(SPLIT_ON_OPEN) == Boolean.TRUE) {
+            if (activated.getClientProperty(SPLIT_ON_OPEN) instanceof TopComponent previous) {
                 activated.putClientProperty(SPLIT_ON_OPEN, null);
                 if (findEditorModes().size() > 1) {
                     return;
@@ -158,6 +160,7 @@ public final class EditorModes {
                     }
                     if ("NewTabGroupAction".equals(a.getClass().getSimpleName())) {
                         a.actionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, ""));
+                        previous.requestVisible();
                         break;
                     }
                 }
