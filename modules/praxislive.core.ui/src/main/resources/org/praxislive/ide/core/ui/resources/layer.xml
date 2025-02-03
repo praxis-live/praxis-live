@@ -271,18 +271,11 @@
     </folder>
   </folder>
   <folder name="OptionsDialog">
-    <folder name="Advanced">
-      <file name="Ant.instance_hidden"/>
-      <file name="FormEditor.instance_hidden"/>
-      <file name="TermAdvancedOption.instance_hidden"/>
-      <file name="ToDo.instance_hidden"/>
-      <file name="org-netbeans-modules-bugtracking-util-BugtrackingOptions.instance_hidden"/>
-      <file name="org-netbeans-modules-debugger-jpda-ui-options-JavaDebuggerAdvancedOption.instance_hidden"/>
-      <file name="org-netbeans-modules-javascript-editing-options-JsOptionsController.instance_hidden"/>
-      <file name="org-netbeans-modules-versioning-util-VcsAdvancedOptions.instance_hidden"/>
-    </folder>
     <file name="Advanced.instance_hidden"/>
-    <file name="Appearance.instance_hidden"/>
+    <folder name="Appearance">
+      <file name="DocumentTabs.instance_hidden"/>
+      <file name="Windows.instance_hidden"/>
+    </folder>
     <file name="Editor.instance_hidden"/>
     <file name="FontsAndColors.instance_hidden"/>
     <file name="General.instance_hidden"/>

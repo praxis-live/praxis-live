@@ -1,11 +1,13 @@
 
 @ContainerRegistration(id = "Core",
         categoryName = "#OptionsCategory_Name_Core",
-        iconBase = "org/praxislive/ide/core/ui/resources/core32.png",
+        iconBase = "org/praxislive/ide/core/ui/resources/settings.png",
         keywords = "#OptionsCategory_Keywords_Core",
-        keywordsCategory = "Core",
+        keywordsCategory = "Settings",
         position = -100)
 @Messages({
+    "OptionsCategory_Name_Core=Settings",
+    "OptionsCategory_Keywords_Core=settings",
     "TITLE_Application=PraxisLIVE",
     "LINK_Website=https://www.praxislive.org",
     "LINK_Download=https://www.praxislive.org/download/",

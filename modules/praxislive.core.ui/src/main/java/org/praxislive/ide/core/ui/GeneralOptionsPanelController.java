@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2016 Neil C Smith.
+ * Copyright 2025 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -28,6 +28,7 @@ import javax.swing.SwingUtilities;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle.Messages;
 
 @OptionsPanelController.SubRegistration(
         location = "Core",
@@ -36,7 +37,10 @@ import org.openide.util.Lookup;
         keywordsCategory = "Core/General",
         position = Integer.MIN_VALUE
 )
-@org.openide.util.NbBundle.Messages({"AdvancedOption_DisplayName_General=General", "AdvancedOption_Keywords_General=Start, Updates"})
+@Messages({
+    "AdvancedOption_DisplayName_General=General",
+    "AdvancedOption_Keywords_General=Start, Updates"
+})
 public final class GeneralOptionsPanelController extends OptionsPanelController {
 
     private GeneralPanel panel;
