@@ -20,3 +20,7 @@ nb-configuration.xml
 nbactions.xml
 
 .idea
+
+# JVM Errors #
+
+hs_err_pid*
