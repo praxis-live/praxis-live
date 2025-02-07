@@ -216,7 +216,6 @@ public class PXJDataObject extends MultiDataObject {
                 data = "extends " + superClassName + ";" + NEW_LINE + data;
             }
             if (defaultImports != null && !defaultImports.isEmpty()) {
-                data = data.replace(defaultImports + NEW_LINE, "");
                 data = data.replace(defaultImports, "");
             }
             if (classDeclaration != null) {
@@ -272,7 +271,6 @@ public class PXJDataObject extends MultiDataObject {
                         } else {
                             superClassName = extendedType;
                         }
-                        sb.append(NEW_LINE);
                         classDeclaration = constructClassDeclaration(className, extendedType);
                         sb.append(classDeclaration);
                     }
