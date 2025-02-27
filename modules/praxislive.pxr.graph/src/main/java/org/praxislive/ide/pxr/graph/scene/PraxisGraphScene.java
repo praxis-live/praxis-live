@@ -83,6 +83,7 @@ public final class PraxisGraphScene<N> extends GraphPinScene<N, EdgeID<N>, PinID
     private final LayerWidget upperLayer = new LayerWidget(this);
 
     private final CommentWidget commentWidget;
+    private final ToolContainerWidget toolsWidget;
 
     private boolean animate;
     private boolean orthogonal;
@@ -125,12 +126,19 @@ public final class PraxisGraphScene<N> extends GraphPinScene<N, EdgeID<N>, PinID
         moveAction = ActionFactory.createMoveAction(mover, mover);
         keyboardMoveAction = new PraxisKeyboardMoveAction(mover, mover);
 
+        Widget commentToolsContainer = new Widget(this);
+        commentToolsContainer.setLayout(LayoutFactory.createVerticalFlowLayout(LayoutFactory.SerialAlignment.LEFT_TOP, 4));
+        commentToolsContainer.setPreferredLocation(new Point(32, 32));
+        mainLayer.addChild(commentToolsContainer);
         commentWidget = new CommentWidget(this);
-        commentWidget.setPreferredLocation(new Point(32, 32));
         commentWidget.setFont(scheme.getCommentFont());
         commentWidget.setBorder(BorderFactory.createRoundedBorder(8, 8, 8, 8, LAFScheme.NODE_BACKGROUND, null));
         commentWidget.setVisible(false);
-        mainLayer.addChild(commentWidget);
+        commentToolsContainer.addChild(commentWidget);
+        toolsWidget = new ToolContainerWidget(this);
+        toolsWidget.setBorder(BorderFactory.createRoundedBorder(8, 8, 8, 8, LAFScheme.BACKGROUND, null));
+        toolsWidget.setVisible(false);
+        commentToolsContainer.addChild(toolsWidget);
 
         setBackground(scheme.getBackgroundColor());
 
@@ -522,6 +530,36 @@ public final class PraxisGraphScene<N> extends GraphPinScene<N, EdgeID<N>, PinID
      */
     public void setCommentEditProvider(EditProvider provider) {
         commentWidget.setEditProvider(provider);
+    }
+
+    /**
+     * Add a widget to the the scene tools container.
+     *
+     * @param tool tool widget
+     */
+    public void addToolWidget(Widget tool) {
+        toolsWidget.addChild(tool);
+        toolsWidget.setVisible(true);
+    }
+
+    /**
+     * Remove a widget from the scene tools container.
+     *
+     * @param tool tool widget
+     */
+    public void removeToolWidget(Widget tool) {
+        toolsWidget.removeChild(tool);
+        if (toolsWidget.getChildren().isEmpty()) {
+            toolsWidget.setVisible(false);
+        }
+    }
+
+    /**
+     * Clear all widgets from the scene tools container.
+     */
+    public void clearToolWidgets() {
+        toolsWidget.removeChildren();
+        toolsWidget.setVisible(false);
     }
 
     public void layoutScene() {

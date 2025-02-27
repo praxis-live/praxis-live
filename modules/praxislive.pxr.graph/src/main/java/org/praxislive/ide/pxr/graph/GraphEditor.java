@@ -274,23 +274,28 @@ public final class GraphEditor implements RootEditor {
     }
 
     private JPopupMenu getScenePopup() {
+        Node containerNode = container.getNodeDelegate();
         List<Action> actions = new ArrayList<>();
         actions.add(addAction);
         actions.add(pasteAction);
         actions.add(null);
-        Action[] containerActions = container.getNodeDelegate().getActions(true);
+        Action[] containerActions = containerNode.getActions(true);
         if (containerActions.length != 0) {
             actions.addAll(Arrays.asList(containerActions));
             actions.add(null);
         }
 
+        actions.add(null);
+        actions.add(exposeControlAction);
+        actions.add(null);
         if (sharedCodeAction != null) {
             actions.add(sharedCodeAction);
             actions.add(null);
         }
 
         actions.add(new CommentAction(scene));
-        return Utilities.actionsToPopup(actions.toArray(Action[]::new), getEditorComponent());
+        return Utilities.actionsToPopup(actions.toArray(Action[]::new),
+                containerNode.getLookup());
 
     }
 
@@ -468,6 +473,7 @@ public final class GraphEditor implements RootEditor {
         location.address.setText(container.getAddress().toString());
 
         scene.setComment(Attributes.get(container, ATTR_GRAPH_COMMENT, ""));
+        configureExposedSceneTools();
         scene.validate();
     }
 
@@ -547,6 +553,42 @@ public final class GraphEditor implements RootEditor {
         // @TODO temporary fix for moving dynamic components?
         activePoint.x = 0;
         activePoint.y = 0;
+    }
+
+    private void configureExposedSceneTools() {
+        String id = "<ROOT>";
+        String key = "expose";
+        PArray expose = Attributes.get(container, PArray.class, key, null);
+        if (expose == null) {
+            expose = Optional.ofNullable(container.getInfo().properties().get(key))
+                    .flatMap(PArray::from)
+                    .orElse(PArray.EMPTY);
+        }
+        if (Objects.equals(expose, exposedTools.get(id))) {
+            return;
+        }
+        exposedTools.put(key, expose);
+        scene.clearToolWidgets();
+        ComponentInfo info = container.getInfo();
+        Map<Boolean, List<String>> partitioned = expose.stream()
+                .map(Value::toString)
+                .filter(c -> info.controls().contains(c))
+                .collect(Collectors.partitioningBy(c
+                        -> info.controlInfo(c) instanceof ControlInfo ci && Watch.isWatch(ci)));
+        List<String> controls = partitioned.get(false);
+        if (!controls.isEmpty()) {
+            scene.addToolWidget(new ExposedControls(scene, container, controls));
+        }
+        List<String> watches = partitioned.get(true);
+        if (!watches.isEmpty()) {
+            for (String watch : watches) {
+                WatchDisplay watchDisplay = WatchDisplay.createWidget(scene, container, watch);
+                if (watchDisplay != null) {
+                    scene.addToolWidget(watchDisplay);
+                }
+            }
+        }
+
     }
 
     private void configureExposedTools(NodeWidget widget, ComponentProxy cmp) {
@@ -869,8 +911,9 @@ public final class GraphEditor implements RootEditor {
                     String comment = Attributes.get(container, ATTR_GRAPH_COMMENT, "");
                     if (!comment.equals(scene.getComment())) {
                         scene.setComment(comment);
-                        scene.validate();
                     }
+                    configureExposedSceneTools();
+                    scene.validate();
                 }
             }
 
