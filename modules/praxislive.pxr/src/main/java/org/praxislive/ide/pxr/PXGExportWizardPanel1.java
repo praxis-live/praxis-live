@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2020 Neil C Smith.
+ * Copyright 2025 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -38,6 +38,8 @@ class PXGExportWizardPanel1 implements WizardDescriptor.Panel<WizardDescriptor> 
 
     private File file;
     private String paletteCategory;
+    private boolean includeLibs;
+    private boolean includeSharedCode;
 
     PXGExportWizardPanel1(PXGExportWizard exporter) {
         this.exporter = exporter;
@@ -81,19 +83,12 @@ class PXGExportWizardPanel1 implements WizardDescriptor.Panel<WizardDescriptor> 
     public void storeSettings(WizardDescriptor wiz) {
         wiz.putProperty(PXGExportWizard.KEY_FILE, file);
         wiz.putProperty(PXGExportWizard.KEY_PALETTE_CATEGORY, paletteCategory);
-
+        wiz.putProperty(PXGExportWizard.KEY_LIBRARIES, includeLibs);
+        wiz.putProperty(PXGExportWizard.KEY_SHARED_CODE, includeSharedCode);
     }
 
-    File getDefaultLocation() {
-        return exporter.getDefaultLocation();
-    }
-
-    String getSuggestedFileName() {
-        return exporter.getSuggestedFileName();
-    }
-
-    String getSuggestedPaletteCategory() {
-        return exporter.getSuggestedPaletteCategory();
+    PXGExportWizard getWizard() {
+        return exporter;
     }
 
     void validate() {
@@ -133,6 +128,9 @@ class PXGExportWizardPanel1 implements WizardDescriptor.Panel<WizardDescriptor> 
                 nowValid = false;
             }
         }
+
+        includeLibs = component.includeLibraries();
+        includeSharedCode = component.includeSharedCode();
 
         wiz.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, err);
 
