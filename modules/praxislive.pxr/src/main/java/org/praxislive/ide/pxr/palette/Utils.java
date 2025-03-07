@@ -160,7 +160,7 @@ class Utils {
         FileObject dest = FileUtil.createFolder(FileUtil.getConfigRoot(),
                 CUSTOM_ROOTS_PATH);
         for (FileObject file : source.getChildren()) {
-            if (file.hasExt("pxr")) {
+            if (file.hasExt("pxr") || file.hasExt("pxx")) {
                 FileObject existing = dest.getFileObject(file.getNameExt());
                 if (existing != null) {
                     existing.delete();

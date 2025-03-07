@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2024 Neil C Smith.
+ * Copyright 2025 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -65,8 +65,6 @@ import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 import org.praxislive.core.ComponentType;
 import org.praxislive.core.Connection;
-import org.praxislive.core.types.PArray;
-import org.praxislive.core.types.PMap;
 import org.praxislive.ide.core.api.CallExecutionException;
 import org.praxislive.ide.core.api.Disposable;
 import org.praxislive.ide.model.ComponentProxy;
@@ -74,7 +72,6 @@ import org.praxislive.ide.pxr.api.ActionSupport;
 import org.praxislive.ide.pxr.api.EditorUtils;
 import org.praxislive.ide.pxr.spi.ModelTransform;
 import org.praxislive.ide.pxr.spi.RootEditor;
-import org.praxislive.project.GraphElement;
 import org.praxislive.project.GraphModel;
 import org.praxislive.project.ParseException;
 
