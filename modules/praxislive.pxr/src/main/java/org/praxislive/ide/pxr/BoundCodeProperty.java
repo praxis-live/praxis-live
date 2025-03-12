@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2022 Neil C Smith.
+ * Copyright 2025 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -116,6 +116,7 @@ class BoundCodeProperty extends BoundArgumentProperty {
         if (PXJ_MIME.equals(mimeType)) {
             sharedBaseAction = new SharedBaseAction(info.outputs().get(0));
             addPropertyChangeListener(sharedBaseAction);
+            sharedBaseAction.checkForBase();
         } else {
             sharedBaseAction = null;
         }
@@ -153,6 +154,14 @@ class BoundCodeProperty extends BoundArgumentProperty {
 
     Action getSharedBaseAction() {
         return sharedBaseAction;
+    }
+
+    String getCode() {
+        String code = getValue().toString();
+        if (code.isBlank()) {
+            code = template;
+        }
+        return code;
     }
 
     private void openEditor() {
@@ -389,7 +398,7 @@ class BoundCodeProperty extends BoundArgumentProperty {
         }
 
         private void checkForBase() {
-            String code = BoundCodeProperty.this.getValue().toString();
+            String code = BoundCodeProperty.this.getCode();
             hasSharedBase = !code.isBlank() && code.lines().allMatch(line
                     -> line.isBlank()
                     || (EXTENDS_STATEMENT_PATTERN.matcher(line).lookingAt()
@@ -449,7 +458,7 @@ class BoundCodeProperty extends BoundArgumentProperty {
         private boolean openSharedBase() {
             if (hasSharedBase) {
                 BoundSharedCodeProperty shared = findSharedCodeProperty();
-                String code = BoundCodeProperty.this.getValue().toString();
+                String code = BoundCodeProperty.this.getCode();
                 String sharedBaseType = code.lines()
                         .map(line -> {
                             Matcher m = EXTENDS_STATEMENT_PATTERN.matcher(line);
