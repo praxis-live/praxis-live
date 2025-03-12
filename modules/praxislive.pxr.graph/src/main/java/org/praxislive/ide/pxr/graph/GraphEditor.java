@@ -931,6 +931,7 @@ public final class GraphEditor implements RootEditor {
                     ComponentProxy cmp = (ComponentProxy) src;
                     String id = cmp.getAddress().componentID();
                     rebuildChild(id, cmp);
+                    scene.validate();
                 }
             } else if (ComponentProtocol.META.equals(evt.getPropertyName())) {
                 if (!ignoreAttributeChanges) {
