@@ -21,35 +21,33 @@
  */
 package org.praxislive.ide.pxr;
 
-import java.io.File;
 import javax.swing.event.ChangeListener;
 import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileObject;
 import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
-import org.praxislive.core.ComponentType;
 
-class PXGExportWizardPanel1 implements WizardDescriptor.Panel<WizardDescriptor> {
+class SaveAsTemplateWizardPanel1 implements WizardDescriptor.Panel<WizardDescriptor> {
 
     private final ChangeSupport cs;
-    private final PXGExportWizard exporter;
-    private PXGExportVisualPanel1 component;
+    private final SaveAsTemplateWizard wizard;
+    private SaveAsTemplateVisualPanel1 component;
     private boolean valid;
     private WizardDescriptor wiz;
 
-    private File file;
-    private String paletteCategory;
+    private FileObject destination;
+    private String filename;
     private boolean includeLibs;
-    private boolean includeSharedCode;
 
-    PXGExportWizardPanel1(PXGExportWizard exporter) {
-        this.exporter = exporter;
+    SaveAsTemplateWizardPanel1(SaveAsTemplateWizard exporter) {
+        this.wizard = exporter;
         this.cs = new ChangeSupport(this);
     }
 
     @Override
-    public PXGExportVisualPanel1 getComponent() {
+    public SaveAsTemplateVisualPanel1 getComponent() {
         if (component == null) {
-            component = new PXGExportVisualPanel1(this);
+            component = new SaveAsTemplateVisualPanel1(this);
         }
         return component;
     }
@@ -81,56 +79,45 @@ class PXGExportWizardPanel1 implements WizardDescriptor.Panel<WizardDescriptor> 
 
     @Override
     public void storeSettings(WizardDescriptor wiz) {
-        wiz.putProperty(PXGExportWizard.KEY_FILE, file);
-        wiz.putProperty(PXGExportWizard.KEY_PALETTE_CATEGORY, paletteCategory);
-        wiz.putProperty(PXGExportWizard.KEY_LIBRARIES, includeLibs);
-        wiz.putProperty(PXGExportWizard.KEY_SHARED_CODE, includeSharedCode);
+        wiz.putProperty(SaveAsTemplateWizard.KEY_DESTINATION, destination);
+        wiz.putProperty(SaveAsTemplateWizard.KEY_FILE_NAME, filename);
+        wiz.putProperty(SaveAsTemplateWizard.KEY_LIBRARIES, includeLibs);
     }
 
-    PXGExportWizard getWizard() {
-        return exporter;
+    SaveAsTemplateWizard getWizard() {
+        return wizard;
     }
 
     void validate() {
         if (component == null) {
             return;
         }
+        destination = null;
+        filename = null;
+        includeLibs = false;
         boolean nowValid = false;
-        file = null;
-        paletteCategory = null;
-        File loc = component.getFileLocation();
+
+        FileObject dest = component.getDestinationFolder();
         String err = null;
 
         String name = component.getFileName();
         if (name.isEmpty()) {
             // empty name ??
-        } else if (loc == null || !loc.isDirectory() || !loc.canWrite()) {
-            err = Bundle.PXGExportWizard_nonWritableDirectory();
+        } else if (dest == null || !dest.isFolder() || !dest.canWrite()) {
+            err = Bundle.SaveAsTemplateWizard_nonWritableDirectory();
         } else {
-            if (!name.endsWith(".pxg")) {
-                name = name + ".pxg";
+            if (!name.endsWith(".pxx")) {
+                name = name + ".pxx";
             }
-            File f = new File(loc, name);
-            if (f.exists()) {
-                err = Bundle.PXGExportWizard_fileExists();
-            } else {
-                file = f;
+            if (dest.getFileObject(name) == null) {
+                destination = dest;
+                filename = name;
+                includeLibs = component.includeLibraries();
                 nowValid = true;
+            } else {
+                err = Bundle.SaveAsTemplateWizard_fileExists();
             }
         }
-
-        paletteCategory = component.getPaletteCategory().trim();
-        if (!paletteCategory.isEmpty()) {
-            try {
-                ComponentType test = ComponentType.of(paletteCategory + ":test");
-            } catch (Exception ex) {
-                err = Bundle.PXGExportWizard_invalidPaletteCategory();
-                nowValid = false;
-            }
-        }
-
-        includeLibs = component.includeLibraries();
-        includeSharedCode = component.includeSharedCode();
 
         wiz.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, err);
 

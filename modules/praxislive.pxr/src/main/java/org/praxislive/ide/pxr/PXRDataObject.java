@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2024 Neil C Smith.
+ * Copyright 2025 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -197,10 +197,16 @@ public class PXRDataObject extends MultiDataObject {
     }
 
     static String findRootID(DataObject dob) {
-        if (dob instanceof PXRDataObject pxrDob) {
-            return pxrDob.rootID;
-        } else {
-            return "root";
+        switch (dob) {
+            case PXRDataObject pxrDob -> {
+                return pxrDob.rootID;
+            }
+            case TemplateDataObject templateDob -> {
+                return templateDob.rootID;
+            }
+            default -> {
+                return "root";
+            }
         }
     }
 

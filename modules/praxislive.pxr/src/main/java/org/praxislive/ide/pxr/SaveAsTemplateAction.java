@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2024 Neil C Smith.
+ * Copyright 2025 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -23,9 +23,13 @@ package org.praxislive.ide.pxr;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.OutputStreamWriter;
+import java.net.URI;
+import java.util.List;
 import java.util.Set;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.openide.WizardDescriptor;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionRegistration;
 import org.openide.filesystems.FileObject;
@@ -33,13 +37,13 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.praxislive.core.types.PArray;
 import org.praxislive.ide.core.api.Task;
+import org.praxislive.ide.project.api.ProjectProperties;
+import org.praxislive.project.SyntaxUtils;
 
 @NbBundle.Messages({
-    "CTL_SaveAsTemplateAction=Save as Template...",
-    "TTL_TemplateName=Enter template name",
-    "LBL_TemplateName=Template name",
-    "ERR_TemplateExists=A template with that name already exists"
+    "CTL_SaveAsTemplateAction=Save as Template..."
 })
 @ActionID(
         category = "PXR", id = "org.praxislive.ide.pxr.SaveAsTemplateAction"
@@ -49,7 +53,6 @@ import org.praxislive.ide.core.api.Task;
 )
 public final class SaveAsTemplateAction implements ActionListener {
 
-    private static final String TEMPLATES_PATH = "Templates/Roots";
     private static final RequestProcessor RP = new RequestProcessor();
 
     private final PXRDataObject rootDOB;
@@ -60,40 +63,37 @@ public final class SaveAsTemplateAction implements ActionListener {
 
     @Override
     public void actionPerformed(ActionEvent ev) {
-        NotifyDescriptor.InputLine dlg = new NotifyDescriptor.InputLine(
-                Bundle.LBL_TemplateName(),
-                Bundle.TTL_TemplateName()
-        );
-        dlg.setInputText(rootDOB.getPrimaryFile().getName());
-        Object retval = DialogDisplayer.getDefault().notify(dlg);
-        if (retval == NotifyDescriptor.OK_OPTION) {
-            String templateName = dlg.getInputText().strip();
+        Project project = FileOwnerQuery.getOwner(rootDOB.getPrimaryFile());
+        ProjectProperties props = project == null ? null : project.getLookup().lookup(ProjectProperties.class);
+        List<URI> libs = props == null ? List.of() : props.getLibraries();
+        SaveAsTemplateWizard wizard = new SaveAsTemplateWizard(rootDOB.getPrimaryFile().getName(), libs);
+        if (wizard.display() == WizardDescriptor.FINISH_OPTION) {
+            FileObject destination = wizard.getDestination();
+            String filename = wizard.getFileName();
+            PArray exportLibs = wizard.getExportLibraries();
             PXRRootProxy active = PXRRootRegistry.findRootForFile(rootDOB.getPrimaryFile());
             if (active != null) {
                 Task.run(SaveTask.createSaveTask(Set.of(rootDOB)))
-                        .thenRunAsync(() -> copyTemplate(templateName), RP);
-
+                        .thenRunAsync(() -> copyTemplate(destination, filename, exportLibs), RP);
             } else {
-                RP.execute(() -> copyTemplate(templateName));
+                RP.execute(() -> copyTemplate(destination, filename, exportLibs));
             }
         }
     }
 
-    private void copyTemplate(String name) {
+    private void copyTemplate(FileObject destination, String filename, PArray libs) {
         try {
-            FileObject templateFolder = FileUtil.createFolder(
-                    FileUtil.getConfigRoot(), TEMPLATES_PATH);
-            if (templateFolder.getFileObject(name + ".pxr") != null) {
-                DialogDisplayer.getDefault().notify(
-                        new NotifyDescriptor.Message(
-                                Bundle.ERR_TemplateExists(),
-                                NotifyDescriptor.ERROR_MESSAGE));
-                return;
+            String templateContents = rootDOB.getPrimaryFile().asText();
+            if (!libs.isEmpty()) {
+                templateContents = "libraries " + SyntaxUtils.valueToToken(libs)
+                        + "\n\n" + templateContents;
             }
-            FileObject template = 
-                    FileUtil.copyFile(rootDOB.getPrimaryFile(), templateFolder, name);
+            FileObject template = FileUtil.createData(destination, filename);
+            try (OutputStreamWriter writer = new OutputStreamWriter(template.getOutputStream())) {
+                writer.append(templateContents);
+            }
             template.setAttribute("template", true);
-            template.setAttribute("displayName", name);
+            template.setAttribute("displayName", template.getName());
         } catch (Exception ex) {
             Exceptions.printStackTrace(ex);
         }

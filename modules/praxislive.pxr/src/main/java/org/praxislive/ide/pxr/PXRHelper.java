@@ -38,6 +38,7 @@ import org.praxislive.core.Connection;
 import org.praxislive.core.ControlAddress;
 import org.praxislive.core.PortAddress;
 import org.praxislive.core.Value;
+import org.praxislive.core.types.PArray;
 import org.praxislive.core.types.PMap;
 
 /**
@@ -45,7 +46,7 @@ import org.praxislive.core.types.PMap;
  */
 public class PXRHelper extends AbstractHelperComponent {
 
-    private static final String ALLOWED_COMMANDS = "[array @ ~ file array map cd libraries]";
+    private static final String ALLOWED_COMMANDS = "[array @ ~ file array map cd libraries shared-code-add echo]";
     private static final String EVAL_COMMAND = "eval --trap-errors --allowed-commands "
             + ALLOWED_COMMANDS + " ";
     private static final String ROOT_SCRIPT = EVAL_COMMAND + """
@@ -54,14 +55,19 @@ public class PXRHelper extends AbstractHelperComponent {
                                                              %2$s
                                                              }
                                                              """;
-    private static final String SUB_SCRIPT = EVAL_COMMAND + """
-                                                            {
-                                                            cd %1$s
-                                                            @ %2$s {
-                                                            %3$s
-                                                            }
-                                                            }
-                                                            """;
+    private static final String SUB_SCRIPT
+            = """
+            set LIBRARIES %4$s
+            set SHARED_CODE %5$s
+            """
+            + EVAL_COMMAND + """
+                            {
+                            cd %1$s
+                            @ %2$s {
+                            %3$s
+                            }
+                            }
+                            """;
 
     private PXRHelper() {
     }
@@ -71,7 +77,7 @@ public class PXRHelper extends AbstractHelperComponent {
     }
 
     CompletionStage<List<Value>> safeContextEval(URI workingDir, ComponentAddress address, String script) {
-        return execScript(SUB_SCRIPT.formatted(workingDir, address, script));
+        return execScript(SUB_SCRIPT.formatted(workingDir, address, script, "libraries", "shared-code-add"));
     }
 
     CompletionStage<ComponentInfo> createComponentAndGetInfo(ComponentAddress address, ComponentType type) {
@@ -96,6 +102,26 @@ public class PXRHelper extends AbstractHelperComponent {
         }
         return execScript(script)
                 .thenApply(r -> PMap.from(r.get(0)).orElseThrow());
+    }
+
+    CompletionStage<ExportData> exportData(ComponentAddress address) {
+        String script = "map libraries [try {libraries} catch {array}] "
+                + "shared-code [try {/" + address.rootID() + ".shared-code} catch {map}] "
+                + "data [";
+        if (address.depth() == 1) {
+            script += address + ".serialize";
+        } else {
+            script += "/" + address.rootID() + ".serialize [map subtree " + address + "]";
+        }
+        script += "]";
+        return execScript(script)
+                .thenApply(r -> {
+                    PMap resultMap = PMap.from(r.get(0)).orElseThrow();
+                    PArray libraries = PArray.from(resultMap.get("libraries")).orElseThrow();
+                    PMap sharedCode = PMap.from(resultMap.get("shared-code")).orElseThrow();
+                    PMap data = PMap.from(resultMap.get("data")).orElseThrow();
+                    return new ExportData(libraries, sharedCode, data);
+                });
     }
 
     CompletionStage<ComponentInfo> componentInfo(ComponentAddress address) {
@@ -136,6 +162,10 @@ public class PXRHelper extends AbstractHelperComponent {
             assert EventQueue.isDispatchThread();
             return connection;
         });
+    }
+
+    static record ExportData(PArray libraries, PMap sharedCode, PMap serializedData) {
+
     }
 
     @ServiceProvider(service = ExtensionProvider.class)

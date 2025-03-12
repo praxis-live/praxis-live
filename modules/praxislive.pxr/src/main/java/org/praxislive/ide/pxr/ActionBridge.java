@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2024 Neil C Smith.
+ * Copyright 2025 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -72,7 +72,6 @@ import org.praxislive.ide.pxr.api.ActionSupport;
 import org.praxislive.ide.pxr.api.EditorUtils;
 import org.praxislive.ide.pxr.spi.ModelTransform;
 import org.praxislive.ide.pxr.spi.RootEditor;
-import org.praxislive.project.GraphElement;
 import org.praxislive.project.GraphModel;
 import org.praxislive.project.ParseException;
 
@@ -370,41 +369,42 @@ public class ActionBridge {
         @Override
         protected void handleExecute() throws Exception {
             PXRHelper helper = findRootProxy(container).getHelper();
-            CompletionStage<GraphModel> modelStage;
+            ComponentAddress exportAddress;
             if (children.size() == 1) {
-                String childID = children.iterator().next();
-                modelStage = helper.componentData(ComponentAddress.of(
-                        container.getAddress(), childID))
-                        .thenApply(data -> GraphModel.fromSerializedComponent(childID, data));
+                exportAddress = container.getAddress().resolve(children.getFirst());
             } else {
-                modelStage = helper.componentData(container.getAddress())
-                        .thenApply(data -> GraphModel.fromSerializedSubgraph(data, children::contains));
+                exportAddress = container.getAddress();
             }
-            modelStage.thenApply(exportTransform)
-                    .thenAccept(model -> handleSave(model.writeToString()))
+            helper.exportData(exportAddress)
+                    .thenAccept(this::handleData)
                     .exceptionally(ex -> {
                         updateState(State.ERROR);
                         return null;
                     });
         }
 
-        private void handleSave(String export) {
-            PXGExportWizard wizard = new PXGExportWizard();
-            try {
-                GraphElement.Root root = GraphModel.parseSubgraph(export).root();
-                wizard.setSuggestedFileName(findSuggestedName(root));
-                wizard.setSuggestedPaletteCategory(findPaletteCategory(root));
-            } catch (ParseException ex) {
-                throw new RuntimeException(ex);
+        private void handleData(PXRHelper.ExportData data) {
+            GraphModel model;
+            if (children.size() == 1) {
+                model = GraphModel.fromSerializedComponent(children.getFirst(), data.serializedData());
+            } else {
+                model = GraphModel.fromSerializedSubgraph(data.serializedData(), children::contains);
             }
+            model = exportTransform.apply(model);
 
+            PXGExportWizard wizard = new PXGExportWizard(model, data.libraries(), data.sharedCode());
             if (wizard.display() != WizardDescriptor.FINISH_OPTION) {
                 updateState(State.CANCELLED);
                 return;
             }
 
+            model = wizard.getExportModel();
             File file = wizard.getExportFile();
-            String paletteCategory = wizard.getPaletteCategory().replace(":", "_");
+            String paletteCategory = wizard.getPaletteCategory();
+            handleSave(file, paletteCategory, model.writeToString());
+        }
+
+        private void handleSave(File file, String paletteCategory, String export) {
 
             RP.post(() -> {
                 if (file.exists()) {
@@ -425,9 +425,10 @@ public class ActionBridge {
                     }
                     try {
                         if (!paletteCategory.isEmpty()) {
+                            String paletteDir = paletteCategory.replace(":", "_");
                             FileObject src = FileUtil.toFileObject(file);
                             FileObject dst = FileUtil.createFolder(
-                                    FileUtil.getConfigRoot(), "PXR/Palette/" + paletteCategory);
+                                    FileUtil.getConfigRoot(), "PXR/Palette/" + paletteDir);
                             FileUtil.copyFile(src, dst, src.getName());
                         }
                     } catch (IOException ex) {
@@ -445,33 +446,6 @@ public class ActionBridge {
                 }
 
             });
-        }
-
-        private String findSuggestedName(GraphElement.Root root) {
-            if (root.children().size() == 1) {
-                return root.children().firstEntry().getKey();
-            } else {
-                return "";
-            }
-        }
-
-        private String findPaletteCategory(GraphElement.Root root) {
-            String ret = "core:custom";
-            for (GraphElement.Component cmp : root.children().sequencedValues()) {
-                if (!cmp.children().isEmpty()) {
-                    // container ??
-                    return "";
-                }
-                String type = cmp.type().toString();
-                if (type.startsWith("video:gl:")) {
-                    // short circuit for GL
-                    return "video:gl:custom";
-                } else if (!type.startsWith("core")) {
-                    String base = type.substring(0, type.indexOf(":"));
-                    ret = base + ":custom";
-                }
-            }
-            return ret;
         }
 
     }

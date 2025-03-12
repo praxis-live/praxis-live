@@ -26,34 +26,32 @@ import javax.swing.JPanel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.openide.filesystems.FileChooserBuilder;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 @NbBundle.Messages({
-    "PXGExportVisualPanel1.name=File",
-    "PXGExportVisualPanel1.fileSelect=Select"
+    "SaveAsTemplateVisualPanel1.name=File",
+    "SaveAsTemplateVisualPanel1.fileSelect=Select"
 })
-final class PXGExportVisualPanel1 extends JPanel implements DocumentListener {
+final class SaveAsTemplateVisualPanel1 extends JPanel implements DocumentListener {
 
-    private final PXGExportWizardPanel1 wizardPanel;
+    private final SaveAsTemplateWizardPanel1 wizardPanel;
     private final FileChooserBuilder fileChooser;
-    private File location;
+    private FileObject location;
 
-    PXGExportVisualPanel1(PXGExportWizardPanel1 wizardPanel) {
+    SaveAsTemplateVisualPanel1(SaveAsTemplateWizardPanel1 wizardPanel) {
         this.wizardPanel = wizardPanel;
         initComponents();
-        PXGExportWizard wizard = wizardPanel.getWizard();
-        location = wizard.getDefaultLocation();
-        fileChooser = new FileChooserBuilder(PXGExportVisualPanel1.class)
+        SaveAsTemplateWizard wizard = wizardPanel.getWizard();
+        location = wizard.getDefaultDestination();
+        fileChooser = new FileChooserBuilder(SaveAsTemplateVisualPanel1.class)
                 .setDirectoriesOnly(true)
-                .setApproveText(Bundle.PXGExportVisualPanel1_fileSelect())
-                .setDefaultWorkingDirectory(location)
-                .forceUseOfDefaultWorkingDirectory(true);
-        locationField.setText(location.toString());
+                .setApproveText(Bundle.SaveAsTemplateVisualPanel1_fileSelect());
+        locationField.setText(location.getPath());
         fileField.setText(location.toString());
         nameField.setText(wizard.getSuggestedFileName());
-        paletteCategoryField.setText(wizard.getSuggestedPaletteCategory());
         nameField.getDocument().addDocumentListener(this);
-        paletteCategoryField.getDocument().addDocumentListener(this);
         if (wizard.hasLibraries()) {
             librariesCheckbox.setEnabled(true);
             librariesCheckbox.setSelected(wizard.mightUseLibraries());
@@ -61,19 +59,11 @@ final class PXGExportVisualPanel1 extends JPanel implements DocumentListener {
             librariesCheckbox.setEnabled(false);
             librariesCheckbox.setSelected(false);
         }
-        if (wizard.hasSharedCode()) {
-            sharedCodeCheckbox.setEnabled(true);
-            sharedCodeCheckbox.setSelected(wizard.mightUseSharedCode());
-        } else {
-            sharedCodeCheckbox.setEnabled(false);
-            sharedCodeCheckbox.setSelected(false);
-        }
-
     }
 
     @Override
     public String getName() {
-        return Bundle.PXGExportVisualPanel1_name();
+        return Bundle.SaveAsTemplateVisualPanel1_name();
     }
 
     @Override
@@ -97,24 +87,20 @@ final class PXGExportVisualPanel1 extends JPanel implements DocumentListener {
         locationField = new javax.swing.JTextField();
         browseButton = new javax.swing.JButton();
         fileField = new javax.swing.JTextField();
-        paletteCategoryLabel = new javax.swing.JLabel();
-        paletteCategoryField = new javax.swing.JTextField();
-        paletteCheckbox = new javax.swing.JCheckBox();
         librariesCheckbox = new javax.swing.JCheckBox();
-        sharedCodeCheckbox = new javax.swing.JCheckBox();
 
-        org.openide.awt.Mnemonics.setLocalizedText(nameLabel, org.openide.util.NbBundle.getMessage(PXGExportVisualPanel1.class, "PXGExportVisualPanel1.nameLabel.text_1")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(nameLabel, org.openide.util.NbBundle.getMessage(SaveAsTemplateVisualPanel1.class, "PXGExportVisualPanel1.nameLabel.text_1")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(locationLabel, org.openide.util.NbBundle.getMessage(PXGExportVisualPanel1.class, "PXGExportVisualPanel1.locationLabel.text_1")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(locationLabel, org.openide.util.NbBundle.getMessage(SaveAsTemplateVisualPanel1.class, "PXGExportVisualPanel1.locationLabel.text_1")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(fileLabel, org.openide.util.NbBundle.getMessage(PXGExportVisualPanel1.class, "PXGExportVisualPanel1.fileLabel.text_1")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(fileLabel, org.openide.util.NbBundle.getMessage(SaveAsTemplateVisualPanel1.class, "PXGExportVisualPanel1.fileLabel.text_1")); // NOI18N
 
-        nameField.setText(org.openide.util.NbBundle.getMessage(PXGExportVisualPanel1.class, "PXGExportVisualPanel1.nameField.text_1")); // NOI18N
+        nameField.setText(org.openide.util.NbBundle.getMessage(SaveAsTemplateVisualPanel1.class, "PXGExportVisualPanel1.nameField.text_1")); // NOI18N
 
         locationField.setEditable(false);
-        locationField.setText(org.openide.util.NbBundle.getMessage(PXGExportVisualPanel1.class, "PXGExportVisualPanel1.locationField.text_1")); // NOI18N
+        locationField.setText(org.openide.util.NbBundle.getMessage(SaveAsTemplateVisualPanel1.class, "PXGExportVisualPanel1.locationField.text_1")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(browseButton, org.openide.util.NbBundle.getMessage(PXGExportVisualPanel1.class, "PXGExportVisualPanel1.browseButton.text_1")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(browseButton, org.openide.util.NbBundle.getMessage(SaveAsTemplateVisualPanel1.class, "PXGExportVisualPanel1.browseButton.text_1")); // NOI18N
         browseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 browseButtonActionPerformed(evt);
@@ -122,23 +108,14 @@ final class PXGExportVisualPanel1 extends JPanel implements DocumentListener {
         });
 
         fileField.setEditable(false);
-        fileField.setText(org.openide.util.NbBundle.getMessage(PXGExportVisualPanel1.class, "PXGExportVisualPanel1.fileField.text_1")); // NOI18N
+        fileField.setText(org.openide.util.NbBundle.getMessage(SaveAsTemplateVisualPanel1.class, "PXGExportVisualPanel1.fileField.text_1")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(paletteCategoryLabel, org.openide.util.NbBundle.getMessage(PXGExportVisualPanel1.class, "PXGExportVisualPanel1.paletteCategoryLabel.text_1")); // NOI18N
-
-        paletteCategoryField.setText(org.openide.util.NbBundle.getMessage(PXGExportVisualPanel1.class, "PXGExportVisualPanel1.paletteCategoryField.text_1")); // NOI18N
-
-        paletteCheckbox.setSelected(true);
-        org.openide.awt.Mnemonics.setLocalizedText(paletteCheckbox, org.openide.util.NbBundle.getMessage(PXGExportVisualPanel1.class, "PXGExportVisualPanel1.paletteCheckbox.text_1")); // NOI18N
-        paletteCheckbox.addActionListener(new java.awt.event.ActionListener() {
+        org.openide.awt.Mnemonics.setLocalizedText(librariesCheckbox, org.openide.util.NbBundle.getMessage(SaveAsTemplateVisualPanel1.class, "PXGExportVisualPanel1.librariesCheckbox.text")); // NOI18N
+        librariesCheckbox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                paletteCheckboxActionPerformed(evt);
+                librariesCheckboxActionPerformed(evt);
             }
         });
-
-        org.openide.awt.Mnemonics.setLocalizedText(librariesCheckbox, org.openide.util.NbBundle.getMessage(PXGExportVisualPanel1.class, "PXGExportVisualPanel1.librariesCheckbox.text")); // NOI18N
-
-        org.openide.awt.Mnemonics.setLocalizedText(sharedCodeCheckbox, org.openide.util.NbBundle.getMessage(PXGExportVisualPanel1.class, "PXGExportVisualPanel1.sharedCodeCheckbox.text")); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -161,14 +138,7 @@ final class PXGExportVisualPanel1 extends JPanel implements DocumentListener {
                                 .addComponent(browseButton))
                             .addComponent(fileField)))
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(paletteCategoryLabel)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(paletteCategoryField))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(paletteCheckbox)
-                            .addComponent(librariesCheckbox)
-                            .addComponent(sharedCodeCheckbox))
+                        .addComponent(librariesCheckbox)
                         .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
@@ -188,33 +158,24 @@ final class PXGExportVisualPanel1 extends JPanel implements DocumentListener {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(fileLabel)
                     .addComponent(fileField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(26, 26, 26)
-                .addComponent(paletteCheckbox)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(paletteCategoryLabel)
-                    .addComponent(paletteCategoryField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(18, 18, 18)
                 .addComponent(librariesCheckbox)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(sharedCodeCheckbox)
-                .addContainerGap())
+                .addGap(124, 124, 124))
         );
     }// </editor-fold>//GEN-END:initComponents
 
     private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButtonActionPerformed
         File loc = fileChooser.showOpenDialog();
         if (loc != null) {
-            location = loc;
-            locationField.setText(location.toString());
+            location = FileUtil.toFileObject(loc);
+            locationField.setText(location.getPath());
             update();
         }
     }//GEN-LAST:event_browseButtonActionPerformed
 
-    private void paletteCheckboxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_paletteCheckboxActionPerformed
-        paletteCategoryField.setEnabled(paletteCheckbox.isSelected());
+    private void librariesCheckboxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_librariesCheckboxActionPerformed
         update();
-    }//GEN-LAST:event_paletteCheckboxActionPerformed
+    }//GEN-LAST:event_librariesCheckboxActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton browseButton;
@@ -225,10 +186,6 @@ final class PXGExportVisualPanel1 extends JPanel implements DocumentListener {
     private javax.swing.JLabel locationLabel;
     private javax.swing.JTextField nameField;
     private javax.swing.JLabel nameLabel;
-    private javax.swing.JTextField paletteCategoryField;
-    private javax.swing.JLabel paletteCategoryLabel;
-    private javax.swing.JCheckBox paletteCheckbox;
-    private javax.swing.JCheckBox sharedCodeCheckbox;
     // End of variables declaration//GEN-END:variables
 
     @Override
@@ -246,7 +203,7 @@ final class PXGExportVisualPanel1 extends JPanel implements DocumentListener {
         update();
     }
 
-    File getFileLocation() {
+    FileObject getDestinationFolder() {
         return location;
     }
 
@@ -254,22 +211,14 @@ final class PXGExportVisualPanel1 extends JPanel implements DocumentListener {
         return nameField.getText();
     }
 
-    String getPaletteCategory() {
-        return paletteCheckbox.isSelected() ? paletteCategoryField.getText() : "";
-    }
-
     boolean includeLibraries() {
         return librariesCheckbox.isSelected();
     }
 
-    boolean includeSharedCode() {
-        return sharedCodeCheckbox.isSelected();
-    }
-
     private void update() {
         String name = nameField.getText();
-        if (!name.isEmpty() && !name.endsWith(".pxg")) {
-            name = name + ".pxg";
+        if (!name.isEmpty() && !name.endsWith(".pxx")) {
+            name = name + ".pxx";
         }
         fileField.setText(locationField.getText() + File.separator + name);
         wizardPanel.validate();
