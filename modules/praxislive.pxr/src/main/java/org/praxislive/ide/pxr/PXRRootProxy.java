@@ -133,7 +133,7 @@ public class PXRRootProxy extends PXRContainerProxy implements RootProxy, Dispos
     @Override
     boolean isHiddenFunction(String id) {
         return switch (id) {
-            case SerializableProtocol.SERIALIZE ->
+            case SerializableProtocol.SERIALIZE, "shared-code-add", "shared-code-merge" ->
                 true;
             default ->
                 super.isHiddenFunction(id);
