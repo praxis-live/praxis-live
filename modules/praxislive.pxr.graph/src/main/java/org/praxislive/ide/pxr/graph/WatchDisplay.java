@@ -21,6 +21,12 @@
  */
 package org.praxislive.ide.pxr.graph;
 
+import com.github.weisj.jsvg.SVGDocument;
+import com.github.weisj.jsvg.attributes.ViewBox;
+import com.github.weisj.jsvg.geometry.size.FloatSize;
+import com.github.weisj.jsvg.parser.LoaderContext;
+import com.github.weisj.jsvg.parser.SVGLoader;
+import com.github.weisj.jsvg.renderer.awt.NullPlatformSupport;
 import java.awt.EventQueue;
 import java.awt.Graphics2D;
 import java.awt.Insets;
@@ -28,8 +34,12 @@ import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.concurrent.CompletionStage;
 import javax.imageio.ImageIO;
@@ -59,6 +69,11 @@ import org.praxislive.ide.pxr.graph.scene.PraxisGraphScene;
  *
  */
 abstract class WatchDisplay extends Widget {
+
+    private static final String MIME_PNG = "image/png";
+    private static final String MIME_TEXT = "text/plain";
+    private static final String MIME_SVG_INLINE = "image/x.svg-html";
+    private static final String MIME_SVG = "image/svg+xml";
 
     private static final long FORCE_REFRESH_TIME = 5_000_000_000L;
 
@@ -177,11 +192,14 @@ abstract class WatchDisplay extends Widget {
         PMap watchInfo = PMap.from(info.properties().get("watch")).orElse(PMap.EMPTY);
         String mime = watchInfo.getString(Watch.MIME_KEY, "application/octet-stream");
         String port = watchInfo.getString(Watch.RELATED_PORT_KEY, "");
-        if ("image/png".equals(mime)) {
-            return new ImageDisplay(scene, cmp, control, port);
-        } else {
-            return new TextDisplay(scene, cmp, control, port);
-        }
+        return switch (mime) {
+            case MIME_PNG ->
+                new ImageDisplay(scene, cmp, control, port);
+            case MIME_SVG_INLINE, MIME_SVG ->
+                new SVGDisplay(scene, cmp, control, port);
+            default ->
+                new TextDisplay(scene, cmp, control, port);
+        };
     }
 
     private static class TextDisplay extends WatchDisplay {
@@ -273,15 +291,63 @@ abstract class WatchDisplay extends Widget {
                         imageWidget.setImage(null);
                     }
                 }
+                getScene().validate();
             }
-            getScene().validate();
+        }
+
+    }
+
+    private static class SVGDisplay extends WatchDisplay {
+
+        private static final Map<String, SVGDocument> CACHE
+                = new LinkedHashMap<>(16, 0.75f, true) {
+            @Override
+            protected boolean removeEldestEntry(Entry<String, SVGDocument> eldest) {
+                return size() > 64;
+            }
+
+        };
+        private static final SVGLoader LOADER = new SVGLoader();
+
+        private final SVGImageWidget imageWidget;
+
+        private String currentSVG;
+
+        public SVGDisplay(Scene scene, ComponentProxy cmp, String control, String relatedPort) {
+            super(scene, cmp, control, relatedPort);
+            imageWidget = new SVGImageWidget(scene);
+            addChild(imageWidget);
+        }
+
+        @Override
+        void update(Value value) {
+            String newSVG = value.toString();
+            if (!Objects.equals(currentSVG, newSVG)) {
+                currentSVG = newSVG;
+                SVGDocument svg = CACHE.computeIfAbsent(currentSVG, this::load);
+                imageWidget.setSVG(svg);
+                getScene().validate();
+            }
+        }
+
+        private SVGDocument load(String svg) {
+            if (svg.isBlank()) {
+                return null;
+            } else {
+                try {
+                    return LOADER.load(new ByteArrayInputStream(svg.getBytes()), null,
+                            LoaderContext.createDefault());
+                } catch (Exception ex) {
+                    return null;
+                }
+            }
         }
 
     }
 
     private static class ScaledImageWidget extends Widget {
 
-        private final static int DEFAULT_SIZE = 140;
+        private static final int DEFAULT_SIZE = 140;
 
         private BufferedImage image;
 
@@ -319,6 +385,52 @@ abstract class WatchDisplay extends Widget {
             g.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
                     RenderingHints.VALUE_INTERPOLATION_BILINEAR);
             g.drawImage(image, area.x, area.y, area.width, area.height, null);
+            g.setRenderingHints(renderingHints);
+        }
+
+    }
+
+    private static class SVGImageWidget extends Widget {
+
+        private static final int DEFAULT_SIZE = 140;
+
+        private SVGDocument svg;
+
+        SVGImageWidget(Scene scene) {
+            super(scene);
+        }
+
+        void setSVG(SVGDocument svg) {
+            this.svg = svg;
+            revalidate();
+        }
+
+        @Override
+        protected Rectangle calculateClientArea() {
+            if (svg == null) {
+                return super.calculateClientArea();
+            } else {
+                FloatSize size = svg.size();
+                double width = size.getWidth();
+                double height = size.getHeight();
+                double maxDim = Math.max(width, height);
+                double scale = DEFAULT_SIZE / maxDim;
+                return new Rectangle((int) (scale * width + 0.5),
+                        (int) (scale * height + 0.5));
+            }
+        }
+
+        @Override
+        protected void paintWidget() {
+            if (svg == null) {
+                return;
+            }
+            Graphics2D g = getGraphics();
+            Rectangle area = getClientArea();
+            RenderingHints renderingHints = g.getRenderingHints();
+            g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
+            svg.renderWithPlatform(NullPlatformSupport.INSTANCE, g, new ViewBox(area));
             g.setRenderingHints(renderingHints);
         }
 
