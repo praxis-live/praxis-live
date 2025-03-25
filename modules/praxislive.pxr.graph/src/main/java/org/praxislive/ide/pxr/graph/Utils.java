@@ -21,8 +21,11 @@
  */
 package org.praxislive.ide.pxr.graph;
 
+import java.util.Locale;
+import org.praxislive.ide.core.ui.api.TypeColor;
 import org.praxislive.ide.model.ComponentProxy;
 import org.praxislive.ide.model.ContainerProxy;
+import org.praxislive.ide.pxr.graph.scene.LAFScheme;
 
 /**
  *
@@ -32,30 +35,43 @@ class Utils {
     private Utils() {
     }
 
-    static Colors colorsForPortType(String type) {
-        return colorsForString(type);
+    static LAFScheme.Colors colorsForPortType(String type) {
+        return LAFScheme.Colors.forTypeColor(typeColorForString(type, true));
     }
 
-    static Colors colorsForComponent(ComponentProxy cmp) {
+    static LAFScheme.Colors colorsForComponent(ComponentProxy cmp) {
         if (cmp instanceof ContainerProxy) {
-            return Colors.Orange;
+            return LAFScheme.Colors.forTypeColor(TypeColor.Orange);
         } else {
-            return colorsForString(cmp.getType().toString());
+            return LAFScheme.Colors.forTypeColor(
+                    typeColorForString(cmp.getType().toString(), false));
         }
     }
 
-    private static Colors colorsForString(String string) {
-        String test = string.toLowerCase();
+    private static TypeColor typeColorForString(String string, boolean port) {
+        String test = string.toLowerCase(Locale.ROOT);
         if (test.startsWith("audio")) {
-            return Colors.Green;
+            return TypeColor.Green;
         }
         if (test.startsWith("video")) {
-            return Colors.Purple;
+            return TypeColor.Purple;
         }
-        if (test.startsWith("data")) {
-            return Colors.Red;
+        if (port) {
+            if (test.startsWith("control")) {
+                return TypeColor.Blue;
+            }
+            if (test.startsWith("ref")) {
+                return TypeColor.Cyan;
+            }
+        } else {
+            if (test.startsWith("core")) {
+                return TypeColor.Blue;
+            }
+            if (test.startsWith("data")) {
+                return TypeColor.Red;
+            }
         }
-        return Colors.Blue;
+        return TypeColor.Magenta;
     }
 
 }

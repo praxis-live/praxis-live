@@ -118,6 +118,7 @@ import org.praxislive.ide.core.api.Disposable;
 import org.praxislive.ide.core.api.Task;
 import org.praxislive.ide.project.api.PraxisProject;
 import org.praxislive.ide.pxr.api.Attributes;
+import org.praxislive.ide.pxr.graph.scene.LAFScheme;
 
 /**
  *
@@ -480,7 +481,7 @@ public final class GraphEditor implements RootEditor {
     private void buildChild(String id, final ComponentProxy cmp) {
         String name = cmp instanceof ContainerProxy ? id + "/.." : id;
         NodeWidget widget = scene.addNode(id, name);
-        widget.setSchemeColors(Utils.colorsForComponent(cmp).getSchemeColors());
+        widget.setSchemeColors(Utils.colorsForComponent(cmp));
         widget.setToolTipText(cmp.getType().toString());
         configureWidgetFromAttributes(widget, cmp);
         if (cmp instanceof ContainerProxy) {
@@ -650,15 +651,12 @@ public final class GraphEditor implements RootEditor {
     }
 
     private void buildPin(String cmpID, ComponentProxy cmp, String pinID, PortInfo info) {
-        boolean primary = info.portType().startsWith("Audio")
-                || info.portType().startsWith("Video");
+        boolean primary = !info.portType().startsWith("Control");
         PinWidget pin = scene.addPin(cmpID, pinID, getPinAlignment(info));
-        pin.setSchemeColors(Utils.colorsForPortType(info.portType()).getSchemeColors());
+        pin.setSchemeColors(Utils.colorsForPortType(info.portType()));
         Font font = pin.getFont();
         if (primary) {
             pin.setFont(font.deriveFont(Font.BOLD));
-        } else {
-//            pin.setFont(font.deriveFont(font.getSize2D() * 0.85f));
         }
         String category = info.properties().getString("category", "");
         if (category.isEmpty()) {
