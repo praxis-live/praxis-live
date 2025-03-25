@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2024 Neil C Smith.
+ * Copyright 2025 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -46,6 +46,7 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Image;
+import java.util.Map;
 import org.netbeans.api.visual.border.Border;
 import org.netbeans.api.visual.border.BorderFactory;
 import org.netbeans.api.visual.model.ObjectState;
@@ -54,8 +55,11 @@ import org.netbeans.api.visual.anchor.AnchorShape;
 import org.netbeans.api.visual.anchor.PointShape;
 import org.openide.util.ImageUtilities;
 
-import java.util.Objects;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.swing.UIManager;
+import org.praxislive.ide.core.ui.api.TypeColor;
 
 public final class LAFScheme {
 
@@ -63,57 +67,17 @@ public final class LAFScheme {
 
     public static final Color FOREGROUND
             = findColor("praxis.graph.foreground",
-                    IS_DARK ? new Color(0xf1f9fd) : new Color(0x191919));
+                    IS_DARK ? new Color(0xf2f2f2) : new Color(0x191919));
 
     public static final Color BACKGROUND
             = findColor("praxis.graph.background",
-                    IS_DARK ? new Color(0x191919) : new Color(0xf1f9fd));
+                    IS_DARK ? new Color(0x191919) : new Color(0xf0f0f0));
 
     public static final Color NODE_BACKGROUND
             = findColor("praxis.graph.node.background",
-                    IS_DARK ? new Color(0x121212) : new Color(0xf7fdff));
+                    IS_DARK ? new Color(0x121212) : new Color(0xf7f7f7));
 
-    public static final Colors DEFAULT_COLORS
-            = new Colors(
-                    findColor("praxis.graph.default.selected", new Color(0x748cc0)),
-                    findColor("praxis.graph.default", new Color(0xbacdf0))
-            );
-
-    public static final Colors RED
-            = new Colors(
-                    findColor("praxis.graph.red.selected", new Color(0xff2a2a)),
-                    findColor("praxis.graph.red", new Color(0xff8080))
-            );
-
-    public static final Colors GREEN
-            = new Colors(
-                    findColor("praxis.graph.green.selected", new Color(0xaad400)),
-                    findColor("praxis.graph.green", new Color(0xc6d976))
-            );
-
-    public static final Colors BLUE
-            = new Colors(
-                    findColor("praxis.graph.blue.selected", new Color(0x748cc0)),
-                    findColor("praxis.graph.blue", new Color(0xbacdf0))
-            );
-
-    public static final Colors PURPLE
-            = new Colors(
-                    findColor("praxis.graph.green.selected", new Color(0xd42aff)),
-                    findColor("praxis.graph.green", new Color(0xe580ff))
-            );
-
-    public static final Colors ORANGE
-            = new Colors(
-                    findColor("praxis.graph.green.selected", new Color(0xff9126)),
-                    findColor("praxis.graph.green", new Color(0xffb46a))
-            );
-
-    public static final Colors YELLOW
-            = new Colors(
-                    findColor("praxis.graph.green.selected", new Color(0xf9f900)),
-                    findColor("praxis.graph.green", new Color(0xffff7a))
-            );
+    public static final Colors DEFAULT_COLORS = Colors.TYPE_COLOR_MAP.get(TypeColor.Cyan);
 
     private static final Border BORDER_MINIMIZE
             = BorderFactory.createOpaqueBorder(2, 2, 2, 2);
@@ -194,7 +158,7 @@ public final class LAFScheme {
         Widget header = widget.getHeader();
         header.setBorder(state.isSelected() || state.isHovered()
                 ? colors.BORDER_HEADER_SELECTED : colors.BORDER_HEADER);
-        Color auxFG = IS_DARK ? colors.COLOR_NORMAL : colors.COLOR_SELECTED;
+        Color auxFG = colors.COLOR_TEXT;
         Widget comment = widget.getCommentWidget();
         comment.setForeground(auxFG);
         comment.setFont(commentFont);
@@ -259,8 +223,7 @@ public final class LAFScheme {
         if (colors == null) {
             colors = DEFAULT_COLORS;
         }
-        widget.getPinNameWidget().setForeground(IS_DARK
-                ? colors.COLOR_NORMAL : colors.COLOR_SELECTED);
+        widget.getPinNameWidget().setForeground(colors.COLOR_TEXT);
         if (state.isHovered()) {
             widget.setBorder(colors.BORDER_PIN_SELECTED);
         } else {
@@ -284,8 +247,14 @@ public final class LAFScheme {
 
     public static class Colors {
 
+        private static final Map<TypeColor, Colors> TYPE_COLOR_MAP = Map.copyOf(
+                Stream.of(TypeColor.values())
+                        .collect(Collectors.toMap(Function.identity(), Colors::new))
+        );
+
         private final Color COLOR_SELECTED;
         private final Color COLOR_NORMAL;
+        private final Color COLOR_TEXT;
 
         private final Border BORDER_NODE;
         private final Border BORDER_NODE_FOCUSED;
@@ -303,9 +272,10 @@ public final class LAFScheme {
         private final Border BORDER_PIN;
         private final Border BORDER_PIN_SELECTED;
 
-        public Colors(Color highlight, Color normal) {
-            COLOR_SELECTED = Objects.requireNonNull(highlight);
-            COLOR_NORMAL = Objects.requireNonNull(normal);
+        public Colors(TypeColor typeColor) {
+            COLOR_SELECTED = typeColor.selection();
+            COLOR_NORMAL = typeColor.shade();
+            COLOR_TEXT = typeColor.text();
             BORDER_NODE = BorderFactory.createCompositeBorder(
                     BorderFactory.createEmptyBorder(2),
                     BorderFactory.createRoundedBorder(8, 8, 0, 0, NODE_BACKGROUND, COLOR_NORMAL));
@@ -337,6 +307,10 @@ public final class LAFScheme {
 
             BORDER_PIN = BorderFactory.createRoundedBorder(8, 8, 8, 4, null, null);
             BORDER_PIN_SELECTED = BorderFactory.createRoundedBorder(8, 8, 8, 4, null, COLOR_NORMAL);
+        }
+
+        public static Colors forTypeColor(TypeColor typeColor) {
+            return TYPE_COLOR_MAP.getOrDefault(typeColor, DEFAULT_COLORS);
         }
 
     }
