@@ -335,12 +335,6 @@
     </dependency>
     <dependency>
       <groupId>org.netbeans.api</groupId>
-      <artifactId>org-netbeans-libs-jsvg</artifactId>
-      <version>${netbeans.version}</version>
-      <type>nbm-file</type>
-    </dependency>
-    <dependency>
-      <groupId>org.netbeans.api</groupId>
       <artifactId>org-netbeans-libs-flatlaf</artifactId>
       <version>${netbeans.version}</version>
       <type>nbm-file</type>
@@ -348,6 +342,24 @@
     <dependency>
       <groupId>org.netbeans.api</groupId>
       <artifactId>org-netbeans-libs-flexmark</artifactId>
+      <version>${netbeans.version}</version>
+      <type>nbm-file</type>
+    </dependency>
+    <dependency>
+      <groupId>org.netbeans.api</groupId>
+      <artifactId>org-netbeans-libs-jna</artifactId>
+      <version>${netbeans.version}</version>
+      <type>nbm-file</type>
+    </dependency>
+    <dependency>
+      <groupId>org.netbeans.api</groupId>
+      <artifactId>org-netbeans-libs-jna-platform</artifactId>
+      <version>${netbeans.version}</version>
+      <type>nbm-file</type>
+    </dependency>
+    <dependency>
+      <groupId>org.netbeans.api</groupId>
+      <artifactId>org-netbeans-libs-jsvg</artifactId>
       <version>${netbeans.version}</version>
       <type>nbm-file</type>
     </dependency>
