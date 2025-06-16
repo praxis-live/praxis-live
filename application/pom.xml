@@ -902,6 +902,12 @@
     </dependency>
     <dependency>
       <groupId>org.netbeans.modules</groupId>
+      <artifactId>org-netbeans-modules-extexecution-process</artifactId>
+      <version>${netbeans.version}</version>
+      <type>nbm-file</type>
+    </dependency>
+    <dependency>
+      <groupId>org.netbeans.modules</groupId>
       <artifactId>org-netbeans-modules-gototest</artifactId>
       <version>${netbeans.version}</version>
       <type>nbm-file</type>
