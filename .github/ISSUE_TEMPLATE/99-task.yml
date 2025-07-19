@@ -1,0 +1,14 @@
+---
+name: Task and Meta
+description: (Developers only) Tasks and Meta issues for the project
+body:
+  - type: markdown
+    attributes:
+      value: "**This task form is for developers only**. Bug reports and feature
+      requests should be opened on the support repository -
+      https://github.com/praxis-live/support/issues"
+  - type: textarea
+    attributes:
+      label: Task
+      description: Task information
+
