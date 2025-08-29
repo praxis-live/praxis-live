@@ -21,7 +21,6 @@
  */
 package org.praxislive.ide.pxr;
 
-import java.awt.EventQueue;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
@@ -126,13 +125,13 @@ public final class EditorModes {
     }
 
     private boolean containsNoneRootEditors(Mode mode) {
-        return Stream.of(mode.getTopComponents())
+        return Stream.of(WindowManager.getDefault().getOpenedTopComponents(mode))
                 .filter(this::isFileEditor)
                 .anyMatch(Predicate.not(this::isRootEditor));
     }
 
     private boolean containsOnlyRootEditors(Mode mode) {
-        return Stream.of(mode.getTopComponents())
+        return Stream.of(WindowManager.getDefault().getOpenedTopComponents(mode))
                 .filter(this::isFileEditor)
                 .allMatch(this::isRootEditor);
     }
