@@ -62,12 +62,12 @@
 
   <distributionManagement>
     <snapshotRepository>
-      <id>ossrh</id>
-      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+      <id>sonatype-central-c2</id>
+      <url>https://central.sonatype.com/repository/maven-snapshots</url>
     </snapshotRepository>
     <repository>
-      <id>ossrh</id>
-      <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+      <id>sonatype-central-c2</id>
+      <url>https://repo.maven.apache.org/maven2</url>
     </repository>
   </distributionManagement>
 
@@ -75,16 +75,24 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <brandingToken>praxislive</brandingToken>
     <netbeans.version>RELEASE270</netbeans.version>
+    <njord.version>0.8.3</njord.version>
     <praxiscore.version>${project.version}</praxiscore.version>
   </properties>
 
   <build>
+    <extensions>
+      <extension>
+        <groupId>eu.maveniverse.maven.njord</groupId>
+        <artifactId>extension3</artifactId>
+        <version>${njord.version}</version>
+      </extension>
+    </extensions>
     <pluginManagement>
       <plugins>
         <plugin>
           <groupId>org.apache.netbeans.utilities</groupId>
           <artifactId>nbm-maven-plugin</artifactId>
-          <version>14.2</version>
+          <version>14.3</version>
           <extensions>true</extensions>
           <configuration>
             <brandingToken>${brandingToken}</brandingToken>
@@ -100,7 +108,7 @@
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>flatten-maven-plugin</artifactId>
-          <version>1.6.0</version>
+          <version>1.7.2</version>
           <configuration>
             <flattenMode>ossrh</flattenMode>
           </configuration>
@@ -153,22 +161,22 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-javadoc-plugin</artifactId>
-          <version>3.11.2</version>
+          <version>3.11.3</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-install-plugin</artifactId>
-          <version>3.1.3</version>
+          <version>3.1.4</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-deploy-plugin</artifactId>
-          <version>3.1.3</version>
+          <version>3.1.4</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-surefire-plugin</artifactId>
-          <version>3.5.2</version>
+          <version>3.5.3</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
@@ -207,7 +215,7 @@
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-gpg-plugin</artifactId>
-            <version>3.2.7</version>
+            <version>3.2.8</version>
             <executions>
               <execution>
                 <id>sign-artifacts</id>
