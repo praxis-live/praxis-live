@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2024 Neil C Smith.
+ * Copyright 2025 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -51,6 +51,7 @@ import org.praxislive.ide.core.embedder.CORE;
 import org.praxislive.ide.project.api.PraxisProject;
 
 import static java.nio.file.FileVisitResult.CONTINUE;
+import java.util.Set;
 
 @NbBundle.Messages({
     "TTL_ImportRuntime=Import Runtime",
@@ -62,6 +63,7 @@ public final class EmbedRuntime {
     private static final RequestProcessor RP = new RequestProcessor(EmbedRuntime.class);
 
     private static final String BIN = "bin";
+    private static final String ETC = "etc";
     private static final String MODS = "mods";
     private static final String JDK = "jdk";
 
@@ -77,8 +79,7 @@ public final class EmbedRuntime {
         for (int i = 0; i < panels.size(); i++) {
             Component c = panels.get(i).getComponent();
             steps[i] = c.getName();
-            if (c instanceof JComponent) {
-                JComponent jc = (JComponent) c;
+            if (c instanceof JComponent jc) {
                 jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, i);
                 jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps);
                 jc.putClientProperty(WizardDescriptor.PROP_AUTO_WIZARD_STYLE, true);
@@ -91,9 +92,9 @@ public final class EmbedRuntime {
         wiz.setTitleFormat(new MessageFormat("{0}"));
         wiz.setTitle(Bundle.TTL_ImportRuntime());
         if (DialogDisplayer.getDefault().notify(wiz) == WizardDescriptor.FINISH_OPTION) {
-            var launcherName = wiz.getProperty(EmbedRuntimeNamePanel.KEY_NAME).toString();
-            var includeJDK = wiz.getProperty(EmbedRuntimeJDKPanel.KEY_JDK);
-            handleImport(project, launcherName, includeJDK instanceof Boolean ? ((Boolean) includeJDK) : false);
+            String launcherName = wiz.getProperty(EmbedRuntimeNamePanel.KEY_NAME).toString();
+            boolean includeJDK = wiz.getProperty(EmbedRuntimeJDKPanel.KEY_JDK) instanceof Boolean b ? b : false;
+            handleImport(project, launcherName, includeJDK);
         }
     }
 
@@ -103,28 +104,31 @@ public final class EmbedRuntime {
 
     private void handleImportAsync(FileObject folder, String launcherName, boolean includeJDK) {
         if (folder.getFileObject(BIN) != null
+                || folder.getFileObject(ETC) != null
                 || folder.getFileObject(MODS) != null
                 || folder.getFileObject(JDK) != null) {
             EventQueue.invokeLater(this::errorExists);
             return;
         }
         try {
-            var runtimePath = CORE.installDir();
-            var projectPath = FileUtil.toFile(folder).toPath();
-            var binPath = Files.createDirectory(projectPath.resolve(BIN));
-            var modsPath = Files.createDirectory(projectPath.resolve(MODS));
+            Path runtimePath = CORE.installDir();
+            Path projectPath = FileUtil.toFile(folder).toPath();
+            Path binPath = Files.createDirectory(projectPath.resolve(BIN));
+            Path etcPath = Files.createDirectory(projectPath.resolve(ETC));
+            Path modsPath = Files.createDirectory(projectPath.resolve(MODS));
             copyFiles(runtimePath.resolve(BIN), binPath);
+            copyFiles(runtimePath.resolve(ETC), etcPath);
             copyFiles(runtimePath.resolve(MODS), modsPath);
             renameLaunchers(binPath, launcherName);
             if (includeJDK) {
-                var jdkFolders = JavaPlatform.getDefault().getInstallFolders()
+                List<FileObject> jdkFolders = JavaPlatform.getDefault().getInstallFolders()
                         .stream()
                         .collect(Collectors.toList());
                 if (jdkFolders.size() != 1) {
                     throw new IllegalStateException("Java platform has unsupported number of install folders");
                 }
-                var jdkSrc = FileUtil.toFile(jdkFolders.get(0)).toPath();
-                var jdkDst = Files.createDirectory(projectPath.resolve(JDK));
+                Path jdkSrc = FileUtil.toFile(jdkFolders.get(0)).toPath();
+                Path jdkDst = Files.createDirectory(projectPath.resolve(JDK));
                 copyFiles(jdkSrc, jdkDst);
             }
         } catch (Exception ex) {
@@ -164,8 +168,8 @@ public final class EmbedRuntime {
     private void renameLaunchers(Path binPath, String launcherName) throws IOException {
         Files.move(binPath.resolve("praxis"),
                 binPath.resolve(launcherName));
-        Files.move(binPath.resolve("praxis.bat"),
-                binPath.resolve(launcherName + ".bat"));
+        Files.move(binPath.resolve("praxis.cmd"),
+                binPath.resolve(launcherName + ".cmd"));
     }
 
     private void errorExists() {
@@ -179,14 +183,14 @@ public final class EmbedRuntime {
             return;
         }
         try {
-            var posix = Files.getFileAttributeView(path, PosixFileAttributeView.class);
+            PosixFileAttributeView posix = Files.getFileAttributeView(path, PosixFileAttributeView.class);
             if (posix != null) {
-                var perms = posix.readAttributes().permissions();
+                Set<PosixFilePermission> perms = posix.readAttributes().permissions();
                 perms.add(PosixFilePermission.OWNER_WRITE);
                 posix.setPermissions(perms);
                 return;
             }
-            var dos = Files.getFileAttributeView(path, DosFileAttributeView.class);
+            DosFileAttributeView dos = Files.getFileAttributeView(path, DosFileAttributeView.class);
             if (dos != null) {
                 dos.setReadOnly(false);
             }
