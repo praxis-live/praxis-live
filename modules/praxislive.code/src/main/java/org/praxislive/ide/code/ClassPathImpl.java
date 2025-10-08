@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2021 Neil C Smith.
+ * Copyright 2025 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -26,21 +26,20 @@ import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.util.lookup.ServiceProvider;
 
-/**
- *
- */
 @ServiceProvider(service = ClassPathProvider.class)
-public class ClassPathImpl implements ClassPathProvider {
-    
+public final class ClassPathImpl implements ClassPathProvider {
+
+    public ClassPathImpl() {
+    }
 
     @Override
     public ClassPath findClassPath(FileObject file, String type) {
-        var info = PathRegistry.getDefault().findInfo(file);
+        PathRegistry.Info info = PathRegistry.getDefault().findInfo(file);
         if (info != null) {
             if (ClassPath.SOURCE.equals(type)) {
                 return info.classpath();
             } else {
-                var cpp = info.project().getLookup().lookup(ClassPathProvider.class);
+                ClassPathProvider cpp = info.project().getLookup().lookup(ClassPathProvider.class);
                 if (cpp != null) {
                     return cpp.findClassPath(file, type);
                 }

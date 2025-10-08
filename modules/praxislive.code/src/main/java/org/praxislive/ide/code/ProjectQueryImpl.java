@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2024 Neil C Smith.
+ * Copyright 2025 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -29,16 +29,16 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.lookup.ServiceProvider;
 
-/**
- *
- */
 @ServiceProvider(service = FileOwnerQueryImplementation.class)
 public class ProjectQueryImpl implements FileOwnerQueryImplementation {
-    
+
+    public ProjectQueryImpl() {
+    }
+
     @Override
     public Project getOwner(URI uri) {
         try {
-            var file = URLMapper.findFileObject(uri.toURL());
+            FileObject file = URLMapper.findFileObject(uri.toURL());
             if (file != null) {
                 return getOwner(file);
             }

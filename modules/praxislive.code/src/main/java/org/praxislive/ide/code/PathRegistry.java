@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2021 Neil C Smith.
+ * Copyright 2025 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -31,9 +31,6 @@ import org.openide.filesystems.FileObject;
 import org.praxislive.ide.code.api.SharedCodeInfo;
 import org.praxislive.ide.project.api.PraxisProject;
 
-/**
- *
- */
 public class PathRegistry {
 
     private static final PathRegistry INSTANCE = new PathRegistry();

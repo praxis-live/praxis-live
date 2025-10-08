@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2024 Neil C Smith.
+ * Copyright 2025 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -25,11 +25,11 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.spi.java.hints.unused.UsedDetector;
 import org.openide.util.lookup.ServiceProvider;
 
-/**
- *
- */
 @ServiceProvider(service = UsedDetector.Factory.class)
 public class UsedDetectorImpl implements UsedDetector.Factory {
+
+    public UsedDetectorImpl() {
+    }
 
     @Override
     public UsedDetector create(CompilationInfo info) {

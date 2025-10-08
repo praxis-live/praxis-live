@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2021 Neil C Smith.
+ * Copyright 2025 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -30,13 +30,10 @@ import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.lookup.ServiceProvider;
 
-/**
- *
- */
 @ServiceProvider(service = JavadocForBinaryQueryImplementation.class)
 public class JavadocQueryImpl implements JavadocForBinaryQueryImplementation {
 
-    static final URL JAVADOC_ARCHIVE; 
+    static final URL JAVADOC_ARCHIVE;
     private static final JavadocForBinaryQuery.Result RESULT;
 
     static {
@@ -57,7 +54,7 @@ public class JavadocQueryImpl implements JavadocForBinaryQueryImplementation {
                 @Override
                 public void removeChangeListener(ChangeListener l) {
                 }
-                
+
             };
         } else {
             JAVADOC_ARCHIVE = null;
@@ -65,6 +62,8 @@ public class JavadocQueryImpl implements JavadocForBinaryQueryImplementation {
         }
     }
 
+    public JavadocQueryImpl() {
+    }
 
     @Override
     public JavadocForBinaryQuery.Result findJavadoc(URL binaryRoot) {

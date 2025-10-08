@@ -21,41 +21,42 @@
  */
 package org.praxislive.ide.code;
 
+import java.util.List;
 import javax.swing.event.ChangeListener;
-import org.netbeans.spi.java.queries.SourceLevelQueryImplementation2;
+import org.netbeans.spi.java.queries.CompilerOptionsQueryImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.util.lookup.ServiceProvider;
-import org.praxislive.ide.project.api.ProjectProperties;
 
-@ServiceProvider(service = SourceLevelQueryImplementation2.class)
-public class SourceLevelQueryImpl implements SourceLevelQueryImplementation2 {
+@ServiceProvider(service = CompilerOptionsQueryImplementation.class)
+public class CompilerOptionsQueryImpl implements CompilerOptionsQueryImplementation {
 
-    public SourceLevelQueryImpl() {
+    private final Result result;
+
+    public CompilerOptionsQueryImpl() {
+        this.result = new ResultImpl();
     }
 
     @Override
-    public Result getSourceLevel(FileObject file) {
+    public Result getOptions(FileObject file) {
         PathRegistry.Info info = PathRegistry.getDefault().findInfo(file);
         if (info != null) {
-            ProjectProperties properties = info.project().getLookup().lookup(ProjectProperties.class);
-            if (properties != null) {
-                return new ResultImpl(String.valueOf(properties.getJavaRelease()));
-            }
+            return result;
+        } else {
+            return null;
         }
-        return null;
     }
 
-    static class ResultImpl implements Result {
+    static class ResultImpl extends Result {
 
-        private final String sourceLevel;
+        private final List<String> options;
 
-        private ResultImpl(String sourceLevel) {
-            this.sourceLevel = sourceLevel;
+        private ResultImpl() {
+            this.options = List.of("-Xlint");
         }
 
         @Override
-        public String getSourceLevel() {
-            return sourceLevel;
+        public List<? extends String> getArguments() {
+            return options;
         }
 
         @Override
