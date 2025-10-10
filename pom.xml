@@ -4,7 +4,7 @@
 
   <groupId>org.praxislive.ide</groupId>
   <artifactId>praxislive-parent</artifactId>
-  <version>6.4.0-SNAPSHOT</version>
+  <version>6.4.0</version>
   <packaging>pom</packaging>
 
   <name>PraxisLIVE-PARENT</name>
@@ -62,11 +62,11 @@
 
   <distributionManagement>
     <snapshotRepository>
-      <id>sonatype-central-c2</id>
+      <id>sonatype-central</id>
       <url>https://central.sonatype.com/repository/maven-snapshots</url>
     </snapshotRepository>
     <repository>
-      <id>sonatype-central-c2</id>
+      <id>sonatype-central</id>
       <url>https://repo.maven.apache.org/maven2</url>
     </repository>
   </distributionManagement>
@@ -75,7 +75,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <brandingToken>praxislive</brandingToken>
     <netbeans.version>RELEASE270</netbeans.version>
-    <njord.version>0.8.3</njord.version>
+    <njord.version>0.8.4</njord.version>
     <praxiscore.version>${project.version}</praxiscore.version>
   </properties>
 
@@ -162,6 +162,26 @@
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-javadoc-plugin</artifactId>
           <version>3.11.3</version>
+          <executions>
+            <execution>
+              <id>attach-javadocs</id>
+              <goals>
+                <goal>jar</goal>
+              </goals>
+            </execution>
+            <execution>
+              <id>attach-aggregate-javadoc</id>
+              <goals>
+                <goal>aggregate-jar</goal>
+              </goals>
+              <inherited>false</inherited>
+            </execution>
+          </executions>
+          <configuration>
+            <detectOfflineLinks>false</detectOfflineLinks>
+            <doclint>none</doclint>
+            <release>21</release>
+          </configuration>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
