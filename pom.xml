@@ -74,8 +74,8 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <brandingToken>praxislive</brandingToken>
-    <netbeans.version>RELEASE270</netbeans.version>
-    <njord.version>0.8.4</njord.version>
+    <netbeans.version>RELEASE280</netbeans.version>
+    <njord.version>0.8.7</njord.version>
     <praxiscore.version>${project.version}</praxiscore.version>
   </properties>
 
@@ -92,7 +92,7 @@
         <plugin>
           <groupId>org.apache.netbeans.utilities</groupId>
           <artifactId>nbm-maven-plugin</artifactId>
-          <version>14.3</version>
+          <version>14.4</version>
           <extensions>true</extensions>
           <configuration>
             <brandingToken>${brandingToken}</brandingToken>
@@ -108,7 +108,7 @@
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>flatten-maven-plugin</artifactId>
-          <version>1.7.2</version>
+          <version>1.7.3</version>
           <configuration>
             <flattenMode>ossrh</flattenMode>
           </configuration>
@@ -132,7 +132,7 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-compiler-plugin</artifactId>
-          <version>3.14.0</version>
+          <version>3.14.1</version>
           <configuration>
             <release>21</release>
             <proc>full</proc>
@@ -146,7 +146,7 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-dependency-plugin</artifactId>
-          <version>3.8.1</version>
+          <version>3.9.0</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
@@ -156,12 +156,12 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-antrun-plugin</artifactId>
-          <version>3.1.0</version>
+          <version>3.2.0</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-javadoc-plugin</artifactId>
-          <version>3.11.3</version>
+          <version>3.12.0</version>
           <executions>
             <execution>
               <id>attach-javadocs</id>
@@ -196,7 +196,7 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-surefire-plugin</artifactId>
-          <version>3.5.3</version>
+          <version>3.5.4</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
