@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2024 Neil C Smith.
+ * Copyright 2025 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -22,6 +22,8 @@
 package org.praxislive.ide.pxr;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.EventQueue;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
@@ -41,6 +43,7 @@ import javax.swing.InputMap;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.KeyStroke;
+import javax.swing.UIManager;
 import javax.swing.text.DefaultEditorKit;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.OutlineView;
@@ -49,7 +52,6 @@ import org.openide.nodes.Node;
 import org.openide.nodes.NodeEvent;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.Utilities;
-import org.openide.util.WeakListeners;
 import org.praxislive.ide.core.api.Syncable;
 import org.praxislive.ide.core.ui.api.Actions;
 import org.praxislive.ide.model.RootProxy;
@@ -63,6 +65,11 @@ import org.praxislive.ide.pxr.spi.RootEditor;
     "LBL_TableNodeColumn=Components"
 })
 class TableRootEditor implements RootEditor {
+
+    private static final boolean IS_DARK = UIManager.getBoolean("nb.dark.theme");
+    private static final Color BACKGROUND
+            = findColor("praxis.table.background",
+                    IS_DARK ? new Color(0x2b2b2b) : new Color(0xf0f0f0));
 
     private final RootProxy root;
     private final EditorPanel editorComponent;
@@ -112,6 +119,8 @@ class TableRootEditor implements RootEditor {
         }
         ov.setDragSource(false);
         ov.setQuickSearchAllowed(false);
+        ov.setTreeSortable(false);
+        ov.getOutline().setBackground(BACKGROUND);
         return ov;
     }
 
@@ -151,6 +160,11 @@ class TableRootEditor implements RootEditor {
     private void clearSyncable(Syncable syncable) {
         syncables.remove(syncable);
         syncable.removeKey(this);
+    }
+
+    private static Color findColor(String uiKey, Color fallback) {
+        Color color = UIManager.getColor(uiKey);
+        return color == null ? fallback : color;
     }
 
     private class EditorPanel extends JPanel implements ExplorerManager.Provider {
@@ -274,12 +288,16 @@ class TableRootEditor implements RootEditor {
             if (syncable != null) {
                 registerSyncable(syncable);
                 addNodeListener(new org.openide.nodes.NodeAdapter() {
+
                     @Override
                     public void nodeDestroyed(NodeEvent ev) {
                         clearSyncable(syncable);
                     }
 
                 });
+            }
+            if (!original.isLeaf()) {
+                EventQueue.invokeLater(() -> editorComponent.view.expandNode(this));
             }
         }
 
