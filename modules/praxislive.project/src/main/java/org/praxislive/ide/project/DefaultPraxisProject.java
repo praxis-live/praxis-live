@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2024 Neil C Smith.
+ * Copyright 2025 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -92,10 +92,9 @@ import org.praxislive.project.ProjectModel;
     "# {0} - path or command",
     "ERR_elementExecution=Error executing {0}"
 })
-public class DefaultPraxisProject implements PraxisProject {
+public final class DefaultPraxisProject implements PraxisProject {
 
     public final static String LIBS_PATH = "config/libs/";
-    final static String LIBS_COMMAND = "libraries {\n  " + LIBS_PATH + "*.jar\n}";
 
     public static final int MIN_JAVA_VERSION = 21;
     public static final int MAX_JAVA_VERSION;
@@ -207,6 +206,10 @@ public class DefaultPraxisProject implements PraxisProject {
 
     public boolean isActive() {
         return hubManager.getState() == HubManager.State.Running;
+    }
+
+    public ProjectPropertiesImpl getProperties() {
+        return properties;
     }
 
     public static List<DefaultPraxisProject> activeProjects() {

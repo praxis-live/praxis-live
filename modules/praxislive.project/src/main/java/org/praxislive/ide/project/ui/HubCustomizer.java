@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2020 Neil C Smith.
+ * Copyright 2025 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -44,7 +44,7 @@ final class HubCustomizer extends javax.swing.JPanel {
      */
     HubCustomizer(DefaultPraxisProject project) {
         this.project = Objects.requireNonNull(project);
-        props = project.getLookup().lookup(ProjectPropertiesImpl.class);
+        props = project.getProperties();
         initComponents();
         refresh();
         hubTextArea.getDocument().addDocumentListener(new DocumentListener() {
@@ -67,7 +67,7 @@ final class HubCustomizer extends javax.swing.JPanel {
 
     void refresh() {
         hubTextArea.setText(props.getHubConfiguration());
-        hubTextArea.setEnabled(!project.isActive());
+        hubTextArea.setEditable(!project.isActive());
         changed = false;
     }
     

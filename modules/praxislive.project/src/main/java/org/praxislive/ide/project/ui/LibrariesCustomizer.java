@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2020 Neil C Smith.
+ * Copyright 2025 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -21,97 +21,129 @@
  */
 package org.praxislive.ide.project.ui;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
-import javax.swing.Action;
+import java.util.stream.Collectors;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
+import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.praxislive.ide.project.DefaultPraxisProject;
-import org.praxislive.ide.project.ProjectPropertiesImpl;
-import org.openide.explorer.ExplorerManager;
-import org.openide.explorer.view.ListView;
 import org.openide.filesystems.FileChooserBuilder;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.nodes.AbstractNode;
-import org.openide.nodes.Children;
-import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.praxislive.core.types.PArray;
 
 /**
  *
  */
 @NbBundle.Messages({
-    "ERR_removingInUse=Can't remove libraries in use by an active project",
     "TTL_import=Import library",
     "LBL_import=Import",
     "TTL_libraryURI=Add library",
     "LBL_libraryURI=Enter a library URI, path or Package URL",
     "HLP_libraryURI=PURL - pkg:maven/[group]/[artifact]@[version]"
 })
-class LibrariesCustomizer extends javax.swing.JPanel implements ExplorerManager.Provider {
+class LibrariesCustomizer extends javax.swing.JPanel {
 
-    private final ExplorerManager manager;
+    private final ProjectCustomizer.Category category;
     private final DefaultPraxisProject project;
-    private final ProjectPropertiesImpl props;
-    private final List<URI> libraries;
-    private final List<FileObject> filesToImport;
-    private final LibraryChildren children;
-    private final Node root;
+    private final Map<URI, FileObject> filesToImport;
 
-    LibrariesCustomizer(DefaultPraxisProject project) {
+    private boolean changed;
+
+    LibrariesCustomizer(ProjectCustomizer.Category category, DefaultPraxisProject project) {
+        this.category = Objects.requireNonNull(category);
         this.project = Objects.requireNonNull(project);
-        props = project.getLookup().lookup(ProjectPropertiesImpl.class);
-        libraries = new ArrayList<>();
-        filesToImport = new ArrayList<>();
-        children = new LibraryChildren();
-        root = new AbstractNode(children);
-        manager = new ExplorerManager();
-        refresh();
-        manager.setRootContext(root);
-        manager.addPropertyChangeListener(new ManagerListener());
+        filesToImport = new LinkedHashMap<>();
         initComponents();
+        refresh();
+        libsTextArea.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                textChanged();
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                textChanged();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                textChanged();
+            }
+        });
     }
 
     final void refresh() {
-        libraries.clear();
         filesToImport.clear();
-        if (props != null) {
-            libraries.addAll(props.getLibraries());
-        }
-        refreshView();
-    }
-    
-    final void updateProject() {
-        copyFiles();
-        props.setLibraries(libraries);
+        libsTextArea.setEditable(!project.isActive());
+        libsTextArea.setText(libsToText(project.getProperties().getLibraries()));
+        changed = false;
     }
 
-    private void refreshView() {
-        children.setLibraries(libraries);
-    }
-    
-    private void copyFiles() {
-        if (filesToImport.isEmpty()) {
-            return;
+    final void updateProject() {
+        if (changed) {
+            try {
+                List<URI> libs = textToLibs(libsTextArea.getText());
+                copyFiles(libs);
+                project.getProperties().setLibraries(libs);
+            } catch (Exception ex) {
+                Exceptions.printStackTrace(ex);
+            }
         }
+    }
+
+    private void copyFiles(List<URI> libs) throws IOException {
         try {
+            List<FileObject> files = filesToImport.entrySet().stream()
+                    .filter(e -> libs.contains(e.getKey()))
+                    .map(e -> e.getValue())
+                    .toList();
+            if (files.isEmpty()) {
+                return;
+            }
             FileObject libFolder = FileUtil.createFolder(project.getProjectDirectory(), "libs");
-            for (FileObject libFile : filesToImport) {
+            for (FileObject libFile : files) {
                 FileUtil.copyFile(libFile, libFolder, libFile.getName());
             }
-        } catch (Exception ex) {
-            Exceptions.printStackTrace(ex);
         } finally {
             filesToImport.clear();
+        }
+    }
+
+    private String libsToText(List<URI> libs) {
+        return libs.stream()
+                .map(Object::toString)
+                .collect(Collectors.joining("\n"));
+    }
+
+    private List<URI> textToLibs(String text) throws Exception {
+        return PArray.parse(text)
+                .asListOf(String.class)
+                .stream()
+                .map(URI::create)
+                .toList();
+    }
+
+    private void textChanged() {
+        try {
+            textToLibs(libsTextArea.getText());
+            category.setValid(true);
+            changed = true;
+        } catch (Exception ex) {
+            category.setValid(false);
         }
     }
 
@@ -124,22 +156,16 @@ class LibrariesCustomizer extends javax.swing.JPanel implements ExplorerManager.
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        fileList = new ListView();
         importButton = new javax.swing.JButton();
-        removeButton = new javax.swing.JButton();
         addButton = new javax.swing.JButton();
+        scrollPane = new javax.swing.JScrollPane();
+        libsTextArea = new javax.swing.JTextArea();
+        resetButton = new javax.swing.JButton();
 
         importButton.setText(org.openide.util.NbBundle.getMessage(LibrariesCustomizer.class, "LibrariesCustomizer.importButton.text")); // NOI18N
         importButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 importButtonActionPerformed(evt);
-            }
-        });
-
-        removeButton.setText(org.openide.util.NbBundle.getMessage(LibrariesCustomizer.class, "LibrariesCustomizer.removeButton.text")); // NOI18N
-        removeButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                removeButtonActionPerformed(evt);
             }
         });
 
@@ -150,30 +176,45 @@ class LibrariesCustomizer extends javax.swing.JPanel implements ExplorerManager.
             }
         });
 
+        libsTextArea.setColumns(20);
+        libsTextArea.setRows(5);
+        scrollPane.setViewportView(libsTextArea);
+
+        resetButton.setText(org.openide.util.NbBundle.getMessage(LibrariesCustomizer.class, "LibrariesCustomizer.resetButton.text")); // NOI18N
+        resetButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                resetButtonActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addComponent(fileList, javax.swing.GroupLayout.PREFERRED_SIZE, 312, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap()
+                .addComponent(scrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 283, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(importButton, javax.swing.GroupLayout.DEFAULT_SIZE, 91, Short.MAX_VALUE)
-                    .addComponent(removeButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(addButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(importButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(addButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(resetButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(fileList, javax.swing.GroupLayout.DEFAULT_SIZE, 300, Short.MAX_VALUE)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(importButton)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(addButton)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(removeButton)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(scrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 288, Short.MAX_VALUE)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(addButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(importButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(resetButton)
+                        .addGap(0, 0, Short.MAX_VALUE)))
+                .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -181,13 +222,13 @@ class LibrariesCustomizer extends javax.swing.JPanel implements ExplorerManager.
         importFiles();
     }//GEN-LAST:event_importButtonActionPerformed
 
-    private void removeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeButtonActionPerformed
-        removeSelectedNodes();
-    }//GEN-LAST:event_removeButtonActionPerformed
-
     private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
         addURI();
     }//GEN-LAST:event_addButtonActionPerformed
+
+    private void resetButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_resetButtonActionPerformed
+        refresh();
+    }//GEN-LAST:event_resetButtonActionPerformed
 
     private void importFiles() {
         FileChooserBuilder fcb = new FileChooserBuilder(LibrariesCustomizer.class)
@@ -206,21 +247,21 @@ class LibrariesCustomizer extends javax.swing.JPanel implements ExplorerManager.
                         checkAndAddURI(fo.toURI().relativize(project.getProjectDirectory().toURI()));
                     }
                 } else {
-                    filesToImport.add(fo);
                     if (fo.hasExt("jar")) {
                         try {
-                            checkAndAddURI(new URI(null, null, "libs/" + file.getName(), null));
+                            URI uri = new URI(null, null, "libs/" + file.getName(), null);
+                            if (checkAndAddURI(uri)) {
+                                filesToImport.put(uri, fo);
+                            }
                         } catch (URISyntaxException ex) {
                             Exceptions.printStackTrace(ex);
                         }
                     }
                 }
             }
-            refreshView();
         }
     }
-    
-    
+
     private void addURI() {
         var input = new NotifyDescriptor.InputLine(Bundle.LBL_libraryURI(), Bundle.TTL_libraryURI());
         input.createNotificationLineSupport().setInformationMessage(Bundle.HLP_libraryURI());
@@ -232,106 +273,30 @@ class LibrariesCustomizer extends javax.swing.JPanel implements ExplorerManager.
                 Exceptions.printStackTrace(ex);
             }
         }
-        refreshView();
     }
-    
+
     private boolean checkAndAddURI(URI lib) {
-        if (libraries.contains(lib)) {
-            return false;
-        } else {
-            return libraries.add(lib);
-        }
-    }
-    
-    private void removeSelectedNodes() {
-        boolean inUse = false;
-        List<URI> existing = props.getLibraries();
-        for (Node node : manager.getSelectedNodes()) {
-            if (!(node instanceof LibraryNode)) {
-                continue;
-            }
-            final URI lib = ((LibraryNode) node).uri;
-            if (project.isActive()) {
-                if (existing.contains(lib)) {
-                    inUse = true;
-                } else {
-                    libraries.remove(lib);
-                }
+        try {
+            List<URI> existing = textToLibs(libsTextArea.getText());
+            if (existing.contains(lib)) {
+                return false;
             } else {
-                libraries.remove(lib);
+                libsTextArea.append((existing.isEmpty() ? "" : "\n") + lib);
+                return true;
             }
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
+            return false;
         }
-        if (inUse) {
-            ProjectDialogManager.get(project).reportError(Bundle.ERR_removingInUse());
-        }
-        refreshView();
     }
-    
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addButton;
-    private javax.swing.JScrollPane fileList;
     private javax.swing.JButton importButton;
-    private javax.swing.JButton removeButton;
+    private javax.swing.JTextArea libsTextArea;
+    private javax.swing.JButton resetButton;
+    private javax.swing.JScrollPane scrollPane;
     // End of variables declaration//GEN-END:variables
-
-    @Override
-    public ExplorerManager getExplorerManager() {
-        return manager;
-    }
-
-    private class ManagerListener implements PropertyChangeListener {
-
-        @Override
-        public void propertyChange(PropertyChangeEvent evt) {
-            if (ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())) {
-                if (manager.getSelectedNodes().length > 0) {
-                    removeButton.setEnabled(true);
-                } else {
-                    removeButton.setEnabled(false);
-                }
-
-            }
-        }
-    }
-
-    private class LibraryNode extends AbstractNode {
-
-        private final URI uri;
-
-        LibraryNode(URI uri) {
-            super(Children.LEAF);
-            this.uri = uri;
-        }
-
-        @Override
-        public Action getPreferredAction() {
-            return null;
-        }
-
-        @Override
-        public Action[] getActions(boolean context) {
-            return new Action[0];
-        }
-
-        @Override
-        public String getDisplayName() {
-            return uri.toString();
-        }
-
-    }
-
-    private class LibraryChildren extends Children.Keys<URI> {
-
-        void setLibraries(List<URI> keys) {
-            setKeys(keys);
-        }
-
-        @Override
-        protected Node[] createNodes(URI key) {
-            return new Node[]{new LibraryNode(key)};
-        }
-
-    }
 
 }
