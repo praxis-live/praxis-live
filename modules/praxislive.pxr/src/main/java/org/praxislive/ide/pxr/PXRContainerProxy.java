@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2024 Neil C Smith.
+ * Copyright 2026 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -30,6 +30,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.SequencedMap;
 import java.util.Set;
 import java.util.concurrent.CompletionStage;
 import java.util.logging.Level;
@@ -56,9 +57,21 @@ import org.praxislive.core.types.PString;
  */
 public class PXRContainerProxy extends PXRComponentProxy implements ContainerProxy {
 
-    private final static Logger LOG = Logger.getLogger(PXRContainerProxy.class.getName());
+    private static final Logger LOG = Logger.getLogger(PXRContainerProxy.class.getName());
+    private static final Set<String> HIDDEN_FUNCTIONS = Set.of(
+            ContainerProtocol.ADD_CHILD,
+            ContainerProtocol.REMOVE_CHILD,
+            ContainerProtocol.CONNECT,
+            ContainerProtocol.DISCONNECT,
+            ContainerProtocol.CHILDREN_ORDER
+    );
+    private static final Set<String> PROXY_PROPERTIES = Set.of(
+            ContainerProtocol.CHILDREN,
+            ContainerProtocol.CONNECTIONS,
+            ContainerProtocol.SUPPORTED_TYPES
+    );
 
-    private final Map<String, PXRComponentProxy> children;
+    private final SequencedMap<String, PXRComponentProxy> children;
     private final Map<String, CompletionStage<PXRComponentProxy>> pendingChildren;
     private final Set<Connection> connections;
     private final ChildrenProperty childProp;
@@ -93,12 +106,7 @@ public class PXRContainerProxy extends PXRComponentProxy implements ContainerPro
 
     @Override
     boolean isHiddenFunction(String id) {
-        return switch (id) {
-            case ContainerProtocol.ADD_CHILD, ContainerProtocol.REMOVE_CHILD, ContainerProtocol.CONNECT, ContainerProtocol.DISCONNECT ->
-                true;
-            default ->
-                super.isHiddenFunction(id);
-        };
+        return super.isHiddenFunction(id) || HIDDEN_FUNCTIONS.contains(id);
     }
 
     @Override
@@ -275,11 +283,7 @@ public class PXRContainerProxy extends PXRComponentProxy implements ContainerPro
 
     @Override
     protected boolean isProxiedProperty(String id) {
-        return super.isProxiedProperty(id)
-                || ContainerProtocol.CHILDREN.equals(id)
-                || ContainerProtocol.CONNECTIONS.equals(id)
-                || ContainerProtocol.SUPPORTED_TYPES.equals(id);
-
+        return super.isProxiedProperty(id) || PROXY_PROPERTIES.contains(id);
     }
 
     @Override
@@ -418,17 +422,25 @@ public class PXRContainerProxy extends PXRComponentProxy implements ContainerPro
         public void propertyChange(PropertyChangeEvent evt) {
             try {
                 Set<String> childIDs = eventToChildIDs(evt);
-                Set<String> scratch = new LinkedHashSet<>(childIDs);
-                scratch.removeAll(children.keySet());
-                scratch.removeAll(pendingChildren.keySet());
-                if (!scratch.isEmpty()) {
-                    scratch.forEach(id -> addChildProxy(id));
-                }
-                scratch.clear();
-                scratch.addAll(children.keySet());
-                scratch.removeAll(childIDs);
-                if (!scratch.isEmpty()) {
-                    removeChildProxies(List.copyOf(scratch));
+                childIDs.forEach(id -> {
+                    PXRComponentProxy child = children.get(id);
+                    if (child != null) {
+                        children.putLast(id, child);
+                    } else if (!pendingChildren.containsKey(id)) {
+                        addChildProxy(id);
+                    }
+
+                });
+                List<String> removed = children.keySet().stream()
+                        .filter(id -> !childIDs.contains(id))
+                        .toList();
+                if (!removed.isEmpty()) {
+                    removeChildProxies(removed);
+                } else {
+                    if (node != null) {
+                        node.refreshChildren();
+                    }
+                    firePropertyChange(CHILDREN, null, null);
                 }
             } catch (Exception ex) {
                 LOG.log(Level.WARNING, "Invalid Children list", ex);

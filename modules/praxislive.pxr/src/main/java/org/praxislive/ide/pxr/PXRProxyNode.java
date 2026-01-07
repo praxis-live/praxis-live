@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2025 Neil C Smith.
+ * Copyright 2026 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -35,52 +35,69 @@ import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.nodes.Sheet;
 import org.openide.util.HelpCtx;
-import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 import org.praxislive.core.ComponentInfo;
 import org.praxislive.core.ControlInfo;
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
+import org.openide.nodes.Index;
 import org.praxislive.core.Watch;
+import org.praxislive.core.protocols.ContainerProtocol;
+import org.praxislive.core.types.PArray;
+import org.praxislive.core.types.PString;
 import org.praxislive.ide.components.api.Components;
 import org.praxislive.ide.components.api.Icons;
 
-/**
- *
- */
 class PXRProxyNode extends AbstractNode {
 
-//    private final static Logger LOG = Logger.getLogger(PXRProxyNode.class.getName());
     private final PXRComponentProxy component;
     private final Action preferredAction;
+    private final ContainerIndex index;
+    private final ProxyLookup.Controller lookups;
 
     private Action[] actions;
     private Image icon;
-    boolean ignore;
 
     PXRProxyNode(final PXRComponentProxy component) {
         this(component,
-                component instanceof PXRContainerProxy
-                        ? new ContainerChildren((PXRContainerProxy) component) : Children.LEAF,
-                new ProxyLookup(Lookups.singleton(component), component.getLookup()));
+                component instanceof PXRContainerProxy container
+                        ? new ContainerChildren(container) : Children.LEAF,
+                new ProxyLookup.Controller());
 
     }
 
-    private PXRProxyNode(PXRComponentProxy component, Children children, Lookup lookup) {
-        super(children, lookup);
+    private PXRProxyNode(PXRComponentProxy component, Children children,
+            ProxyLookup.Controller lookups) {
+        super(children, new ProxyLookup(lookups));
         this.component = component;
         this.preferredAction = new PreferredAction();
+        this.lookups = lookups;
+        if (children instanceof ContainerChildren contCh) {
+            index = new ContainerIndex(contCh);
+        } else {
+            index = null;
+        }
         setName(component.getAddress().componentID());
-        refreshProperties();
-        refreshActions();
+        configure();
     }
 
-    final void refreshProperties() {
+    final void configure() {
+        configureProperties();
+        configureActions();
+        if (index != null
+                && component.getInfo().controls().contains(ContainerProtocol.CHILDREN_ORDER)) {
+            lookups.setLookups(Lookups.singleton(component), component.getLookup(), Lookups.singleton(index));
+        } else {
+            lookups.setLookups(Lookups.singleton(component), component.getLookup());
+        }
+    }
+
+    private void configureProperties() {
         setSheet(createSheetOnEQ());
     }
 
-    final void refreshActions() {
+    private void configureActions() {
         List<Action> lst = new ArrayList<>();
         lst.add(component.getEditorAction());
         List<Action> triggers = component.getTriggerActions();
@@ -93,14 +110,14 @@ class PXRProxyNode extends AbstractNode {
             lst.add(null);
             lst.addAll(prop);
         }
-        actions = lst.toArray(new Action[lst.size()]);
+        actions = lst.toArray(Action[]::new);
     }
 
     final void refreshChildren() {
-        Children chs = getChildren();
-        assert chs instanceof ContainerChildren;
-        if (chs instanceof ContainerChildren) {
-            ((ContainerChildren) chs).update();
+        Children ch = getChildren();
+        assert ch instanceof ContainerChildren;
+        if (ch instanceof ContainerChildren cch) {
+            cch.update();
         }
     }
 
@@ -261,9 +278,9 @@ class PXRProxyNode extends AbstractNode {
 
     }
 
-    static class ContainerChildren extends Children.Keys<String> {
+    static final class ContainerChildren extends Children.Keys<String> {
 
-        final PXRContainerProxy container;
+        private final PXRContainerProxy container;
 
         private ContainerChildren(PXRContainerProxy container) {
             this.container = container;
@@ -282,6 +299,47 @@ class PXRProxyNode extends AbstractNode {
 
         private void update() {
             setKeys(container.children().toArray(String[]::new));
+        }
+
+        private void reorderChildren(int[] perm) {
+            List<String> existingKeys = container.children().toList();
+            List<String> reordered = new ArrayList<>(existingKeys);
+            for (int srcIdx = 0; srcIdx < perm.length; srcIdx++) {
+                int dstIdx = perm[srcIdx];
+                if (srcIdx < existingKeys.size() && dstIdx < reordered.size()) {
+                    reordered.set(dstIdx, existingKeys.get(srcIdx));
+                }
+
+            }
+            container.send(ContainerProtocol.CHILDREN_ORDER,
+                    List.of(reordered.stream()
+                            .map(PString::of)
+                            .collect(PArray.collector())));
+        }
+
+    }
+
+    static final class ContainerIndex extends Index.Support {
+
+        private final ContainerChildren children;
+
+        private ContainerIndex(ContainerChildren children) {
+            this.children = children;
+        }
+
+        @Override
+        public Node[] getNodes() {
+            return children.getNodes();
+        }
+
+        @Override
+        public int getNodesCount() {
+            return children.getNodesCount();
+        }
+
+        @Override
+        public void reorder(int[] perm) {
+            children.reorderChildren(perm);
         }
 
     }

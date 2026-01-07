@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2024 Neil C Smith.
+ * Copyright 2026 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -71,7 +71,6 @@ public class PXRComponentProxy implements ComponentProxy {
     private final static Logger LOG = Logger.getLogger(PXRComponentProxy.class.getName());
     private final static Registry registry = new Registry();
 
-    private final Map<String, String> attributes;
     private final Set<Object> syncKeys;
     private final PropertyChangeSupport pcs;
     private final ComponentType type;
@@ -101,7 +100,6 @@ public class PXRComponentProxy implements ComponentProxy {
         this.parent = parent;
         this.type = type;
         this.info = info;
-        attributes = new LinkedHashMap<>();
         syncKeys = new HashSet<>();
         pcs = new PropertyChangeSupport(this);
         dynamic = info.properties().getBoolean(ComponentInfo.KEY_DYNAMIC, false);
@@ -202,14 +200,9 @@ public class PXRComponentProxy implements ComponentProxy {
         propActions = null;
 
         if (node != null) {
-            node.refreshProperties();
-            node.refreshActions();
+            node.configure();
         }
         firePropertyChange(ComponentProtocol.INFO, null, null);
-    }
-
-    boolean isDynamic() {
-        return dynamic;
     }
 
     @Override
@@ -246,10 +239,6 @@ public class PXRComponentProxy implements ComponentProxy {
 
     String getAttr(String key) {
         return metaProp.getAttribute(key);
-    }
-
-    String[] getAttrKeys() {
-        return new String[0];
     }
 
     @Override
@@ -427,17 +416,20 @@ public class PXRComponentProxy implements ComponentProxy {
             }
         }
 
+        syncing = parentSyncing = false;
         parent = null;
         properties = null;
     }
 
     private void setNodeSyncing(boolean sync) {
         assert EventQueue.isDispatchThread();
-        nodeSyncing = sync;
-        if (LOG.isLoggable(Level.FINE)) {
-            LOG.log(Level.FINE, "Setting node syncing {0} on {1}", new Object[]{sync, getAddress()});
+        if (nodeSyncing != sync) {
+            nodeSyncing = sync;
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.log(Level.FINE, "Setting node syncing {0} on {1}", new Object[]{sync, getAddress()});
+            }
+            checkSyncing();
         }
-        checkSyncing();
     }
 
     void setParentSyncing(boolean sync) {

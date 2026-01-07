@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2025 Neil C Smith.
+ * Copyright 2026 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -45,6 +45,7 @@ import javax.swing.JPanel;
 import javax.swing.KeyStroke;
 import javax.swing.UIManager;
 import javax.swing.text.DefaultEditorKit;
+import org.openide.actions.ReorderAction;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.OutlineView;
 import org.openide.nodes.FilterNode;
@@ -52,6 +53,7 @@ import org.openide.nodes.Node;
 import org.openide.nodes.NodeEvent;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.Utilities;
+import org.openide.util.actions.SystemAction;
 import org.praxislive.ide.core.api.Syncable;
 import org.praxislive.ide.core.ui.api.Actions;
 import org.praxislive.ide.model.RootProxy;
@@ -328,6 +330,8 @@ class TableRootEditor implements RootEditor {
             actions.add(duplicateAction);
             if (!isLeaf()) {
                 actions.add(pasteAction);
+                actions.add(null);
+                actions.add(SystemAction.get(ReorderAction.class));
             }
             actions.add(null);
             actions.add(deleteAction);
