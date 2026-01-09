@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2024 Neil C Smith.
+ * Copyright 2026 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -51,7 +51,7 @@ public class ControlAddressEditor extends EditorSupport
         } else {
             project = null;
         }
-        allowEmpty = info.properties().getBoolean(ArgumentInfo.KEY_ALLOW_EMPTY, false);
+        allowEmpty = info.properties().getBoolean(ArgumentInfo.KEY_ALLOW_EMPTY, true);
     }
 
     @Override
