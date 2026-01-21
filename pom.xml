@@ -90,6 +90,11 @@
     <pluginManagement>
       <plugins>
         <plugin>
+          <groupId>eu.maveniverse.maven.plugins</groupId>
+          <artifactId>njord</artifactId>
+          <version>${njord.version}</version>
+        </plugin>
+        <plugin>
           <groupId>org.apache.netbeans.utilities</groupId>
           <artifactId>nbm-maven-plugin</artifactId>
           <version>14.4</version>
