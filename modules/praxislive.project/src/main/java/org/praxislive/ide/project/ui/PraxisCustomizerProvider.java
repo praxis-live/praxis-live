@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2025 Neil C Smith.
+ * Copyright 2026 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -43,7 +43,8 @@ import org.openide.util.NbBundle;
     "LBL_runLevelElements=Run Level Elements",
     "LBL_hubConfiguration=Hub Configuration",
     "LBL_libraries=Libraries",
-    "LBL_compiler=Compiler"
+    "LBL_compiler=Compiler",
+    "LBL_ideSettings=IDE Settings"
 })
 public class PraxisCustomizerProvider implements CustomizerProvider,
         ProjectCustomizer.CategoryComponentProvider {
@@ -53,6 +54,7 @@ public class PraxisCustomizerProvider implements CustomizerProvider,
     private final Category hub;
     private final Category libraries;
     private final Category java;
+    private final Category ide;
     private final DefaultPraxisProject project;
 
     private ElementsCustomizer buildFiles;
@@ -60,6 +62,7 @@ public class PraxisCustomizerProvider implements CustomizerProvider,
     private HubCustomizer hubCustomizer;
     private LibrariesCustomizer librariesCustomizer;
     private JavaCustomizer javaCustomizer;
+    private IDESettingsCustomizer ideSettingsCustomizer;
 
     public PraxisCustomizerProvider(DefaultPraxisProject project) {
         this.project = project;
@@ -83,11 +86,14 @@ public class PraxisCustomizerProvider implements CustomizerProvider,
                 "java",
                 Bundle.LBL_compiler(),
                 null);
+        ide = Category.create("ide",
+                Bundle.LBL_ideSettings(),
+                null);
     }
 
     @Override
     public void showCustomizer() {
-        Category[] categories = new Category[]{build, run, hub, libraries, java};
+        Category[] categories = new Category[]{build, run, hub, libraries, java, ide};
         if (buildFiles != null) {
             buildFiles.refreshList();
         }
@@ -102,6 +108,9 @@ public class PraxisCustomizerProvider implements CustomizerProvider,
         }
         if (hubCustomizer != null) {
             hubCustomizer.refresh();
+        }
+        if (ideSettingsCustomizer != null) {
+            ideSettingsCustomizer.refresh();
         }
         Dialog dialog = ProjectCustomizer.createCustomizerDialog(categories, this,
                 null, new OKButtonListener(), null);
@@ -146,6 +155,13 @@ public class PraxisCustomizerProvider implements CustomizerProvider,
                 hubCustomizer.refresh();
             }
             return hubCustomizer;
+        } else if (ide.equals(category)) {
+            if (ideSettingsCustomizer == null) {
+                ideSettingsCustomizer = new IDESettingsCustomizer(project);
+            } else {
+                ideSettingsCustomizer.refresh();
+            }
+            return ideSettingsCustomizer;
         } else {
             return new JPanel();
         }
@@ -174,10 +190,9 @@ public class PraxisCustomizerProvider implements CustomizerProvider,
             if (hubCustomizer != null) {
                 hubCustomizer.updateProject();
             }
-//            ProjectState state = project.getLookup().lookup(ProjectState.class);
-//            if (state != null) {
-//                state.markModified();
-//            }
+            if (ideSettingsCustomizer != null) {
+                ideSettingsCustomizer.updateProject();
+            }
         }
 
     }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2025 Neil C Smith.
+ * Copyright 2026 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -39,6 +39,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.prefs.Preferences;
 import java.util.stream.Collectors;
 import javax.lang.model.SourceVersion;
 import javax.swing.Icon;
@@ -52,6 +53,7 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.ActionProvider;
@@ -210,6 +212,16 @@ public final class DefaultPraxisProject implements PraxisProject {
 
     public ProjectPropertiesImpl getProperties() {
         return properties;
+    }
+
+    public boolean isPreferEmbeddedRuntime() {
+        Preferences prefs = ProjectUtils.getPreferences(this, PraxisProject.class, false);
+        return prefs.getBoolean("prefer-embedded-runtime", true);
+    }
+
+    public void setPreferEmbeddedRuntime(boolean prefer) {
+        Preferences prefs = ProjectUtils.getPreferences(this, PraxisProject.class, false);
+        prefs.putBoolean("prefer-embedded-runtime", prefer);
     }
 
     public static List<DefaultPraxisProject> activeProjects() {
