@@ -75,7 +75,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <brandingToken>praxislive</brandingToken>
     <netbeans.version>RELEASE280</netbeans.version>
-    <njord.version>0.8.7</njord.version>
+    <njord.version>0.9.3</njord.version>
     <praxiscore.version>${project.version}</praxiscore.version>
   </properties>
 
@@ -146,7 +146,7 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-jar-plugin</artifactId>
-          <version>3.4.2</version>
+          <version>3.5.0</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
@@ -156,7 +156,7 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-resources-plugin</artifactId>
-          <version>3.3.1</version>
+          <version>3.4.0</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
@@ -206,7 +206,7 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-assembly-plugin</artifactId>
-          <version>3.7.1</version>
+          <version>3.8.0</version>
         </plugin>
       </plugins>
     </pluginManagement>
@@ -227,7 +227,7 @@
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-source-plugin</artifactId>
-            <version>3.3.1</version>
+            <version>3.4.0</version>
             <executions>
               <execution>
                 <id>attach-sources</id>
