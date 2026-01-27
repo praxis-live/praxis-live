@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2025 Neil C Smith.
+ * Copyright 2026 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -124,7 +124,9 @@ class LibrariesCustomizer extends javax.swing.JPanel {
     }
 
     private String libsToText(List<URI> libs) {
+        URI parent = project.getProjectDirectory().toURI();
         return libs.stream()
+                .map(parent::relativize)
                 .map(Object::toString)
                 .collect(Collectors.joining("\n"));
     }
@@ -244,7 +246,8 @@ class LibrariesCustomizer extends javax.swing.JPanel {
                 FileObject fo = FileUtil.toFileObject(file);
                 if (FileUtil.isParentOf(project.getProjectDirectory(), fo)) {
                     if (fo.hasExt("jar")) {
-                        checkAndAddURI(fo.toURI().relativize(project.getProjectDirectory().toURI()));
+                        URI parent = project.getProjectDirectory().toURI();
+                        checkAndAddURI(parent.relativize(fo.toURI()));
                     }
                 } else {
                     if (fo.hasExt("jar")) {

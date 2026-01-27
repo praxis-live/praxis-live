@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2024 Neil C Smith.
+ * Copyright 2026 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -549,9 +549,9 @@ public class ProjectPropertiesImpl implements ProjectProperties {
             if (libs.isEmpty()) {
                 return "libraries {}";
             }
-//            URI parent = project.getProjectDirectory().toURI();
+            URI parent = project.getProjectDirectory().toURI();
             return libs.stream()
-                    //                    .map(u -> u.relativize(parent))
+                    .map(parent::relativize)
                     .map(u -> SyntaxUtils.escape(u.toString()))
                     .collect(Collectors.joining("\n  ", "libraries {\n  ", "\n}"));
         }
