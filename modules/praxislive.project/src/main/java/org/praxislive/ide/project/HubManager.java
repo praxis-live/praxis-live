@@ -45,6 +45,7 @@ import org.praxislive.core.services.RootManagerService;
 import org.praxislive.core.services.ScriptService;
 import org.praxislive.core.services.Service;
 import org.praxislive.core.services.SystemManagerService;
+import org.praxislive.core.services.UserInputService;
 import org.praxislive.hub.net.HubConfiguration;
 import org.praxislive.hub.net.NetworkCoreFactory;
 import org.praxislive.hub.net.ProxyInfo;
@@ -121,7 +122,8 @@ class HubManager {
                 .childLauncher(new ChildLauncherImpl(project))
                 .exposeServices(List.of(
                         RootManagerService.class,
-                        SystemManagerService.class
+                        SystemManagerService.class,
+                        UserInputService.class
                 ))
                 .hubConfiguration(HubConfiguration.builder()
                         .proxy(new Proxy())

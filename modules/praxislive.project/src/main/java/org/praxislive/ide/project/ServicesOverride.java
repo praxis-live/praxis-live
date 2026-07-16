@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2020 Neil C Smith.
+ * Copyright 2026 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -47,10 +47,12 @@ import org.praxislive.core.ComponentInfo;
 import org.praxislive.core.Control;
 import org.praxislive.core.Info;
 import org.praxislive.core.RootHub;
+import org.praxislive.core.Value;
 import org.praxislive.core.protocols.ComponentProtocol;
 import org.praxislive.core.services.RootFactoryService;
 import org.praxislive.core.services.Service;
 import org.praxislive.core.services.Services;
+import org.praxislive.core.services.UserInputService;
 import org.praxislive.core.types.PReference;
 import org.praxislive.ide.core.api.AbstractIDERoot;
 import org.praxislive.ide.project.api.PraxisProject;
@@ -69,10 +71,10 @@ class ServicesOverride extends AbstractIDERoot implements RootHub.ServiceProvide
             .control(RootFactoryService.NEW_ROOT_INSTANCE, RootFactoryService.NEW_ROOT_INSTANCE_INFO)
             .control(SystemManagerService.SYSTEM_EXIT, SystemManagerService.SYSTEM_EXIT_INFO)
             .build();
-    
+
     private final DefaultPraxisProject project;
     private final Set<String> knownRoots;
-    
+
     private ComponentAddress defaultRootManagerService;
     private ComponentAddress defaultRootFactoryService;
 
@@ -84,20 +86,26 @@ class ServicesOverride extends AbstractIDERoot implements RootHub.ServiceProvide
         registerControl(RootManagerService.ROOTS, new RootsControl());
         registerControl(RootFactoryService.NEW_ROOT_INSTANCE, new NewRootInstanceControl());
         registerControl(SystemManagerService.SYSTEM_EXIT, new ExitControl());
+        UserInputControl inputControl = new UserInputControl();
+        registerControl(UserInputService.USER_INPUT, inputControl);
+        registerControl(UserInputService.USER_INPUT_CONFIRM, inputControl);
+        registerControl(UserInputService.USER_INPUT_MAP, inputControl);
+        registerControl(UserInputService.USER_INPUT_SELECT, inputControl);
     }
 
     @Override
     public ComponentInfo getInfo() {
         return INFO;
     }
-    
+
     @Override
     public List<Class<? extends Service>> services() {
         return List.of(RootManagerService.class,
                 RootFactoryService.class,
-                SystemManagerService.class);
+                SystemManagerService.class,
+                UserInputService.class);
     }
-    
+
     Set<String> getKnownUserRoots() {
         return knownRoots;
     }
@@ -112,7 +120,7 @@ class ServicesOverride extends AbstractIDERoot implements RootHub.ServiceProvide
         }
         return defaultRootManagerService;
     }
-    
+
     private ComponentAddress getDefaultRootFactoryService() throws ServiceUnavailableException {
         if (defaultRootFactoryService == null) {
             ComponentAddress[] services = getLookup().find(Services.class)
@@ -287,7 +295,7 @@ class ServicesOverride extends AbstractIDERoot implements RootHub.ServiceProvide
             }
         }
     }
-    
+
     private class NewRootInstanceControl extends AbstractAsyncControl {
 
         @Override
@@ -334,6 +342,30 @@ class ServicesOverride extends AbstractIDERoot implements RootHub.ServiceProvide
 
         }
     }
-    
-    
+
+    private class UserInputControl implements Control {
+
+        @Override
+        public void call(Call call, PacketRouter router) throws Exception {
+            if (call.isRequest()) {
+                String title = project.getProjectDirectory().getName() + " [input]";
+                ProjectDialogManager dialogs = ProjectDialogManager.get(project);
+                Value response = switch (call.to().controlID()) {
+                    case UserInputService.USER_INPUT ->
+                        dialogs.userInput(title, call.args());
+                    case UserInputService.USER_INPUT_CONFIRM ->
+                        dialogs.userInputConfirm(title, call.args());
+                    case UserInputService.USER_INPUT_MAP ->
+                        dialogs.userInputMap(title, call.args());
+                    case UserInputService.USER_INPUT_SELECT ->
+                        dialogs.userInputSelect(title, call.args());
+                    default ->
+                        throw new UnsupportedOperationException();
+                };
+                router.route(call.reply(response));
+            }
+        }
+
+    }
+
 }
