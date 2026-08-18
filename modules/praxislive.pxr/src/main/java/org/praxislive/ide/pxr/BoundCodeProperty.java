@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2025 Neil C Smith.
+ * Copyright 2026 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -105,7 +105,7 @@ class BoundCodeProperty extends BoundArgumentProperty {
         super(project, address, info);
         this.project = project;
         this.mimeType = mimeType;
-        this.template = info.outputs().get(0).properties().getString(ArgumentInfo.KEY_TEMPLATE, "");
+        this.template = info.outputs().get(0).attributes().getString(ArgumentInfo.KEY_TEMPLATE, "");
         this.fileListener = new FileListener();
         fileName = safeFileName(address);
         String id = address.controlID();
@@ -219,9 +219,9 @@ class BoundCodeProperty extends BoundArgumentProperty {
     }
 
     private String constructFileContent() {
-        var content = getValue().toString();
+        String content = getValue().toString();
         if (content.isBlank()) {
-            var lastSaved = getValue(KEY_LAST_SAVED);
+            Object lastSaved = getValue(KEY_LAST_SAVED);
             if (lastSaved instanceof Value) {
                 content = lastSaved.toString();
             }
@@ -370,10 +370,10 @@ class BoundCodeProperty extends BoundArgumentProperty {
 
         private SharedBaseAction(ArgumentInfo info) {
             super(Bundle.CreateSharedBaseLabel());
-            primaryBaseClass = Optional.ofNullable(info.properties().get("base-class"))
+            primaryBaseClass = Optional.ofNullable(info.attributes().get("base-class"))
                     .map(Value::toString)
                     .orElse("java.lang.Object");
-            List<String> baseImports = Optional.ofNullable(info.properties().get("base-imports"))
+            List<String> baseImports = Optional.ofNullable(info.attributes().get("base-imports"))
                     .flatMap(PArray::from)
                     .orElse(PArray.EMPTY)
                     .stream()

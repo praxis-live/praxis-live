@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2024 Neil C Smith.
+ * Copyright 2026 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -32,6 +32,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 import java.util.logging.Logger;
 import org.netbeans.api.progress.ProgressHandle;
 import org.openide.filesystems.FileUtil;
@@ -39,6 +41,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 import org.praxislive.core.types.PMap;
 import org.praxislive.ide.core.api.AbstractTask;
+import org.praxislive.project.GraphElement;
 import org.praxislive.project.GraphModel;
 
 /**
@@ -90,7 +93,8 @@ abstract class SaveTask extends AbstractTask {
             ph.progress("Syncing.");
 
             root.getHelper().componentData(root.getAddress())
-                    .thenApply(this::toFileContent)
+                    .thenApply(this::toModel)
+                    .thenCompose(model -> handleSharedSources(model))
                     .thenAcceptAsync(this::saveToFile, RP)
                     .whenCompleteAsync((res, ex) -> {
                         assert EventQueue.isDispatchThread();
@@ -106,15 +110,49 @@ abstract class SaveTask extends AbstractTask {
 
         }
 
-        private String toFileContent(PMap data) {
+        private GraphModel toModel(PMap data) {
             return GraphModel.fromSerializedRoot(root.getAddress().rootID(), data)
-                    .withContext(dob.getPrimaryFile().getParent().toURI())
-                    .writeToString();
+                    .withContext(dob.getPrimaryFile().getParent().toURI());
         }
 
-        private void saveToFile(String content) {
+        private CompletionStage<GraphModel> handleSharedSources(GraphModel model) {
+            if (model.root().properties().containsKey("shared-code")) {
+                return CompletableFuture.supplyAsync(() -> {
+                    return root.getProject().getProjectDirectory()
+                            .getFileObject("code/" + root.getID());
+                }, RP).thenComposeAsync(sourceFolder -> {
+                    if (sourceFolder != null && sourceFolder.isFolder()) {
+                        return sharedSourcesToDisk(model);
+                    } else {
+                        return CompletableFuture.completedStage(model);
+                    }
+                }, EventQueue::invokeLater);
+            } else {
+                return CompletableFuture.completedStage(model);
+            }
+        }
+
+        private CompletionStage<GraphModel> sharedSourcesToDisk(GraphModel model) {
+            return root.getHelper().execScript("sources-write {%s} \"code/%s\""
+                    .formatted(model.root().properties().get("shared-code").value(),
+                            root.getID()))
+                    .thenApply(v -> model.withTransform(r -> {
+                        r.transformProperties(props -> props.map(p -> {
+                            if ("shared-code".equals(p.getKey())) {
+                                GraphElement.Command cmd = GraphElement.command(
+                                        "sources \"code/%s\"".formatted(root.getID()));
+                                return Map.entry(p.getKey(),
+                                        GraphElement.property(cmd, p.getValue().value()));
+                            } else {
+                                return p;
+                            }
+                        }).toList());
+                    }));
+        }
+
+        private void saveToFile(GraphModel model) {
             try {
-                Files.writeString(FileUtil.toPath(dob.getPrimaryFile()), content);
+                Files.writeString(FileUtil.toPath(dob.getPrimaryFile()), model.writeToString());
             } catch (IOException ioex) {
                 throw new UncheckedIOException(ioex);
             }

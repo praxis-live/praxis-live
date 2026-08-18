@@ -278,7 +278,7 @@ public class RootEditorTopComponent extends CloneableTopComponent {
             initToolbar(List.of());
         } else {
             explorerManager.setRootContext(root.getNodeDelegate());
-            sharedCodePanel = findSharedCode(root);
+            sharedCodePanel = findSharedCodePanel(root);
             EditorContext context = new EditorContext(this, root,
                     sharedCodePanel == null ? null : sharedCodePanel.getToggleAction()
             );
@@ -301,9 +301,9 @@ public class RootEditorTopComponent extends CloneableTopComponent {
 
     }
 
-    private SharedCodePanel findSharedCode(PXRRootProxy root) {
+    private SharedCodePanel findSharedCodePanel(PXRRootProxy root) {
         SharedCodeInfo sharedInfo = root.getLookup().lookup(SharedCodeInfo.class);
-        if (sharedInfo == null) {
+        if (sharedInfo == null || sharedInfo.isInProjectFiles()) {
             return null;
         }
         return new SharedCodePanel(sharedInfo.getFolder());
