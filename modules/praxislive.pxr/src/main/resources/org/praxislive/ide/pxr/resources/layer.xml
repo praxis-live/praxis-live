@@ -36,6 +36,54 @@
       <attr name="position" intvalue="100"/>
       <attr name="displayName" bundlevalue="org.praxislive.ide.pxr.resources.Bundle#rootsFolder"/>
     </folder>
+    <folder name="Code">
+      <attr name="position" intvalue="200"/>
+      <attr name="displayName" bundlevalue="org.praxislive.ide.pxr.resources.Bundle#codeFolder"/>
+      <file name="Class.java" url="nbresloc:/org/praxislive/ide/pxr/resources/Class.java.template">
+        <attr boolvalue="true" name="template"/>
+        <attr intvalue="100" name="position"/>
+        <attr bundlevalue="org.praxislive.ide.pxr.resources.Bundle#Class.java" name="displayName"/>
+        <attr name="iconBase" stringvalue="org/netbeans/spi/java/project/support/ui/templates/class.png"/>
+        <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/praxislive/ide/pxr/resources/Class.html"/>
+        <attr name="instantiatingIterator" newvalue="org.netbeans.modules.java.project.ui.NewJavaFileWizardIterator"/>
+        <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+        <attr name="templateCategory" stringvalue="java-classes"/>
+        <attr boolvalue="true" name="requireProject"/>
+      </file>
+      <file name="Interface.java" url="nbresloc:/org/praxislive/ide/pxr/resources/Interface.java.template">
+        <attr boolvalue="true" name="template"/>
+        <attr intvalue="200" name="position"/>
+        <attr bundlevalue="org.praxislive.ide.pxr.resources.Bundle#Interface.java" name="displayName"/>
+        <attr name="iconBase" stringvalue="org/netbeans/spi/java/project/support/ui/templates/interface.png"/>
+        <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/praxislive/ide/pxr/resources/Interface.html"/>
+        <attr name="instantiatingIterator" newvalue="org.netbeans.modules.java.project.ui.NewJavaFileWizardIterator"/>
+        <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+        <attr name="templateCategory" stringvalue="java-classes"/>
+        <attr boolvalue="true" name="requireProject"/>
+      </file>
+      <file name="Enum.java" url="nbresloc:/org/praxislive/ide/pxr/resources/Enum.java.template">
+        <attr boolvalue="true" name="template"/>
+        <attr intvalue="300" name="position"/>
+        <attr bundlevalue="org.praxislive.ide.pxr.resources.Bundle#Enum.java" name="displayName"/>
+        <attr name="iconBase" stringvalue="org/netbeans/spi/java/project/support/ui/templates/enum.png"/>
+        <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/praxislive/ide/pxr/resources/Enum.html"/>
+        <attr name="instantiatingIterator" newvalue="org.netbeans.modules.java.project.ui.NewJavaFileWizardIterator"/>
+        <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+        <attr name="templateCategory" stringvalue="java-classes"/>
+        <attr boolvalue="true" name="requireProject"/>
+      </file>
+      <file name="Record.java" url="nbresloc:/org/praxislive/ide/pxr/resources/Record.java.template">
+        <attr boolvalue="true" name="template"/>
+        <attr intvalue="400" name="position"/>
+        <attr bundlevalue="org.praxislive.ide.pxr.resources.Bundle#Record.java" name="displayName"/>
+        <attr name="iconBase" stringvalue="org/netbeans/spi/java/project/support/ui/templates/class.png"/>
+        <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/praxislive/ide/pxr/resources/Record.html"/>
+        <attr name="instantiatingIterator" newvalue="org.netbeans.modules.java.project.ui.NewJavaFileWizardIterator"/>
+        <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+        <attr name="templateCategory" stringvalue="java-classes"/>
+        <attr boolvalue="true" name="requireProject"/>
+      </file>
+    </folder>
   </folder>
 
     

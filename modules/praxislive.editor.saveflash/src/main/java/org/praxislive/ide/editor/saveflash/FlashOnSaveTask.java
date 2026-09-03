@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2017 Neil C Smith.
+ * Copyright 2026 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -21,6 +21,7 @@
  */
 package org.praxislive.ide.editor.saveflash;
 
+import java.awt.EventQueue;
 import java.util.Objects;
 import javax.swing.JEditorPane;
 import javax.swing.text.Element;
@@ -43,6 +44,10 @@ public class FlashOnSaveTask implements OnSaveTask {
 
     @Override
     public void performTask() {
+        if (!EventQueue.isDispatchThread()) {
+            EventQueue.invokeLater(this::performTask);
+            return;
+        }
         DataObject dob = NbEditorUtilities.getDataObject(context.getDocument());
         if (dob != null) {
             EditorCookie ec = dob.getLookup().lookup(EditorCookie.class);

@@ -66,6 +66,7 @@ import org.netbeans.spi.project.support.GenericSources;
 import org.netbeans.spi.project.support.LookupProviderSupport;
 import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
+import org.netbeans.spi.project.ui.RecommendedTemplates;
 import org.netbeans.spi.project.ui.support.UILookupMergerSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -150,6 +151,7 @@ public final class DefaultPraxisProject implements PraxisProject {
                 new BaseTemplates(),
                 LookupMergerSupport.createClassPathProviderMerger(new ClassPathImpl()),
                 UILookupMergerSupport.createPrivilegedTemplatesMerger(),
+                UILookupMergerSupport.createRecommendedTemplatesMerger(),
                 LookupProviderSupport.createSourcesMerger()
         );
 
@@ -450,7 +452,7 @@ public final class DefaultPraxisProject implements PraxisProject {
 
     }
 
-    private class BaseTemplates implements PrivilegedTemplates {
+    private class BaseTemplates implements PrivilegedTemplates, RecommendedTemplates {
 
         @Override
         public String[] getPrivilegedTemplates() {
@@ -458,6 +460,11 @@ public final class DefaultPraxisProject implements PraxisProject {
                 "Templates/Other/Folder",
                 "Templates/Other/org-netbeans-modules-project-ui-NewFileIterator-folderIterator"
             };
+        }
+
+        @Override
+        public String[] getRecommendedTypes() {
+            return new String[]{"simple-files"};
         }
     }
 

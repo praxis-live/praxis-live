@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2018 Neil C Smith.
+ * Copyright 2026 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -19,10 +19,10 @@
  * Please visit https://www.praxislive.org if you need additional information or
  * have any questions.
  */
-
 package org.praxislive.ide.project.ui;
 
 import org.netbeans.spi.project.ui.PrivilegedTemplates;
+import org.netbeans.spi.project.ui.RecommendedTemplates;
 import org.praxislive.ide.project.api.PraxisProject;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
@@ -36,10 +36,13 @@ class PraxisFolderNode extends FilterNode {
 
     public PraxisFolderNode(PraxisProject project, Node original) {
         super(original, new PraxisFolderChildren(project, original),
-                new ProxyLookup(original.getLookup(), Lookups.fixed(new BaseTemplates(), project)));
+                new ProxyLookup(
+                        Lookups.fixed(new BaseTemplates(), project),
+                        original.getLookup()));
     }
 
-    private static class BaseTemplates implements PrivilegedTemplates {
+    private static class BaseTemplates
+            implements PrivilegedTemplates, RecommendedTemplates {
 
         @Override
         public String[] getPrivilegedTemplates() {
@@ -48,7 +51,13 @@ class PraxisFolderNode extends FilterNode {
                 "Templates/Other/org-netbeans-modules-project-ui-NewFileIterator-folderIterator"
             };
         }
+
+        @Override
+        public String[] getRecommendedTypes() {
+            return new String[]{
+                "simple-files"
+            };
+        }
     }
-    
 
 }

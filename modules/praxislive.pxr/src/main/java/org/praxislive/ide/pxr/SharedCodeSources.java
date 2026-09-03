@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.project.JavaProjectConstants;
@@ -33,19 +34,25 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.support.GenericSources;
+import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
+import org.openide.nodes.FilterNode;
+import org.openide.nodes.Node;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ProxyLookup;
 import org.praxislive.ide.code.api.DynamicPaths;
 import org.praxislive.ide.project.api.PraxisProject;
+import org.praxislive.ide.project.spi.ui.ProjectNodeDecorator;
 
 @ProjectServiceProvider(projectType = PraxisProject.TYPE,
-        service = {Sources.class, ProjectOpenedHook.class})
-public class SharedCodeSources extends ProjectOpenedHook implements Sources {
+        service = {Sources.class, ProjectOpenedHook.class, ProjectNodeDecorator.class})
+public class SharedCodeSources extends ProjectOpenedHook implements Sources, ProjectNodeDecorator {
 
     private final PraxisProject project;
     private final ChangeSupport cs;
@@ -82,6 +89,21 @@ public class SharedCodeSources extends ProjectOpenedHook implements Sources {
     @Override
     public void removeChangeListener(ChangeListener cl) {
         cs.removeChangeListener(cl);
+    }
+
+    @Override
+    public Optional<Node> decorate(Node node) {
+        FileObject fob = node.getLookup().lookup(FileObject.class);
+        if (fob != null) {
+            Info info;
+            synchronized (this) {
+                info = sharedSources.get(fob);
+            }
+            if (info != null) {
+                return Optional.of(new SourceGroupNode(node));
+            }
+        }
+        return Optional.empty();
     }
 
     @Override
@@ -178,6 +200,81 @@ public class SharedCodeSources extends ProjectOpenedHook implements Sources {
             return file != null && file.isFolder()
                     && Objects.equals("code", file.getName())
                     && Objects.equals(project.getProjectDirectory(), file.getParent());
+        }
+
+    }
+
+    private static class SourceGroupNode extends FilterNode {
+
+        private SourceGroupNode(Node original) {
+            super(original, new Children(original));
+        }
+
+        private static class Children extends FilterNode.Children {
+
+            private Children(Node node) {
+                super(node);
+            }
+
+            @Override
+            protected Node copyNode(Node node) {
+                if ("SHARED".equals(node.getName())) {
+                    return new SharedPackageNode(node);
+                } else {
+                    return new UnknownPackageNode(node);
+                }
+            }
+
+        }
+
+    }
+
+    private static class SharedPackageNode extends FilterNode {
+
+        private SharedPackageNode(Node original) {
+            super(original, new Children(original), new ProxyLookup(
+                    Lookups.singleton(new PrivilegedCodeTemplates()),
+                    Lookups.exclude(original.getLookup(), PrivilegedTemplates.class)
+            ));
+        }
+
+        private static class Children extends FilterNode.Children {
+
+            private Children(Node node) {
+                super(node);
+            }
+
+            @Override
+            protected Node copyNode(Node node) {
+                return super.copyNode(node);
+            }
+
+        }
+
+    }
+
+    private static class UnknownPackageNode extends FilterNode {
+
+        private UnknownPackageNode(Node original) {
+            super(original);
+        }
+
+        @Override
+        public String getHtmlDisplayName() {
+            return "<s>" + getDisplayName() + "</s>";
+        }
+
+    }
+
+    private static class PrivilegedCodeTemplates implements PrivilegedTemplates {
+
+        @Override
+        public String[] getPrivilegedTemplates() {
+            return new String[]{
+                "Templates/Code/Class.java",
+                "Templates/Code/Interface.java",
+                "Templates/Code/Enum.java",
+                "Templates/Code/Record.java",};
         }
 
     }
