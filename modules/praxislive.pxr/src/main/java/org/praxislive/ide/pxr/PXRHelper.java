@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2024 Neil C Smith.
+ * Copyright 2026 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -46,7 +46,7 @@ import org.praxislive.core.types.PMap;
  */
 public class PXRHelper extends AbstractHelperComponent {
 
-    private static final String ALLOWED_COMMANDS = "[array @ ~ file array map cd libraries shared-code-add echo]";
+    private static final String ALLOWED_COMMANDS = "[array @ ~ file array map cd libraries shared-code-add sources echo]";
     private static final String EVAL_COMMAND = "eval --trap-errors --allowed-commands "
             + ALLOWED_COMMANDS + " ";
     private static final String ROOT_SCRIPT = EVAL_COMMAND + """

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2025 Neil C Smith.
+ * Copyright 2026 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -23,10 +23,17 @@ package org.praxislive.ide.pxr;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.io.UncheckedIOException;
 import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
+import java.util.stream.Stream;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.openide.WizardDescriptor;
@@ -34,12 +41,16 @@ import org.openide.awt.ActionID;
 import org.openide.awt.ActionRegistration;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.praxislive.core.types.PArray;
+import org.praxislive.core.types.PMap;
+import org.praxislive.core.types.PString;
 import org.praxislive.ide.core.api.Task;
 import org.praxislive.ide.project.api.ProjectProperties;
+import org.praxislive.project.GraphElement;
+import org.praxislive.project.GraphModel;
+import org.praxislive.project.ParseException;
 import org.praxislive.project.SyntaxUtils;
 
 @NbBundle.Messages({
@@ -52,6 +63,8 @@ import org.praxislive.project.SyntaxUtils;
         displayName = "#CTL_SaveAsTemplateAction"
 )
 public final class SaveAsTemplateAction implements ActionListener {
+
+    private static final String SHARED_CODE = "shared-code";
 
     private static final RequestProcessor RP = new RequestProcessor();
 
@@ -83,19 +96,66 @@ public final class SaveAsTemplateAction implements ActionListener {
 
     private void copyTemplate(FileObject destination, String filename, PArray libs) {
         try {
-            String templateContents = rootDOB.getPrimaryFile().asText();
+            String fileText = rootDOB.getPrimaryFile().asText();
+            GraphModel model = GraphModel.parse(fileText);
             if (!libs.isEmpty()) {
-                templateContents = "libraries " + SyntaxUtils.valueToToken(libs)
-                        + "\n\n" + templateContents;
+                model = model.withTransform(r -> r.command("libraries "
+                        + SyntaxUtils.valueToToken(libs)));
             }
+            if (model.root().properties().get("shared-code") instanceof GraphElement.Property prop
+                    && prop.hasCommand()) {
+                PMap sources = PMap.EMPTY;
+                Project project = FileOwnerQuery.getOwner(rootDOB.getPrimaryFile());
+                if (project != null) {
+                    FileObject sourceFolder = project.getProjectDirectory().getFileObject("code/" + rootDOB.getName());
+                    if (sourceFolder != null) {
+                        sources = readSources(sourceFolder.toURI());
+                    }
+                }
+                GraphElement.Property replacement = GraphElement.property(sources);
+                model = model.withTransform(r -> r.transformProperties(props
+                        -> props.map(p -> {
+                            if (SHARED_CODE.equals(p.getKey())) {
+                                return Map.entry(p.getKey(), replacement);
+                            } else {
+                                return p;
+                            }
+                        }).toList()));
+            }
+            String templateContents = model.writeToString();
             FileObject template = FileUtil.createData(destination, filename);
             try (OutputStreamWriter writer = new OutputStreamWriter(template.getOutputStream())) {
                 writer.append(templateContents);
             }
             template.setAttribute("template", true);
             template.setAttribute("displayName", template.getName());
+        } catch (IOException ex) {
+            throw new UncheckedIOException(ex);
+        } catch (ParseException ex) {
+            throw new IllegalStateException(ex);
+        }
+
+    }
+
+    // adapted from SourcesSupport so can be executed outside of running project
+    private static PMap readSources(URI base) throws IOException {
+        Path baseDir = Path.of(base);
+        try (Stream<Path> files = Files.walk(baseDir)) {
+            Map<String, PString> sourceMap = new TreeMap<>();
+            List<Path> sourceFiles = files
+                    .filter(p -> p.toString().endsWith(".java") && Files.isRegularFile(p))
+                    .toList();
+            for (Path source : sourceFiles) {
+                String binaryName = base.relativize(source.toUri()).toString();
+                binaryName = binaryName.substring(0, binaryName.lastIndexOf("."));
+                binaryName = binaryName.replace("/", ".");
+                sourceMap.put(binaryName, PString.of(Files.readString(source)));
+            }
+            return PMap.ofMap(sourceMap);
+        } catch (IOException ex) {
+            throw ex;
         } catch (Exception ex) {
-            Exceptions.printStackTrace(ex);
+            throw new IOException(ex);
         }
     }
 

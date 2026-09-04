@@ -19,25 +19,27 @@
  * Please visit https://www.praxislive.org if you need additional information or
  * have any questions.
  */
+package org.praxislive.ide.project.spi.ui;
 
-package org.praxislive.ide.project.ui;
-
-import org.praxislive.ide.project.api.PraxisProject;
-import org.openide.nodes.FilterNode;
+import java.util.Optional;
 import org.openide.nodes.Node;
-import org.openide.util.lookup.Lookups;
-import org.openide.util.lookup.ProxyLookup;
 
 /**
- *
+ * Service interface to allow for decoration of files and folders in the project
+ * tree view. Implementations should be registered in the project lookup. The
+ * first registered implementation to provide a decorated node takes precedence.
  */
-class PraxisFileNode extends FilterNode {
+public interface ProjectNodeDecorator {
 
-    PraxisFileNode(PraxisProject project, Node original) {
-        super(original, Children.LEAF, new ProxyLookup(
-                Lookups.singleton(project),
-                original.getLookup()
-        ));
-    }
+    /**
+     * Optionally provide a new node to replace the provided file/folder node.
+     * This may be a FilterNode or other suitable node representation of the
+     * underlying context. The first provider to return a non-empty response
+     * takes precedence.
+     *
+     * @param node node to decorate
+     * @return replacement node or empty optional
+     */
+    public Optional<Node> decorate(Node node);
 
 }

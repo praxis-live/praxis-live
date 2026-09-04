@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2022 Neil C Smith.
+ * Copyright 2026 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -27,10 +27,15 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import org.netbeans.api.actions.Openable;
 import org.netbeans.api.actions.Savable;
+import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
 import org.openide.cookies.EditorCookie;
-import org.openide.filesystems.FileAttributeEvent;
+import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
@@ -46,60 +51,87 @@ import org.praxislive.core.Value;
 import org.praxislive.core.types.PMap;
 import org.praxislive.ide.code.api.DynamicPaths;
 import org.praxislive.ide.code.api.SharedCodeInfo;
-import org.praxislive.ide.project.api.PraxisProject;
 
 class BoundSharedCodeProperty extends BoundArgumentProperty {
 
-    private final PraxisProject project;
-    private final FileSystem fileSystem;
-    private final FileObject sharedFolder;
-    private final Listener fileListener;
+    private final PXRRootProxy root;
+    private final FileObject rootFolder;
+    private final FileChangeListener fileListener;
+    private final SharedCodeInfo sharedCodeInfo;
 
     private DynamicPaths.SharedKey sharedKey;
     private boolean valueIsAdjusting;
 
-    BoundSharedCodeProperty(PraxisProject project, ControlAddress address, ControlInfo info) {
-        super(project, address, info);
-        this.project = project;
-        this.fileSystem = FileUtil.createMemoryFileSystem();
-        this.fileListener = new Listener();
+    BoundSharedCodeProperty(PXRRootProxy root, ControlAddress address, ControlInfo info) {
+        super(root.getProject(), address, info);
+        this.root = root;
+        setHidden(true);
+        String rootID = address.component().rootID();
         try {
-            sharedFolder = fileSystem.getRoot().createFolder("SHARED");
-            sharedFolder.addRecursiveListener(fileListener);
+            SourceGroup diskSources = null;
+            Sources sources = ProjectUtils.getSources(root.getProject());
+            if (sources != null) {
+                SourceGroup[] javaSources = sources.getSourceGroups(
+                        JavaProjectConstants.SOURCES_TYPE_JAVA);
+                if (javaSources != null) {
+                    for (SourceGroup group : javaSources) {
+                        if (Objects.equals(rootID, group.getName())) {
+                            diskSources = group;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if (diskSources != null) {
+                rootFolder = diskSources.getRootFolder();
+                this.fileListener = new DiskFSListener();
+                this.sharedCodeInfo = new SharedCodeInfo(root.getProject(), rootFolder);
+                rootFolder.addRecursiveListener(fileListener);
+            } else {
+
+                FileSystem memoryFS = FileUtil.createMemoryFileSystem();
+                rootFolder = memoryFS.getRoot();
+                FileObject sharedFolder = rootFolder.createFolder("SHARED");
+                this.fileListener = new MemoryFSListener();
+                this.sharedKey = DynamicPaths.getDefault().registerShared(
+                        root.getProject(),
+                        rootFolder,
+                        sharedFolder);
+                sharedCodeInfo = sharedKey.info();
+                rootFolder.addRecursiveListener(fileListener);
+                addPropertyChangeListener(this::updateFiles);
+            }
+
         } catch (IOException ex) {
             throw new IllegalStateException(ex);
         }
-        sharedKey = DynamicPaths.getDefault().registerShared(project,
-                fileSystem.getRoot(),
-                sharedFolder);
-        setHidden(true);
-        addPropertyChangeListener(this::updateFiles);
     }
 
     @Override
     public void dispose() {
         super.dispose();
-        sharedKey.unregister();
-        sharedKey = null;
-        sharedFolder.removeRecursiveListener(fileListener);
-        try {
-            sharedFolder.getChildren(true).asIterator().forEachRemaining(file -> {
-                if (file.isData()) {
-                    removeFile(file);
-                }
-            });
-            sharedFolder.delete();
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+        rootFolder.removeRecursiveListener(fileListener);
+        if (sharedKey != null) {
+            sharedKey.unregister();
+            sharedKey = null;
+            FileObject sharedFolder = rootFolder.getFileObject("SHARED");
+            if (sharedFolder != null) {
+                rootFolder.getChildren(true).asIterator().forEachRemaining(file -> {
+                    if (file.isData()) {
+                        removeFile(file);
+                    }
+                });
+            }
         }
     }
 
     SharedCodeInfo getSharedCodeInfo() {
-        return sharedKey.info();
+        return sharedCodeInfo;
     }
 
     void openFile(String binaryName) {
-        FileObject file = fileSystem.findResource(toFileName(binaryName));
+        FileObject file = rootFolder.getFileObject(toFileName(binaryName));
         if (file != null) {
             try {
                 Openable openable = DataObject.find(file)
@@ -148,8 +180,8 @@ class BoundSharedCodeProperty extends BoundArgumentProperty {
     private void addFile(String binaryName, String source) {
         try {
             FileObject file
-                    = FileUtil.createData(fileSystem.getRoot(), toFileName(binaryName));
-            file.setAttribute("project", project);
+                    = FileUtil.createData(rootFolder, toFileName(binaryName));
+            file.setAttribute("project", root.getProject());
             file.setAttribute("controlAddress", getAddress());
             try (OutputStreamWriter writer = new OutputStreamWriter(file.getOutputStream())) {
                 writer.append(source);
@@ -160,7 +192,7 @@ class BoundSharedCodeProperty extends BoundArgumentProperty {
     }
 
     private void removeFile(String binaryName) {
-        FileObject file = fileSystem.findResource(toFileName(binaryName));
+        FileObject file = rootFolder.getFileObject(toFileName(binaryName));
         if (file != null) {
             removeFile(file);
         }
@@ -195,12 +227,7 @@ class BoundSharedCodeProperty extends BoundArgumentProperty {
         }
     }
 
-    private class Listener implements FileChangeListener {
-
-        @Override
-        public void fileAttributeChanged(FileAttributeEvent fe) {
-            // no op
-        }
+    private class MemoryFSListener extends FileChangeAdapter {
 
         @Override
         public void fileChanged(FileEvent fe) {
@@ -208,21 +235,11 @@ class BoundSharedCodeProperty extends BoundArgumentProperty {
         }
 
         @Override
-        public void fileDataCreated(FileEvent fe) {
-            // no op ?
-        }
-
-        @Override
         public void fileDeleted(FileEvent fe) {
-            if (fe.getFile() == sharedFolder) {
+            if (fe.getFile() == rootFolder) {
                 throw new IllegalStateException("Shared folder deleted!");
             }
             update();
-        }
-
-        @Override
-        public void fileFolderCreated(FileEvent fe) {
-            // no op ?
         }
 
         @Override
@@ -240,17 +257,21 @@ class BoundSharedCodeProperty extends BoundArgumentProperty {
             valueIsAdjusting = true;
             try {
                 PMap.Builder mapBuilder = PMap.builder();
-                sharedFolder.getChildren(true).asIterator()
-                        .forEachRemaining(file -> {
-                            if ("java".equals(file.getExt())) {
-                                try {
-                                    mapBuilder.put(toBinaryName(file.getPath()),
-                                            file.asText());
-                                } catch (IOException ex) {
-                                    throw new IllegalStateException(ex);
+                FileObject shared = rootFolder.getFileObject("SHARED");
+                if (shared != null) {
+                    shared.getChildren(true).asIterator()
+                            .forEachRemaining(file -> {
+                                if ("java".equals(file.getExt())) {
+                                    try {
+                                        mapBuilder.put(toBinaryName(file.getPath()),
+                                                file.asText());
+                                    } catch (IOException ex) {
+                                        throw new IllegalStateException(ex);
+                                    }
                                 }
-                            }
-                        });
+                            });
+
+                }
                 setValue(mapBuilder.build());
             } catch (Exception ex) {
                 Exceptions.printStackTrace(ex);
@@ -260,6 +281,41 @@ class BoundSharedCodeProperty extends BoundArgumentProperty {
 
         }
 
+    }
+
+    private class DiskFSListener extends FileChangeAdapter {
+
+        @Override
+        public void fileDataCreated(FileEvent fe) {
+            update();
+        }
+
+        @Override
+        public void fileFolderCreated(FileEvent fe) {
+            update();
+        }
+
+        @Override
+        public void fileChanged(FileEvent fe) {
+            update();
+        }
+
+        @Override
+        public void fileDeleted(FileEvent fe) {
+            update();
+        }
+
+        @Override
+        public void fileRenamed(FileRenameEvent fe) {
+            update();
+        }
+
+        private void update() {
+            EventQueue.invokeLater(() -> {
+                root.getHelper().execScript("sources %s".formatted(rootFolder.toURI()))
+                        .thenAccept(srcs -> setValue(srcs.getFirst()));
+            });
+        }
     }
 
 }

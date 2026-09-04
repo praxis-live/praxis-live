@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2021 Neil C Smith.
+ * Copyright 2026 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -37,8 +37,6 @@ import org.praxislive.core.ControlAddress;
 import org.praxislive.core.ControlInfo;
 import org.praxislive.core.protocols.SerializableProtocol;
 import org.praxislive.core.protocols.StartableProtocol;
-import org.praxislive.core.types.PMap;
-import org.praxislive.ide.code.api.DynamicPaths;
 import org.praxislive.ide.core.api.Disposable;
 import org.praxislive.ide.code.api.SharedCodeInfo;
 import org.praxislive.ide.core.api.ValuePropertyAdaptor;
@@ -120,14 +118,14 @@ public class PXRRootProxy extends PXRContainerProxy implements RootProxy, Dispos
 
     @Override
     Lookup createLookup() {
-        var property = getProperty("shared-code");
-        if (property instanceof BoundSharedCodeProperty) {
-            SharedCodeInfo sharedInfo = ((BoundSharedCodeProperty) property).getSharedCodeInfo();
-            return new ProxyLookup(Lookups.singleton(sharedInfo),
-                    super.createLookup());
-        } else {
-            return super.createLookup();
+        Lookup lookup = super.createLookup();
+        if (getProperty("shared-code") instanceof BoundSharedCodeProperty bscp) {
+            SharedCodeInfo sharedInfo = bscp.getSharedCodeInfo();
+            if (sharedInfo != null) {
+                lookup = new ProxyLookup(Lookups.singleton(sharedInfo), lookup);
+            }
         }
+        return lookup;
     }
 
     @Override
@@ -146,7 +144,7 @@ public class PXRRootProxy extends PXRContainerProxy implements RootProxy, Dispos
             if (info.controlType() == ControlInfo.Type.Property) {
                 var args = info.outputs();
                 if (args.size() == 1 && "Map".equals(args.get(0).argumentType())) {
-                    return new BoundSharedCodeProperty(getProject(), address, info);
+                    return new BoundSharedCodeProperty(this, address, info);
                 }
             }
         }

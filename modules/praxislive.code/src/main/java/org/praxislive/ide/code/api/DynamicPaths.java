@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2021 Neil C Smith.
+ * Copyright 2026 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -49,6 +49,26 @@ public final class DynamicPaths {
      * sources.
      * <p>
      * The root folder is the classpath root of the file system, eg. the default
+     * package location.
+     * <p>
+     * Non-source classpaths for the files, as well as other queries, will
+     * delegate to the provided project.
+     *
+     * @param project the project
+     * @param root root folder of the classpath
+     * @return key for access to info and unregistering
+     */
+    public SharedKey registerShared(PraxisProject project, FileObject root) {
+        return registerShared(project, root, root);
+    }
+
+    /**
+     * Register a folder for shared code files. The returned key provides access
+     * to {@link SharedCodeInfo} that can be used for registering dependent
+     * files, or for adding to a Lookup to use for browsing and editing shared
+     * sources.
+     * <p>
+     * The root folder is the classpath root of the file system, eg. the default
      * package location. The shared folder must be the root or a subfolder of
      * the root for a particular package (eg. SHARED).
      * <p>
@@ -60,6 +80,7 @@ public final class DynamicPaths {
      * @param sharedFolder folder for all shared files
      * @return key for access to info and unregistering
      */
+    @Deprecated
     public SharedKey registerShared(PraxisProject project, FileObject root, FileObject sharedFolder) {
         Objects.requireNonNull(project);
         Objects.requireNonNull(root);
@@ -80,7 +101,26 @@ public final class DynamicPaths {
      * @return key for unregistering
      */
     public Key register(PraxisProject project, FileObject root) {
-        return register(project, root, null);
+        PathRegistry.getDefault().register(project, root);
+        return new Key(project, root);
+    }
+
+    /**
+     * Register a source root with optional dependency on shared code. The
+     * source root should be the classpath root, for example the file system
+     * root of a memory file system corresponding to the default package.
+     * <p>
+     * Non-source classpaths for the root and its files, as well as other
+     * queries, will delegate to the provided project.
+     *
+     * @param project the project
+     * @param root root folder
+     * @param sharedRoot shared code root folder
+     * @return
+     */
+    public Key register(PraxisProject project, FileObject root, FileObject sharedRoot) {
+        PathRegistry.getDefault().register(project, root, sharedRoot);
+        return new Key(project, root);
     }
 
     /**
@@ -96,8 +136,9 @@ public final class DynamicPaths {
      * @param shared optional shared code, may be null
      * @return
      */
+    @Deprecated
     public Key register(PraxisProject project, FileObject root, SharedCodeInfo shared) {
-        PathRegistry.getDefault().register(project, root, shared);
+        PathRegistry.getDefault().register(project, root, shared.root());
         return new Key(project, root);
     }
 
@@ -137,7 +178,7 @@ public final class DynamicPaths {
 
         private SharedKey(PraxisProject project, FileObject root, FileObject sharedFolder) {
             super(project, root);
-            info = new SharedCodeInfo(root, sharedFolder);
+            info = new SharedCodeInfo(project, root, sharedFolder);
         }
 
         /**

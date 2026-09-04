@@ -26,7 +26,6 @@ import org.praxislive.ide.project.ui.PraxisCustomizerProvider;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
-import java.net.URI;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -54,13 +53,20 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.Sources;
+import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.netbeans.spi.java.classpath.support.PathResourceBase;
+import org.netbeans.spi.java.project.support.LookupMergerSupport;
 import org.netbeans.spi.project.ActionProvider;
+import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.ProjectState;
+import org.netbeans.spi.project.support.GenericSources;
 import org.netbeans.spi.project.support.LookupProviderSupport;
 import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
+import org.netbeans.spi.project.ui.RecommendedTemplates;
 import org.netbeans.spi.project.ui.support.UILookupMergerSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -118,11 +124,10 @@ public final class DefaultPraxisProject implements PraxisProject {
     private final PropertiesListener propsListener;
     private final Lookup lookup;
     private final Set<ElementHandler> executedHandlers;
+    private final ClassPath compileCP;
+    private final LibPath libPath;
 
     private boolean actionsEnabled;
-    private List<URI> libPath;
-    private ClassPath libsCP;
-    private ClassPath compileCP;
     private TaskExec activeExec;
 
     DefaultPraxisProject(FileObject directory, FileObject projectFile, ProjectState state)
@@ -139,21 +144,26 @@ public final class DefaultPraxisProject implements PraxisProject {
                 properties,
                 new Info(),
                 new ActionImpl(),
-                new ProjectOpenedHookImpl(),
+                UILookupMergerSupport.createProjectOpenHookMerger(new ProjectOpenedHookImpl()),
                 state,
                 new PraxisCustomizerProvider(this),
                 new PraxisLogicalViewProvider(this),
                 new BaseTemplates(),
-                new ClassPathImpl(),
-                UILookupMergerSupport.createPrivilegedTemplatesMerger()
+                LookupMergerSupport.createClassPathProviderMerger(new ClassPathImpl()),
+                UILookupMergerSupport.createPrivilegedTemplatesMerger(),
+                UILookupMergerSupport.createRecommendedTemplatesMerger(),
+                LookupProviderSupport.createSourcesMerger()
         );
 
         base = new ProxyLookup(base, hubManager.getLookup());
         this.lookup = LookupProviderSupport.createCompositeLookup(base, LOOKUP_PATH);
         executedHandlers = new HashSet<>();
         actionsEnabled = true;
-        libPath = List.of();
-        compileCP = CoreClassPathRegistry.getInstance().getCompileClasspath();
+        libPath = new LibPath();
+        compileCP = ClassPathSupport.createProxyClassPath(
+                ClassPathSupport.createClassPath(List.of(libPath)),
+                CoreClassPathRegistry.getInstance().getCompileClasspath()
+        );
     }
 
     private ProjectPropertiesImpl parseProjectFile(FileObject projectFile) {
@@ -245,7 +255,7 @@ public final class DefaultPraxisProject implements PraxisProject {
             tasks.add(hubManager.createStartupTask());
         }
 
-        var elements = properties.elements();
+        Map<ExecutionLevel, List<ExecutionEntry>> elements = properties.elements();
         elements.get(ExecutionLevel.CONFIGURE).forEach(e -> {
             if (!executedHandlers.contains(e.handler())) {
                 tasks.add(new ElementTask(ExecutionLevel.CONFIGURE, e));
@@ -266,7 +276,7 @@ public final class DefaultPraxisProject implements PraxisProject {
 
         actionsEnabled = false;
         activeExec = new TaskExec(tasks);
-        var execState = activeExec.execute();
+        Task.State execState = activeExec.execute();
         if (execState == Task.State.RUNNING) {
             activeExec.addPropertyChangeListener(e -> {
                 actionsEnabled = true;
@@ -292,7 +302,7 @@ public final class DefaultPraxisProject implements PraxisProject {
         List<Task> tasks = List.of(hubManager.createShutdownTask());
         activeExec = new TaskExec(tasks);
         actionsEnabled = false;
-        var execState = activeExec.execute();
+        Task.State execState = activeExec.execute();
         if (execState == Task.State.RUNNING) {
             activeExec.addPropertyChangeListener(e -> {
                 actionsEnabled = true;
@@ -308,46 +318,8 @@ public final class DefaultPraxisProject implements PraxisProject {
     }
 
     void updateLibs(PArray newLibs, PArray newLibsPath) {
-        clearLibs();
         properties.updateLibraries(newLibs);
-        libPath = List.copyOf(buildLibList(newLibsPath));
-        libsCP = buildLibsClasspath(libPath);
-        if (libsCP != null) {
-            compileCP = ClassPathSupport.createProxyClassPath(libsCP,
-                    CoreClassPathRegistry.getInstance().getCompileClasspath());
-            GlobalPathRegistry.getDefault().register(ClassPath.COMPILE, new ClassPath[]{libsCP});
-        }
-    }
-
-    private void clearLibs() {
-        if (libsCP != null) {
-            GlobalPathRegistry.getDefault().unregister(ClassPath.COMPILE, new ClassPath[]{libsCP});
-        }
-        libPath = List.of();
-        libsCP = null;
-        compileCP = CoreClassPathRegistry.getInstance().getCompileClasspath();
-    }
-
-    private List<URI> buildLibList(PArray path) {
-        return path.stream()
-                .flatMap(v -> PResource.from(v).stream())
-                .map(PResource::value)
-                .filter(uri -> "file".equals(uri.getScheme()))
-                .collect(Collectors.toList());
-    }
-
-    private ClassPath buildLibsClasspath(List<URI> path) {
-        try {
-            return ClassPathSupport.createClassPath(
-                    path.stream()
-                            .map(File::new)
-                            .map(FileUtil::urlForArchiveOrDir)
-                            .toArray(URL[]::new)
-            );
-        } catch (Exception ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        return null;
+        libPath.updatePath(newLibsPath);
     }
 
     private ExecutionElement fromModelElement(ProjectElement element) {
@@ -378,19 +350,55 @@ public final class DefaultPraxisProject implements PraxisProject {
         throw new IllegalArgumentException();
     }
 
+    @ProjectServiceProvider(projectType = PraxisProject.TYPE,
+            service = Sources.class)
+    public static Sources genericSources(Project project) {
+        return GenericSources.genericOnly(project);
+    }
+
     private class ClassPathImpl implements ClassPathProvider {
 
         @Override
         public ClassPath findClassPath(FileObject file, String type) {
-            switch (type) {
-                case ClassPath.BOOT:
-                case JavaClassPathConstants.MODULE_BOOT_PATH:
-                    return CoreClassPathRegistry.getInstance().getBootClasspath();
-                case ClassPath.COMPILE:
-                    return compileCP;
-                default:
-                    return null;
-            }
+            return switch (type) {
+                case ClassPath.BOOT, JavaClassPathConstants.MODULE_BOOT_PATH ->
+                    CoreClassPathRegistry.getInstance().getBootClasspath();
+                case ClassPath.COMPILE ->
+                    compileCP;
+                default ->
+                    null;
+            };
+        }
+
+    }
+
+    private class LibPath extends PathResourceBase {
+
+        private List<URL> path;
+
+        private LibPath() {
+            path = List.of();
+        }
+
+        @Override
+        public URL[] getRoots() {
+            return path.toArray(URL[]::new);
+        }
+
+        @Override
+        public ClassPathImplementation getContent() {
+            return null;
+        }
+
+        private void updatePath(PArray libPaths) {
+            path = libPaths.stream()
+                    .flatMap(v -> PResource.from(v).stream())
+                    .map(PResource::value)
+                    .filter(uri -> "file".equals(uri.getScheme()))
+                    .map(File::new)
+                    .map(FileUtil::urlForArchiveOrDir)
+                    .toList();
+            firePropertyChange(PROP_ROOTS, null, null);
         }
 
     }
@@ -432,16 +440,19 @@ public final class DefaultPraxisProject implements PraxisProject {
 
         @Override
         protected void projectOpened() {
+            GlobalPathRegistry.getDefault().register(ClassPath.COMPILE,
+                    new ClassPath[]{compileCP});
         }
 
         @Override
         protected void projectClosed() {
-            clearLibs();
+            GlobalPathRegistry.getDefault().unregister(ClassPath.COMPILE,
+                    new ClassPath[]{compileCP});
         }
 
     }
 
-    private class BaseTemplates implements PrivilegedTemplates {
+    private class BaseTemplates implements PrivilegedTemplates, RecommendedTemplates {
 
         @Override
         public String[] getPrivilegedTemplates() {
@@ -449,6 +460,11 @@ public final class DefaultPraxisProject implements PraxisProject {
                 "Templates/Other/Folder",
                 "Templates/Other/org-netbeans-modules-project-ui-NewFileIterator-folderIterator"
             };
+        }
+
+        @Override
+        public String[] getRecommendedTypes() {
+            return new String[]{"simple-files"};
         }
     }
 
@@ -536,7 +552,7 @@ public final class DefaultPraxisProject implements PraxisProject {
 
         @Override
         protected void afterTask(Task task) {
-            var log = task.log();
+            List<String> log = task.log();
             if (!log.isEmpty()) {
                 warnings.put(task, List.copyOf(log));
             }
@@ -586,7 +602,7 @@ public final class DefaultPraxisProject implements PraxisProject {
         @Override
         public Optional<String> description() {
             if (element instanceof ExecutionElement.File) {
-                var msg = FileUtil.getRelativePath(getProjectDirectory(),
+                String msg = FileUtil.getRelativePath(getProjectDirectory(),
                         ((ExecutionElement.File) element).file())
                         + " [" + level + "]";
                 return Optional.of(msg);
@@ -603,14 +619,14 @@ public final class DefaultPraxisProject implements PraxisProject {
         private boolean continueOnError(List<Value> args) {
             String pathOrCmd;
             if (element instanceof ExecutionElement.File) {
-                var file = ((ExecutionElement.File) element).file();
-                var path = FileUtil.getRelativePath(getProjectDirectory(), file);
+                FileObject file = ((ExecutionElement.File) element).file();
+                String path = FileUtil.getRelativePath(getProjectDirectory(), file);
                 if (path == null) {
                     path = file.getPath();
                 }
                 pathOrCmd = path;
             } else if (element instanceof ExecutionElement.Line) {
-                var cmd = ((ExecutionElement.Line) element).line();
+                String cmd = ((ExecutionElement.Line) element).line();
                 if (handler instanceof LineHandler) {
                     cmd = ((LineHandler) handler).rewrite(cmd)
                             .lines().limit(5).collect(Collectors.joining("\n"));

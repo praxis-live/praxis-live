@@ -40,6 +40,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.ui.PrivilegedTemplates;
+import org.netbeans.spi.project.ui.RecommendedTemplates;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -54,7 +55,6 @@ import org.openide.util.NbBundle;
 import org.praxislive.ide.project.api.ProjectProperties;
 import org.praxislive.project.GraphModel;
 import org.praxislive.project.ParseException;
-
 
 @NbBundle.Messages({
     "TITLE_buildProject=Build project?",

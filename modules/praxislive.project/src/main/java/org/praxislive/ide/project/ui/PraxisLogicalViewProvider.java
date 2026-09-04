@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Neil C Smith.
+ * Copyright 2026 Neil C Smith.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 3 only, as
@@ -19,22 +19,21 @@
  * Please visit https://www.praxislive.org if you need additional information or
  * have any questions.
  */
-
 package org.praxislive.ide.project.ui;
 
 import org.praxislive.ide.project.api.PraxisProject;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
+import org.netbeans.spi.project.ui.PathFinder;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 
-/**
- *
- */
 public class PraxisLogicalViewProvider implements LogicalViewProvider {
-    
-    private PraxisProject project;
+
+    private final PraxisProject project;
 
     public PraxisLogicalViewProvider(PraxisProject project) {
         this.project = project;
@@ -53,6 +52,36 @@ public class PraxisLogicalViewProvider implements LogicalViewProvider {
 
     @Override
     public Node findPath(Node root, Object target) {
+        FileObject file = switch (target) {
+            case FileObject f ->
+                f;
+            case DataObject dob ->
+                dob.getPrimaryFile();
+            default ->
+                null;
+        };
+        if (file == null || !FileUtil.isParentOf(project.getProjectDirectory(), file)) {
+            return null;
+        }
+        return findPathImpl(root, file);
+    }
+
+    private Node findPathImpl(Node node, FileObject file) {
+        PathFinder pathFinder = node.getLookup().lookup(PathFinder.class);
+        if (pathFinder != null) {
+            return pathFinder.findPath(node, file);
+        }
+        FileObject nodeFile = node.getLookup().lookup(FileObject.class);
+        if (file.equals(nodeFile)) {
+            return node;
+        } else if (nodeFile != null && FileUtil.isParentOf(nodeFile, file)) {
+            for (Node child : node.getChildren().getNodes(true)) {
+                Node result = findPathImpl(child, file);
+                if (result != null) {
+                    return result;
+                }
+            }
+        }
         return null;
     }
 

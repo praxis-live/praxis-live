@@ -93,6 +93,12 @@
     </dependency>
     <dependency>
       <groupId>org.netbeans.api</groupId>
+      <artifactId>org-netbeans-modules-java-project</artifactId>
+      <version>${netbeans.version}</version>
+      <type>jar</type>
+    </dependency>
+    <dependency>
+      <groupId>org.netbeans.api</groupId>
       <artifactId>org-netbeans-modules-projectapi</artifactId>
       <version>${netbeans.version}</version>
       <type>jar</type>
@@ -211,6 +217,7 @@
           <publicPackages>
             <publicPackage>org.praxislive.ide.project.api</publicPackage>
             <publicPackage>org.praxislive.ide.project.spi</publicPackage>
+            <publicPackage>org.praxislive.ide.project.spi.ui</publicPackage>
           </publicPackages>
         </configuration>
         <extensions>true</extensions>
