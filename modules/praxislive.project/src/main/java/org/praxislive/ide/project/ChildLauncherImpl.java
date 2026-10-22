@@ -68,6 +68,9 @@ class ChildLauncherImpl implements ChildLauncher {
     private static final Map<DefaultPraxisProject, InputOutput> IO_CACHE
             = new ConcurrentHashMap<>();
     private static final String LISTENING_STATUS = "Listening at : ";
+    private static final List<String> ADDITIONAL_JAVA_OPTS = List.of(
+            "-Dorg.jline.terminal.dumb.color=true"
+    );
 
     private final DefaultPraxisProject project;
 
@@ -111,7 +114,9 @@ class ChildLauncherImpl implements ChildLauncher {
                 });
         Environment env = pb.getEnvironment();
         env.setVariable("JAVA_HOME", System.getProperty("java.home"));
-        env.setVariable("JAVA_OPTS", javaOptions.stream()
+        env.setVariable("JAVA_OPTS", Stream.concat(
+                ADDITIONAL_JAVA_OPTS.stream(),
+                javaOptions.stream())
                 .map(PString::of)
                 .collect(PArray.collector())
                 .toString());
