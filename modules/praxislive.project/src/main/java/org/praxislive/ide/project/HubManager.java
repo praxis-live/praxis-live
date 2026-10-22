@@ -209,6 +209,11 @@ class HubManager {
         private void checkHelper() {
             if (helper.isConnected()) {
                 timer.stop();
+                helper.execScript("""
+                        global {
+                            constant _FILE %s
+                        }
+                        """.formatted(project.getProjectFile().toURI()));
                 updateState(State.COMPLETED);
             } else if (count++ > 10) {
                 timer.stop();

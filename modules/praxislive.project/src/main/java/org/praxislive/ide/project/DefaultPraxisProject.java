@@ -240,6 +240,10 @@ public final class DefaultPraxisProject implements PraxisProject {
         return new ArrayList<>(REGISTRY);
     }
 
+    FileObject getProjectFile() {
+        return projectFile;
+    }
+
     private void execute(ExecutionLevel level) {
 
         if (properties.getJavaRelease() > MAX_JAVA_VERSION) {
